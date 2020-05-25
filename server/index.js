@@ -18,7 +18,6 @@ if (process.env.NODE_ENV === "production") {
   app.use(express.static(__dirname + "/public"));
 
   //Handle single page application
-  console.log("Production!");
   app.get(/.*/), (req, res) => res.sendFile(__dirname + '/public/index.html');
 }
 
