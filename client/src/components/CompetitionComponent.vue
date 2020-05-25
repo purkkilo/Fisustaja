@@ -1,11 +1,6 @@
 <template>
   <div class="container">
     <h1>Competitions</h1>
-    <div class="row inputarea">
-      <label class="col s4 flow-text" for="create-post">Kilpailun nimi</label>
-      <input class="col s4" type="text" id="competition_input" v-model="competition_input" placeholder="Nimi!">
-      <a class="waves-effect waves-light btn col s4" v-on:click="submitCompetition"><i class="material-icons left">check</i>Lisää kilpailu</a>
-    </div>
     <div v-if="competitions.length">
       <table id="competitions" class="centered responsive-table tablearea highlight">
         <thead>
@@ -22,7 +17,6 @@
             v-bind:item = "competition"
             v-bind:index = "index"
             v-bind:key="competition._id"
-            v-on:dblclick="deleteCompetition(competition._id)"
           >
               <th style="border:1px solid black" class="center-align" scope="row">{{ competition.date_of_competition }}</th>  
               <td style="border:1px solid black">{{ competition.competition_name }}</td> 
@@ -71,52 +65,6 @@ export default {
     pickCompetition: function() {
         console.log("Todo: Hae valitun kilpailun tiedot tietokannasta, siirry yleisnäkymään");
     },
-    // Nice
-    async submitCompetition() {
-      M.toast({html: "Lisätään tietokantaan!"});
-      this.loading = true;
-      this.competitions = [];
-      if(this.competition_input) {
-        const competition = {
-          "competition_name": this.competition_input,
-          "cup_name": "Fake Cup 2",
-          "cup_multiplier": 1,
-          "date_of_competition": "30.09.2029",
-          "start_of_competition": "12:00",
-          "end_of_competition": "20:00",
-          "fishes": [
-            {
-              "name": "Ahven",
-              "minsize": "999",
-              "multiplier": "00"
-            },
-            {
-              "name": "Hauki",
-              "minsize": "109",
-              "multiplier": "550"
-            }
-          ]
-        }
-        try{
-          await CompetitionService.insertCompetition(competition);
-          this.competitions = await CompetitionService.getCompetitions();
-          this.loading = false;
-        } catch(err) {
-          this.error = err.message;
-        } 
-      }
-    },
-    async deleteCompetition(id) {
-      M.toast({html: "Poistetaan tietokannasta!"});
-      this.loading = true;
-      try{
-        await CompetitionService.deleteCompetition(id);
-        this.competitions = await CompetitionService.getCompetitions();
-        this.loading = false;
-      } catch(err) {
-        this.error = err.message;
-      } 
-    }
   }
 }
 

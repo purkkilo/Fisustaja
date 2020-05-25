@@ -1,17 +1,36 @@
 <template>
   <div id="app">
-    <Header />
-    <router-view/>
+    <div class="container">
+      <Timedate />
+      <div class="container-transparent">
+          <div class="section">
+              <div class="col s12 center-align"><h1>Fisustaja</h1></div>
+          </div>
+          <div class="section row inputarea">
+              <div class="col s12 center-align"><h3>\O/</h3></div>
+          </div>
+          <div class="section">
+              <div class="row">
+                  <router-link to="/register-comp">
+                  <div class="col s6 center-align"><a class="waves-effect waves-light blue lighten-1 btn-large"><i class="material-icons left">add_circle_outline</i>Uusi kilpailu</a></div>
+                  </router-link>
+                  <router-link to="/continue">
+                      <div class="col s6 center-align"><a class="waves-effect waves-light green lighten-1 btn-large"><i class="material-icons left">play_circle_filled</i>Jatka kilpailua</a></div>
+                  </router-link>
+              </div>
+          </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import Header from './components/layout/Header';
+import Timedate from '../components/layout/Timedate';
 
 export default {
-  name: 'App',
+  name: 'Home',
   components: {
-    Header
+    Timedate
   }
 }
 </script>
@@ -27,7 +46,7 @@ export default {
 }
 
 body {
-    background-image: url('./assets/background_waterdrop.png');
+    background-image: url('../assets/background_waterdrop.png');
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-size: cover;
@@ -53,13 +72,11 @@ body {
 
 
 #app li.collection-item:nth-child(odd) {
-    background: rgb(255, 142, 142) !important;
-    border: 1px solid red;
+    background: rgba(255, 255, 255, 0.63);
 }
 
 #app li.collection-item:nth-child(even) {
-    background: rgb(255, 203, 203) !important;
-    border: 1px solid red;
+    background: rgba(169, 169, 255, 0.596);
 }
 
 #app .tabs .tab a:hover {
@@ -105,13 +122,7 @@ body {
     border-radius: 2%;
 }
 
-table.highlight>tbody>tr:hover {
-    background-color: rgb(0, 153, 255) !important;
-    border: 1px solid black;
-    cursor: pointer;
-}
-
-table.highlight>tr:hover {
+#app table.highlight>tbody>tr:hover {
     background-color: rgb(0, 153, 255) !important;
     border: 1px solid black;
     cursor: pointer;
