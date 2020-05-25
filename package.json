@@ -4,7 +4,6 @@
   "description": "desktop app for fisustaja",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
     "dev": "nodemon server/index.js"
   },
   "author": "Jori Kosonen",
