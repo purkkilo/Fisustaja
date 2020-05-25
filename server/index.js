@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 var path = require("path");
+const serveStatic = require("serve-static");
 const app = express();
 
 // Middleware
