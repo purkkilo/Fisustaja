@@ -8,9 +8,20 @@
 import Timedate from '../components/layout/Timedate';
 
 export default {
-  name: 'About',
-  components: {
-    Timedate
-  }
+    name: 'About',
+    components: {
+      Timedate
+    },
+    data() {
+        return {
+          
+        }
+    },
+    mounted() {
+
+    },
+    methods: {
+      
+    },
 }
 </script>

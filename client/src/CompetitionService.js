@@ -37,7 +37,7 @@ class CompetitionService {
             end_of_competition: competition.end_of_competition,
             fishes: competition.fishes,
             state: "Rekisteröity",
-            createdAt: new Date()
+            createdAt: competition.createdAt
         });
     }
 

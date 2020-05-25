@@ -17,30 +17,38 @@
             v-bind:item = "competition"
             v-bind:index = "index"
             v-bind:key="competition._id"
+            v-on:dblclick="deleteCompetition(competition._id)"
           >
               <th style="border:1px solid black" class="center-align" scope="row">{{ competition.date_of_competition }}</th>  
               <td style="border:1px solid black">{{ competition.competition_name }}</td> 
               <td style="border:1px solid black">{{ competition.cup_name }}</td> 
               <td style="border:1px solid black">{{ competition.state }}</td>
-              <td style="border:1px solid black"><a class="waves-effect waves-light btn" v-on:click="pickCompetition"><i class="material-icons left">check</i>Valitse</a></td>
+              <td style="border:1px solid black"><a class="waves-effect waves-light btn" v-on:click="pickCompetition(competition)"><i class="material-icons left">check</i>Valitse</a></td>
           </tr>
         </tbody>
       </table>
     </div>
-    <div v-else class="inputarea">
+    <div v-else>
       <h2 v-if="!loading">Ei kilpailuja!</h2>
       <h2 v-else-if="error" class="error">{{ error }}</h2>
-      <h2 v-else>Ladataan kilpailuja...</h2>
+      <div v-else>
+        <h2>Ladataan kilpailuja...</h2>
+        <ProgressBarQuery />
+      </div> 
     </div>
   </div>
 </template>
 
 <script>
+import ProgressBarQuery from '../components/layout/ProgressBarQuery';
 import CompetitionService from '../CompetitionService';
 import M from 'materialize-css';
 
 export default {
   name: 'CompetitionComponent',
+  components: {
+    ProgressBarQuery
+  },
   data() {
     return {
       competitions: [],
@@ -52,6 +60,7 @@ export default {
   async created() {
     this.loading = true;
     try {
+      // TODO: change so that competitions are stored in the vuex store?
       this.competitions = await CompetitionService.getCompetitions();
       this.loading = false;
     } catch(err) {
@@ -62,9 +71,22 @@ export default {
     M.AutoInit()
   },
   methods: {
-    pickCompetition: function() {
-        console.log("Todo: Hae valitun kilpailun tiedot tietokannasta, siirry yleisnäkymään");
-    },
+    pickCompetition: function(competition) {
+        this.$store.state.competition = competition;
+        this.$router.push({path: '/overview'});
+    },// TEMP!
+    async deleteCompetition(id) {
+      M.toast({html: "Poistetaan tietokannasta!"});
+      this.loading = true;
+      try{
+        await CompetitionService.deleteCompetition(id);
+        this.competitions = await CompetitionService.getCompetitions();
+        this.$store.state.competitions = this.competitions;
+        this.loading = false;
+      } catch(err) {
+        this.error = err.message;
+      } 
+    }
   }
 }
 

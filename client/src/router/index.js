@@ -38,7 +38,7 @@ Vue.use(VueRouter)
   {
     path: '/overview',
     name: 'Overview',
-    component: () => import(/* webpackChunkName: "about" */ '../views/Overview.vue')
+    component: () => import(/* webpackChunkName: "about" */ '../views/Overview.vue'),
   },
   {
     path: '/comp-settings',

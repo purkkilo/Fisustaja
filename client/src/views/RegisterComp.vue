@@ -218,69 +218,71 @@
               </div>
 
               <div id="summary" class="col s12 inputarea">
-                <div class="basic_summary row section">
-                  <div class="center-align col s8 push-s2">
-                    <table class="striped centered responsive-table highlight">
-                      <caption class="flow-text">Perustiedot</caption>  
-                        <tr>
-                          <th style="border:1px solid black;">Kilpailu</th>
-                          <td style="border:1px solid black;" class="center-align">{{ competition_name }}</td>
-                        </tr>
-                        <tr>
-                          <th style="border:1px solid black;">Cup</th>
-                          <td style="border:1px solid black;" class="center-align">{{ cup_name }}</td> 
-                        </tr>
-                        <tr>
-                          <th style="border:1px solid black;">Kilpailun pistekerroin</th>
-                          <td style="border:1px solid black;" class="center-align">{{ cup_points_multiplier }}</td>  
-                        </tr>
-                        <tr>
-                          <th style="border:1px solid black;">Järjestetään</th>
-                          <td style="border:1px solid black;" class="center-align">{{ date_of_competition }}</td> 
-                        </tr>
-                        <tr>
-                          <th style="border:1px solid black;">Ajankohta</th>
-                          <td style="border:1px solid black;" class="center-align">{{ start_of_competition }} - {{ end_of_competition }}</td>  
-                        </tr>
-                    </table>
+                <div v-if="!loading">
+                  <div class="basic_summary row section">
+                    <div class="center-align col s8 push-s2">
+                      <table class="striped centered responsive-table highlight">
+                        <caption class="flow-text">Perustiedot</caption>  
+                          <tr>
+                            <th style="border:1px solid black;">Kilpailu</th>
+                            <td style="border:1px solid black;" class="center-align">{{ competition_name }}</td>
+                          </tr>
+                          <tr>
+                            <th style="border:1px solid black;">Cup</th>
+                            <td style="border:1px solid black;" class="center-align">{{ cup_name }}</td> 
+                          </tr>
+                          <tr>
+                            <th style="border:1px solid black;">Kilpailun pistekerroin</th>
+                            <td style="border:1px solid black;" class="center-align">{{ cup_points_multiplier }}</td>  
+                          </tr>
+                          <tr>
+                            <th style="border:1px solid black;">Järjestetään</th>
+                            <td style="border:1px solid black;" class="center-align">{{ date_of_competition }}</td> 
+                          </tr>
+                          <tr>
+                            <th style="border:1px solid black;">Ajankohta</th>
+                            <td style="border:1px solid black;" class="center-align">{{ start_of_competition }} - {{ end_of_competition }}</td>  
+                          </tr>
+                      </table>
+                    </div>
                   </div>
-                </div>
 
-                <div class="fishes_summary section">
-                  <div class="center-align">
-                    <p class="flow-text">Kalojen määritykset</p>
-                  </div>
-                  <div class="center-align col s8 push-s2">
-                    <table class="striped highlight centered responsive-table">
-                      <thead>
-                        <tr>
-                          <th>Kalalaji</th>
-                          <th>Pistekerroin</th>
-                          <th>Alamitta</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="(fish, index) in completed_fish_specs" :key="index">
-                           <th style="border:1px solid black;" scope="row">{{ fish.name  }}</th>  
-                           <td style="border:1px solid black;">{{ fish.multiplier }}</td> 
-                           <td style="border:1px solid black;">{{ fish.minsize }}</td>  
-                        </tr>
-                       </tbody>
-                    </table>
+                  <div class="fishes_summary section col s8 push-s2">
+                    <div class="center-align">
+                      <p class="flow-text">Kalojen määritykset</p>
+                    </div>
+                    <div class="center-align">
+                      <table class="striped highlight centered responsive-table">
+                        <thead>
+                          <tr>
+                            <th>Kalalaji</th>
+                            <th>Pistekerroin</th>
+                            <th>Alamitta</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr v-for="(fish, index) in completed_fish_specs" :key="index">
+                            <th style="border:1px solid black;" scope="row">{{ fish.name  }}</th>  
+                            <td style="border:1px solid black;">{{ fish.multiplier }}</td> 
+                            <td style="border:1px solid black;">{{ fish.minsize }}</td>  
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="row section">
+                      <div class="col s6">
+                        <a class="waves-effect waves-light blue lighten-2 btn-large" v-on:click="tabs.select('points')"><i class="material-icons left">arrow_back</i>Takaisin</a>
+                      </div>
+                      <div v-if="validated" class="col s6">
+                        <a class="waves-effect waves-light green lighten-2 btn-large" v-on:click="submitCompetition"><i class="material-icons left">add_circle_outline</i>Luo kilpailu näillä tiedoilla</a>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <br>
-
-                <div v-if="validated" class="row" style="margin: 150px 0px 20px 0px;">
-                  <div class="col s1"></div>
-                  <a class="waves-effect waves-light blue lighten-2 btn-large col s4" v-on:click="tabs.select('points')"><i class="material-icons left">arrow_back</i>Takaisin</a>
-                  <div class="col s2"></div>
-                  <a class="waves-effect waves-light green lighten-2 btn-large col s4" v-on:click="submitCompetition"><i class="material-icons left">add_circle_outline</i>Luo kilpailu näillä tiedoilla</a>
-                  <div class="col s1"></div>
-                </div>
-                <div v-else style="margin: 20px 0px 20px 0px;" class="center-align">
-                  <a class="waves-effect waves-light blue lighten-2 btn-large col s4" v-on:click="tabs.select('points')"><i class="material-icons left">arrow_back</i>Takaisin</a>
-                </div>   
+                <div v-else>
+                  <h2>Tallennetaan kilpailua tietokantaan...</h2>
+                  <ProgressBarQuery />
+                </div>  
               </div>
             </div>
           </div>
@@ -294,13 +296,15 @@
 import M from 'materialize-css';
 import "vue-select/dist/vue-select.css";
 import Timedate from '../components/layout/Timedate';
+import ProgressBarQuery from '../components/layout/ProgressBarQuery';
 import { options_picker } from '../i18n';
 import CompetitionService from '../CompetitionService';
 
 export default {
     name: 'RegisterComp',
     components: {
-        Timedate
+        Timedate,
+        ProgressBarQuery
     },
     data() {
         return {
@@ -319,6 +323,7 @@ export default {
             fish_species_validated: false,
             fish_specs_validated: false,
             validated: false,
+            loading: false,
             tabs: null
         }
     },
@@ -521,7 +526,9 @@ export default {
         },
         async submitCompetition() {
           this.errors = [];
+          
           if(this.validated){
+              this.loading = true;
               const competition = {
                 "competition_name": this.basic_info.competition_name,
                 "cup_name": this.basic_info.cup_name,
@@ -533,6 +540,9 @@ export default {
               }
               try{
                 await CompetitionService.insertCompetition(competition);
+                M.toast({html: 'Kilpailu lisätty tietokantaan!'});
+                this.$store.state.competition = competition;
+                this.$router.push({path: '/overview'});
               } catch(err) {
                 this.errors.push = err.message;
               } 
