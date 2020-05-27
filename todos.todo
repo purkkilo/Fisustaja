@@ -1,0 +1,46 @@
+Projects:
+  ☐ Fisustaja @started(20-05-26 11:16)
+Nested:
+  ☐ Fisustaja Backend @started(20-05-26 11:17)
+  ☐ Fisustaja Frontend @started(20-05-26 11:17)
+  ☐ Fisustaja Login @started(20-05-26 11:17)
+  ☐ Fisustaja styling @started(20-05-26 11:17)
+
+Todos:
+New:
+  ✔ Create signees database collection @started(20-05-26 11:19) @today @done(20-05-27 19:34) @lasted(1d8h15m1s)
+  ☐ Add fish weights/points to signee properties @started(20-05-26 11:22) @today
+  ☐ Add signees/weights/points to competition collection @started(20-05-26 11:21) @today
+  ☐ Finish rest of the views @started(20-05-26 11:18) @low
+  ☐ Input validation! @started(20-05-26 12:06) @high
+  ☐ Comment all the files... @started(20-05-26 12:11) @low
+Done:
+  ✔ Press Alt+D to mark a todo as done
+
+Cancelled:
+  ✘ Press Alt+C to mark a todo as cancelled
+  
+Tagging:
+  ☐ You can add tags using the @ symbol, like this @tag
+  ☐ There are some special, customizable tags: @critical @high @low @today
+Timekeeping:
+  ✔ Completed todos can show a timestamp @done(17-11-03 10:42)
+  ☐ Press Alt+S to mark a todo as started @started(17-11-03 10:42)
+    ✔ Now it will show the elapsed time @started(17-11-03 10:42) @done(17-11-03 20:11) @lasted(9h29m)
+  ☐ You can provide time estimates for your todos @1h30m
+    ☐ We are even doing some natural language processing @est(1 day and 20 minutes)
+
+Formatting:
+You can format text in a markdown-like fashion
+Bold:
+  ☐ Use asterisks for *bold*
+Italic:
+  ☐ Use underscores for _italic_
+Strikethrough:
+  ☐ Use tildes for ~strikethrough~
+Code:
+  ☐ Use backticks for `code`
+
+Archive:
+✔ You can archive finished todos here
+✔ Congratulations, you are now a Todo+ master!

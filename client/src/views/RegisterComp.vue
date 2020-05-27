@@ -125,7 +125,7 @@
               <div id="fishes" class="col s12 inputarea">
                 <p class="flow-text center-align">Kalalajien valitseminen kilpailuun</p>
                 <p v-if="fish_species_validated" class="flow-text yellow lighten-1 center-align">Tiedot lukittuna, paina "Muuta tietoja" jos haluat vielä muokata tietoja</p>
-                <div class="row section" id="fishes_select">
+                <div class="row section" id="fishes_select"  style="height:400px;">
                   <p class="center-align">(Valitse allaolevasta laatikosta, voi myös lisätä oman kalalajin kirjoittamalla)</p>
                   <v-select class="col s10 push-s1 flow-text" taggable multiple push-tags v-model="selected" :options="options" />
                 </div>
@@ -525,23 +525,27 @@ export default {
 
         },
         async submitCompetition() {
-          this.errors = [];
-          
+          // TODO  better input validation
           if(this.validated){
               this.loading = true;
+              //temp id to get correct competition from array, even if somehow there is comp with same name etc.
+              const comp_id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
               const competition = {
+                "competition_id": comp_id,
                 "competition_name": this.basic_info.competition_name,
                 "cup_name": this.basic_info.cup_name,
-                "cup_multiplier": this.basic_info.cup_multiplier,
+                "cup_points_multiplier": this.basic_info.cup_points_multiplier,
                 "date_of_competition": this.basic_info.date_of_competition,
                 "start_of_competition": this.basic_info.start_of_competition,
                 "end_of_competition": this.basic_info.end_of_competition,
-                "fishes": this.completed_fish_specs
+                "fishes": this.completed_fish_specs,
+                "signees": [],
+                "results": [],
               }
               try{
                 await CompetitionService.insertCompetition(competition);
                 M.toast({html: 'Kilpailu lisätty tietokantaan!'});
-                this.$store.state.competition = competition;
+                this.$store.commit('refreshCompetition', competition);
                 this.$router.push({path: '/overview'});
               } catch(err) {
                 this.errors.push = err.message;

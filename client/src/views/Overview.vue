@@ -62,15 +62,18 @@ export default {
         }
     },
     async created() {
-      if (this.$store.state.competition){
-        this.competition = this.$store.state.competition
+      if (this.$store.getters.getCompetition){
+        this.competition = this.$store.getters.getCompetition
+        // IF there are signees in competition
+        if(this.$store.getters.getCompetitionSignees){
+          this.$store.commit('refreshSigneesFromCompetition');
+        }
+
         // When selecting from fetched list, the _id is already there, no need to fetch again
-        if(this.$store.state.competition._id){
-          console.log(`this.competition._id = ${this.competition._id}`);
-          this.competition = this.$store.state.competition;
+        if(this.$store.getters.getCompetitionId){
+          this.competition = this.$store.getters.getCompetition;
         }
         else {
-          console.log(`else`);
           this.loading = true;
           this.errors = [];
           try {
@@ -81,9 +84,8 @@ export default {
           }
 
           if(this.competitions.length){
-              // To get the _id, if you just created the competition in RegisterComp
-              console.log(`TODO! Get _id somehow better than this...`);
-              this.competition = this.competitions[this.competitions.length - 1];
+              // Selecting based on created competition_id
+              this.competition = this.competitions.find(item => item.competition_id === this.$store.getters.getCreatedCompetitionID);
               //Store to vuex
               this.$store.state.competition = this.competition;
               this.loading = false;

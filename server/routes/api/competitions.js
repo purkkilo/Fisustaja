@@ -13,9 +13,10 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
     const competitions = await loadCompetitionsCollection();
     await competitions.insertOne({
+        competition_id: req.body.competition_id,
         competition_name: req.body.competition_name,
         cup_name:  req.body.cup_name,
-        cup_multiplier: req.body.cup_multiplier,
+        cup_points_multiplier: req.body.cup_points_multiplier,
         date_of_competition: req.body.date_of_competition,
         start_of_competition: req.body.start_of_competition,
         end_of_competition: req.body.end_of_competition,
@@ -27,6 +28,19 @@ router.post('/', async (req, res) => {
     res.status(201).send();
 })
 
+// Update one competition
+router.put('/:id', async (req, res) => {
+    const competitions = await loadCompetitionsCollection();
+    var updateSignees = req.body;
+    delete updateSignees._id;
+    await competitions.updateOne(
+        {_id: new mongodb.ObjectID(req.params.id)},
+        { "$set":  {"signees" : updateSignees}}
+    );
+    res.status(204).send();
+})
+
+
 // Delete Competitions
 router.delete('/:id', async (req, res) => {
     const competitions = await loadCompetitionsCollection();
@@ -36,7 +50,16 @@ router.delete('/:id', async (req, res) => {
 })
 
 async function loadCompetitionsCollection() {
-    const client = await mongodb.MongoClient.connect('mongodb://purkkilo:fisu muusi1234@ds237748.mlab.com:37748/fisustaja', {
+    let mongodb_url = "";
+    if (process.env.NODE_ENV === "production") {
+        mongodb_url = process.env.MONGODB_URI;
+    }
+    else {
+        const config = require('./config.json');
+        mongodb_url = config.mongodb_url;
+    }
+
+    const client = await mongodb.MongoClient.connect(mongodb_url, {
         useNewUrlParser: true,
         useUnifiedTopology: true
     });

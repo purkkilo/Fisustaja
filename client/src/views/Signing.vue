@@ -124,17 +124,20 @@
           </div>
         </div>
         <div class="row center-align">
+          <div v-if="loading">
+            <p class="flow-text">Synching with database...</p>
+            <ProgressBarQuery />
+          </div>
           <a v-on:click="clearInputs" class="waves-effect waves-light yellow black-text btn-large col s4 offset-s2"><i class="material-icons left">backspace</i>Pyyhi Kentät</a>
           <a v-on:click="saveBoatToDatabase" class="waves-effect waves-light green black-text btn-large col s3 offset-s1"><i class="material-icons right">save_alt</i>Tallenna</a>
         </div>
       </div>
       <div id="signees-div" class="col s12">
         <div class="center-align col s4 inputarea">
-          <ProgressBarQuery />
-          <p class="flow-text">Ilmoittautuneita yhteensä: <b>{{ signees.length }}</b></p>
+          <p class="flow-text">Ilmoittautuneita yhteensä: <b>{{ $store.getters.getSignees.length }}</b></p>
         </div>
         <div>
-          <table id="signees-table" class="highlight centered responsive-table fixed_header tablearea">
+          <table id="signees-table" class="highlight centered responsive-table fixed_header tablearea" v-if="$store.getters.getSignees.length">
             <thead>
               <tr>
                 <th>Nro.</th>
@@ -144,8 +147,8 @@
               </tr>
             </thead>
             <tbody>
-              <tr @click="selectRow(signee.id)" :class="{ selected : selected_id == signee.id }" v-for="(signee, index) in signees" :key="index">
-                  <th class="center-align" style="border:1px solid black">{{ signee.boat_number  }}</th>  
+              <tr @click="selectRow(signee.id)" :class="{ selected : selected_id == signee.id }" v-for="(signee, index) in $store.getters.getSignees" :key="index">
+                  <th class="center-align" style="border:1px solid black">{{ signee.boat_number }} ({{ signee.id }})</th>  
                   <td style="border:1px solid black">{{ signee.captain_name }}</td> 
                   <td style="border:1px solid black">{{ signee.temp_captain_name }}</td>
                   <td style="border:1px solid black">{{ signee.locality }}</td>   
@@ -157,7 +160,7 @@
           <div class="col s12 center-align"><a class="waves-effect waves-light blue btn" v-on:click="searchSelected"><i class="material-icons left">info</i>Näytä valitun ilmoittautumistiedot</a></div>
         </div>
         <div v-else class="section inputarea center-align">
-          <p v-if="signees.length" class="flow-text">Voit katsella venekunnan tietoja myös klikkaamalla haluamaasi riviä taulukosta ja painamalla ilmestyvää nappulaa</p>
+          <p v-if="$store.getters.getSignees.length" class="flow-text">Voit katsella venekunnan tietoja myös klikkaamalla haluamaasi riviä taulukosta ja painamalla ilmestyvää nappulaa</p>
           <h3 v-else class="center-align">Ei ilmoittautuneita!</h3>
         </div>
       </div>
@@ -170,6 +173,7 @@ import Timedate from '../components/layout/Timedate';
 import ProgressBarQuery from '../components/layout/ProgressBarQuery';
 import M from 'materialize-css';
 import { options_picker } from '../i18n';
+import CompetitionService from '../CompetitionService';
 
 export default {
     name: 'Signing',
@@ -186,11 +190,11 @@ export default {
           temp_captain_name: null,
           locality: null,
           team: null,
-          signees: [],
           selected_id:null,
           id: 1,
           new_signee:null,
-          notification: null,      
+          notification: null,
+          loading: false,      
       }
     },
     mounted() {
@@ -201,7 +205,8 @@ export default {
         var elem = document.querySelectorAll('.tabs')[0];
         /* eslint-enable no-unused-vars */
         this.tabs = M.Tabs.getInstance(elem);  
-        this.boat_number = 1;       
+        this.boat_number = this.$store.getters.getSigneesCount + 1;
+        this.id = this.$store.getters.getSigneesCount + 1;
     },
     methods: {
         clearInputs: function() {
@@ -211,18 +216,19 @@ export default {
             this.temp_captain_name = null;
             this.locality = null;
             this.team = null;
-            this.notification = null;
             this.errors = [];
         },
         searchSelected: function() {
             this.notification = null;
-
+            
+            //Signing tab
             if(this.tabs.index == 0) {
-                console.log("Signing tab");
                 if(this.boat_number){
                     let found_signee = this.searchBoatNumber(this.boat_number);
+
                     if(found_signee){
                         this.notification = `Venekunta löydetty!\n(${found_signee.boat_number}) : ${found_signee.captain_name}, ${found_signee.temp_captain_name}`;
+                        this.selected_id = found_signee.id;
                         this.boat_number = found_signee.boat_number;
                         this.starting_place = found_signee.starting_place;
                         this.captain_name = found_signee.captain_name;
@@ -235,6 +241,7 @@ export default {
                         this.clearInputs();
                         this.boat_number = temp_boat_number;
                         this.notification = "Tällä numerolla ei ole vielä ilmoitettu venekuntaa!"
+                        this.selected_id = null;
                     }
                 }
                 else {
@@ -243,15 +250,14 @@ export default {
             }
 
             else {
-                console.log("Signees tab");
+                // Signees tab (tab with this.tab.index = 1)
                 if(this.selected_id){
                     let search_id = this.selected_id;
                     if(search_id){
-                        var found_signee = this.signees.find(function(element) {
-                            return parseInt(element.id) == parseInt(search_id); 
-                        });
+                        var found_signee = this.$store.getters.getSigneeById(search_id);
+                        
                         if (found_signee){
-                            this.notification = `Venekunta löydetty!\n(${found_signee.boat_number}) : ${found_signee.captain_name}, ${found_signee.temp_captain_name}`;
+                            this.notification = `Venekunnan tiedot:\n(${found_signee.boat_number}) : ${found_signee.captain_name}, ${found_signee.temp_captain_name}`;
                             this.boat_number = found_signee.boat_number;
                             this.starting_place = found_signee.starting_place;
                             this.captain_name = found_signee.captain_name;
@@ -288,10 +294,11 @@ export default {
         },
         searchBoatNumber: function(boat_number) {
             var search_boat_number = parseInt(boat_number);
-            var found_signee = this.signees.find(function(element) {
-                return parseInt(element.boat_number) == search_boat_number; 
-            });
-            return found_signee;
+            return this.$store.getters.getSigneeByBoatNumber(search_boat_number);
+        },
+        searchId: function(id) {
+            var search_id = parseInt(id);
+            return this.$store.getters.getSigneeById(search_id);
         },
         showError: function(error) {
             this.errors.push(error);
@@ -299,6 +306,22 @@ export default {
             location.href = "#";
             location.href = "#app";
         },
+        async saveToVuex(new_signee, replace) {
+            //if replace == true, replace existing info, otherwise add new signee
+            replace === true ? this.$store.commit('replaceSignee', new_signee) : this.$store.commit('addSignee', new_signee);
+            let comp = this.$store.getters.getCompetition;
+            comp.signees = this.$store.getters.getSignees;
+            this.$store.commit('refreshCompetition', comp);
+            try{
+              this.loading = true;
+              await CompetitionService.updateCompetition(comp._id, comp.signees);
+              console.log("Updated to database!");
+              this.loading = false;
+            } catch(err) {
+              console.log(err.message);
+            } 
+        },
+        // TODO input validation
         saveBoatToDatabase: function() {
             M.toast({html: 'Todo: Tallenna tietokantaan'});
             this.notification = null;
@@ -321,44 +344,84 @@ export default {
             }
 
             if(!this.errors.length) {
-                const found_signee = this.searchBoatNumber(this.boat_number);
-    
-                if (found_signee) {
-                    found_signee.starting_place = this.starting_place;
-                    found_signee.captain_name = this.captain_name;
-                    found_signee.temp_captain_name = this.temp_captain_name;
-                    found_signee.locality = this.locality;
-                    found_signee.team = this.team;
-                    this.new_signee = found_signee;
-                    // note - findIndex might be replaced with some(), filter(), forEach() 
-                    // or any other function/approach if you need 
-                    // additional browser support, or you might use a polyfill
-                    const index = this.signees.findIndex(item => {
-                        return (parseInt(found_signee.id) === parseInt(item.id));
-                    })
-                    this.signees.splice(index, 1, found_signee);
-                    console.log("Found old signee, updating info...");
-                    this.notification =`Päivitetty venekunnan (Nro: ${found_signee.boat_number}, Kapteeni: ${found_signee.captain_name}) Tiedot!`;
-                    
+                // If selected on the signees list or with the search button
+                if(this.selected_id) {
+                  // If id on signees
+                  let found_signee = this.searchId(this.selected_id);
+                  if (found_signee) {
+                      let temp_boat = this.searchBoatNumber(this.boat_number)
+                      // If there already exist a boat with same number, but it isn't the same id
+                      if(temp_boat && (temp_boat.id != found_signee.id)){
+                        console.log("Boat already exists with this boat number..");
+                        this.notification =`Numerolla on jo olemassa venekunta, päällekirjoitetaanko?`;
+                        console.log("Pitäisi päällekirjoittaa:");
+                        console.log(temp_boat);
+                      }
+                      else {
+                          // If there isn't any boats with this boat number
+                          found_signee.boat_number = parseInt(this.boat_number);
+                          found_signee.starting_place = this.starting_place;
+                          found_signee.captain_name = this.captain_name;
+                          found_signee.temp_captain_name = this.temp_captain_name;
+                          found_signee.locality = this.locality;
+                          found_signee.team = this.team;
+                          this.new_signee = found_signee;
+                          this.saveToVuex(this.new_signee, true);
+                          console.log("Found old signee, updating info...");
+                          this.notification =`Päivitetty venekunnan (Nro: ${this.new_signee.boat_number}, Kapteeni: ${this.new_signee.captain_name}) Tiedot!`;
+                          this.clearInputs();
+                          this.boat_number = parseInt(this.new_signee.boat_number) + 1;
+                          this.selected_id = null;
+                      }
+                  }
+                  else {
+                    console.log("Signing.vue: 379 = What")
+                  }
                 }
                 else {
-                    this.new_signee = {
-                        id: this.id,
-                        boat_number: parseInt(this.boat_number),
-                        starting_place: this.starting_place,
-                        captain_name: this.captain_name,
-                        temp_captain_name: this.temp_captain_name,
-                        locality: this.locality,
-                        team: this.team
-                    };
-                    console.log("New signee info ok!");
-                    this.signees.push(this.new_signee);
-                    this.notification =`Venekunta ilmoitettu kisaan! (Nro: ${this.new_signee.boat_number}, Kapteeni: ${this.new_signee.captain_name})`;
-                    this.id++;
+                    // No selected id, so new input
+                    let temp_boat = this.searchBoatNumber(this.boat_number)
+                    // IF there is boat with same boat number, and somehow with this id
+                    if(temp_boat && (temp_boat.id != this.id)){
+                      console.log("Boat already exists with this boat number..");
+                      this.notification =`Numerolla on jo olemassa venekunta, päällekirjoitetaanko?`;
+                      console.log("Pitäisi päällekirjoittaa:");
+                      console.log(temp_boat);
+                    }
+                    else {
+                        // Otherwise create new signee
+                        let competition_fishes =  this.$store.getters.getCompetitionFishes;
+                        let weights = [];
+
+                        competition_fishes.forEach(element => {
+                            let fish = {
+                              name: element.name,
+                              weights: 0,
+                              points: 0,
+                            }
+                            weights.push(fish);
+                        });
+                        this.new_signee = {
+                            id: this.id,
+                            boat_number: parseInt(this.boat_number),
+                            starting_place: this.starting_place,
+                            captain_name: this.captain_name,
+                            temp_captain_name: this.temp_captain_name,
+                            locality: this.locality,
+                            team: this.team,
+                            weights: weights
+                        };
+                        console.log(this.new_signee.weights);
+                        console.log("New signee info ok!");
+                        this.saveToVuex(this.new_signee, false);
+                        this.notification =`Venekunta ilmoitettu kisaan! (Nro: ${this.new_signee.boat_number}, Kapteeni: ${this.new_signee.captain_name})`;
+                        this.clearInputs();
+                        this.boat_number = parseInt(this.new_signee.boat_number) + 1;
+                        this.id++;
+                        this.selected_id = null;
+                    }                  
                 }
 
-                this.clearInputs();
-                this.boat_number = this.new_signee.boat_number + 1;
             }
 
 

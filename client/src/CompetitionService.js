@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-//todo, other services
 const url = "api/competitions/";
 
 class CompetitionService {
@@ -11,15 +10,18 @@ class CompetitionService {
           const data = res.data
           return data.map(competition => ({
             _id: competition._id,
+            competition_id: competition.competition_id,
             competition_name: competition.competition_name,
             cup_name:  competition.cup_name,
-            cup_multiplier: competition.cup_multiplier,
+            cup_points_multiplier: competition.cup_points_multiplier,
             date_of_competition: competition.date_of_competition,
             start_of_competition: competition.start_of_competition,
             end_of_competition: competition.end_of_competition,
             fishes: competition.fishes,
             state: competition.state,
-            createdAt: new Date(competition.createdAt)
+            createdAt: new Date(competition.createdAt),
+            signees: competition.signees,
+            results: competition.results
           }))
         } catch (err) {
           return err
@@ -29,19 +31,27 @@ class CompetitionService {
     // Create competition
     static insertCompetition(competition) {
         return axios.post(url, {
+            competition_id: competition.competition_id,
             competition_name: competition.competition_name,
             cup_name:  competition.cup_name,
-            cup_multiplier: competition.cup_multiplier,
+            cup_points_multiplier: competition.cup_points_multiplier,
             date_of_competition: competition.date_of_competition,
             start_of_competition: competition.start_of_competition,
             end_of_competition: competition.end_of_competition,
             fishes: competition.fishes,
             state: "Rekisteröity",
-            createdAt: competition.createdAt
+            signees: competition.signees,
+            results: competition.results,
         });
     }
 
-    // Delete competition
+
+    static updateCompetition(id, updatedSigneees) {
+      return axios.put(`${url}${id}`, updatedSigneees);
+    }
+
+
+    // TODO Delete this when deployed
     static deleteCompetition(id) {
         return axios.delete(`${url}${id}`);
     }

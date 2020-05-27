@@ -60,7 +60,6 @@ export default {
   async created() {
     this.loading = true;
     try {
-      // TODO: change so that competitions are stored in the vuex store?
       this.competitions = await CompetitionService.getCompetitions();
       this.loading = false;
     } catch(err) {
