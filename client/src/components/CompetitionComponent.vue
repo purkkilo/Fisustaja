@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h1>Competitions</h1>
+    <h1>Kilpailut</h1>
     <div v-if="competitions.length">
       <table id="competitions" class="centered responsive-table tablearea highlight">
         <thead>

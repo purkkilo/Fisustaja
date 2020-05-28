@@ -32,8 +32,32 @@
         <div v-if="notification" class="section center-align">
           <p class="flow-text green lighten-1 center-align" id="notification">{{ notification }}</p>
         </div>
+        <div v-if="old_info" class="section center-align">
 
-        <div id="signing-inputs" class="row">
+          <div id="old-info-container col s6">
+            <h3>Numeron ({{ old_info.boat_number }}.) Vanhat tiedot</h3>
+            <p class="flow-text"><b>Kapteeni:</b> {{ old_info.captain_name }}</p>
+            <p class="flow-text"><b>Varakapteeni:</b> {{ old_info.temp_captain_name }}</p>
+            <p class="flow-text"><b>Seura/Paikkakunta:</b> {{ old_info.locality }}</p>
+            <p class="flow-text"><b>Seura/Paikkakunta:</b> {{ old_info.starting_place }}</p> 
+            <p class="flow-text"><b>Seura/Paikkakunta:</b> {{ old_info.team }}</p>           
+          </div>
+          <div class="divider black"></div>
+          <div id="new-info-container col s6">
+            <h3>Numeron ({{ boat_number }}.) Uudet tiedot</h3>
+            <p class="flow-text"><b>Kapteeni:</b> {{ captain_name }}</p>
+            <p class="flow-text"><b>Varakapteeni:</b> {{ temp_captain_name }}</p>
+            <p class="flow-text"><b>Seura/Paikkakunta:</b> {{ locality }}</p>
+            <p class="flow-text"><b>Seura/Paikkakunta:</b> {{ starting_place }}</p> 
+            <p class="flow-text"><b>Seura/Paikkakunta:</b> {{ team }}</p>  
+          </div>
+          <div class="row">
+            <a v-on:click="overwriteSignee(old_info, false)" class="waves-effect waves-light yellow btn black-text col s4 push-s1"><i class="material-icons left">backspace</i>Peruuta</a>
+            <a v-on:click="overwriteSignee(old_info, true)" class="waves-effect waves-light green btn col s4 push-s3"><i class="material-icons left">check</i>Päällekirjoita</a>
+          </div>
+          <div class="divider black" style="margin-bottom:20px"></div>
+        </div>
+        <div v-if="!old_info" id="signing-inputs" class="row">
           <div class="row">
             <div class="input-fields col s8 push-s2">
               <input
@@ -55,20 +79,6 @@
             
           </div>
 
-          <div class="row">
-            <div class="input-fields col s8 push-s2">
-              <input
-                id="starting_place"
-                v-model="starting_place"
-                name="starting_place"
-                placeholder="Ei pakollinen"
-                type="text"
-                class="validate"
-                maxlength="40"
-              >
-              <label for="starting_place" class="flow-text black-text">Lähtöpaikka</label>
-            </div>
-          </div>
           <div class="row">
             <div class="input-fields col s8 push-s2">
               <input
@@ -109,6 +119,22 @@
             </div>
           </div>
 
+
+          <div class="row">
+            <div class="input-fields col s8 push-s2">
+              <input
+                id="starting_place"
+                v-model="starting_place"
+                name="starting_place"
+                placeholder="Ei pakollinen"
+                type="text"
+                class="validate"
+                maxlength="40"
+              >
+              <label for="starting_place" class="flow-text black-text">Lähtöpaikka</label>
+            </div>
+          </div>
+
           <div class="row">
             <div class="input-fields col s8 push-s2">
               <input
@@ -123,13 +149,13 @@
             </div>
           </div>
         </div>
-        <div class="row center-align">
+        <div v-if="!old_info" class="row center-align">
           <div v-if="loading">
             <p class="flow-text">Synching with database...</p>
             <ProgressBarQuery />
           </div>
           <a v-on:click="clearInputs" class="waves-effect waves-light yellow black-text btn-large col s4 offset-s2"><i class="material-icons left">backspace</i>Pyyhi Kentät</a>
-          <a v-on:click="saveBoatToDatabase" class="waves-effect waves-light green black-text btn-large col s3 offset-s1"><i class="material-icons right">save_alt</i>Tallenna</a>
+          <a v-on:click="validateInfo" class="waves-effect waves-light green black-text btn-large col s3 offset-s1"><i class="material-icons right">save_alt</i>Tallenna</a>
         </div>
       </div>
       <div id="signees-div" class="col s12">
@@ -194,7 +220,8 @@ export default {
           id: 1,
           new_signee:null,
           notification: null,
-          loading: false,      
+          loading: false,
+          old_info: null, 
       }
     },
     mounted() {
@@ -217,6 +244,29 @@ export default {
             this.locality = null;
             this.team = null;
             this.errors = [];
+            this.old_info = null;
+        },
+        overwriteSignee: function(signee, overwrite) {
+            overwrite === true ? console.log("Overwrite!") : console.log("Don't overwrite!")
+            console.log(signee);
+            if(overwrite) {
+                // Replace the old existing signee info with new info, without changing the id
+                signee.boat_number = parseInt(this.boat_number);
+                signee.starting_place = this.starting_place;
+                signee.captain_name = this.captain_name;
+                signee.temp_captain_name = this.temp_captain_name;
+                signee.locality = this.locality;
+                signee.team = this.team;
+                this.saveToDatabase(signee, true);
+                this.clearInputs();
+                this.boat_number = this.id;
+                this.notification = "Tiedot korvattu uusilla!";
+            }
+            else {
+              this.notification = "Veneen numero asetettu ensimmäiseen vapaaseen paikkaan!";
+              this.boat_number = this.id;
+              this.old_info = null;
+            }
         },
         searchSelected: function() {
             this.notification = null;
@@ -306,7 +356,7 @@ export default {
             location.href = "#";
             location.href = "#app";
         },
-        async saveToVuex(new_signee, replace) {
+        async saveToDatabase(new_signee, replace) {
             //if replace == true, replace existing info, otherwise add new signee
             replace === true ? this.$store.commit('replaceSignee', new_signee) : this.$store.commit('addSignee', new_signee);
             let comp = this.$store.getters.getCompetition;
@@ -322,7 +372,7 @@ export default {
             } 
         },
         // TODO input validation
-        saveBoatToDatabase: function() {
+        validateInfo: function() {
             M.toast({html: 'Todo: Tallenna tietokantaan'});
             this.notification = null;
             this.errors = [];
@@ -353,9 +403,8 @@ export default {
                       // If there already exist a boat with same number, but it isn't the same id
                       if(temp_boat && (temp_boat.id != found_signee.id)){
                         console.log("Boat already exists with this boat number..");
-                        this.notification =`Numerolla on jo olemassa venekunta, päällekirjoitetaanko?`;
-                        console.log("Pitäisi päällekirjoittaa:");
-                        console.log(temp_boat);
+                        this.old_info = temp_boat;
+                        this.old_info = `Kapteeni: ${temp_boat.captain_name}, Varakapteeni: ${temp_boat.temp_captain_name}, Seura/Paikkakunta: ${temp_boat.locality}`;
                       }
                       else {
                           // If there isn't any boats with this boat number
@@ -366,7 +415,7 @@ export default {
                           found_signee.locality = this.locality;
                           found_signee.team = this.team;
                           this.new_signee = found_signee;
-                          this.saveToVuex(this.new_signee, true);
+                          this.saveToDatabase(this.new_signee, true);
                           console.log("Found old signee, updating info...");
                           this.notification =`Päivitetty venekunnan (Nro: ${this.new_signee.boat_number}, Kapteeni: ${this.new_signee.captain_name}) Tiedot!`;
                           this.clearInputs();
@@ -385,14 +434,15 @@ export default {
                     if(temp_boat && (temp_boat.id != this.id)){
                       console.log("Boat already exists with this boat number..");
                       this.notification =`Numerolla on jo olemassa venekunta, päällekirjoitetaanko?`;
-                      console.log("Pitäisi päällekirjoittaa:");
-                      console.log(temp_boat);
+                      this.old_info = temp_boat;
                     }
                     else {
                         // Otherwise create new signee
                         let competition_fishes =  this.$store.getters.getCompetitionFishes;
                         let weights = [];
-
+                        //total points and weights
+                        weights.push({name:"total", weights: 0, points: 0});
+                        // fish specific points and weights
                         competition_fishes.forEach(element => {
                             let fish = {
                               name: element.name,
@@ -401,6 +451,7 @@ export default {
                             }
                             weights.push(fish);
                         });
+                        // Add all the info together and save to database
                         this.new_signee = {
                             id: this.id,
                             boat_number: parseInt(this.boat_number),
@@ -411,9 +462,7 @@ export default {
                             team: this.team,
                             weights: weights
                         };
-                        console.log(this.new_signee.weights);
-                        console.log("New signee info ok!");
-                        this.saveToVuex(this.new_signee, false);
+                        this.saveToDatabase(this.new_signee, false);
                         this.notification =`Venekunta ilmoitettu kisaan! (Nro: ${this.new_signee.boat_number}, Kapteeni: ${this.new_signee.captain_name})`;
                         this.clearInputs();
                         this.boat_number = parseInt(this.new_signee.boat_number) + 1;
@@ -429,3 +478,14 @@ export default {
     },
 }
 </script>
+
+<style>
+#old-info-container {
+    border: 1px solid black;
+}
+
+#new-info-container {
+    border: 1px solid black;  
+}
+
+</style>

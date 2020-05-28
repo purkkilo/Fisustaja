@@ -9,11 +9,15 @@ Nested:
 Todos:
 New:
   ✔ Create signees database collection @started(20-05-26 11:19) @today @done(20-05-27 19:34) @lasted(1d8h15m1s)
-  ☐ Add fish weights/points to signee properties @started(20-05-26 11:22) @today
-  ☐ Add signees/weights/points to competition collection @started(20-05-26 11:21) @today
-  ☐ Finish rest of the views @started(20-05-26 11:18) @low
+  ✔ Add fish weights/points to signee properties @started(20-05-26 11:22) @today @done(20-05-28 15:33) @lasted(2d4h11m17s)
+  ✔ Add signees/weights/points to competition collection @started(20-05-26 11:21) @today @done(20-05-28 19:44) @lasted(2d8h23m33s)
+  ☐ Finish Weighting view @started(20-05-26 11:18)
+  ☐ Finish Results view @started(20-05-28 19:44)
+  ☐ Parse results table(s) to pdf @started(20-05-28 19:45)
   ☐ Input validation! @started(20-05-26 12:06) @high
   ☐ Comment all the files... @started(20-05-26 12:11) @low
+  ☐ Implement timer that shows if competition has started, how much competition is left etc. @started(20-05-28 19:36)
+  ☐ Implement login @started(20-05-28 19:45)
 Done:
   ✔ Press Alt+D to mark a todo as done
 

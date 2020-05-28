@@ -1,6 +1,10 @@
 <template>
   <div id="app">
     <Header />
+    <ul class="sidenav" id="mobile">
+      <li><router-link to="/"><a class="waves-effect waves-light blue darken-2 btn-large"><i class="material-icons left">home</i>Alkuun</a></router-link></li>
+      <li><router-link to="/about"><a class="waves-effect waves-light grey darken-2 lighten-1 btn-large"><i class="material-icons left">info</i>About</a></router-link></li>
+    </ul>  
     <router-view/>
   </div>
 </template>
@@ -8,22 +12,35 @@
 <script>
 import Header from './components/layout/Header';
 
+
 export default {
   name: 'App',
   components: {
     Header
-  }
+  },
 }
 </script>
 
 <style>
+
+.header {
+  position:fixed; /* fixing the position takes it out of html flow - knows
+                   nothing about where to locate itself except by browser
+                   coordinates */
+  left:0;           /* top left corner should start at leftmost spot */
+  top:0;            /* top left corner should start at topmost spot */
+  width:100vw;      /* take up the full browser width */
+  z-index:200;  /* high z index so other content scrolls underneath */
+  height:100px;     /* define height for content */
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  margin-top: 0;
 }
 
 body {
