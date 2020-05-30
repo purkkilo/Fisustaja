@@ -17,6 +17,7 @@ class CompetitionService {
             date_of_competition: competition.date_of_competition,
             start_of_competition: competition.start_of_competition,
             end_of_competition: competition.end_of_competition,
+            total_weights: competition.total_weights,
             fishes: competition.fishes,
             state: competition.state,
             createdAt: new Date(competition.createdAt),

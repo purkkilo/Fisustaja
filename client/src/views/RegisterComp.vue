@@ -433,7 +433,8 @@ export default {
                 let fish_spec = {
                     name: document.getElementById(`fish_${i}_name`).innerHTML.replace(`${i}. `,""),
                     multiplier: document.getElementById(`fish_${i}_multiplier`).value,
-                    minsize: document.getElementById(`fish_${i}_minsize`).value
+                    minsize: document.getElementById(`fish_${i}_minsize`).value,
+                    weights: 0,
                 };
 
                 if(!fish_spec.multiplier || !fish_spec.minsize){
@@ -530,6 +531,7 @@ export default {
               this.loading = true;
               //temp id to get correct competition from array, even if somehow there is comp with same name etc.
               const comp_id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
               const competition = {
                 "competition_id": comp_id,
                 "competition_name": this.basic_info.competition_name,
@@ -539,6 +541,7 @@ export default {
                 "start_of_competition": this.basic_info.start_of_competition,
                 "end_of_competition": this.basic_info.end_of_competition,
                 "fishes": this.completed_fish_specs,
+                "total_weights": 0,
                 "signees": [],
                 "results": [],
               }

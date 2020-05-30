@@ -37,6 +37,20 @@ export default new Vuex.Store({
     getCompetitionSignees: state => {
       return state.competition.signees
     },
+    getCompetitionTotalWeights: state => {
+      return state.competition.total_weights
+    },
+    getStillOnWaterSignees: state => {
+      return state.competition.signees.filter(signee => signee.returned == false)
+    },
+    getFinishedSignees: state => {
+      return state.competition.signees.filter(signee => signee.returned == true)
+    },
+    getResultSignees: state => {
+      return state.competition.signees.sort(function compare(a,b) {
+        return parseInt(b.total_points) - parseInt(a.total_points);
+    })
+    },
     getCompetitionFishes: state => {
       return state.competition.fishes
     },

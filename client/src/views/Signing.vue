@@ -151,7 +151,7 @@
         </div>
         <div v-if="!old_info" class="row center-align">
           <div v-if="loading">
-            <p class="flow-text">Synching with database...</p>
+            <p class="flow-text">Päivitetään tiedot tietokantaan...</p>
             <ProgressBarQuery />
           </div>
           <a v-on:click="clearInputs" class="waves-effect waves-light yellow black-text btn-large col s4 offset-s2"><i class="material-icons left">backspace</i>Pyyhi Kentät</a>
@@ -361,6 +361,7 @@ export default {
             replace === true ? this.$store.commit('replaceSignee', new_signee) : this.$store.commit('addSignee', new_signee);
             let comp = this.$store.getters.getCompetition;
             comp.signees = this.$store.getters.getSignees;
+            comp.state = "Ilmoittautuminen";
             this.$store.commit('refreshCompetition', comp);
             try{
               this.loading = true;
@@ -440,8 +441,6 @@ export default {
                         // Otherwise create new signee
                         let competition_fishes =  this.$store.getters.getCompetitionFishes;
                         let weights = [];
-                        //total points and weights
-                        weights.push({name:"total", weights: 0, points: 0});
                         // fish specific points and weights
                         competition_fishes.forEach(element => {
                             let fish = {
@@ -460,6 +459,9 @@ export default {
                             temp_captain_name: this.temp_captain_name,
                             locality: this.locality,
                             team: this.team,
+                            total_points: 0,
+                            total_weights: 0,
+                            returned: false,
                             weights: weights
                         };
                         this.saveToDatabase(this.new_signee, false);

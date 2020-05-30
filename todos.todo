@@ -18,6 +18,11 @@ New:
   ☐ Comment all the files... @started(20-05-26 12:11) @low
   ☐ Implement timer that shows if competition has started, how much competition is left etc. @started(20-05-28 19:36)
   ☐ Implement login @started(20-05-28 19:45)
+  ☐ Add some navigation buttons to views ("back","to weighting", etc.) @started(20-05-30 16:47)
+  ☐ Update competition status correctly @started(20-05-30 20:10)
+  ☐ Implement team competition @started(20-05-30 21:36)
+  ☐ Implement biggest fishes @started(20-05-30 21:36)
+
 Done:
   ✔ Press Alt+D to mark a todo as done
 

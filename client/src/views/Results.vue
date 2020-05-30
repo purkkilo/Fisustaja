@@ -13,22 +13,21 @@
       <div class="row">
         <div class="col s12">
           <ul class="tabs">
-            <li class="tab col s4"><a class="active" href="#normal-competition">Normaalikilpailu</a></li>
-            <li class="tab col s4"><a href="#team-competition">Tiimikilpailu</a></li>
-            <li class="tab col s4"><a href="#biggest-fishes">Suurimmat Kalat</a></li>
-            <li class="tab col s4"><a href="#biggest-fish-amounts">Suurimmat Kalasaaliit</a></li>
+            <li class="tab col s3"><a class="active" href="#normal-competition">Normaalikilpailu</a></li>
+            <li class="tab col s3"><a href="#team-competition">Tiimikilpailu</a></li>
+            <li class="tab col s3"><a href="#biggest-fishes">Suurimmat Kalat</a></li>
+            <li class="tab col s3"><a href="#biggest-fish-amounts">Suurimmat Kalasaaliit</a></li>
           </ul>
         </div>
         <div id="normal-competition" class="col s12 inputarea">
           <div class="section">
             <div class="row">
-              <table id="normal-table"  class="highlight centered responsive-table fixed_header tablearea">
-                <thead>
+              <table id="normal-table"  class="highlight centered responsive-table tablearea">
+                <thead style="background: rgb(0, 1, 34);color:#fff;">
                   <tr>
                     <th>Sijoitus</th>
                     <th>Nro</th>
                     <th>Kapteeni</th>
-                    <th>Varakapteeni</th>
                     <th>Paikkakunta</th>
                     <th>Tulos</th>
                     <th>Cup sij. pisteet</th>
@@ -37,6 +36,16 @@
                   </tr>
                 </thead>
                 <tbody>
+                  <tr v-for="(signee, index) in $store.getters.getResultSignees" :key="index">
+                      <th class="center-align" style="border:1px solid black">{{ index + 1 }}</th>  
+                      <td style="border:1px solid black">{{ signee.boat_number }}</td> 
+                      <td style="border:1px solid black">{{ signee.captain_name }}</td>
+                      <td style="border:1px solid black">{{ signee.locality }}</td>
+                      <td style="border:1px solid black">{{ signee.total_points }}</td>
+                      <td style="border:1px solid black">Todo</td> 
+                      <td style="border:1px solid black">Todo</td> 
+                      <td style="border:1px solid black">Todo</td>   
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -44,19 +53,31 @@
         </div>
         <div id="team-competition" class="col s12 inputarea">
           <div class="section">
-            <div class="col s12 center-align">
-              <table id="team-table" class="highlight centered responsive-table fixed_header tablearea">
-                <thead>
+            <div class="row">
+              <table id="team-table"  class="highlight centered responsive-table tablearea">
+                <thead style="background: rgb(0, 1, 34);color:#fff;">
                   <tr>
                     <th>Sijoitus</th>
-                    <th>Tiimi</th>
-                    <th>Jäsen 1</th>
-                    <th>Jäsen 2</th>
-                    <th>Jäsen 3</th>
-                    <th>Pisteet</th>
+                    <th>Nro</th>
+                    <th>Kapteeni</th>
+                    <th>Paikkakunta</th>
+                    <th>Tulos</th>
+                    <th>Cup sij. pisteet</th>
+                    <th>Cup osal. pisteet</th>
+                    <th>Cup pisteet yht.</th>
                   </tr>
                 </thead>
                 <tbody>
+                  <tr v-for="(signee, index) in $store.getters.getResultSignees" :key="index">
+                      <th class="center-align" style="border:1px solid black">{{ index + 1 }}</th>  
+                      <td style="border:1px solid black">{{ signee.boat_number }}</td> 
+                      <td style="border:1px solid black">{{ signee.captain_name }}</td>
+                      <td style="border:1px solid black">{{ signee.locality }}</td>
+                      <td style="border:1px solid black">{{ signee.total_points }}</td>
+                      <td style="border:1px solid black">Todo</td> 
+                      <td style="border:1px solid black">Todo</td> 
+                      <td style="border:1px solid black">Todo</td>   
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -64,37 +85,47 @@
         </div>
         <div id="biggest-fishes" class="col s12 inputarea">
           <div class="section">
-            <div class="col s12 center-align">
-              <table id="fishes-table" class="highlight centered responsive-table fixed_header tablearea">
-                <thead>
+            <div class="row">
+              <table id="biggest-fishes-table"  class="highlight centered responsive-table tablearea">
+                <thead style="background: rgb(0, 1, 34);color:#fff;">
                   <tr>
                     <th>Kalalaji</th>
-                    <th>Nro</th>
+                    <th>Veneen nro</th>
                     <th>Kapteeni</th>
-                    <th>Varakapteeni</th>
                     <th>Paino</th>
                   </tr>
                 </thead>
                 <tbody>
+                  <tr v-for="(signee, index) in $store.getters.getResultSignees" :key="index">
+                      <th class="center-align" style="border:1px solid black">Todo</th>  
+                      <td style="border:1px solid black">{{ signee.boat_number }}</td> 
+                      <td style="border:1px solid black">{{ signee.captain_name }}</td>
+                      <td style="border:1px solid black">Todo</td>  
+                  </tr>
                 </tbody>
               </table>
             </div>
           </div>                 
         </div>
-        <div id="biggest-fish-amounts" class="col s12">
+        <div id="biggest-fish-amounts" class="col s12 inputarea">
           <div class="section">
-            <div class="col s12 center-align">
-              <table id="fish-amounts-table" class="highlight centered responsive-table fixed_header tablearea">
-                <thead>
+            <div class="row">
+              <table id="biggest-amounts-table"  class="highlight centered responsive-table tablearea">
+                <thead style="background: rgb(0, 1, 34);color:#fff;">
                   <tr>
                     <th>Kalalaji</th>
-                    <th>Nro</th>
+                    <th>Veneen nro</th>
                     <th>Kapteeni</th>
-                    <th>Varakapteeni</th>
                     <th>Paino</th>
                   </tr>
                 </thead>
                 <tbody>
+                  <tr v-for="(signee, index) in $store.getters.getResultSignees" :key="index">
+                      <th class="center-align" style="border:1px solid black">Todo</th>  
+                      <td style="border:1px solid black">{{ signee.boat_number }}</td> 
+                      <td style="border:1px solid black">{{ signee.captain_name }}</td>
+                      <td style="border:1px solid black">Todo</td> 
+                  </tr>
                 </tbody>
               </table>
             </div>

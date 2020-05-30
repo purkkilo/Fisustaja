@@ -20,6 +20,7 @@ router.post('/', async (req, res) => {
         date_of_competition: req.body.date_of_competition,
         start_of_competition: req.body.start_of_competition,
         end_of_competition: req.body.end_of_competition,
+        total_weights: req.body.total_weights,
         fishes: req.body.fishes,
         state: "Rekisteröity",
         createdAt: new Date()
