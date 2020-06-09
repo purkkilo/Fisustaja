@@ -63,6 +63,7 @@
               <input
                 id="boat_number"
                 v-model="boat_number"
+                @keypress="isNumber($event)"
                 name="boat_number"
                 oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);"
                 type = "number"
@@ -221,7 +222,8 @@ export default {
           new_signee:null,
           notification: null,
           loading: false,
-          old_info: null, 
+          old_info: null,
+          signees: []
       }
     },
     mounted() {
@@ -231,11 +233,33 @@ export default {
         var instance = M.Tabs.init(tabs, options_picker);
         var elem = document.querySelectorAll('.tabs')[0];
         /* eslint-enable no-unused-vars */
-        this.tabs = M.Tabs.getInstance(elem);  
-        this.boat_number = this.$store.getters.getSigneesCount + 1;
-        this.id = this.$store.getters.getSigneesCount + 1;
+        this.tabs = M.Tabs.getInstance(elem);
+        this.signees =  this.$store.getters.getCompetitionSignees;
+        if (this.signees.length) {
+          this.boat_number = this.$store.getters.getSigneesCount + 1;
+          this.id = this.$store.getters.getSigneesCount + 1;
+        }
+        else {
+          this.boat_number = 1;
+          this.id = 1;
+        }
+
     },
     methods: {
+        isNumber: function(evt) {
+            evt = (evt) ? evt : window.event;
+            var charCode = (evt.which) ? evt.which : evt.keyCode;
+            if ((charCode > 31 && (charCode < 48 || charCode > 57)) && charCode !== 46) {
+              evt.preventDefault();
+            } else {
+              if(charCode == 46) {
+                evt.preventDefault();
+              }
+              else {
+                return true;
+              }
+            }
+        },
         clearInputs: function() {
             this.boat_number = null;
             this.starting_place = null;
@@ -248,7 +272,6 @@ export default {
         },
         overwriteSignee: function(signee, overwrite) {
             overwrite === true ? console.log("Overwrite!") : console.log("Don't overwrite!")
-            console.log(signee);
             if(overwrite) {
                 // Replace the old existing signee info with new info, without changing the id
                 signee.boat_number = parseInt(this.boat_number);
@@ -365,7 +388,7 @@ export default {
             this.$store.commit('refreshCompetition', comp);
             try{
               this.loading = true;
-              await CompetitionService.updateCompetition(comp._id, comp.signees);
+              await CompetitionService.updateCompetition(comp._id, comp);
               console.log("Updated to database!");
               this.loading = false;
             } catch(err) {
@@ -423,9 +446,6 @@ export default {
                           this.boat_number = parseInt(this.new_signee.boat_number) + 1;
                           this.selected_id = null;
                       }
-                  }
-                  else {
-                    console.log("Signing.vue: 379 = What")
                   }
                 }
                 else {

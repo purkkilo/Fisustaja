@@ -11,18 +11,20 @@ New:
   ✔ Create signees database collection @started(20-05-26 11:19) @today @done(20-05-27 19:34) @lasted(1d8h15m1s)
   ✔ Add fish weights/points to signee properties @started(20-05-26 11:22) @today @done(20-05-28 15:33) @lasted(2d4h11m17s)
   ✔ Add signees/weights/points to competition collection @started(20-05-26 11:21) @today @done(20-05-28 19:44) @lasted(2d8h23m33s)
-  ☐ Finish Weighting view @started(20-05-26 11:18)
-  ☐ Finish Results view @started(20-05-28 19:44)
-  ☐ Parse results table(s) to pdf @started(20-05-28 19:45)
-  ☐ Input validation! @started(20-05-26 12:06) @high
+  ☐ Finish Weighting view
+  ☐ Finish Results view
+  ☐ Parse results table(s) to pdf
+  ☐ Input validation! @started(20-05-26 12:06) @high @today
   ☐ Comment all the files... @started(20-05-26 12:11) @low
-  ☐ Implement timer that shows if competition has started, how much competition is left etc. @started(20-05-28 19:36)
-  ☐ Implement login @started(20-05-28 19:45)
-  ☐ Add some navigation buttons to views ("back","to weighting", etc.) @started(20-05-30 16:47)
-  ☐ Update competition status correctly @started(20-05-30 20:10)
-  ☐ Implement team competition @started(20-05-30 21:36)
-  ☐ Implement biggest fishes @started(20-05-30 21:36)
-
+  ☐ Implement timer that shows if competition has started, how much competition is left etc.
+  ☐ Implement login
+  ☐ Add some navigation buttons to views ("back","to weighting", etc.) @today
+  ☐ Update competition status correctly @today
+  ☐ Implement team competition
+  ☐ Implement biggest fishes
+  ☐ Add input for competition end date 
+  ☐ Implement multiple day competitions
+  ☐ Update competition from database on some time interval (allows using multiple computers at the same time)
 Done:
   ✔ Press Alt+D to mark a todo as done
 

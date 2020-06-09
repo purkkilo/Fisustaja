@@ -13,8 +13,11 @@ class CompetitionService {
             competition_id: competition.competition_id,
             competition_name: competition.competition_name,
             cup_name:  competition.cup_name,
+            cup_placement_points: competition.cup_placement_points,
+            cup_participation_points: competition.cup_participation_points,
             cup_points_multiplier: competition.cup_points_multiplier,
             date_of_competition: competition.date_of_competition,
+            competition_duration: competition.competition_duration,
             start_of_competition: competition.start_of_competition,
             end_of_competition: competition.end_of_competition,
             total_weights: competition.total_weights,
@@ -35,22 +38,23 @@ class CompetitionService {
             competition_id: competition.competition_id,
             competition_name: competition.competition_name,
             cup_name:  competition.cup_name,
+            cup_placement_points: competition.cup_placement_points,
+            cup_participation_points: competition.cup_participation_points,
             cup_points_multiplier: competition.cup_points_multiplier,
             date_of_competition: competition.date_of_competition,
+            competition_duration: competition.competition_duration,
             start_of_competition: competition.start_of_competition,
             end_of_competition: competition.end_of_competition,
             fishes: competition.fishes,
-            state: "Rekisteröity",
+            state: competition.state,
             signees: competition.signees,
             results: competition.results,
         });
     }
 
-
-    static updateCompetition(id, updatedSigneees) {
-      return axios.put(`${url}${id}`, updatedSigneees);
+    static updateCompetition(id, competition) {
+      return axios.put(`${url}${id}`, competition);
     }
-
 
     // TODO Delete this when deployed
     static deleteCompetition(id) {
@@ -58,6 +62,5 @@ class CompetitionService {
     }
 
 }
-
 
 export default CompetitionService;
