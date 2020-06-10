@@ -3,7 +3,7 @@
     <div class="navbar-fixed">
       <nav>
         <div class="nav-wrapper blue lighten-2">
-          <img src="../../assets/clienticon_new.png" alt="" class="circle responsive-img left" style="height:55px;width:55px;margin:5px 10px;">
+           <router-link to="/"><img src="../../assets/clienticon_new.png" alt="" class="circle responsive-img left" style="height:55px;width:55px;margin:5px 10px;"></router-link>
           <router-link to="/"><a href="#!" class="brand-logo">Fisustaja</a></router-link>
           <a href="#" data-target="mobile" class="sidenav-trigger"><i class="material-icons">menu</i></a>
           <ul class="right hide-on-med-and-down">

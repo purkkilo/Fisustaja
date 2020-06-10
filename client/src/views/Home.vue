@@ -7,17 +7,77 @@
               <div class="col s12 center-align"><h1>Fisustaja</h1></div>
           </div>
           <div class="section row inputarea">
-              <div class="col s12 center-align"><h3>\O/</h3></div>
-          </div>
-          <div class="section">
-              <div class="row">
-                  <router-link to="/register-comp">
-                  <div class="col s6 center-align"><a class="waves-effect waves-light blue lighten-1 btn-large"><i class="material-icons left">add_circle_outline</i>Uusi kilpailu</a></div>
-                  </router-link>
-                  <router-link to="/continue">
-                      <div class="col s6 center-align"><a class="waves-effect waves-light green lighten-1 btn-large"><i class="material-icons left">play_circle_filled</i>Jatka kilpailua</a></div>
-                  </router-link>
-              </div>
+                <div class="col s12">
+                    <h1><b>}-(((*></b></h1>
+                    <p class="flow-text">Sovellus kalastuskilpailujen järjestämistä varten</p>
+                    <div class="divider black"></div>
+                    <div class="section">
+                        <div class="row">
+                            
+                            <div class="col s6 center-align">
+                                <router-link to="/register-comp">
+                                    <a class="waves-effect waves-light blue lighten-1 btn-large"><i class="material-icons left">add_circle_outline</i>Uusi kilpailu</a>
+                                </router-link>
+                            </div>
+                            
+                            <div class="col s6 center-align">
+                                <router-link to="/continue">
+                                <a class="waves-effect waves-light green lighten-1 btn-large"><i class="material-icons left">play_circle_filled</i>Jatka kilpailua</a>
+                                </router-link>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    <div class="divider black"></div>
+                    <div>
+                        <p class="flow-text">Toteutettu käyttäen:</p>
+                        <ul class="flow-text">
+                            <li>
+                                <div class="card row valign-wrapper">
+                                    <div class="col s2">
+                                    <img src="../assets/logo.png" alt="" class="circle responsive-img"> <!-- notice the "circle" class -->
+                                    </div>
+                                    <p class="flow-text">Frontend</p>
+                                    <div class="col s8">
+                                    <span class="black-text">
+                                        <a href="https://vuejs.org/"><b>Vue</b> v{{vue_version}}</a><br>
+                                        <a href="https://cli.vuejs.org/"><b>Vue CLI</b></a><br>
+                                    </span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="card row valign-wrapper">
+                                    <div class="col s2">
+                                    <img src="../assets/logo.png" alt="" class="circle responsive-img"> <!-- notice the "circle" class -->
+                                    </div>
+                                    <p class="flow-text">Backend</p>
+                                    <div class="col s8">
+                                    <span class="black-text">
+                                        <a href="https://nodejs.org/en/"><b>Node.js</b></a><br>
+                                        <a href="https://expressjs.com/"><b>Express</b></a><br>
+                                    </span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="card row valign-wrapper">
+                                    <div class="col s2">
+                                    <img src="../assets/logo.png" alt="" class="circle responsive-img"> <!-- notice the "circle" class -->
+                                    </div>
+                                    <p class="flow-text">Design, utilities</p>
+                                    <div class="col s8">
+                                    <span class="black-text">
+                                        <a href="https://materializecss.com/"><b>Materialize</b></a><br>
+                                        <a href="https://momentjs.com/"><b>Moment.js</b></a><br>
+                                    </span>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                </div>
           </div>
       </div>
     </div>
@@ -26,12 +86,21 @@
 
 <script>
 import Timedate from '../components/layout/Timedate';
+import Vue from 'vue'
 
 export default {
-  name: 'Home',
-  components: {
-    Timedate
-  }
+    name: 'Home',
+    components: {
+        Timedate
+    },
+    data() {
+        return {
+            vue_version: null,
+        }
+    },
+    mounted() {
+        this.vue_version = Vue.version;
+    },
 }
 </script>
 

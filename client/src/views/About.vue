@@ -39,40 +39,44 @@
 
     <div class="section" id="feedback">
       <h1>Saatu Palaute</h1>
-        <div class="" id="feedback">
-                  <ul
-                    id="fish_weights"
-                    v-if="feedback"
-                  >
-                    <li
-                      v-for="(feedback, index) in feedback"
-                      :key="index"
-                    >
-                    
-                    <div class="col s12 m8 offset-m2 l6 offset-l3">
-                        <div class="card-panel grey lighten-5 z-depth-1">
-                          <p class="flow-text">#{{index+1}} {{feedback.type}}</p>
-                          <div class="row valign-wrapper">
-                            <div class="col s2">
-                              <img src="../assets/logo.png" alt="" class="circle responsive-img"> <!-- notice the "circle" class -->
-                            </div>
-                            <div class="col s10">
-                              <p class="black-text flow-text " style="word-break: break-all;">
-                                {{ feedback.message }}
-                              </p>
-                            </div>
-                          </div>
-                          <div class="row section center-align">
-                            <a v-on:click="deleteFeedback(feedback._id)" class="waves-effect waves-light yellow btn black-text col s4 push-s4">
-                              <i class="material-icons left">done_outline</i>
-                              Ratkaise
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-                    </li>
-                  </ul>
+        <div class="" id="feedback" v-if="feedback.length">
+          <ul
+            id="fish_weights"
+          >
+            <li
+              v-for="(feedback, index) in feedback"
+              :key="index"
+            >
+            
+            <div class="col s12 m8 offset-m2 l6 offset-l3">
+                <div class="card-panel grey lighten-5 z-depth-1">
+                  <p class="flow-text">#{{index+1}} {{feedback.type}} <i class="material-icons">report</i></p>
+                  <div class="row valign-wrapper">
+                    <div class="col s2">
+                      <img src="../assets/logo.png" alt="" class="circle responsive-img"> <!-- notice the "circle" class -->
+                    </div>
+                    <div class="col s10">
+                      <p class="black-text flow-text " style="word-break: break-all;">
+                        {{ feedback.message }}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="row section center-align">
+                    <a v-on:click="deleteFeedback(feedback._id)" class="waves-effect waves-light yellow btn black-text col s4 push-s4">
+                      <i class="material-icons left">done_outline</i>
+                      Ratkaise
+                    </a>
+                  </div>
                 </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div v-else>
+          <div class="title">
+            <p class="flow-text">Palautetta ei ole annettu vielä!</p>
+          </div>
+        </div>
 
     </div>
 
