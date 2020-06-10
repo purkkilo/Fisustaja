@@ -7,8 +7,8 @@
           <router-link to="/"><a href="#!" class="brand-logo">Fisustaja</a></router-link>
           <a href="#" data-target="mobile" class="sidenav-trigger"><i class="material-icons">menu</i></a>
           <ul class="right hide-on-med-and-down">
-              <li><router-link to="/"><a class="waves-effect waves-light blue darken-2 btn-large"><i class="material-icons left">home</i>Alkuun</a></router-link></li>
-              <li><router-link to="/about"><a class="waves-effect waves-light grey darken-2 lighten-1 btn-large"><i class="material-icons left">info</i>About</a></router-link></li>
+              <li><router-link to="/"><a class="waves-effect waves-light blue darken-2 btn-large"><i class="material-icons left">home</i>Kotisivulle</a></router-link></li>
+              <li><router-link to="/about"><a class="waves-effect waves-light grey darken-2 lighten-1 btn-large"><i class="material-icons left">feedback</i>Palaute</a></router-link></li>
           </ul>
         </div>
       </nav>

@@ -12,9 +12,23 @@
       <div class="section">
           <div class="col s12 center-align"><h1>Ilmoittautuminen</h1></div>
       </div>
-      <div class="section">
+      <div class="row">
+        <router-link to="/comp-settings">
+          <div class="col s4"><a class="waves-effect waves-light grey btn" ><i class="material-icons left">tune</i>Määritykset</a></div>
+        </router-link>
         <router-link to="/overview">
-          <div class="col s12 center-align"><a class="waves-effect waves-light btn"><i class="material-icons left">info</i>Kilpailun yleisnäkymä</a></div>
+          <div class="col s4">
+            <a class="waves-effect waves-light btn"
+              ><i class="material-icons left">info</i>Kilpailun yleisnäkymä</a
+            >
+          </div>
+        </router-link>
+        <router-link to="/weighting">
+          <div class="col s4">
+            <a class="waves-effect waves-light blue darken-2 btn"
+              ><i class="material-icons left">fitness_center</i>Punnitus</a
+            >
+          </div>
         </router-link>
       </div>
       <div class="">
@@ -409,6 +423,12 @@ export default {
                 this.showError('Kapteenin nimi puuttuu!');
             }
 
+            if(!this.starting_place) {
+                this.starting_place = "-";
+            }
+            if(!this.team) {
+                this.team = "-";
+            }
             if (!this.temp_captain_name) {
                 this.temp_captain_name = "-";
             }

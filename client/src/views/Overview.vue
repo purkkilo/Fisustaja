@@ -9,30 +9,27 @@
     </div>
     <div v-if="!loading" class="container-transparent">
       <div class="section">
-          <div class="col s12 center-align"><h1>{{ competition.competition_name }}</h1></div>
+          <div class="col s12 center-align"><h1>Yleisnäkymä</h1></div>
       </div>
+        <div class="row">
+          <router-link to="/comp-settings">
+            <div class="col s3"><a class="waves-effect waves-light grey btn" ><i class="material-icons left">tune</i>Määritykset</a></div>
+          </router-link>
+          <router-link to="/signing">
+            <div class="col s3"><a class="waves-effect waves-light blue btn" ><i class="material-icons left">edit</i>Ilmoittautuminen</a></div>
+          </router-link>
+          <router-link to="/weighting">
+            <div class="col s3"><a class="waves-effect waves-light blue darken-2 btn"><i class="material-icons left">fitness_center</i>Punnitus</a></div>
+          </router-link>
+          <router-link to="/results">
+            <div class="col s3"><a class="waves-effect waves-light green btn"><i class="material-icons left">emoji_events</i>Tulokset</a></div>
+          </router-link>            
+        </div>
       <div class="divider"></div>
       <div class="section inputarea">
         <div class="col s12 center-align">
-          <h4>Infoa</h4>
-          <div>{{competition}}</div>
-        </div>
-      </div>
-      <div class="divider"></div>
-      <div class="section">
-        <div class="row">
-          <router-link to="/comp-settings">
-            <div class="col s3 center-align"><a class="waves-effect waves-light blue lighten-1 btn-large" ><i class="material-icons left">tune</i>Määritykset</a></div>
-          </router-link>
-          <router-link to="/signing">
-            <div class="col s3 center-align"><a class="waves-effect waves-light blue lighten-1 btn-large" ><i class="material-icons left">edit</i>Ilmoita</a></div>
-          </router-link>
-          <router-link to="/weighting">
-            <div class="col s3 center-align"><a class="waves-effect waves-light blue lighten-1 btn-large"><i class="material-icons left">fitness_center</i>Punnitus</a></div>
-          </router-link>
-          <router-link to="/results">
-            <div class="col s3 center-align"><a class="waves-effect waves-light blue lighten-1 btn-large"><i class="material-icons left">emoji_events</i>Tulokset</a></div>
-          </router-link>            
+          <h4>Kilpailun nimi: {{ competition.competition_name }}</h4>
+          <div><b>Data:</b> {{competition}}</div>
         </div>
       </div>
     </div>

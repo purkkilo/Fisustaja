@@ -5,11 +5,25 @@
       <div class="section">
         <div class="col s12 center-align"><h1>Punnitus</h1></div>
       </div>
-      <div class="section">
+      <div class="row">
+        <router-link to="/signing">
+          <div class="col s4">
+            <a class="waves-effect waves-light blue btn"
+              ><i class="material-icons left">assignment_ind</i>Ilmoittautuminen</a
+            >
+          </div>
+        </router-link>
         <router-link to="/overview">
-          <div class="col s12 center-align">
+          <div class="col s4">
             <a class="waves-effect waves-light btn"
               ><i class="material-icons left">info</i>Kilpailun yleisnäkymä</a
+            >
+          </div>
+        </router-link>
+        <router-link to="/results">
+          <div class="col s4">
+            <a class="waves-effect waves-light green btn"
+              ><i class="material-icons left">emoji_events</i>Tulokset</a
             >
           </div>
         </router-link>

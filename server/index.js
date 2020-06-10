@@ -9,8 +9,10 @@ app.use(express.json());
 app.use(cors());
 
 const competitions = require("./routes/api/competitions");
+const feedback = require("./routes/api/feedback");
 
 app.use("/api/competitions", competitions);
+app.use("/api/feedback", feedback);
 
 // Handle production
 if (process.env.NODE_ENV === "production") {

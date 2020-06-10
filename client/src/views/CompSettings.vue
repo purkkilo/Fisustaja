@@ -6,13 +6,16 @@
         <div class="col s12 center-align"><h1>Kilpailun määritykset</h1></div>
       </div>
 
-      <div class="section">
+      <div class="row">
         <router-link to="/overview">
-          <div class="col s12 center-align">
+          <div class="col s4 push-s4">
             <a class="waves-effect waves-light btn"
               ><i class="material-icons left">info</i>Kilpailun yleisnäkymä</a
             >
           </div>
+        </router-link>
+        <router-link to="/signing">
+          <div class="col s4 push-s4"><a class="waves-effect waves-light blue btn" ><i class="material-icons left">edit</i>Ilmoittautuminen</a></div>
         </router-link>
       </div>
 
