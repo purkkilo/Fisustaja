@@ -27,6 +27,9 @@ router.post('/', async (req, res) => {
         signees: req.body.signees,
         fishes: req.body.fishes,
         state: req.body.state,
+        results: req.body.results,
+        biggest_fishes:  req.body.biggest_fishes,
+        biggest_amounts:  req.body.biggest_amounts,
         createdAt: new Date()
     });
 
@@ -37,6 +40,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
     const competitions = await loadCompetitionsCollection();
     const competition = req.body;
+    console.log(competition);
     delete competition._id
     await competitions.replaceOne(
         {_id: new mongodb.ObjectID(req.params.id)},

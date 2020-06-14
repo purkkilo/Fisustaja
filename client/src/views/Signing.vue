@@ -175,10 +175,10 @@
       </div>
       <div id="signees-div" class="col s12">
         <div class="center-align col s4 inputarea">
-          <p class="flow-text">Ilmoittautuneita yhteensä: <b>{{ $store.getters.getSignees.length }}</b></p>
+          <p class="flow-text">Ilmoittautuneita yhteensä: <b>{{ $store.getters.getCompetitionSignees.length }}</b></p>
         </div>
         <div>
-          <table id="signees-table" class="highlight centered responsive-table fixed_header tablearea" v-if="$store.getters.getSignees.length">
+          <table id="signees-table" class="highlight centered responsive-table fixed_header tablearea" v-if="$store.getters.getCompetitionSignees.length">
             <thead>
               <tr>
                 <th>Nro.</th>
@@ -188,7 +188,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr @click="selectRow(signee.id)" :class="{ selected : selected_id == signee.id }" v-for="(signee, index) in $store.getters.getSignees" :key="index">
+              <tr @click="selectRow(signee.id)" :class="{ selected : selected_id == signee.id }" v-for="(signee, index) in $store.getters.getCompetitionSignees" :key="index">
                   <th class="center-align" style="border:1px solid black">{{ signee.boat_number }} ({{ signee.id }})</th>  
                   <td style="border:1px solid black">{{ signee.captain_name }}</td> 
                   <td style="border:1px solid black">{{ signee.temp_captain_name }}</td>
@@ -201,7 +201,7 @@
           <div class="col s12 center-align"><a class="waves-effect waves-light blue btn" v-on:click="searchSelected"><i class="material-icons left">info</i>Näytä valitun ilmoittautumistiedot</a></div>
         </div>
         <div v-else class="section inputarea center-align">
-          <p v-if="$store.getters.getSignees.length" class="flow-text">Voit katsella venekunnan tietoja myös klikkaamalla haluamaasi riviä taulukosta ja painamalla ilmestyvää nappulaa</p>
+          <p v-if="$store.getters.getCompetitionSignees.length" class="flow-text">Voit katsella venekunnan tietoja myös klikkaamalla haluamaasi riviä taulukosta ja painamalla ilmestyvää nappulaa</p>
           <h3 v-else class="center-align">Ei ilmoittautuneita!</h3>
         </div>
       </div>
@@ -283,6 +283,9 @@ export default {
             this.team = null;
             this.errors = [];
             this.old_info = null;
+        },
+        compare: function (a, b) {
+          return parseInt(a.boat_number) - parseInt(b.boat_number);
         },
         overwriteSignee: function(signee, overwrite) {
             overwrite === true ? console.log("Overwrite!") : console.log("Don't overwrite!")
@@ -397,7 +400,8 @@ export default {
             //if replace == true, replace existing info, otherwise add new signee
             replace === true ? this.$store.commit('replaceSignee', new_signee) : this.$store.commit('addSignee', new_signee);
             let comp = this.$store.getters.getCompetition;
-            comp.signees = this.$store.getters.getSignees;
+            let temp_signees = this.$store.getters.getCompetitionSignees.sort(this.compare);
+            comp.signees = temp_signees;
             comp.state = "Ilmoittautuminen";
             this.$store.commit('refreshCompetition', comp);
             try{

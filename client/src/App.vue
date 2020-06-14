@@ -67,6 +67,14 @@ body {
      -1px 1px 0 #000,
       1px 1px 0 #000;
  }
+ 
+.time {
+border-radius: 25px;
+background: rgba(255, 255, 255, 0.45);
+padding: 5px;
+
+color:black;
+}
 
 
 #app li.collection-item:nth-child(odd) {

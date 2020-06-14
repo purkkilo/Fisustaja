@@ -27,9 +27,10 @@
         </div>
       <div class="divider"></div>
       <div class="section inputarea">
-        <div class="col s12 center-align">
+        <div class="col s12">
           <h4>Kilpailun nimi: {{ competition.competition_name }}</h4>
-          <div><b>Data:</b> {{competition}}</div>
+          <h4>Tila: {{ competition.state }}</h4>
+          <div><b>Todo:</b> Statseja, saadut kalat, kilpailun tilanne, kaavioita jne.</div>
         </div>
       </div>
     </div>
@@ -58,14 +59,17 @@ export default {
           errors: [],
         }
     },
-    async created() {
+    created() {
       if (this.$store.getters.getCompetition){
-        this.competition = this.$store.getters.getCompetition
-        // IF there are signees in competition
-        if(this.$store.getters.getCompetitionSignees){
-          this.$store.commit('refreshSigneesFromCompetition');
-        }
-
+        this.competition = this.$store.getters.getCompetition;
+      }
+      else {
+        this.competition = null;
+      }
+    },
+    async mounted() {
+      if (this.$store.getters.getCompetition){
+        this.competition = this.$store.getters.getCompetition;
         // When selecting from fetched list, the _id is already there, no need to fetch again
         if(this.$store.getters.getCompetitionId){
           this.competition = this.$store.getters.getCompetition;
@@ -101,9 +105,6 @@ export default {
       else {
           this.competition = {"competition_name": "'this.$store.state.competition' tyhjä"};
       }
-    },
-    mounted() {
-
     },
     methods: {
       

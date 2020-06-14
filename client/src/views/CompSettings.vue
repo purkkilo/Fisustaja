@@ -78,24 +78,6 @@
                     {{ competition.end_of_competition }}
                   </td>
                 </tr>
-                <tr v-if="!competition_started">
-                  <th style="border:1px solid black;">Kilpailun alkaa</th>
-                  <td style="border:1px solid black;" class="center-align">
-                    {{ calculated_time }}
-                  </td>
-                </tr>
-                <tr v-else-if="competition_started && !competition_ended">
-                  <th style="border:1px solid black;">Kilpailu loppuu</th>
-                  <td style="border:1px solid black;" class="center-align">
-                    {{ calculated_time }}
-                  </td>
-                </tr>
-                <tr v-else>
-                  <th style="border:1px solid black;">Kilpailu loppunut</th>
-                  <td style="border:1px solid black;" class="center-align">
-                    {{ calculated_time }}
-                  </td>
-                </tr>
               </table>
             </div>
           </div>
@@ -134,7 +116,6 @@
 </template>
 <script>
 import Timedate from "../components/layout/Timedate";
-import moment from "moment";
 
 export default {
   name: "CompSettings",
@@ -145,45 +126,29 @@ export default {
     return {
       competition: null,
       fish_specs: null,
-      competition_started: false,
-      competition_ended: false,
-      calculated_time: null,
     };
   },
-  mounted() {
-    this.calculateRemainingTime();
-  },
-  methods: {
-    calculateRemainingTime: function() {
-      let now = moment().format();
-      let start_dateTime = moment(
-        `${this.competition.date_of_competition} ${this.competition.start_of_competition}`,
-        "DD.MM.YYYY HH:mm"
-      ).format();
-      let end_dateTime = moment(
-        `${this.competition.date_of_competition} ${this.competition.end_of_competition}`,
-        "DD.MM.YYYY HH:mm"
-      ).format();
-
-      this.competition_started = moment(now).isAfter(start_dateTime);
-      this.competition_ended = moment(now).isAfter(end_dateTime);
-
-      if (!this.competition_started && !this.competition_ended) {
-        this.calculated_time = moment(now).to(start_dateTime); // Time to competition start
-      } else if (this.competition_started && !this.competition_ended) {
-        this.calculated_time = moment(now).to(end_dateTime); // Time to competition start
-      } else {
-        this.calculated_time = moment(now).to(end_dateTime); // Competition ended
-      }
-      setTimeout(this.calculateRemainingTime, 60000); //Check every minute
-    },
-  },
   created() {
-    moment.locale("fi");
-    if (this.$store.getters.getCompetition) {
-      this.fish_specs = this.$store.getters.getCompetitionFishes;
+    if (this.$store.getters.getCompetition){
       this.competition = this.$store.getters.getCompetition;
+      this.fish_specs = this.$store.getters.getCompetitionFishes;
+    }
+    else {
+      this.competition = null;
+      this.fish_specs = null;
     }
   },
+  mounted() {
+    if (this.$store.getters.getCompetition) {
+      this.competition = this.$store.getters.getCompetition;
+      this.fish_specs = this.$store.getters.getCompetitionFishes;
+    }
+    else {
+      this.competition = null;
+      this.fish_specs = null;
+    }
+  },
+  methods: {},
 };
 </script>
+

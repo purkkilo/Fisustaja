@@ -129,8 +129,6 @@ export default {
     },
     methods: {
       async sendFeedback() {
-        console.log(this.type);
-        console.log(this.message);
 
         if(!this.type){
           this.type = "-";

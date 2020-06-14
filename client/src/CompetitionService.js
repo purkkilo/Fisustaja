@@ -25,7 +25,9 @@ class CompetitionService {
             state: competition.state,
             createdAt: new Date(competition.createdAt),
             signees: competition.signees,
-            results: competition.results
+            results: competition.results,
+            biggest_fishes: competition.biggest_fishes,
+            biggest_amounts: competition.biggest_amounts,
           }))
         } catch (err) {
           return err
@@ -49,6 +51,8 @@ class CompetitionService {
             state: competition.state,
             signees: competition.signees,
             results: competition.results,
+            biggest_fishes: competition.biggest_fishes,
+            biggest_amounts: competition.biggest_amounts,
         });
     }
 

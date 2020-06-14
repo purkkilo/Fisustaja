@@ -27,6 +27,7 @@
           </tr>
         </tbody>
       </table>
+      <h3 class="red-text">Voi poistaa kilpailun tuplaklikkaamalla riviä</h3>
     </div>
     <div v-else>
       <h2 v-if="!loading">Ei kilpailuja!</h2>

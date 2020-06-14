@@ -536,7 +536,7 @@ export default {
       errors: [],
       options: ["Ahven", "Hauki", "Kuha", "Lohi", "Taimen"],
       selected: [],
-      days_options: [1,2,3,4,5,6,7],
+      days_options: [1],
       competition_duration: null,
       competition_name: null,
       cup_name: null,
@@ -841,6 +841,8 @@ export default {
           total_weights: 0,
           signees: [],
           results: [],
+          biggest_fishes: {},
+          biggest_amounts: {},
         };
         try {
           await CompetitionService.insertCompetition(competition);
