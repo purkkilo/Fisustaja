@@ -28,9 +28,10 @@
       <div class="divider"></div>
       <div class="section inputarea">
         <div class="col s12">
-          <h4>Kilpailun nimi: {{ competition.competition_name }}</h4>
+          <h4>Kilpailun nimi: {{ competition.name }}</h4>
           <h4>Tila: {{ competition.state }}</h4>
           <div><b>Todo:</b> Statseja, saadut kalat, kilpailun tilanne, kaavioita jne.</div>
+          <div><b>Data:</b> {{ competition }}</div>
         </div>
       </div>
     </div>
@@ -91,19 +92,19 @@ export default {
               this.$store.state.competition = this.competition;
               this.loading = false;
               if(!this.competition){
-                  this.competition = {"competition_name": "Kilpailua ei löytynyt..."};
+                  this.competition = {"name": "Kilpailua ei löytynyt..."};
               }
     
           }
           else {
             this.loading = false;
-            this.competition = {"competition_name": "Kilpailuja ei tietokannassa"};
+            this.competition = {"name": "Kilpailuja ei tietokannassa"};
           }
 
         }
       }
       else {
-          this.competition = {"competition_name": "'this.$store.state.competition' tyhjä"};
+          this.competition = {"name": "'this.$store.state.competition' tyhjä"};
       }
     },
     methods: {

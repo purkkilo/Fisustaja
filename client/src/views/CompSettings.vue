@@ -30,7 +30,7 @@
                 <tr>
                   <th style="border:1px solid black;">Kilpailu</th>
                   <td style="border:1px solid black;" class="center-align">
-                    {{ competition.competition_name }}
+                    {{ competition.name }}
                   </td>
                 </tr>
                 <tr>
@@ -60,22 +60,22 @@
                   </td>
                 </tr>
                 <tr>
-                  <th style="border:1px solid black;">Järjestetään</th>
+                  <th style="border:1px solid black;">Aloituspäivämäärä</th>
                   <td style="border:1px solid black;" class="center-align">
-                    {{ competition.date_of_competition }}
+                    {{ formatted_start_date }}
                   </td>
                 </tr>
                 <tr>
-                  <th style="border:1px solid black;">Kilpailupäiviä</th>
+                  <th style="border:1px solid black;">Lopetuspäivämäärä</th>
                   <td style="border:1px solid black;" class="center-align">
-                    {{ competition.competition_duration }}
+                    {{ formatted_end_date }}
                   </td>
                 </tr>
                 <tr>
-                  <th style="border:1px solid black;">Ajankohta</th>
+                  <th style="border:1px solid black;">Kilpailuaika</th>
                   <td style="border:1px solid black;" class="center-align">
-                    {{ competition.start_of_competition }} -
-                    {{ competition.end_of_competition }}
+                    {{ competition.start_time }} -
+                    {{ competition.end_time }}
                   </td>
                 </tr>
               </table>
@@ -116,6 +116,7 @@
 </template>
 <script>
 import Timedate from "../components/layout/Timedate";
+import moment from 'moment';
 
 export default {
   name: "CompSettings",
@@ -126,12 +127,20 @@ export default {
     return {
       competition: null,
       fish_specs: null,
+      start_date: null,
+      formatted_start_date: null,
+      end_date: null,
+      formatted_end_date: null,
     };
   },
   created() {
     if (this.$store.getters.getCompetition){
       this.competition = this.$store.getters.getCompetition;
       this.fish_specs = this.$store.getters.getCompetitionFishes;
+      this.start_date = moment(this.competition.start_date);
+      this.end_date = moment(this.competition.end_date);
+      this.formatted_start_date = `${this.start_date.date()}.${this.start_date.month()}.${this.start_date.year()}`;
+      this.formatted_end_date = `${this.end_date.date()}.${this.end_date.month()}.${this.end_date.year()}`;
     }
     else {
       this.competition = null;

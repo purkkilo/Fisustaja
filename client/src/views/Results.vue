@@ -533,7 +533,7 @@ export default {
 // Convert the charts and the tables to pdf
   saveAsPDF: function (competition_type, table_id) {
     let doc = new jsPDF();
-    const title = `${this.competition.competition_name} - ${competition_type}`
+    const title = `${this.competition.name} - ${competition_type}`
     doc.text(100,10, title, {align: "center"});
     doc.autoTable({
       html: table_id,
@@ -541,11 +541,11 @@ export default {
       margin: {top: 20},
     })
 
-    doc.save(`${this.competition.competition_name}_${competition_type.replace(" ","_")}.pdf`);
+    doc.save(`${this.competition.name}_${competition_type.replace(" ","_")}.pdf`);
   },
   saveAllAsPDF: function () {
     let doc = new jsPDF();
-    const title = `${this.competition.competition_name}, ${this.competition.date_of_competition} (${this.competition.start_of_competition} - ${this.competition.end_of_competition})`
+    const title = `${this.competition.name}, ${this.competition.start_date} (${this.competition.start_time} - ${this.competition.end_time})`
     doc.text(100, 10, title, {align: "center"});
     doc.text(100,25, "Normaalikilpailun tulokset", {align: "center"});
     doc.autoTable({
@@ -587,7 +587,7 @@ export default {
         doc.text(10,20, "Ei tuloksia");
     }
 
-    doc.save(`${this.competition.competition_name}_kaikki_tulokset.pdf`);
+    doc.save(`${this.competition.name}_kaikki_tulokset.pdf`);
   },
   },
 };

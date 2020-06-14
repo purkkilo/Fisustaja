@@ -54,6 +54,12 @@ export default new Vuex.Store({
     getBiggestAmounts: state => {
       return state.competition.biggest_amounts
     },
+    getTeams: state => {
+      return state.competition.teams;
+    },
+    isTeamCompetition: state => {
+      return state.competition.team_competition;
+    }
   },
   mutations: {
     refreshSignees: (state, signees) => {
@@ -83,6 +89,9 @@ export default new Vuex.Store({
       else {
         state.competition.biggest_amounts[fish.name] = [{boat_number: fish.boat_number, captain_name:fish.captain_name , weight: fish.weight}];
       }
+    },
+    setTeams: (state, teams) => {
+      Vue.set(state.competition, 'teams', [...teams]);
     },
     replaceSignee: (state, found_signee) => {
         // note - findIndex might be replaced with some(), filter(), forEach() 

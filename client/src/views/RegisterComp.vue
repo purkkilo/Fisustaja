@@ -1,8 +1,11 @@
 <template>
   <div id="app">
     <div class="container">
-      <Timedate />
-
+      <div class="row section time" id="timers">
+        <div class="col s4 center-align"><h4 id="date"> </h4></div>
+        <div class="col s4 center-align"><h4></h4></div>
+        <div class="col s4 center-align"><h4 id="clock"> </h4></div>
+      </div>
       <div id="errordiv" v-if="errors.length">
         <ul class="collection with-header">
           <li class="collection-header"><h4>Korjaa seuraavat virheet:</h4></li>
@@ -51,38 +54,41 @@
             <div id="basic-inputs" class="row">
               <div class="row">
                 <div class="input-fields col s8 push-s2">
+                  <span class="flow-text black-text col s6"
+                    >Kilpailun nimi</span
+                  >                    
                   <input
-                    id="competition_name"
-                    v-model="competition_name"
-                    name="competition_name"
+                    id="name"
+                    v-model="name"
+                    name="name"
                     type="text"
-                    class="validate"
+                    class="validate col s6"
                     maxlength="40"
                   />
-                  <label for="competition_name" class="flow-text black-text"
-                    >Kilpailun nimi</label
-                  >
                 </div>
               </div>
 
               <div class="row">
                 <div class="input-fields col s8 push-s2">
+                  <span class="flow-text black-text col s6"
+                    >Cup nimi</span
+                  >                     
                   <input
                     id="cup_name"
                     v-model="cup_name"
                     name="cup_name"
                     type="text"
-                    class="validate"
+                    class="validate col s6"
                     maxlength="40"
                   />
-                  <label for="cup_name" class="flow-text black-text"
-                    >Cup nimi</label
-                  >
                 </div>
               </div>
 
               <div class="row">
                 <div class="input-fields col s8 push-s2">
+                  <span class="flow-text black-text col s6"
+                    >Kilpailun voittajan cup sijoittumispisteet</span
+                  >                       
                   <input
                     id="cup_placement_points"
                     v-model="cup_placement_points"
@@ -90,18 +96,16 @@
                     oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);"
                     type="text"
                     maxlength="4"
-                    class="validate"
+                    class="validate col s6"
                   />
-                  <label
-                    for="cup_placement_points"
-                    class="flow-text black-text"
-                    >Kilpailun voittajan cup sijoittumispisteet</label
-                  >
                 </div>
               </div>
 
               <div class="row">
                 <div class="input-fields col s8 push-s2">
+                  <span class="flow-text black-text col s6"
+                    >Kilpailun cup osallistumispisteet</span
+                  >                   
                   <input
                     id="cup_participation_points"
                     v-model="cup_participation_points"
@@ -109,18 +113,17 @@
                     oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);"
                     type="text"
                     maxlength="4"
-                    class="validate"
+                    class="validate col s6"
                   />
-                  <label
-                    for="cup_participation_points"
-                    class="flow-text black-text"
-                    >Kilpailun cup osallistumispisteet</label
-                  >
+
                 </div>
               </div>
 
               <div class="row">
                 <div class="input-fields col s8 push-s2">
+                  <span class="flow-text black-text col s6"
+                    >Cup pistekerroin</span
+                  > 
                   <input
                     id="cup_points_multiplier"
                     v-model="cup_points_multiplier"
@@ -128,77 +131,96 @@
                     oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);"
                     type="text"
                     maxlength="4"
-                    class="validate"
+                    class="validate col s6"
                     value="1"
                   />
-                  <label
-                    for="cup_points_multiplier"
-                    class="flow-text black-text"
-                    >Cup pistekerroin</label
-                  >
                 </div>
               </div>
 
               <div class="row">
-                <div class="input-fields col s8 push-s2">
+                <div class="input-fields col s8 push-s2 valign-wrapper">
+                    <span class="col s6 flow-text">Onko Tiimikilpailua?</span>
+                    <p class="col s3 push flow-text">
+                      <label>
+                        <input class="with-gap" name="group1" type="radio" value="Kyllä" v-model="team_competition"/>
+                        <span class="flow-text black-text">Kyllä</span>
+                      </label>
+                    </p>
+                    <p class="col s3 flow-text">
+                      <label>
+                        <input class="with-gap" name="group1" value="Ei" v-model="team_competition" type="radio"/>
+                        <span class="black-text">Ei</span>
+                      </label>
+                    </p>
+                </div>
+
+              </div>
+
+
+
+              <div class="row">
+                <div class="input-fields col s8 push-s2" style="padding-top:10px">
+                  <span class="flow-text black-text col s6"
+                    >Aloituspäivämäärä</span
+                  >                  
                   <input
-                    id="date_of_competition"
-                    v-model.lazy="date_of_competition"
-                    name="date_of_competition"
+                    id="start_date"
+                    v-model.lazy="start_date"
+                    name="start_date"
                     type="text"
-                    class="datepicker validate"
+                    class="datepicker validate col s6"
                     maxlength="10"
                   />
-                  <label for="date_of_competition" class="flow-text black-text"
-                    >Päivämäärä</label
-                  >
                 </div>
               </div>
 
               <div class="row">
-                <div class="col s4 push-s4 center-align">
-                  <v-select
-                  class="flow-text"
-                    v-model="competition_duration"
-                    :options="days_options"
-                  />
-                  <label for="date_of_competition" class="flow-text black-text"
-                    >Kilpailupäiviä</label
-                  >
-                </div>
-              </div>
-
-              <div class="row">
-                <div class="input-fields col s8 push-s2">
+                <div class="input-fields col s8 push-s2" style="padding-top:10px">
+                  <span class="flow-text black-text col s6"
+                    >Lopetus päivämäärä</span
+                  >                  
                   <input
-                    id="start_of_competition"
-                    v-model.lazy="start_of_competition"
+                    id="end_date"
+                    v-model.lazy="end_date"
+                    name="end_date"
+                    type="text"
+                    class="datepicker validate col s6"
+                    maxlength="10"
+                  />
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="input-fields col s8 push-s2 valign-wrapper" style="padding:10px">
+                  <span class="flow-text black-text col s6"
+                    >Kilpailun alkamisaika</span
+                  >
+                  <input
+                    id="start_time"
+                    v-model.lazy="start_time"
                     @keypress="isNumber($event, false)"
                     name="time_of_competition"
                     type="text"
-                    class="timepicker"
+                    class="timepicker validate col s6"
                     maxlength="5"
                   />
-                  <label for="start_of_competition" class="flow-text black-text"
-                    >Kilpailun alkamisaika</label
-                  >
                 </div>
               </div>
 
               <div class="row">
-                <div class="input-fields col s8 push-s2">
+                <div class="input-fields col s8 push-s2 valign-wrapper" style="padding:10px">
+                  <span class="flow-text black-text col s6"
+                    >Kilpailun loppumisaika</span
+                  >
                   <input
-                    id="end_of_competition"
-                    v-model.lazy="end_of_competition"
+                    id="end_time"
+                    v-model.lazy="end_time"
                     @keypress="isNumber($event, false)"
-                    name="end_of_competition"
+                    name="end_time"
                     type="text"
-                    class="timepicker"
+                    class="timepicker validate col s6"
                     maxlength="5"
                   />
-                  <label for="end_of_competition" class="flow-text black-text"
-                    >Kilpailun loppumisaika</label
-                  >
                 </div>
               </div>
               <div class="row">
@@ -404,7 +426,7 @@
                     <tr>
                       <th style="border:1px solid black;">Kilpailu</th>
                       <td style="border:1px solid black;" class="center-align">
-                        {{ competition_name }}
+                        {{ name }}
                       </td>
                     </tr>
                     <tr>
@@ -434,21 +456,29 @@
                       </td>
                     </tr>
                     <tr>
-                      <th style="border:1px solid black;">Järjestetään</th>
+                      <th style="border:1px solid black;">
+                        Onko Tiimikilpailua?
+                      </th>
                       <td style="border:1px solid black;" class="center-align">
-                        {{ date_of_competition }}
+                        {{ team_competition }}
                       </td>
                     </tr>
                     <tr>
-                      <th style="border:1px solid black;">Kilpailupäiviä</th>
+                      <th style="border:1px solid black;">Aloituspäivämäärä</th>
                       <td style="border:1px solid black;" class="center-align">
-                        {{ competition_duration }}
+                        {{ start_date }}
+                      </td>
+                    </tr>
+                    <tr>
+                      <th style="border:1px solid black;">Lopetus Päivämäärä</th>
+                      <td style="border:1px solid black;" class="center-align">
+                        {{ end_date }}
                       </td>
                     </tr>
                     <tr>
                       <th style="border:1px solid black;">Kilpailuajankohta</th>
                       <td style="border:1px solid black;" class="center-align">
-                        {{ start_of_competition }} - {{ end_of_competition }}
+                        {{ start_time }} - {{ end_time }}
                       </td>
                     </tr>
                   </table>
@@ -519,7 +549,6 @@
 <script>
 import M from "materialize-css";
 import "vue-select/dist/vue-select.css";
-import Timedate from "../components/layout/Timedate";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import { options_picker } from "../i18n";
 import CompetitionService from "../CompetitionService";
@@ -528,7 +557,6 @@ import moment from "moment";
 export default {
   name: "RegisterComp",
   components: {
-    Timedate,
     ProgressBarQuery,
   },
   data() {
@@ -536,16 +564,17 @@ export default {
       errors: [],
       options: ["Ahven", "Hauki", "Kuha", "Lohi", "Taimen"],
       selected: [],
-      days_options: [1],
-      competition_duration: null,
-      competition_name: null,
+      days_options: [1,2,3,4,5,6,7],
+      name: null,
       cup_name: null,
       cup_placement_points: 30,
       cup_participation_points: 5,
       cup_points_multiplier: 1.0,
-      date_of_competition: null,
-      start_of_competition: null,
-      end_of_competition: null,
+      team_competition: "Ei",
+      start_date: null,
+      end_date: null,
+      start_time: null,
+      end_time: null,
       basic_info: null,
       completed_fish_specs: [],
       basic_info_validated: false,
@@ -575,8 +604,37 @@ export default {
     this.tabs = M.Tabs.getInstance(elem);
 
     moment.locale("fi");
+    this.setTime();
+    this.setDate();
   },
   methods: {
+    setTime: function(){
+        // Get time, parse it and change the text of the clock
+        const today = new Date();
+        let h = today.getHours();
+        let m = today.getMinutes();
+        let s = today.getSeconds();
+        m = this.checkZeros(m);
+        s = this.checkZeros(s);
+        document.getElementById('clock').innerText = h + ":" + m + ":" + s;
+        setTimeout(this.setTime, 500); //timeout for a bit
+    },
+    setDate: function(){
+        const today = new Date();
+        let day = today.getDate();
+        let month = today.getMonth() + 1; //month is zero indexed
+        let year = today.getFullYear();
+        day = this.checkZeros(day);
+        month = this.checkZeros(month);
+        document.getElementById('date').innerText =day + "." + month + "." + year;
+        setTimeout(this.setDate, 60000);
+    },
+    checkZeros: function(time){
+        if (time < 10) {
+            time = "0" + time;
+        }
+        return time;
+    },
     //filter other other characters out for number inputs
     isNumber: function(evt, isDate) {
       var charToCheckCode = 46; //dot --> .
@@ -618,22 +676,22 @@ export default {
       this.basic_info_validated = false;
       this.validated = false;
       var isDateValid = moment(
-        this.date_of_competition,
+        this.start_date,
         "D.M.YYYY",
         true
       ).isValid();
       var isStartTimeValid = moment(
-        this.start_of_competition,
+        this.start_time,
         "H:mm",
         true
       ).isValid();
       var isEndTimeValid = moment(
-        this.end_of_competition,
+        this.end_time,
         "H:mm",
         true
       ).isValid();
 
-      if (!this.competition_name) {
+      if (!this.name) {
         this.showError("Kilpailun nimi puuttuu!");
       }
       if (!this.cup_name) {
@@ -648,39 +706,40 @@ export default {
       if (!this.cup_points_multiplier) {
         this.showError("Kilpailun pistekerroin puuttuu!");
       }
-      if (!this.date_of_competition || !isDateValid) {
-        !this.date_of_competition == true
+      if (!this.start_date || !isDateValid) {
+        !this.start_date == true
           ? this.showError("Päivämäärää ei ole valittu!")
           : this.showError(
               'Syötä päivämäärä muodossa "PP.KK.VVVV (esim: 06.02.2020)'
             );
       }
-      if(!this.competition_duration) {
-        this.showError("Valitse monta kilpailupäivää kilpailu sisältää!");
-      }
-      if (!this.start_of_competition || !isStartTimeValid) {
-        !this.start_of_competition == true
+      if (!this.start_time || !isStartTimeValid) {
+        !this.start_time == true
           ? this.showError("Kilpailun alkamisnaika puuttuu!")
           : this.showError('Syötä aika muodossa "hh:mm" (esim: 13:00)');
       }
-      if (!this.end_of_competition || !isEndTimeValid) {
-        !this.end_of_competition == true
+      if (!this.end_time || !isEndTimeValid) {
+        !this.end_time == true
           ? this.showError("Kilpailun loppumisaika puuttuu!")
           : this.showError('Syötä aika muodossa "hh:mm" (esim: 13:00)');
       }
 
       // If all inputs validated
       if (!this.errors.length) {
+        let start_date = moment(`${this.start_date} ${this.start_time}`, 'DD.MM.YYYY HH:mm');
+        let end_date = moment(`${this.end_date} ${this.end_time}`, 'DD.MM.YYYY HH:mm');
+
         this.basic_info = {
-          competition_name: this.competition_name,
+          name: this.name,
           cup_name: this.cup_name,
           cup_placement_points: Number(this.cup_placement_points),
           cup_participation_points: Number(this.cup_participation_points),
           cup_points_multiplier: Number(this.cup_points_multiplier),
-          date_of_competition: this.date_of_competition,
-          competition_duration: Number(this.competition_duration),
-          start_of_competition: this.start_of_competition,
-          end_of_competition: this.end_of_competition,
+          team_competition: this.team_competition === "Ei" ? false : true,
+          start_date: start_date,
+          end_date: end_date,
+          start_time: this.start_time,
+          end_time: this.end_time,
         };
         document.getElementById("fishes-tab").classList.remove("disabled");
         this.disableInputs(true);
@@ -827,20 +886,23 @@ export default {
 
         const competition = {
           competition_id: comp_id,
-          competition_name: this.basic_info.competition_name,
+          name: this.basic_info.name,
           cup_name: this.basic_info.cup_name,
           cup_placement_points: this.basic_info.cup_placement_points,
           cup_participation_points: this.basic_info.cup_participation_points,
           cup_points_multiplier: this.basic_info.cup_points_multiplier,
-          date_of_competition: this.basic_info.date_of_competition,
-          competition_duration:this.basic_info.competition_duration,
-          start_of_competition: this.basic_info.start_of_competition,
-          end_of_competition: this.basic_info.end_of_competition,
+          team_competition: this.basic_info.team_competition,
+          start_date: this.basic_info.start_date,
+          end_date: this.basic_info.end_date,
+          duration:this.basic_info.duration,
+          start_time: this.basic_info.start_time,
+          end_time: this.basic_info.end_time,
           fishes: this.completed_fish_specs,
           state: "Rekisteröity",
           total_weights: 0,
           signees: [],
           results: [],
+          teams:[],
           biggest_fishes: {},
           biggest_amounts: {},
         };

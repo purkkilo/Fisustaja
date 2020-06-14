@@ -19,8 +19,8 @@
             v-bind:key="competition._id"
             v-on:dblclick="deleteCompetition(competition._id)"
           >
-              <th style="border:1px solid black" class="center-align" scope="row">{{ competition.date_of_competition }}</th>  
-              <td style="border:1px solid black">{{ competition.competition_name }}</td> 
+              <th style="border:1px solid black" class="center-align" scope="row">{{ `${competition.start_date.date()}.${competition.start_date.month()}.${competition.start_date.year()} - ${competition.end_date.date()}.${competition.end_date.month()}.${competition.end_date.year()}` }}</th>  
+              <td style="border:1px solid black">{{ competition.name }}</td> 
               <td style="border:1px solid black">{{ competition.cup_name }}</td> 
               <td style="border:1px solid black">{{ competition.state }}</td>
               <td style="border:1px solid black"><a class="waves-effect waves-light btn" v-on:click="pickCompetition(competition)"><i class="material-icons left">check</i>Valitse</a></td>
@@ -44,6 +44,7 @@
 import ProgressBarQuery from '../components/layout/ProgressBarQuery';
 import CompetitionService from '../CompetitionService';
 import M from 'materialize-css';
+import moment from 'moment';
 
 export default {
   name: 'CompetitionComponent',
@@ -62,6 +63,10 @@ export default {
     this.loading = true;
     try {
       this.competitions = await CompetitionService.getCompetitions();
+      this.competitions.forEach(competition => {
+        competition.start_date = moment(competition.start_date);
+        competition.end_date = moment(competition.end_date);
+      });
       this.loading = false;
     } catch(err) {
       this.error = err.message;

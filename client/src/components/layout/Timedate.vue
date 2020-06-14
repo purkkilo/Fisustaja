@@ -67,12 +67,11 @@ export default {
     },
     remainingTime: function(){
           if (this.competition) {
-              let start_dateTime = moment(`${this.competition.date_of_competition} ${this.competition.start_of_competition}`, 'DD.MM.YYYY HH:mm');
-              let end_dateTime = moment(`${this.competition.date_of_competition} ${this.competition.end_of_competition}`, 'DD.MM.YYYY HH:mm');
+              let start_dateTime = moment(this.competition.start_date);
+              let end_dateTime = moment(this.competition.end_date);
 
               let timeLeft = 0;
               let formatted = "";
-
               this.competition_started = moment(moment()).isAfter(start_dateTime);
               this.competition_ended = moment(moment()).isAfter(end_dateTime);
 
@@ -93,8 +92,10 @@ export default {
               }
               else if (this.competition_started && !this.competition_ended) {
                 timeLeft = moment.duration(end_dateTime.diff(moment())); // get difference between now and timestamp
+                let days = timeLeft.days() ? `${timeLeft.days()}d ` : ` `
                 formatted =
-                  this.checkZeros(timeLeft.hours()) + 'h '
+                  days
+                  + this.checkZeros(timeLeft.hours()) + 'h '
                   + this.checkZeros(timeLeft.minutes()) + 'm '
                   + this.checkZeros(timeLeft.seconds()) +'s';
 

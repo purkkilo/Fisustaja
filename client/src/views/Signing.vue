@@ -152,15 +152,15 @@
 
           <div class="row">
             <div class="input-fields col s8 push-s2">
-              <input
-                id="team"
+              <v-select
+                class="flow-text title"
+                taggable
+                push-tags
+                placeholder="Valitse, tai kirjoita tiimin nimi"
                 v-model="team"
-                type="text"
-                placeholder="Ei pakollinen"
-                class="validate"
-                maxlength="40"
-              >
-              <label for="team" class="flow-text black-text">Joukkue</label>
+                :options="teams"
+              />
+              <span class="flow-text black-text">Joukkue</span>
             </div>
           </div>
         </div>
@@ -215,6 +215,7 @@ import ProgressBarQuery from '../components/layout/ProgressBarQuery';
 import M from 'materialize-css';
 import { options_picker } from '../i18n';
 import CompetitionService from '../CompetitionService';
+import "vue-select/dist/vue-select.css";
 
 export default {
     name: 'Signing',
@@ -237,7 +238,9 @@ export default {
           notification: null,
           loading: false,
           old_info: null,
-          signees: []
+          signees: [],
+          teams: [],
+          maxlength: 40,
       }
     },
     mounted() {
@@ -248,16 +251,20 @@ export default {
         var elem = document.querySelectorAll('.tabs')[0];
         /* eslint-enable no-unused-vars */
         this.tabs = M.Tabs.getInstance(elem);
-        this.signees =  this.$store.getters.getCompetitionSignees;
-        if (this.signees.length) {
-          this.boat_number = this.$store.getters.getSigneesCount + 1;
-          this.id = this.$store.getters.getSigneesCount + 1;
-        }
-        else {
-          this.boat_number = 1;
-          this.id = 1;
-        }
 
+        if(this.$store.getters.getCompetition){
+          this.signees =  this.$store.getters.getCompetitionSignees;
+          this.teams = this.$store.getters.getTeams;
+
+          if (this.signees.length) {
+            this.boat_number = this.$store.getters.getSigneesCount + 1;
+            this.id = this.$store.getters.getSigneesCount + 1;
+          }
+          else {
+            this.boat_number = 1;
+            this.id = 1;
+          }
+        }
     },
     methods: {
         isNumber: function(evt) {
@@ -298,6 +305,7 @@ export default {
                 signee.locality = this.locality;
                 signee.team = this.team;
                 this.saveToDatabase(signee, true);
+                this.$store.commit('setTeams', this.teams);
                 this.clearInputs();
                 this.boat_number = this.id;
                 this.notification = "Tiedot korvattu uusilla!";
@@ -463,6 +471,7 @@ export default {
                           found_signee.team = this.team;
                           this.new_signee = found_signee;
                           this.saveToDatabase(this.new_signee, true);
+                          this.$store.commit('setTeams', this.teams);
                           console.log("Updating info...");
                           this.notification =`Päivitetty venekunnan (Nro: ${this.new_signee.boat_number}, Kapteeni: ${this.new_signee.captain_name}) Tiedot!`;
                           this.clearInputs();
@@ -508,6 +517,7 @@ export default {
                             weights: weights
                         };
                         this.saveToDatabase(this.new_signee, false);
+                        this.$store.commit('setTeams', this.teams);
                         this.notification =`Venekunta ilmoitettu kisaan! (Nro: ${this.new_signee.boat_number}, Kapteeni: ${this.new_signee.captain_name})`;
                         this.clearInputs();
                         this.boat_number = parseInt(this.new_signee.boat_number) + 1;
