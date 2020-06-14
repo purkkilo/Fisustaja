@@ -40,7 +40,6 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
     const competitions = await loadCompetitionsCollection();
     const competition = req.body;
-    console.log(competition);
     delete competition._id
     await competitions.replaceOne(
         {_id: new mongodb.ObjectID(req.params.id)},

@@ -450,8 +450,7 @@ export default {
                       let temp_boat = this.searchBoatNumber(this.boat_number)
                       // If there already exist a boat with same number, but it isn't the same id
                       if(temp_boat && (temp_boat.id != found_signee.id)){
-                        console.log("Boat already exists with this boat number..");
-                        this.old_info = temp_boat;
+                        console.log("Boat number already exists...");
                         this.old_info = `Kapteeni: ${temp_boat.captain_name}, Varakapteeni: ${temp_boat.temp_captain_name}, Seura/Paikkakunta: ${temp_boat.locality}`;
                       }
                       else {
@@ -464,7 +463,7 @@ export default {
                           found_signee.team = this.team;
                           this.new_signee = found_signee;
                           this.saveToDatabase(this.new_signee, true);
-                          console.log("Found old signee, updating info...");
+                          console.log("Updating info...");
                           this.notification =`Päivitetty venekunnan (Nro: ${this.new_signee.boat_number}, Kapteeni: ${this.new_signee.captain_name}) Tiedot!`;
                           this.clearInputs();
                           this.boat_number = parseInt(this.new_signee.boat_number) + 1;
@@ -477,7 +476,7 @@ export default {
                     let temp_boat = this.searchBoatNumber(this.boat_number)
                     // IF there is boat with same boat number, and somehow with this id
                     if(temp_boat && (temp_boat.id != this.id)){
-                      console.log("Boat already exists with this boat number..");
+                      console.log("Boat number already exists...");
                       this.notification =`Numerolla on jo olemassa venekunta, päällekirjoitetaanko?`;
                       this.old_info = temp_boat;
                     }

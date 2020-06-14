@@ -648,7 +648,6 @@ export default {
       this.biggest_fish = null;
       let comp = this.$store.getters.getCompetition;
       comp.biggest_fishes = this.biggest_fishes;
-      console.log(comp.biggest_fishes);
       this.$store.commit("refreshCompetition", comp);
       try {
         this.loading = true;
