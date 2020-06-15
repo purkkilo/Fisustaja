@@ -1,3 +1,4 @@
+"use strict";
 const express = require("express");
 const cors = require("cors");
 var path = require("path");
@@ -10,10 +11,11 @@ app.use(cors());
 
 const competitions = require("./routes/api/competitions");
 const feedback = require("./routes/api/feedback");
+const users = require("./routes/api/users");
 
 app.use("/api/competitions", competitions);
 app.use("/api/feedback", feedback);
-
+app.use("/api/users", users);
 // Handle production
 if (process.env.NODE_ENV === "production") {
   // Static folder

@@ -43,8 +43,9 @@
 </template>
 <script>
 import Timedate from '../components/layout/Timedate';
-import CompetitionService from '../CompetitionService';
 import ProgressBarQuery from '../components/layout/ProgressBarQuery';
+import CompetitionService from '../CompetitionService';
+
 
 export default {
     name: 'Overview',
@@ -79,7 +80,9 @@ export default {
           this.loading = true;
           this.errors = [];
           try {
-            this.competitions = await CompetitionService.getCompetitions();
+            const user = JSON.parse(localStorage.getItem('user'));
+            const user_id = user["id"];
+            this.competitions = await CompetitionService.getCompetitions(user_id);
           } catch(err) {
             this.loading = false;
             this.errors.push(err);

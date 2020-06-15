@@ -6,9 +6,24 @@
            <router-link to="/"><img src="../../assets/clienticon_new.png" alt="" class="circle responsive-img left" style="height:55px;width:55px;margin:5px 10px;"></router-link>
           <router-link to="/"><a href="#!" class="brand-logo">Fisustaja</a></router-link>
           <a href="#" data-target="mobile" class="sidenav-trigger"><i class="material-icons">menu</i></a>
-          <ul class="right hide-on-med-and-down">
-              <li><router-link to="/"><a class="waves-effect waves-light blue darken-2 btn-large"><i class="material-icons left">home</i>Kotisivulle</a></router-link></li>
-              <li><router-link to="/about"><a class="waves-effect waves-light grey darken-2 lighten-1 btn-large"><i class="material-icons left">feedback</i>Palaute</a></router-link></li>
+          <ul class="right hide-on-med-and-down" v-if="!isUserLoggedIn">
+              <li><router-link to="/"><a class="waves-effect waves-light blue lighten-1 lighten-1 btn-large"><i class="material-icons left">home</i>Kotisivulle</a></router-link></li>
+              <li>
+                <router-link to="/register">
+                    <a class="waves-effect waves-light blue darken-2 btn-large"><i class="material-icons left">add_circle_outline</i>Rekisteröidy</a>
+                </router-link>
+              </li>
+              <li>
+                <router-link to="/login">
+                <a class="waves-effect waves-light green darken-2 btn-large"><i class="material-icons left">play_circle_filled</i>Kirjaudu</a>
+                </router-link>
+              </li>
+          </ul>
+          <ul class="right hide-on-med-and-down" v-else>
+              <li><router-link to="/dashboard"><a class="waves-effect waves-light blue darken-2 lighten-1 btn-large"><i class="material-icons left">home</i>Dashboardiin</a></router-link></li>
+              <li v-if="isAdmin"><router-link to="/admin"><a class="waves-effect waves-light blue darken-2 lighten-1 btn-large"><i class="material-icons left">admin_panel_settings</i>Admin</a></router-link></li>
+              <li><router-link to="/feedback"><a class="waves-effect waves-light grey darken-2 lighten-1 btn-large"><i class="material-icons left">feedback</i>Palaute</a></router-link></li>
+              <li><a class="waves-effect waves-light red darken-4 btn-large" v-on:click="logout"><i class="material-icons left">power_settings_new</i>Kirjaudu ulos</a></li>
           </ul>
         </div>
       </nav>
@@ -23,6 +38,11 @@ import { options_picker } from '../../i18n';
 
 export default {
   name: "Header",
+    data(){
+        return {
+          logged_in: false,
+        }
+    },
   mounted() {
     M.AutoInit();
     /* eslint-disable no-unused-vars */
@@ -30,6 +50,24 @@ export default {
     var instances = M.Sidenav.init(elems, options_picker);
     /* eslint-enable no-unused-vars */
   },
+  computed: {
+      isUserLoggedIn() {
+        return this.$store.getters.isLoggedIn;
+      },
+      isAdmin() {
+        return this.$store.getters.isAdmin;
+      }
+  },
+  methods: {
+    logout: function() {
+      localStorage.removeItem('user');
+      localStorage.removeItem('jwt');
+      this.$store.state.logged_in = false;
+      this.$store.state.is_admin = false;
+      this.$router.push("/");
+      M.toast({html: "Kirjattu ulos onnistuneesti!"});
+    },
+  }
 }
 </script>
 

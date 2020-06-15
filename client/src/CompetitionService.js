@@ -4,13 +4,14 @@ const url = "api/competitions/";
 
 class CompetitionService {
     // Get competitions
-    static async getCompetitions() {
-        const res = await axios.get(url);
+    static async getCompetitions(user_id) {
+        const res = await axios.get(`${url}${user_id}`);
         try {
           const data = res.data
           return data.map(competition => ({
             _id: competition._id,
             competition_id: competition.competition_id,
+            user_id: competition.user_id,
             name: competition.name,
             cup_name:  competition.cup_name,
             cup_placement_points: competition.cup_placement_points,
@@ -40,6 +41,7 @@ class CompetitionService {
     static insertCompetition(competition) {
         return axios.post(url, {
             competition_id: competition.competition_id,
+            user_id: competition.user_id,
             name: competition.name,
             cup_name:  competition.cup_name,
             cup_placement_points: competition.cup_placement_points,

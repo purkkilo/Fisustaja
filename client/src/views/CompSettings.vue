@@ -60,7 +60,7 @@
                   </td>
                 </tr>
                 <tr>
-                  <th style="border:1px solid black;">Aloituspäivämäärä</th>
+                  <th style="border:1px solid black;">Aloituspäivä</th>
                   <td style="border:1px solid black;" class="center-align">
                     {{ formatted_start_date }}
                   </td>

@@ -62,7 +62,9 @@ export default {
   async created() {
     this.loading = true;
     try {
-      this.competitions = await CompetitionService.getCompetitions();
+      const user = JSON.parse(localStorage.getItem('user'));
+      const user_id = user["id"];
+      this.competitions = await CompetitionService.getCompetitions(user_id);
       this.competitions.forEach(competition => {
         competition.start_date = moment(competition.start_date);
         competition.end_date = moment(competition.end_date);
@@ -85,7 +87,9 @@ export default {
       this.loading = true;
       try{
         await CompetitionService.deleteCompetition(id);
-        this.competitions = await CompetitionService.getCompetitions();
+        const user = JSON.parse(localStorage.getItem('user'));
+        const user_id = user["id"];
+        this.competitions = await CompetitionService.getCompetitions(user_id);
         this.$store.state.competitions = this.competitions;
         this.loading = false;
       } catch(err) {

@@ -1,11 +1,7 @@
 <template>
   <div id="app">
     <div class="container">
-      <div class="row section time" id="timers">
-        <div class="col s4 center-align"><h4 id="date"> </h4></div>
-        <div class="col s4 center-align"><h4></h4></div>
-        <div class="col s4 center-align"><h4 id="clock"> </h4></div>
-      </div>
+      <Timedate/>
       <div id="errordiv" v-if="errors.length">
         <ul class="collection with-header">
           <li class="collection-header"><h4>Korjaa seuraavat virheet:</h4></li>
@@ -139,7 +135,7 @@
 
               <div class="row">
                 <div class="input-fields col s8 push-s2 valign-wrapper">
-                    <span class="col s6 flow-text">Onko Tiimikilpailua?</span>
+                    <span class="col s6 flow-text black-text">Onko Tiimikilpailua?</span>
                     <p class="col s3 push flow-text">
                       <label>
                         <input class="with-gap" name="group1" type="radio" value="Kyllä" v-model="team_competition"/>
@@ -161,7 +157,7 @@
               <div class="row">
                 <div class="input-fields col s8 push-s2" style="padding-top:10px">
                   <span class="flow-text black-text col s6"
-                    >Aloituspäivämäärä</span
+                    >Aloituspäivä</span
                   >                  
                   <input
                     id="start_date"
@@ -177,7 +173,7 @@
               <div class="row">
                 <div class="input-fields col s8 push-s2" style="padding-top:10px">
                   <span class="flow-text black-text col s6"
-                    >Lopetus päivämäärä</span
+                    >Lopetuspäivä</span
                   >                  
                   <input
                     id="end_date"
@@ -464,13 +460,13 @@
                       </td>
                     </tr>
                     <tr>
-                      <th style="border:1px solid black;">Aloituspäivämäärä</th>
+                      <th style="border:1px solid black;">Aloituspäivä</th>
                       <td style="border:1px solid black;" class="center-align">
                         {{ start_date }}
                       </td>
                     </tr>
                     <tr>
-                      <th style="border:1px solid black;">Lopetus Päivämäärä</th>
+                      <th style="border:1px solid black;">Lopetuspäivä</th>
                       <td style="border:1px solid black;" class="center-align">
                         {{ end_date }}
                       </td>
@@ -550,6 +546,7 @@
 import M from "materialize-css";
 import "vue-select/dist/vue-select.css";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
+import Timedate from '../components/layout/Timedate';
 import { options_picker } from "../i18n";
 import CompetitionService from "../CompetitionService";
 import moment from "moment";
@@ -558,6 +555,7 @@ export default {
   name: "RegisterComp",
   components: {
     ProgressBarQuery,
+    Timedate
   },
   data() {
     return {
@@ -604,37 +602,8 @@ export default {
     this.tabs = M.Tabs.getInstance(elem);
 
     moment.locale("fi");
-    this.setTime();
-    this.setDate();
   },
   methods: {
-    setTime: function(){
-        // Get time, parse it and change the text of the clock
-        const today = new Date();
-        let h = today.getHours();
-        let m = today.getMinutes();
-        let s = today.getSeconds();
-        m = this.checkZeros(m);
-        s = this.checkZeros(s);
-        document.getElementById('clock').innerText = h + ":" + m + ":" + s;
-        setTimeout(this.setTime, 500); //timeout for a bit
-    },
-    setDate: function(){
-        const today = new Date();
-        let day = today.getDate();
-        let month = today.getMonth() + 1; //month is zero indexed
-        let year = today.getFullYear();
-        day = this.checkZeros(day);
-        month = this.checkZeros(month);
-        document.getElementById('date').innerText =day + "." + month + "." + year;
-        setTimeout(this.setDate, 60000);
-    },
-    checkZeros: function(time){
-        if (time < 10) {
-            time = "0" + time;
-        }
-        return time;
-    },
     //filter other other characters out for number inputs
     isNumber: function(evt, isDate) {
       var charToCheckCode = 46; //dot --> .
@@ -875,6 +844,9 @@ export default {
       // TODO  better input validation
       if (this.validated) {
         this.loading = true;
+
+        const user = JSON.parse(localStorage.getItem('user'));
+        const user_id = user["id"];
         //temp id to get correct competition from array, even if somehow there is comp with same name etc.
         const comp_id =
           Math.random()
@@ -886,6 +858,7 @@ export default {
 
         const competition = {
           competition_id: comp_id,
+          user_id: user_id,
           name: this.basic_info.name,
           cup_name: this.basic_info.cup_name,
           cup_placement_points: this.basic_info.cup_placement_points,
@@ -912,7 +885,7 @@ export default {
           this.$store.commit("refreshCompetition", competition);
           this.$router.push({ path: "/overview" });
         } catch (err) {
-          this.errors.push = err.message;
+          this.errors.push(err.message);
         }
       } else {
         this.errors.push("Not validated somehow?");

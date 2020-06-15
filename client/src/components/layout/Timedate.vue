@@ -20,7 +20,7 @@ export default {
         competition_started: false,
         competition_ended: false,
         calculated_time: null,
-        date_interval: 60000,
+        date_interval: 500,
         clock_interval: 500,
         remaining_interval: 500,
         clock: null,
@@ -35,12 +35,13 @@ export default {
     moment.locale('fi');
     if (this.$store.getters.getCompetition){
       this.competition = this.$store.getters.getCompetition;
-      this.setTime();
-      this.setDate();   
       this.remainingTime();
     }
     else {
-      this.timer_string = "Kilpailua ei valittuna!";
+      this.timer_string = "";
+      this.setTime();
+      this.setDate();   
+      clearTimeout(this.remainingTime);
     }
   },
   methods: {

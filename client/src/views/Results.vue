@@ -20,7 +20,7 @@
             >
           </div>
         </router-link>
-        <div class="col s4">
+        <div class="col s4" v-if="results.length || team_results.length || biggest_fishes_results.length || biggest_amounts_results">
           <a v-on:click="saveAllAsPDF" class="waves-effect waves-light blue darken-4 btn-large"
             ><i class="material-icons left">picture_as_pdf</i>Lataa kaikki taulukot</a
           >
@@ -28,7 +28,7 @@
       </div>
       <div class="row">
         <div class="col s12">
-          <ul class="tabs">
+          <ul class="tabs" v-if="$store.getters.isTeamCompetition">
             <li class="tab col s3">
               <a class="active" href="#normal-competition">Normaalikilpailu</a>
             </li>
@@ -42,10 +42,21 @@
               <a href="#biggest-fish-amounts">Suurimmat Kalasaaliit</a>
             </li>
           </ul>
+          <ul class="tabs" v-else>
+            <li class="tab col s4">
+              <a class="active" href="#normal-competition">Normaalikilpailu</a>
+            </li>
+            <li class="tab col s4">
+              <a href="#biggest-fishes">Suurimmat Kalat</a>
+            </li>
+            <li class="tab col s4">
+              <a href="#biggest-fish-amounts">Suurimmat Kalasaaliit</a>
+            </li>
+          </ul>
         </div>
         <div id="normal-competition" class="col s12 inputarea">
-          <div class="section">
-            <div class="row">
+          <div class="section" >
+            <div class="row" v-if="results.length">
               <table
                 id="normal-table"
                 class="highlight centered responsive-table tablearea"
@@ -91,18 +102,20 @@
                   </tr>
                 </tbody>
               </table>
-              
+            </div>
+            <div v-else>
+              <p class="flow-text">Ei tuloksia, vielä...</p>
             </div>
           </div>
-          <div class="row">
+          <div class="row" v-if="results.length">
             <a v-on:click ="saveAsPDF(`Normaalikilpailun tulokset`, '#normal-table')" class="waves-effect waves-light blue darken-4 btn col s4 push-s4">
               <i class="material-icons left">picture_as_pdf</i>Lataa pdf
             </a>
           </div>
         </div>
-        <div id="team-competition" class="col s12 inputarea">
+        <div id="team-competition" class="col s12 inputarea" v-if="$store.getters.isTeamCompetition">
           <div class="section">
-            <div class="row">
+            <div class="row" v-if="team_results.length">
               <table
                 id="team-table"
                 class="highlight centered responsive-table tablearea"
@@ -137,8 +150,11 @@
                 </tbody>
               </table>
             </div>
+            <div v-else>
+              <p class="flow-text">Ei tuloksia, vielä...</p>
+            </div>
           </div>
-          <div class="row">
+          <div class="row" v-if="team_results.length">
             <a v-on:click ="saveAsPDF(`Tiimikilpailun tulokset`, '#team-table')" class="waves-effect waves-light blue darken-4 btn col s4 push-s4">
               <i class="material-icons left">picture_as_pdf</i>Lataa pdf
             </a>
@@ -146,7 +162,7 @@
         </div>
         <div id="biggest-fishes" class="col s12 inputarea">
           <div class="section">
-            <div class="row">
+            <div class="row" v-if="biggest_fishes_results.length">
               <div class="col s3 push-s4">
                 <v-select
                   class="flow-text title"
@@ -158,7 +174,7 @@
                 />
               </div>
             </div>
-            <div class="row">
+            <div class="row" v-if="biggest_fishes_results.length">
               <table
                 id="biggest-fishes-table"
                 class="highlight centered responsive-table tablearea"
@@ -194,8 +210,11 @@
                 </tbody>
               </table>
             </div>
+            <div v-else>
+              <p class="flow-text">Ei tuloksia, vielä...</p>
+            </div>
           </div>
-          <div class="row">
+          <div class="row" v-if="biggest_fishes_results.length">
             <a v-on:click ="saveAsPDF(`Suurimmat kalat`, '#biggest-fishes-table')" class="waves-effect waves-light blue darken-4 btn col s4 push-s4">
               <i class="material-icons left">picture_as_pdf</i>Lataa pdf
             </a>
@@ -203,7 +222,7 @@
         </div>
         <div id="biggest-fish-amounts" class="col s12 inputarea">
           <div class="section">
-            <div class="row">
+            <div class="row" v-if="biggest_amounts_results.length">
               <div class="col s3 push-s4">
                 <v-select
                   class="flow-text title"
@@ -215,13 +234,13 @@
                 />
               </div>
             </div>
-            <div class="row">
+            <div class="row" v-if="biggest_amounts_results.length">
               <table
                 id="biggest-amounts-table"
                 class="highlight centered responsive-table tablearea"
               >
                 <caption class="center-align flow-text">
-                  Suurimmat kalat ({{selected_biggest_fish}} {{ results_found_amounts }})
+                  Suurimmat kalasaaliit ({{selected_biggest_fish}} {{ results_found_amounts }})
                 </caption>
                 <thead style="background: rgb(0, 1, 34);color:#fff;">
                   <tr>
@@ -256,8 +275,11 @@
                 </tbody>
               </table>
             </div>
+            <div v-else>
+              <p class="flow-text">Ei tuloksia, vielä...</p>
+            </div>
           </div>
-          <div class="row">
+          <div class="row" v-if="biggest_amounts_results.length">
             <a v-on:click ="saveAsPDF(`Suurimmat kalasaaliit`, '#biggest-amounts-table')" class="waves-effect waves-light blue darken-4 btn col s4 push-s4">
               <i class="material-icons left">picture_as_pdf</i>Lataa pdf
             </a>
@@ -273,7 +295,8 @@ import M from "materialize-css";
 import { options_picker } from "../i18n";
 import "vue-select/dist/vue-select.css";
 import jsPDF from 'jspdf';
-import 'jspdf-autotable'
+import 'jspdf-autotable';
+import moment from 'moment';
 
 export default {
   name: "Results",
@@ -316,10 +339,10 @@ export default {
       this.biggest_fishes = this.$store.getters.getBiggestFishes;
       this.biggest_amounts = this.$store.getters.getBiggestAmounts;
       let temp_fish_names = this.$store.getters.getCompetitionFishes;
+      this.fish_names.push("Voittajat");
       temp_fish_names.forEach(fish => {
         this.fish_names.push(fish.name);
       });
-      this.fish_names.push("Voittajat");
       this.selected_biggest_amount = this.selected_biggest_fish = "Voittajat";
       this.calculateAll();
     }
@@ -530,65 +553,84 @@ export default {
       }
 
     },
-// Convert the charts and the tables to pdf
-  saveAsPDF: function (competition_type, table_id) {
-    let doc = new jsPDF();
-    const title = `${this.competition.name} - ${competition_type}`
-    doc.text(100,10, title, {align: "center"});
-    doc.autoTable({
-      html: table_id,
-      styles: {halign : 'center'},
-      margin: {top: 20},
-    })
+    replaceAll: function(string, search, replace) {
+      return string.split(search).join(replace);
+    },
+  // Convert the charts and the tables to pdf
+    saveAsPDF: function (competition_type, table_id) {
+      this.competition.start_date = moment(this.competition.start_date);
+      let temp_start_date = `${this.competition.start_date.date()}.${this.competition.start_date.month()}.${this.competition.start_date.year()}`;
+      let doc = new jsPDF();
+      const title = `${this.competition.name} - ${competition_type}`
+      doc.text(100,10, title, {align: "center"});
+      doc.autoTable({
+        html: table_id,
+        styles: {halign : 'center'},
+        margin: {top: 20},
+      })
+      
+      doc.save(`${this.replaceAll(this.competition.name, ' ', '_')}_${this.replaceAll(temp_start_date, ".", "-")}_${this.replaceAll(competition_type, " ","_")}.pdf`);
+    },
+    saveAllAsPDF: function () {
+      this.competition.start_date = moment(this.competition.start_date);
+      this.competition.end_date = moment(this.competition.end_date);
+      let temp_start_date = `${this.competition.start_date.date()}.${this.competition.start_date.month()}.${this.competition.start_date.year()}`;
+      let temp_end_date = `${this.competition.end_date.date()}.${this.competition.end_date.month()}.${this.competition.end_date.year()}`
+      let doc = new jsPDF();
+      const title = `${this.competition.name}, ${temp_start_date} - ${temp_end_date}`;
+      const time = `Klo. ${this.competition.start_time} - ${this.competition.end_time}`;
+      doc.text(100, 10, title, {align: "center"});
+      doc.text(100, 20, time, {align: "center"});
+      doc.text(100,35, "Normaalikilpailun tulokset", {align: "center"});
+      doc.autoTable({
+        html: '#normal-table',
+        styles: {halign : 'center'},
+        margin: {top: 40},
+      });
+      if(this.$store.getters.isTeamCompetition) {
+          doc.addPage();
+          doc.text(100, 10, "Tiimikilpailun tulokset", {align: "center"});
+          if(this.team_results.length){
+            doc.autoTable({
+              html: '#team-table',
+              styles: {halign : 'center'},
+              margin: {top: 20},
+            });
+          }
+          else {
+            doc.text(10,20, "Ei tuloksia");
+          }
 
-    doc.save(`${this.competition.name}_${competition_type.replace(" ","_")}.pdf`);
-  },
-  saveAllAsPDF: function () {
-    let doc = new jsPDF();
-    const title = `${this.competition.name}, ${this.competition.start_date} (${this.competition.start_time} - ${this.competition.end_time})`
-    doc.text(100, 10, title, {align: "center"});
-    doc.text(100,25, "Normaalikilpailun tulokset", {align: "center"});
-    doc.autoTable({
-      html: '#normal-table',
-      styles: {halign : 'center'},
-      margin: {top: 30},
-    });
-    doc.addPage();
-    doc.text(100, 10, "Tiimikilpailun tulokset", {align: "center"});
-    doc.autoTable({
-      html: '#team-table',
-      styles: {halign : 'center'},
-      margin: {top: 20},
-    });
-    doc.addPage();
-    doc.text(100, 10, "Suurimmat kalat" + ` (${this.selected_biggest_fish})`, {align: "center"});
+      }
 
-    if(this.biggest_fishes_results){
-        doc.autoTable({
-          html: '#biggest-fishes-table',
-          styles: {halign : 'center'},
-          margin: {top: 20},
-        });   
-    }
-    else {
-        doc.text(10,20, "Ei tuloksia");
-    }
-    doc.addPage();
-    doc.text(100, 10, "Suurimmat kalasaaliit" + ` (${this.selected_biggest_amount})`, {align: "center"});
-
-    if(this.biggest_amounts_results){
-        doc.autoTable({
-            html: '#biggest-amounts-table',
+      doc.addPage();
+      doc.text(100, 10, "Suurimmat kalat" + ` (${this.selected_biggest_fish})`, {align: "center"});
+      if(this.biggest_fishes_results){
+          doc.autoTable({
+            html: '#biggest-fishes-table',
             styles: {halign : 'center'},
             margin: {top: 20},
-        });     
-    }
-    else {
-        doc.text(10,20, "Ei tuloksia");
-    }
+          });   
+      }
+      else {
+          doc.text(10,20, "Ei tuloksia");
+      }
+      doc.addPage();
+      doc.text(100, 10, "Suurimmat kalasaaliit" + ` (${this.selected_biggest_amount})`, {align: "center"});
 
-    doc.save(`${this.competition.name}_kaikki_tulokset.pdf`);
-  },
+      if(this.biggest_amounts_results){
+          doc.autoTable({
+              html: '#biggest-amounts-table',
+              styles: {halign : 'center'},
+              margin: {top: 20},
+          });     
+      }
+      else {
+          doc.text(10,20, "Ei tuloksia");
+      }
+
+      doc.save(`${this.replaceAll(this.competition.name, ' ', '_')}_${this.replaceAll(temp_start_date, ".", "-")}_kaikki_tulokset.pdf`);
+    },
   },
 };
 </script>

@@ -7,7 +7,9 @@ export default new Vuex.Store({
   state: {
     competition: null,
     competitions: null,
-    results: null
+    results: null,
+    logged_in: false,
+    is_admin: false,
   },
   getters: {
     getSigneesCount: state => {
@@ -59,6 +61,12 @@ export default new Vuex.Store({
     },
     isTeamCompetition: state => {
       return state.competition.team_competition;
+    },
+    isLoggedIn: state => {
+      return state.logged_in;
+    },
+    isAdmin: state => {
+      return state.is_admin;
     }
   },
   mutations: {
@@ -73,6 +81,9 @@ export default new Vuex.Store({
     },
     addSignee: (state, signee) => {
       state.competition.signees.push(signee);
+    },
+    removeSignee: (state, signee) => {
+      state.competition.signees.splice(state.competition.signees.indexOf(signee), 1);
     },
     addBiggestFish: (state, fish) => {
       if(state.competition.biggest_fishes[fish.name]){

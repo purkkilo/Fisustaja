@@ -53,8 +53,8 @@
             <p class="flow-text"><b>Kapteeni:</b> {{ old_info.captain_name }}</p>
             <p class="flow-text"><b>Varakapteeni:</b> {{ old_info.temp_captain_name }}</p>
             <p class="flow-text"><b>Seura/Paikkakunta:</b> {{ old_info.locality }}</p>
-            <p class="flow-text"><b>Seura/Paikkakunta:</b> {{ old_info.starting_place }}</p> 
-            <p class="flow-text"><b>Seura/Paikkakunta:</b> {{ old_info.team }}</p>           
+            <p class="flow-text"><b>Lähtöpaikka:</b> {{ old_info.starting_place }}</p> 
+            <p v-if="$store.getters.isTeamCompetition" class="flow-text"><b>Joukkue:</b> {{ old_info.team }}</p>           
           </div>
           <div class="divider black"></div>
           <div id="new-info-container col s6">
@@ -62,8 +62,8 @@
             <p class="flow-text"><b>Kapteeni:</b> {{ captain_name }}</p>
             <p class="flow-text"><b>Varakapteeni:</b> {{ temp_captain_name }}</p>
             <p class="flow-text"><b>Seura/Paikkakunta:</b> {{ locality }}</p>
-            <p class="flow-text"><b>Seura/Paikkakunta:</b> {{ starting_place }}</p> 
-            <p class="flow-text"><b>Seura/Paikkakunta:</b> {{ team }}</p>  
+            <p class="flow-text"><b>Lähtöpaikka:</b> {{ starting_place }}</p> 
+            <p v-if="$store.getters.isTeamCompetition" class="flow-text"><b>Joukkue:</b> {{ team }}</p>  
           </div>
           <div class="row">
             <a v-on:click="overwriteSignee(old_info, false)" class="waves-effect waves-light yellow btn black-text col s4 push-s1"><i class="material-icons left">backspace</i>Peruuta</a>
@@ -150,12 +150,11 @@
             </div>
           </div>
 
-          <div class="row">
+          <div class="row" v-if="$store.getters.isTeamCompetition">
             <div class="input-fields col s8 push-s2">
               <v-select
                 class="flow-text title"
                 taggable
-                push-tags
                 placeholder="Valitse, tai kirjoita tiimin nimi"
                 v-model="team"
                 :options="teams"
@@ -257,8 +256,8 @@ export default {
           this.teams = this.$store.getters.getTeams;
 
           if (this.signees.length) {
-            this.boat_number = this.$store.getters.getSigneesCount + 1;
-            this.id = this.$store.getters.getSigneesCount + 1;
+            this.boat_number = this.signees[this.$store.getters.getSigneesCount - 1].boat_number + 1;
+            this.id = this.signees[this.$store.getters.getSigneesCount - 1].boat_number + 1;
           }
           else {
             this.boat_number = 1;
@@ -297,6 +296,8 @@ export default {
         overwriteSignee: function(signee, overwrite) {
             overwrite === true ? console.log("Overwrite!") : console.log("Don't overwrite!")
             if(overwrite) {
+                // Remove old data
+                this.$store.commit("removeSignee", signee);
                 // Replace the old existing signee info with new info, without changing the id
                 signee.boat_number = parseInt(this.boat_number);
                 signee.starting_place = this.starting_place;
@@ -304,11 +305,24 @@ export default {
                 signee.temp_captain_name = this.temp_captain_name;
                 signee.locality = this.locality;
                 signee.team = this.team;
-                this.saveToDatabase(signee, true);
-                this.$store.commit('setTeams', this.teams);
-                this.clearInputs();
-                this.boat_number = this.id;
-                this.notification = "Tiedot korvattu uusilla!";
+                if (this.team.length > 40) {
+                    let temp_team = this.team;
+                    temp_team = temp_team.slice(0, 40);
+                    this.team = temp_team; // Set the name back, shortened
+                    this.showError("Valitse tiimin nimeksi alle 40 merkkiä pitkä nimi (nimi lyhennetty 40 merkkiin)!");
+                }
+                else {
+                  //If the array doensn't have the team name already
+                  if(this.teams.indexOf(this.team) == -1) {
+                    this.teams.push(this.team);
+                    this.$store.commit('setTeams', this.teams);
+                  }
+                  this.saveToDatabase(signee, true);
+                  this.clearInputs();
+                  this.boat_number = this.id;
+                  this.notification = "Tiedot korvattu uusilla!";
+                }
+
             }
             else {
               this.notification = "Veneen numero asetettu ensimmäiseen vapaaseen paikkaan!";
@@ -391,8 +405,7 @@ export default {
 
         },
         searchBoatNumber: function(boat_number) {
-            var search_boat_number = parseInt(boat_number);
-            return this.$store.getters.getSigneeByBoatNumber(search_boat_number);
+            return this.$store.getters.getSigneeByBoatNumber(parseInt(boat_number));
         },
         searchId: function(id) {
             var search_id = parseInt(id);
@@ -441,6 +454,13 @@ export default {
             if(!this.team) {
                 this.team = "-";
             }
+            if (this.team.length > 40) {
+              let temp_team = this.team
+              temp_team = temp_team.slice(0, 40);
+              this.team = temp_team; // Set the name back, shortened
+              this.showError("Valitse tiimin nimeksi alle 40 merkkiä pitkä nimi (nimi lyhennetty 40 merkkiin, valittavissa pudotusvalikosta)!");
+            }
+
             if (!this.temp_captain_name) {
                 this.temp_captain_name = "-";
             }
@@ -455,11 +475,11 @@ export default {
                   // If id on signees
                   let found_signee = this.searchId(this.selected_id);
                   if (found_signee) {
-                      let temp_boat = this.searchBoatNumber(this.boat_number)
+                      let temp_boat = this.searchBoatNumber(this.boat_number);
                       // If there already exist a boat with same number, but it isn't the same id
                       if(temp_boat && (temp_boat.id != found_signee.id)){
                         console.log("Boat number already exists...");
-                        this.old_info = `Kapteeni: ${temp_boat.captain_name}, Varakapteeni: ${temp_boat.temp_captain_name}, Seura/Paikkakunta: ${temp_boat.locality}`;
+                        this.old_info = temp_boat;
                       }
                       else {
                           // If there isn't any boats with this boat number
@@ -471,11 +491,15 @@ export default {
                           found_signee.team = this.team;
                           this.new_signee = found_signee;
                           this.saveToDatabase(this.new_signee, true);
-                          this.$store.commit('setTeams', this.teams);
+                          if(this.teams.indexOf(this.team) == -1) {
+                            this.teams.push(this.team);
+                            this.$store.commit('setTeams', this.teams);
+                          }
                           console.log("Updating info...");
                           this.notification =`Päivitetty venekunnan (Nro: ${this.new_signee.boat_number}, Kapteeni: ${this.new_signee.captain_name}) Tiedot!`;
                           this.clearInputs();
-                          this.boat_number = parseInt(this.new_signee.boat_number) + 1;
+                          this.boat_number = this.$store.getters.getSigneesCount + 1;
+                          this.id = this.$store.getters.getSigneesCount + 1;
                           this.selected_id = null;
                       }
                   }
@@ -517,11 +541,14 @@ export default {
                             weights: weights
                         };
                         this.saveToDatabase(this.new_signee, false);
-                        this.$store.commit('setTeams', this.teams);
+                        if(this.teams.indexOf(this.team) == -1) {
+                          this.teams.push(this.team);
+                          this.$store.commit('setTeams', this.teams);
+                        }
                         this.notification =`Venekunta ilmoitettu kisaan! (Nro: ${this.new_signee.boat_number}, Kapteeni: ${this.new_signee.captain_name})`;
                         this.clearInputs();
-                        this.boat_number = parseInt(this.new_signee.boat_number) + 1;
-                        this.id++;
+                        this.boat_number = this.signees[this.$store.getters.getSigneesCount - 1].boat_number + 1;
+                        this.id = this.signees[this.$store.getters.getSigneesCount - 1].boat_number + 1;
                         this.selected_id = null;
                     }                  
                 }
