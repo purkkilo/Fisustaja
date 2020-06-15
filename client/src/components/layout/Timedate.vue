@@ -2,7 +2,7 @@
     <div class="row black-text valign-wrapper time">
         <div class="col s3 center-align"><h4 id="date"> </h4></div>
         <div class="col s6 center-align">
-          <h4>{{ timer_string }}</h4>
+          <h4 v-if="competitionChosen">{{ timer_string }}</h4>
         </div>
         <div class="col s3 center-align"><h4 id="clock"> </h4></div>
     </div>
@@ -29,6 +29,11 @@ export default {
         timer_string: "",
         amount: 40,
       }
+  },
+  computed: {
+      competitionChosen() {
+        return this.$store.getters.getCompetition;
+      },
   },
   mounted () {
     //TODO update timer that shows if competition has started, how much competition is left etc.

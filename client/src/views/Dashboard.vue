@@ -47,7 +47,9 @@ export default {
         return {
         }
     },
-    mounted() {},
+    mounted() {
+        this.$store.commit('refreshCompetition', null);
+    },
     methods: {},
 }
 </script>
