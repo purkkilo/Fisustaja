@@ -77,6 +77,7 @@
               <input
                 id="boat_number"
                 v-model="boat_number"
+                @paste.prevent
                 @keypress="isNumber($event)"
                 name="boat_number"
                 oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);"

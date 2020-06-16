@@ -139,8 +139,8 @@ export default {
       this.fish_specs = this.$store.getters.getCompetitionFishes;
       this.start_date = moment(this.competition.start_date);
       this.end_date = moment(this.competition.end_date);
-      this.formatted_start_date = `${this.start_date.date()}.${this.start_date.month()}.${this.start_date.year()}`;
-      this.formatted_end_date = `${this.end_date.date()}.${this.end_date.month()}.${this.end_date.year()}`;
+      this.formatted_start_date = `${this.start_date.date()}.${this.start_date.month()+1}.${this.start_date.year()}`;
+      this.formatted_end_date = `${this.end_date.date()}.${this.end_date.month()+1}.${this.end_date.year()}`;
     }
     else {
       this.competition = null;

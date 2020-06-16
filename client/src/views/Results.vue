@@ -559,7 +559,7 @@ export default {
   // Convert the charts and the tables to pdf
     saveAsPDF: function (competition_type, table_id) {
       this.competition.start_date = moment(this.competition.start_date);
-      let temp_start_date = `${this.competition.start_date.date()}.${this.competition.start_date.month()}.${this.competition.start_date.year()}`;
+      let temp_start_date = `${this.competition.start_date.date()}.${this.competition.start_date.month()+1}.${this.competition.start_date.year()}`;
       let doc = new jsPDF();
       const title = `${this.competition.name} - ${competition_type}`
       doc.text(100,10, title, {align: "center"});
@@ -574,8 +574,8 @@ export default {
     saveAllAsPDF: function () {
       this.competition.start_date = moment(this.competition.start_date);
       this.competition.end_date = moment(this.competition.end_date);
-      let temp_start_date = `${this.competition.start_date.date()}.${this.competition.start_date.month()}.${this.competition.start_date.year()}`;
-      let temp_end_date = `${this.competition.end_date.date()}.${this.competition.end_date.month()}.${this.competition.end_date.year()}`
+      let temp_start_date = `${this.competition.start_date.date()}.${this.competition.start_date.month()+1}.${this.competition.start_date.year()}`;
+      let temp_end_date = `${this.competition.end_date.date()}.${this.competition.end_date.month()+1}.${this.competition.end_date.year()}`
       let doc = new jsPDF();
       const title = `${this.competition.name}, ${temp_start_date} - ${temp_end_date}`;
       const time = `Klo. ${this.competition.start_time} - ${this.competition.end_time}`;

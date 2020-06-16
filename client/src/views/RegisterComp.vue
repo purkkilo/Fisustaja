@@ -87,6 +87,7 @@
                   >                       
                   <input
                     id="cup_placement_points"
+                    @paste.prevent
                     v-model="cup_placement_points"
                     @keypress="isNumber($event, true)"
                     oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);"
@@ -104,6 +105,7 @@
                   >                   
                   <input
                     id="cup_participation_points"
+                    @paste.prevent
                     v-model="cup_participation_points"
                     @keypress="isNumber($event, true)"
                     oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);"
@@ -122,6 +124,7 @@
                   > 
                   <input
                     id="cup_points_multiplier"
+                    @paste.prevent
                     v-model="cup_points_multiplier"
                     @keypress="isNumber($event, true)"
                     oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);"
@@ -162,6 +165,7 @@
                   <input
                     id="start_date"
                     v-model.lazy="start_date"
+                    @paste.prevent
                     name="start_date"
                     type="text"
                     class="datepicker validate col s6"
@@ -178,6 +182,7 @@
                   <input
                     id="end_date"
                     v-model.lazy="end_date"
+                    @paste.prevent
                     name="end_date"
                     type="text"
                     class="datepicker validate col s6"
@@ -194,6 +199,7 @@
                   <input
                     id="start_time"
                     v-model.lazy="start_time"
+                    @paste.prevent
                     @keypress="isNumber($event, false)"
                     name="time_of_competition"
                     type="text"
@@ -211,6 +217,7 @@
                   <input
                     id="end_time"
                     v-model.lazy="end_time"
+                    @paste.prevent
                     @keypress="isNumber($event, false)"
                     name="end_time"
                     type="text"
@@ -254,8 +261,11 @@
             </p>
             <div class="row section" id="fishes_select" style="height:400px;">
               <p class="center-align">
-                (Valitse allaolevasta laatikosta, voi myös lisätä oman kalalajin
-                kirjoittamalla)
+                Valitse allaolevasta laatikosta, voit myös lisätä oman kalalajin
+                kirjoittamalla
+              </p>
+              <p class="center-align">
+                (Yli 40 merkkiä pitkät nimet lyhennetään 40 merkkiin)
               </p>
               <v-select
                 class="col s10 push-s1 flow-text"
@@ -321,7 +331,7 @@
             </p>
             <div class="specs" id="select_specs">
               <ul id="fish_specs" v-if="selected.length">
-                <li
+                <li class="row"
                   id="fish_spec"
                   v-for="(fish, index) in selected"
                   :key="fish"
@@ -333,14 +343,16 @@
                       >{{ index + 1 }}. {{ fish }}</span
                     >
                   </div>
-                  <div class="row input-fields">
-                    <div class="col s6 push-s2">
+
+                  <div class="row col s8 push-s2 input-fields">
+                    <div class="col s8">
                       <span class="flow-text">Pistekerroin</span>
                     </div>
                     <div class="col s4">
                       <input
                         :id="'fish_' + (index + 1) + '_multiplier'"
                         type="text"
+                        @paste.prevent
                         @keypress="isNumber($event, true)"
                         class="validate"
                         value="1"
@@ -348,15 +360,15 @@
                       />
                     </div>
                   </div>
-                  <div class="row">
-                    <div class="col s12 input-fields">
-                      <div class="col s6 push-s2">
+                    <div class="row col s8 push-s2 input-fields">
+                      <div class="col s8">
                         <span class="flow-text">Alamitta</span>
                       </div>
                       <div class="col s4">
                         <input
                           :id="'fish_' + (index + 1) + '_minsize'"
                           @keypress="isNumber($event, true)"
+                          @paste.prevent
                           type="text"
                           class="validate"
                           value="0"
@@ -364,7 +376,6 @@
                         />
                       </div>
                     </div>
-                  </div>
                 </li>
               </ul>
               <p v-else class="flow-text center-align">
@@ -569,7 +580,7 @@ export default {
       cup_participation_points: 5,
       cup_points_multiplier: 1.0,
       team_competition: "Ei",
-      start_date: null,
+      start_date: null, //FIXME yhteenvedossa kuukausi oikein, muualla ei !?!?
       end_date: null,
       start_time: null,
       end_time: null,
@@ -695,8 +706,8 @@ export default {
 
       // If all inputs validated
       if (!this.errors.length) {
-        let start_date = moment(`${this.start_date} ${this.start_time}`, 'DD.MM.YYYY HH:mm');
-        let end_date = moment(`${this.end_date} ${this.end_time}`, 'DD.MM.YYYY HH:mm');
+        let start_date = moment(`${this.start_date} ${this.start_time}`, 'D.M.YYYY HH:mm');
+        let end_date = moment(`${this.end_date} ${this.end_time}`, 'D.M.YYYY HH:mm');
 
         this.basic_info = {
           name: this.name,
@@ -720,7 +731,16 @@ export default {
       this.fish_species_validated = false;
       this.validated = false;
       if (this.selected.length) {
-        this.selected = this.selected.sort();
+        let temp_array = [];
+        //TODO better solution for long names, temp fix
+        this.selected.forEach(fish => {
+          if(fish.length > 40) {
+            let shortened = fish.slice(0,40);
+            temp_array.push(shortened);
+          }
+          else {temp_array.push(fish)}
+        });
+        this.selected = temp_array.sort();
         document.getElementById("points-tab").classList.remove("disabled");
         this.disableInputs(true);
         this.tabs.select("points");

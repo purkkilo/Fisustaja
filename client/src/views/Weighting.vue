@@ -126,6 +126,7 @@
                             v-model="biggest_fish"
                             id="biggest_fish"
                             type="number"
+                            @paste.prevent
                             @keypress="isNumber($event)"
                             value="0"
                             step="5"
@@ -164,6 +165,7 @@
                           <input
                             :id="'fish_' + (index + 1) + '_weight'"
                             type="number"
+                            @paste.prevent
                             @keypress="isNumber($event)"
                             value="0"
                             step="5"

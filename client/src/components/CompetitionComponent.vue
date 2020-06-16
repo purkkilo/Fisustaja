@@ -19,7 +19,7 @@
             v-bind:key="competition._id"
             v-on:dblclick="deleteCompetition(competition._id)"
           >
-              <th style="border:1px solid black" class="center-align" scope="row">{{ `${competition.start_date.date()}.${competition.start_date.month()}.${competition.start_date.year()} - ${competition.end_date.date()}.${competition.end_date.month()}.${competition.end_date.year()}` }}</th>  
+              <th style="border:1px solid black" class="center-align" scope="row">{{ `${competition.start_date.date()}.${competition.start_date.month()+1}.${competition.start_date.year()} - ${competition.end_date.date()}.${competition.end_date.month()+1}.${competition.end_date.year()}` }}</th>  
               <td style="border:1px solid black">{{ competition.name }}</td> 
               <td style="border:1px solid black">{{ competition.cup_name }}</td> 
               <td style="border:1px solid black">{{ competition.state }}</td>

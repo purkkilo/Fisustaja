@@ -25,6 +25,7 @@
                     >                    
                     <input
                     id="name"
+                    @paste.prevent
                     v-model="name"
                     name="name"
                     type="text"
@@ -40,6 +41,7 @@
                     >                    
                     <input
                     id="email"
+                    @paste.prevent
                     v-model="email"
                     name="email"
                     type="text"
@@ -55,6 +57,7 @@
                     >                    
                     <input
                     id="password"
+                    @paste.prevent
                     v-model="password"
                     name="password"
                     type="password"
@@ -70,6 +73,7 @@
                     >                    
                     <input
                     id="password_confirmation"
+                    @paste.prevent
                     v-model="password_confirmation"
                     name="password_confirmation"
                     type="password"
