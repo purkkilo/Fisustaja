@@ -1,8 +1,9 @@
 "use strict";
 const express = require("express");
 const cors = require("cors");
-var path = require("path");
+const path = require("path");
 const serveStatic = require("serve-static");
+const history = require('connect-history-api-fallback');
 const app = express();
 
 // Middleware
@@ -16,6 +17,10 @@ const users = require("./routes/api/users");
 app.use("/api/competitions", competitions);
 app.use("/api/feedback", feedback);
 app.use("/api/users", users);
+
+app.use(history({
+  verbose: true
+}));
 // Handle production
 if (process.env.NODE_ENV === "production") {
   // Static folder

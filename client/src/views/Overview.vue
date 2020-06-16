@@ -31,7 +31,6 @@
           <h4>Kilpailun nimi: {{ competition.name }}</h4>
           <h4>Tila: {{ competition.state }}</h4>
           <div><b>Todo:</b> Statseja, saadut kalat, kilpailun tilanne, kaavioita jne.</div>
-          <div><b>Data:</b> {{ competition }}</div>
         </div>
       </div>
     </div>

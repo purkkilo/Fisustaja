@@ -65,6 +65,7 @@ export default {
       this.$store.state.logged_in = false;
       this.$store.state.is_admin = false;
       this.$router.push("/");
+      this.$store.commit('refreshCompetition', null);
       M.toast({html: "Kirjattu ulos onnistuneesti!"});
     },
   }
