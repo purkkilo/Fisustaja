@@ -104,7 +104,7 @@ export default {
                     try {
                         await UserService.loginUser(user)
                         .then(response => {
-                            let is_admin = response.data.user.is_admin;
+                            let is_admin = JSON.stringify(response.data.user.is_admin);
                             localStorage.setItem('user',JSON.stringify({id:response.data.user._id ,name: response.data.user.name, email: response.data.user.email, is_admin: response.data.user.is_admin, createdAt: response.data.user.createdAt}));
                             localStorage.setItem('jwt',response.data.token);
                             this.$store.state.logged_in = true;

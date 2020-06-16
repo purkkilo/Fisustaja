@@ -156,8 +156,8 @@
                 {
 
 
-                    if(this.is_admin != null || this.is_admin == true){
-                        let admin = this.is_admin === "Kyllä" ? true : false;
+                    if(this.is_admin == "Kyllä"){
+                        let admin =  true;
                         const user = {
                                 name: this.name,
                                 email: this.email,
@@ -166,16 +166,24 @@
                         };
                         await UserService.insertAdmin(user)
                         .then(response => {
-                            localStorage.setItem('user',JSON.stringify(response.data.user));
+                            let is_admin = JSON.stringify(response.data.user.is_admin);
+                            localStorage.setItem('user',JSON.stringify({id:response.data.user._id ,name: response.data.user.name, email: response.data.user.email, is_admin: response.data.user.is_admin, createdAt: response.data.user.createdAt}));
                             localStorage.setItem('jwt',response.data.token);
-
+                            this.$store.state.logged_in = true;
+                            this.$store.state.is_admin = true;
                             if (localStorage.getItem('jwt') != null){
                                 this.$emit('loggedIn')
                                 if(this.$route.params.nextUrl != null){
                                     this.$router.push(this.$route.params.nextUrl)
                                 }
-                                else{
-                                    this.$router.push('/')
+                                else {
+                                    if(is_admin == true){
+                                        this.$store.state.is_admin = true;
+                                        this.$router.push('admin')
+                                    }
+                                    else {
+                                        this.$router.push('dashboard')
+                                    }
                                 }
                             }
                             this.loading = false;
@@ -193,16 +201,17 @@
                         };
                         await UserService.insertUser(user)
                         .then(response => {
-                            localStorage.setItem('user',JSON.stringify(response.data.user))
-                            localStorage.setItem('jwt',response.data.token)
-
+                            localStorage.setItem('user',JSON.stringify({id:response.data.user._id ,name: response.data.user.name, email: response.data.user.email, is_admin: false, createdAt: response.data.user.createdAt}));
+                            localStorage.setItem('jwt',response.data.token);
+                            this.$store.state.logged_in = true;
+                            this.$store.state.is_admin = false;
                             if (localStorage.getItem('jwt') != null){
                                 this.$emit('loggedIn')
                                 if(this.$route.params.nextUrl != null){
                                     this.$router.push(this.$route.params.nextUrl)
                                 }
-                                else{
-                                    this.$router.push('/')
+                                else {
+                                    this.$router.push('dashboard');
                                 }
                             }
                             this.loading = false;

@@ -29,7 +29,7 @@ class UserService {
             name: user.name,
             email: user.email,
             password: user.password,
-            is_admin: user.is_admin,
+            is_admin: false,
         });
     }
 
