@@ -162,7 +162,7 @@
         </div>
         <div id="biggest-fishes" class="col s12 inputarea">
           <div class="section">
-            <div class="row" v-if="biggest_fishes_results.length">
+            <div class="row">
               <div class="col s3 push-s4">
                 <v-select
                   class="flow-text title"
@@ -180,7 +180,7 @@
                 class="highlight centered responsive-table tablearea"
               >
                 <caption class="center-align flow-text">
-                  Suurimmat kalat ({{selected_biggest_fish}} {{ results_found_fishes }})
+                  Suurimmat kalat ({{ selected_biggest_fish }} {{ results_found_fishes }})
                 </caption>
                 <thead style="background: rgb(0, 1, 34);color:#fff;">
                   <tr>
@@ -222,7 +222,7 @@
         </div>
         <div id="biggest-fish-amounts" class="col s12 inputarea">
           <div class="section">
-            <div class="row" v-if="biggest_amounts_results.length">
+            <div class="row">
               <div class="col s3 push-s4">
                 <v-select
                   class="flow-text title"
@@ -240,7 +240,7 @@
                 class="highlight centered responsive-table tablearea"
               >
                 <caption class="center-align flow-text">
-                  Suurimmat kalasaaliit ({{selected_biggest_fish}} {{ results_found_amounts }})
+                  Suurimmat kalasaaliit ({{ selected_biggest_amount }} {{ results_found_amounts }})
                 </caption>
                 <thead style="background: rgb(0, 1, 34);color:#fff;">
                   <tr>
