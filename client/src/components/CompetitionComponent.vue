@@ -90,6 +90,10 @@ export default {
         const user = JSON.parse(localStorage.getItem('user'));
         const user_id = user["id"];
         this.competitions = await CompetitionService.getCompetitions(user_id);
+        this.competitions.forEach(competition => {
+          competition.start_date = moment(competition.start_date);
+          competition.end_date = moment(competition.end_date);
+        });
         this.$store.state.competitions = this.competitions;
         this.loading = false;
       } catch(err) {
