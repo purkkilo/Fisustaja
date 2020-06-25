@@ -82,8 +82,21 @@ export default {
     },
     mounted() {
         this.vue_version = Vue.version;
+        this.checkLogin();
+        localStorage.removeItem("competition");
     },
     methods: {
+        checkLogin: function() {
+            if(localStorage.getItem('jwt') != null){
+                this.$store.state.logged_in = true;
+                let user = JSON.parse(localStorage.getItem('user'));
+                user.is_admin == true ? this.$store.state.is_admin = true : this.$store.state.is_admin = false;
+            }
+            else {
+                this.$store.state.logged_in = false;
+                this.$store.state.is_admin = false;
+            }
+        },
     },
 }
 </script>

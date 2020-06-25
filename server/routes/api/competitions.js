@@ -9,6 +9,12 @@ router.get('/:user_id', async (req, res) => {
     res.send(await competitions.find({user_id: req.params.user_id}).toArray());
 })
 
+// Get Competitions
+router.get('/competition/:competition_id', async (req, res) => {
+    const competitions = await loadCompetitionsCollection();
+    res.send(await competitions.find({_id: new mongodb.ObjectID(req.params.competition_id)}).toArray());
+})
+
 // Add Competition
 router.post('/', async (req, res) => {
     const competitions = await loadCompetitionsCollection();

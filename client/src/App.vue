@@ -1,10 +1,6 @@
 <template>
   <div id="app">
     <Header />
-    <ul class="sidenav" id="mobile">
-      <li><router-link to="/"><a class="waves-effect waves-light blue darken-2 btn-large"><i class="material-icons left">home</i>Alkuun</a></router-link></li>
-      <li><router-link to="/feedback"><a class="waves-effect waves-light grey darken-2 lighten-1 btn-large"><i class="material-icons left">info</i>About</a></router-link></li>
-    </ul>  
     <router-view/>
   </div>
 </template>

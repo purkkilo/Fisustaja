@@ -28,7 +28,7 @@
       </div>
       <div class="row">
         <div class="col s12">
-          <ul class="tabs" v-if="$store.getters.isTeamCompetition">
+          <ul class="tabs" v-if="isTeamCompetition">
             <li class="tab col s3">
               <a class="active" href="#normal-competition">Normaalikilpailu</a>
             </li>
@@ -54,6 +54,9 @@
             </li>
           </ul>
         </div>
+
+
+
         <div id="normal-competition" class="col s12 inputarea">
           <div class="section" >
             <div class="row" v-if="results.length">
@@ -104,7 +107,11 @@
               </table>
             </div>
             <div v-else>
-              <p class="flow-text">Ei tuloksia, vielä...</p>
+              <p v-if="!loading" class="flow-text">Ei tuloksia, vielä...</p>
+              <div v-else>
+                <h2>Päivitetään tuloksia tietokannasta...</h2>
+                <ProgressBarQuery />
+              </div>
             </div>
           </div>
           <div class="row" v-if="results.length">
@@ -113,7 +120,7 @@
             </a>
           </div>
         </div>
-        <div id="team-competition" class="col s12 inputarea" v-if="$store.getters.isTeamCompetition">
+        <div id="team-competition" class="col s12 inputarea" v-if="isTeamCompetition">
           <div class="section">
             <div class="row" v-if="team_results.length">
               <table
@@ -151,7 +158,11 @@
               </table>
             </div>
             <div v-else>
-              <p class="flow-text">Ei tuloksia, vielä...</p>
+              <p v-if="!loading" class="flow-text">Ei tuloksia, vielä...</p>
+              <div v-else>
+                <h2>Päivitetään tuloksia tietokannasta...</h2>
+                <ProgressBarQuery />
+              </div>
             </div>
           </div>
           <div class="row" v-if="team_results.length">
@@ -211,7 +222,11 @@
               </table>
             </div>
             <div v-else>
-              <p class="flow-text">Ei tuloksia, vielä...</p>
+              <p v-if="!loading" class="flow-text">Ei tuloksia, vielä...</p>
+              <div v-else>
+                <h2>Päivitetään tuloksia tietokannasta...</h2>
+                <ProgressBarQuery />
+              </div>
             </div>
           </div>
           <div class="row" v-if="biggest_fishes_results.length">
@@ -276,7 +291,11 @@
               </table>
             </div>
             <div v-else>
-              <p class="flow-text">Ei tuloksia, vielä...</p>
+              <p v-if="!loading" class="flow-text">Ei tuloksia, vielä...</p>
+              <div v-else>
+                <h2>Päivitetään tuloksia tietokannasta...</h2>
+                <ProgressBarQuery />
+              </div>
             </div>
           </div>
           <div class="row" v-if="biggest_amounts_results.length">
@@ -284,6 +303,15 @@
               <i class="material-icons left">picture_as_pdf</i>Lataa pdf
             </a>
           </div>
+        </div>
+      </div>
+      <div v-if="competition" class="row">
+        <a v-if="!loading" v-on:click="refreshCompetition(competition._id)" class="waves-effect waves-light grey darken-4 btn-large">
+          <i class="material-icons left">update</i>Päivitä tulokset
+        </a>
+        <div v-else>
+          <h2>Päivitetään tuloksia tietokannasta...</h2>
+          <ProgressBarQuery />
         </div>
       </div>
     </div>
@@ -297,14 +325,18 @@ import "vue-select/dist/vue-select.css";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import moment from 'moment';
+import CompetitionService from "../CompetitionService";
+import ProgressBarQuery from '../components/layout/ProgressBarQuery';
 
 export default {
   name: "Results",
   components: {
     Timedate,
+    ProgressBarQuery
   },
   data() {
     return {
+      loading: false,
       signees: [],
       fish_names: [],
       results: [],
@@ -318,6 +350,7 @@ export default {
       results_found_fishes: "",
       results_found_amounts: "",
       competition: null,
+      isTeamCompetition: false,
     };
   },
   mounted() {
@@ -330,27 +363,55 @@ export default {
     var elem = document.querySelectorAll(".tabs")[0];
     this.tabs = M.Tabs.getInstance(elem);
     this.fish_names = [];
-    if(this.$store.getters.getCompetition) {
-      this.competition = this.$store.getters.getCompetition
-    }
-    if (this.$store.getters.getResultSignees) {
-      
-      this.signees = this.$store.getters.getResultSignees;
-      this.biggest_fishes = this.$store.getters.getBiggestFishes;
-      this.biggest_amounts = this.$store.getters.getBiggestAmounts;
-      let temp_fish_names = this.$store.getters.getCompetitionFishes;
-      this.fish_names.push("Voittajat");
-      temp_fish_names.forEach(fish => {
-        this.fish_names.push(fish.name);
-      });
-      this.selected_biggest_amount = this.selected_biggest_fish = "Voittajat";
-      this.calculateAll();
-    }
-    else {
-      this.signees = [];
+    this.checkLogin();
+    if(localStorage.getItem('competition') != null) {
+      let competition_id = localStorage.getItem('competition');
+      this.refreshCompetition(competition_id);
     }
   },
   methods: {
+     async refreshCompetition(competition_id) {
+      this.loading = true;
+      try {
+        let competitions = await CompetitionService.getCompetition(competition_id);
+        if(competitions.length){
+            this.competition = competitions[0];
+            this.$store.commit('refreshCompetition', this.competition);
+            this.isTeamCompetition = this.$store.getters.isTeamCompetition;
+            this.signees = this.$store.getters.getResultSignees;
+            this.biggest_fishes = this.$store.getters.getBiggestFishes;
+            this.biggest_amounts = this.$store.getters.getBiggestAmounts;
+            let temp_fish_names = this.$store.getters.getCompetitionFishes;
+            this.fish_names.push("Voittajat");
+            temp_fish_names.forEach(fish => {
+              this.fish_names.push(fish.name);
+            });
+            this.selected_biggest_amount = this.selected_biggest_fish = "Voittajat";
+            this.calculateAll();
+        }
+        else {
+          this.signees = [];
+          this.biggest_fishes = [];
+          this.biggest_amounts = [];
+          console.log("No competition found on database...");
+        }
+        this.loading = false;
+      } catch(err) {
+        this.loading = false;
+        console.log(err.message);
+      }
+    },
+    checkLogin: function() {
+        if(localStorage.getItem('jwt') != null){
+            this.$store.state.logged_in = true;
+            let user = JSON.parse(localStorage.getItem('user'));
+            user.is_admin == true ? this.$store.state.is_admin = true : this.$store.state.is_admin = false;
+        }
+        else {
+            this.$store.state.logged_in = false;
+            this.$store.state.is_admin = false;
+        }
+    },  
     onlyUnique: function(value, index, self) {
       return self.indexOf(value) === index;
     },
@@ -587,7 +648,7 @@ export default {
         styles: {halign : 'center'},
         margin: {top: 40},
       });
-      if(this.$store.getters.isTeamCompetition) {
+      if(this.isTeamCompetition) {
           doc.addPage();
           doc.text(100, 10, "Tiimikilpailun tulokset", {align: "center"});
           if(this.team_results.length){

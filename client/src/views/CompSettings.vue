@@ -19,7 +19,7 @@
         </router-link>
       </div>
 
-      <div id="settings-info" class="section inputarea">
+      <div v-if="!loading" id="settings-info" class="section inputarea">
         <div id="summary">
           <div class="basic_summary row section">
             <div class="center-align col s8 push-s2">
@@ -111,17 +111,24 @@
           </div>
         </div>
       </div>
+      <div v-else>
+        <h2>Haetaan määrityksiä...</h2>
+        <ProgressBarQuery />
+      </div>
     </div>
   </div>
 </template>
 <script>
 import Timedate from "../components/layout/Timedate";
 import moment from 'moment';
+import CompetitionService from "../CompetitionService";
+import ProgressBarQuery from '../components/layout/ProgressBarQuery';
 
 export default {
   name: "CompSettings",
   components: {
     Timedate,
+    ProgressBarQuery
   },
   data() {
     return {
@@ -131,33 +138,63 @@ export default {
       formatted_start_date: null,
       end_date: null,
       formatted_end_date: null,
+      loading: false,
     };
   },
   created() {
-    if (this.$store.getters.getCompetition){
-      this.competition = this.$store.getters.getCompetition;
-      this.fish_specs = this.$store.getters.getCompetitionFishes;
-      this.start_date = moment(this.competition.start_date);
-      this.end_date = moment(this.competition.end_date);
-      this.formatted_start_date = `${this.start_date.date()}.${this.start_date.month()+1}.${this.start_date.year()}`;
-      this.formatted_end_date = `${this.end_date.date()}.${this.end_date.month()+1}.${this.end_date.year()}`;
+    if(localStorage.getItem('competition') != null) {
+        let competition_id = localStorage.getItem('competition');
+        this.refreshCompetition(competition_id);
     }
     else {
-      this.competition = null;
-      this.fish_specs = null;
+      console.log("No competition in localstorage!");
     }
   },
   mounted() {
-    if (this.$store.getters.getCompetition) {
-      this.competition = this.$store.getters.getCompetition;
-      this.fish_specs = this.$store.getters.getCompetitionFishes;
+    this.checkLogin();
+    if(localStorage.getItem('competition') != null) {
+        let competition_id = localStorage.getItem('competition');
+        this.refreshCompetition(competition_id);
     }
     else {
-      this.competition = null;
-      this.fish_specs = null;
+      console.log("No competition in localstorage!");
     }
   },
-  methods: {},
+  methods: {
+    async refreshCompetition(competition_id) {
+      this.loading = true;
+      try {
+        let competitions = await CompetitionService.getCompetition(competition_id);
+        this.loading = false;
+        if(competitions.length){
+            this.competition = competitions[0];
+            this.$store.commit('refreshCompetition', competitions[0]);
+            this.fish_specs = this.$store.getters.getCompetitionFishes;
+            this.start_date = moment(this.competition.start_date);
+            this.end_date = moment(this.competition.end_date);
+            this.formatted_start_date = `${this.start_date.date()}.${this.start_date.month()+1}.${this.start_date.year()}`;
+            this.formatted_end_date = `${this.end_date.date()}.${this.end_date.month()+1}.${this.end_date.year()}`;
+        }
+        else {
+          console.log("No competition found on database...");
+        }
+      } catch(err) {
+        this.loading = false;
+        console.log(err.message);
+      }
+    },
+    checkLogin: function() {
+        if(localStorage.getItem('jwt') != null){
+            this.$store.state.logged_in = true;
+            let user = JSON.parse(localStorage.getItem('user'));
+            user.is_admin == true ? this.$store.state.is_admin = true : this.$store.state.is_admin = false;
+        }
+        else {
+            this.$store.state.logged_in = false;
+            this.$store.state.is_admin = false;
+        }
+    },  
+  },
 };
 </script>
 

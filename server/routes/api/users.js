@@ -55,8 +55,7 @@ router.post('/register-admin', async (req, res) => {
         if (err) return res.status(500).send("There was a problem registering the user.");
         await users.findOne({email: req.body.email}, (err, user) => {
             if(err) return res.status(500).send("There was a problem getting user");
-            let token = jwt.sign({ id: user.id }, secret, {expiresIn: 86400 // expires in 24 hours
-            });
+            let token = jwt.sign({ id: user.id }, secret);
             res.status(200).send({ auth: true, token: token, user: user });
         })
     });
@@ -70,8 +69,7 @@ router.post('/login', async (req, res) => {
         if (!user) return res.status(404).send('No user found.');
         let passwordIsValid = bcrypt.compareSync(req.body.password, user.password);
         if (!passwordIsValid) return res.status(401).send({ auth: false, token: null });
-        let token = jwt.sign({ id: user.id }, secret, { expiresIn: 86400 // expires in 24 hours
-        });
+        let token = jwt.sign({ id: user.id }, secret);
         res.status(200).send({ auth: true, token: token, user: user });
     })
 });

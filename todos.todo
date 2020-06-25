@@ -8,18 +8,13 @@ Nested:
 
 Todos:
 New:
-  ☐ Parse results table(s) to pdf
   ☐ Input validation! @started(20-05-26 12:06) @high @today
   ☐ Comment all the files... @started(20-05-26 12:11) @low
-  ☐ Implement login
-  ☐ Re-routing when competition not selected / not logged in
-  ☐ Add input for competition end date 
   ☐ Implement multiple day competitions
   ☐ Update competition from database on some time interval (allows using multiple computers at the same time)
-  ☐ Choose team from dropdown (vselect) 
-  ☐ Make teams optional, selectable from registercomp
   ☐ Fix clock timings
-  ☐ Fix placement if points == 0
+  ☐ Add competitions to cups
+  ☐ Sidenav only closing when clicking to feedback page? 
   
 Done:
   ✔ Create signees database collection @started(20-05-26 11:19) @today @done(20-05-27 19:34) @lasted(1d8h15m1s)
@@ -30,7 +25,16 @@ Done:
   ✔ Implement team competition @done(20-06-10 18:25)
   ✔ Implement timer that shows if competition has started, how much competition is left etc. @done(20-06-14 18:37)
   ✔ Implement biggest fishes @started(20-06-14 18:36) @done(20-06-14 18:36) @lasted(53s)
-
+  ✔ Make teams optional, selectable from registercomp @done(20-06-22 18:25)
+  ✔ Fix header for mobile @done(20-06-22 18:25)
+  ✔ Choose team from dropdown (vselect) @done(20-06-22 18:25)
+  ✔ Parse results table(s) to pdf @done(20-06-22 18:25)
+  ✔ Implement login @done(20-06-22 18:25)
+  ✔ Re-routing when competition not selected / not logged in @done(20-06-22 18:25)
+  ✔ Add input for competition end date @done(20-06-22 18:25)
+  ✔ Fix placement if points == 0 @done(20-06-25 20:21)
+  ✔ Fix competition refreshing on Results.vue @done(20-06-25 20:21)
+  
 Cancelled:
   ✘ Press Alt+C to mark a todo as cancelled
   

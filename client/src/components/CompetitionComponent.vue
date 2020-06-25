@@ -80,6 +80,7 @@ export default {
   methods: {
     pickCompetition: function(competition) {
         this.$store.state.competition = competition;
+        localStorage.setItem("competition", competition._id);
         this.$router.push({path: '/overview'});
     },// TEMP!
     async deleteCompetition(id) {

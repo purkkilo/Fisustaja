@@ -595,6 +595,7 @@ export default {
     };
   },
   mounted() {
+    this.checkLogin();
     M.AutoInit();
     /* eslint-disable no-unused-vars */
     var tabs = document.querySelectorAll(".tabs");
@@ -615,6 +616,17 @@ export default {
     moment.locale("fi");
   },
   methods: {
+    checkLogin: function() {
+        if(localStorage.getItem('jwt') != null){
+            this.$store.state.logged_in = true;
+            let user = JSON.parse(localStorage.getItem('user'));
+            user.is_admin == true ? this.$store.state.is_admin = true : this.$store.state.is_admin = false;
+        }
+        else {
+            this.$store.state.logged_in = false;
+            this.$store.state.is_admin = false;
+        }
+    },
     //filter other other characters out for number inputs
     isNumber: function(evt, isDate) {
       var charToCheckCode = 46; //dot --> .

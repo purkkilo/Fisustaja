@@ -38,7 +38,7 @@
         </ul>
       </div>
 
-      <div id="signing" class="col s12 inputarea">
+      <div v-if="!loading_site" id="signing" class="col s12 inputarea">
         <div class="section center-align">
           <p class="flow-text">Ilmoittautuminen</p>
         </div>
@@ -54,7 +54,7 @@
             <p class="flow-text"><b>Varakapteeni:</b> {{ old_info.temp_captain_name }}</p>
             <p class="flow-text"><b>Seura/Paikkakunta:</b> {{ old_info.locality }}</p>
             <p class="flow-text"><b>Lähtöpaikka:</b> {{ old_info.starting_place }}</p> 
-            <p v-if="$store.getters.isTeamCompetition" class="flow-text"><b>Joukkue:</b> {{ old_info.team }}</p>           
+            <p v-if="isTeamCompetition" class="flow-text"><b>Joukkue:</b> {{ old_info.team }}</p>           
           </div>
           <div class="divider black"></div>
           <div id="new-info-container col s6">
@@ -63,7 +63,7 @@
             <p class="flow-text"><b>Varakapteeni:</b> {{ temp_captain_name }}</p>
             <p class="flow-text"><b>Seura/Paikkakunta:</b> {{ locality }}</p>
             <p class="flow-text"><b>Lähtöpaikka:</b> {{ starting_place }}</p> 
-            <p v-if="$store.getters.isTeamCompetition" class="flow-text"><b>Joukkue:</b> {{ team }}</p>  
+            <p v-if="isTeamCompetition" class="flow-text"><b>Joukkue:</b> {{ team }}</p>  
           </div>
           <div class="row">
             <a v-on:click="overwriteSignee(old_info, false)" class="waves-effect waves-light yellow btn black-text col s4 push-s1"><i class="material-icons left">backspace</i>Peruuta</a>
@@ -151,7 +151,7 @@
             </div>
           </div>
 
-          <div class="row" v-if="$store.getters.isTeamCompetition">
+          <div class="row" v-if="isTeamCompetition">
             <div class="input-fields col s8 push-s2">
               <v-select
                 class="flow-text title"
@@ -169,16 +169,22 @@
             <p class="flow-text">Päivitetään tiedot tietokantaan...</p>
             <ProgressBarQuery />
           </div>
-          <a v-on:click="clearInputs" class="waves-effect waves-light yellow black-text btn-large col s4 offset-s2"><i class="material-icons left">backspace</i>Pyyhi Kentät</a>
-          <a v-on:click="validateInfo" class="waves-effect waves-light green black-text btn-large col s3 offset-s1"><i class="material-icons right">save_alt</i>Tallenna</a>
+          <div v-else>
+            <a v-on:click="clearInputs" class="waves-effect waves-light yellow black-text btn-large col s4 offset-s2"><i class="material-icons left">backspace</i>Pyyhi Kentät</a>
+            <a v-on:click="validateInfo" class="waves-effect waves-light green black-text btn-large col s3 offset-s1"><i class="material-icons right">save_alt</i>Tallenna</a>
+          </div>
         </div>
+      </div>
+      <div v-else>
+        <h2>Haetaan veneitä...</h2>
+        <ProgressBarQuery />        
       </div>
       <div id="signees-div" class="col s12">
         <div class="center-align col s4 inputarea">
-          <p class="flow-text">Ilmoittautuneita yhteensä: <b>{{ $store.getters.getCompetitionSignees.length }}</b></p>
+          <p class="flow-text">Ilmoittautuneita yhteensä: <b>{{ signees.length }}</b></p>
         </div>
         <div>
-          <table id="signees-table" class="highlight centered responsive-table fixed_header tablearea" v-if="$store.getters.getCompetitionSignees.length">
+          <table id="signees-table" class="highlight centered responsive-table fixed_header tablearea" v-if="signees.length">
             <thead>
               <tr>
                 <th>Nro.</th>
@@ -188,7 +194,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr @click="selectRow(signee.id)" :class="{ selected : selected_id == signee.id }" v-for="(signee, index) in $store.getters.getCompetitionSignees" :key="index">
+              <tr @click="selectRow(signee.id)" :class="{ selected : selected_id == signee.id }" v-for="(signee, index) in signees" :key="index">
                   <th class="center-align" style="border:1px solid black">{{ signee.boat_number }} ({{ signee.id }})</th>  
                   <td style="border:1px solid black">{{ signee.captain_name }}</td> 
                   <td style="border:1px solid black">{{ signee.temp_captain_name }}</td>
@@ -201,7 +207,7 @@
           <div class="col s12 center-align"><a class="waves-effect waves-light blue btn" v-on:click="searchSelected"><i class="material-icons left">info</i>Näytä valitun ilmoittautumistiedot</a></div>
         </div>
         <div v-else class="section inputarea center-align">
-          <p v-if="$store.getters.getCompetitionSignees.length" class="flow-text">Voit katsella venekunnan tietoja myös klikkaamalla haluamaasi riviä taulukosta ja painamalla ilmestyvää nappulaa</p>
+          <p v-if="signees.length" class="flow-text">Voit katsella venekunnan tietoja myös klikkaamalla haluamaasi riviä taulukosta ja painamalla ilmestyvää nappulaa</p>
           <h3 v-else class="center-align">Ei ilmoittautuneita!</h3>
         </div>
       </div>
@@ -237,36 +243,73 @@ export default {
           new_signee:null,
           notification: null,
           loading: false,
+          loading_site: false,
           old_info: null,
           signees: [],
           teams: [],
           maxlength: 40,
+          isTeamCompetition: false,
       }
     },
+    created() {
+    },
     mounted() {
-        M.AutoInit();
-        /* eslint-disable no-unused-vars */
-        var tabs = document.querySelectorAll('.tabs');
-        var instance = M.Tabs.init(tabs, options_picker);
-        var elem = document.querySelectorAll('.tabs')[0];
-        /* eslint-enable no-unused-vars */
-        this.tabs = M.Tabs.getInstance(elem);
-
-        if(this.$store.getters.getCompetition){
-          this.signees =  this.$store.getters.getCompetitionSignees;
-          this.teams = this.$store.getters.getTeams;
-
-          if (this.signees.length) {
-            this.boat_number = this.signees[this.$store.getters.getSigneesCount - 1].boat_number + 1;
-            this.id = this.signees[this.$store.getters.getSigneesCount - 1].boat_number + 1;
-          }
-          else {
-            this.boat_number = 1;
-            this.id = 1;
-          }
-        }
+      this.checkLogin();
+      this.initMaterialize();
+      if(localStorage.getItem('competition') != null) {
+          let competition_id = localStorage.getItem('competition');
+          this.refreshCompetition(competition_id);
+      }
     },
     methods: {
+        async refreshCompetition(competition_id) {
+          this.loading_site = true;
+          try {
+            let competitions = await CompetitionService.getCompetition(competition_id);
+            this.loading_site = false;
+            if(competitions.length){
+                this.$store.commit('refreshCompetition', competitions[0]);
+                this.isTeamCompetition = this.$store.getters.isTeamCompetition;
+                this.signees =  this.$store.getters.getCompetitionSignees;
+                this.teams = this.$store.getters.getTeams;
+
+                if (this.signees.length) {
+                  this.boat_number = this.signees[this.$store.getters.getSigneesCount - 1].boat_number + 1;
+                  this.id = this.signees[this.$store.getters.getSigneesCount - 1].boat_number + 1;
+                }
+                else {
+                  this.boat_number = 1;
+                  this.id = 1;
+                }   
+            }
+            else {
+              console.log("No competition found on database...");
+            }
+          } catch(err) {
+            this.loading_site = false;
+            console.log(err.message);
+          }
+        },
+        checkLogin: function() {
+            if(localStorage.getItem('jwt') != null){
+                this.$store.state.logged_in = true;
+                let user = JSON.parse(localStorage.getItem('user'));
+                user.is_admin == true ? this.$store.state.is_admin = true : this.$store.state.is_admin = false;
+            }
+            else {
+                this.$store.state.logged_in = false;
+                this.$store.state.is_admin = false;
+            }
+        },
+        initMaterialize: function() {
+          M.AutoInit();
+          /* eslint-disable no-unused-vars */
+          var tabs = document.querySelectorAll('.tabs');
+          var instance = M.Tabs.init(tabs, options_picker);
+          var elem = document.querySelectorAll('.tabs')[0];
+          /* eslint-enable no-unused-vars */
+          this.tabs = M.Tabs.getInstance(elem);
+        },
         isNumber: function(evt) {
             evt = (evt) ? evt : window.event;
             var charCode = (evt.which) ? evt.which : evt.keyCode;
@@ -437,7 +480,6 @@ export default {
         },
         // TODO input validation
         validateInfo: function() {
-            M.toast({html: 'Todo: Tallenna tietokantaan'});
             this.notification = null;
             this.errors = [];
 
@@ -497,7 +539,7 @@ export default {
                             this.$store.commit('setTeams', this.teams);
                           }
                           console.log("Updating info...");
-                          this.notification =`Päivitetty venekunnan (Nro: ${this.new_signee.boat_number}, Kapteeni: ${this.new_signee.captain_name}) Tiedot!`;
+                          M.toast({html: `Päivitetty venekunnan (Nro: ${this.new_signee.boat_number}, Kapteeni: ${this.new_signee.captain_name}) Tiedot!`});
                           this.clearInputs();
                           this.boat_number = this.$store.getters.getSigneesCount + 1;
                           this.id = this.$store.getters.getSigneesCount + 1;
@@ -546,7 +588,7 @@ export default {
                           this.teams.push(this.team);
                           this.$store.commit('setTeams', this.teams);
                         }
-                        this.notification =`Venekunta ilmoitettu kisaan! (Nro: ${this.new_signee.boat_number}, Kapteeni: ${this.new_signee.captain_name})`;
+                        M.toast({html: `Venekunta ilmoitettu kisaan! (Nro: ${this.new_signee.boat_number}, Kapteeni: ${this.new_signee.captain_name})`});
                         this.clearInputs();
                         this.boat_number = this.signees[this.$store.getters.getSigneesCount - 1].boat_number + 1;
                         this.id = this.signees[this.$store.getters.getSigneesCount - 1].boat_number + 1;

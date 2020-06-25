@@ -56,61 +56,58 @@ export default {
         return {
           competition: null,
           loading: false,
-          competitions: [],
           errors: [],
         }
     },
     created() {
-      if (this.$store.getters.getCompetition){
-        this.competition = this.$store.getters.getCompetition;
+      if(localStorage.getItem('competition') != null) {
+          let competition_id = localStorage.getItem('competition');
+          this.refreshCompetition(competition_id);
       }
       else {
-        this.competition = null;
+        console.log("No competition in localstorage!");
       }
     },
-    async mounted() {
-      if (this.$store.getters.getCompetition){
-        this.competition = this.$store.getters.getCompetition;
-        // When selecting from fetched list, the _id is already there, no need to fetch again
-        if(this.$store.getters.getCompetitionId){
-          this.competition = this.$store.getters.getCompetition;
-        }
-        else {
-          this.loading = true;
-          this.errors = [];
-          try {
-            const user = JSON.parse(localStorage.getItem('user'));
-            const user_id = user["id"];
-            this.competitions = await CompetitionService.getCompetitions(user_id);
-          } catch(err) {
-            this.loading = false;
-            this.errors.push(err);
-          }
-
-          if(this.competitions.length){
-              // Selecting based on created competition_id
-              this.competition = this.competitions.find(item => item.competition_id === this.$store.getters.getCreatedCompetitionID);
-              //Store to vuex
-              this.$store.state.competition = this.competition;
-              this.loading = false;
-              if(!this.competition){
-                  this.competition = {"name": "Kilpailua ei löytynyt..."};
-              }
-    
-          }
-          else {
-            this.loading = false;
-            this.competition = {"name": "Kilpailuja ei tietokannassa"};
-          }
-
-        }
+    mounted() {
+      this.checkLogin();
+      if(localStorage.getItem('competition') != null) {
+          let competition_id = localStorage.getItem('competition');
+          this.refreshCompetition(competition_id);
       }
       else {
-          this.competition = {"name": "'this.$store.state.competition' tyhjä"};
+        console.log("No competition in localstorage!");
       }
     },
     methods: {
-      
+        async refreshCompetition(competition_id) {
+          this.loading = true;
+          this.errors = [];
+          try {
+            let competitions = await CompetitionService.getCompetition(competition_id);
+            if(competitions.length){
+                this.competition = competitions[0];
+                this.$store.commit('refreshCompetition', competitions[0]);
+            }
+            else {
+                this.competition = {"name": "Kilpailua ei löytynyt tietokannasta..."};
+            }
+            this.loading = false;
+          } catch(err) {
+            this.loading = false;
+            console.log(err.message);
+          }
+        },
+        checkLogin: function() {
+            if(localStorage.getItem('jwt') != null){
+                this.$store.state.logged_in = true;
+                let user = JSON.parse(localStorage.getItem('user'));
+                user.is_admin == true ? this.$store.state.is_admin = true : this.$store.state.is_admin = false;
+            }
+            else {
+                this.$store.state.logged_in = false;
+                this.$store.state.is_admin = false;
+            }
+        },      
     },
 }
 </script>
