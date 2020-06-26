@@ -39,6 +39,11 @@ export default new Vuex.Store({
     getStillOnWaterSignees: state => {
       return state.competition.signees.filter(signee => signee.returned == false)
     },
+    getSignees: state => {
+      return state.competition.signees.sort(function compare(a,b) {
+        return parseInt(a.boat_number) - parseInt(b.boat_number);
+      })
+    },
     getFinishedSignees: state => {
       return state.competition.signees.filter(signee => signee.returned == true)
     },

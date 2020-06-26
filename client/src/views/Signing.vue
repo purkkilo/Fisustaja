@@ -275,12 +275,12 @@ export default {
             if(competitions.length){
                 this.$store.commit('refreshCompetition', competitions[0]);
                 this.isTeamCompetition = this.$store.getters.isTeamCompetition;
-                this.signees =  this.$store.getters.getCompetitionSignees;
+                this.signees =  this.$store.getters.getSignees;
                 this.teams = this.$store.getters.getTeams;
 
                 if (this.signees.length) {
-                  this.boat_number = this.signees[this.$store.getters.getSigneesCount - 1].boat_number + 1;
-                  this.id = this.signees[this.$store.getters.getSigneesCount - 1].boat_number + 1;
+                    this.boat_number = Math.max.apply(Math, this.signees.map(function(o) { return o.boat_number; })) + 1;
+                    this.id = Math.max.apply(Math, this.signees.map(function(o) { return o.id; })) + 1;
                 }
                 else {
                   this.boat_number = 1;
@@ -339,9 +339,6 @@ export default {
             this.errors = [];
             this.old_info = null;
         },
-        compare: function (a, b) {
-          return parseInt(a.boat_number) - parseInt(b.boat_number);
-        },
         overwriteSignee: function(signee, overwrite) {
             overwrite === true ? console.log("Overwrite!") : console.log("Don't overwrite!")
             if(overwrite) {
@@ -368,14 +365,14 @@ export default {
                   }
                   this.saveToDatabase(signee, true);
                   this.clearInputs();
-                  this.boat_number = this.id;
+                  this.boat_number = Math.max.apply(Math, this.signees.map(function(o) { return o.boat_number; })) + 1;
                   this.notification = "Tiedot korvattu uusilla!";
                 }
 
             }
             else {
               this.notification = "Veneen numero asetettu ensimmäiseen vapaaseen paikkaan!";
-              this.boat_number = this.id;
+              this.boat_number = Math.max.apply(Math, this.signees.map(function(o) { return o.boat_number; })) + 1;
               this.old_info = null;
             }
         },
@@ -470,8 +467,8 @@ export default {
             //if replace == true, replace existing info, otherwise add new signee
             replace === true ? this.$store.commit('replaceSignee', new_signee) : this.$store.commit('addSignee', new_signee);
             let comp = this.$store.getters.getCompetition;
-            let temp_signees = this.$store.getters.getCompetitionSignees.sort(this.compare);
-            comp.signees = temp_signees;
+            this.signees = this.$store.getters.getSignees;
+            comp.signees = this.signees;
             comp.state = "Ilmoittautuminen";
             this.$store.commit('refreshCompetition', comp);
             try{
@@ -546,8 +543,8 @@ export default {
                           console.log("Updating info...");
                           M.toast({html: `Päivitetty venekunnan (Nro: ${this.new_signee.boat_number}, Kapteeni: ${this.new_signee.captain_name}) Tiedot!`});
                           this.clearInputs();
-                          this.boat_number = this.$store.getters.getSigneesCount + 1;
-                          this.id = this.$store.getters.getSigneesCount + 1;
+                          this.boat_number = Math.max.apply(Math, this.signees.map(function(o) { return o.boat_number; })) + 1;
+                          this.id = Math.max.apply(Math, this.signees.map(function(o) { return o.id; })) + 1;
                           this.selected_id = null;
                       }
                   }
@@ -595,8 +592,8 @@ export default {
                         }
                         M.toast({html: `Venekunta ilmoitettu kisaan! (Nro: ${this.new_signee.boat_number}, Kapteeni: ${this.new_signee.captain_name})`});
                         this.clearInputs();
-                        this.boat_number = this.signees[this.$store.getters.getSigneesCount - 1].boat_number + 1;
-                        this.id = this.signees[this.$store.getters.getSigneesCount - 1].boat_number + 1;
+                        this.boat_number = Math.max.apply(Math, this.signees.map(function(o) { return o.boat_number; })) + 1;
+                        this.id = Math.max.apply(Math, this.signees.map(function(o) { return o.id; })) + 1;
                         this.selected_id = null;
                     }                  
                 }

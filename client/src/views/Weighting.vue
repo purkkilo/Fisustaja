@@ -36,6 +36,7 @@
             <li class="tab col s4">
               <a class="active" href="#weighting">Punnitus</a>
             </li>
+            <!--TODO fix placements -->
             <li class="tab col s4"><a href="#situation">Tilannekatsaus</a></li>
             <li class="tab col s4">
               <a href="#still-on-water">Vielä vesillä</a>
@@ -647,6 +648,8 @@ export default {
         this.competition_boat = null;
         this.calculated_fish_weights = this.calculateTotalWeights();
         this.calculated_total_weights = this.$store.getters.getCompetitionTotalWeights;
+        this.result_signees = this.$store.getters.getResultSignees;
+        this.still_on_water = this.$store.getters.getStillOnWaterSignees;
       } catch (err) {
         console.log(err.message);
       }

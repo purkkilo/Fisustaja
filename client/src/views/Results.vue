@@ -135,7 +135,7 @@
                     <th style="border:1px solid black;" class="center-align">
                       <b>Saalista saanut</b>
                     </th>
-                    <td style="border:1px solid black;" class="center-align">
+                    <td style="border:1px solid black;" class="center-align"><!--TODO pyöristykset-->
                       {{ $store.getters.getPointSignees.length/competition.signees.length*100 }}% ({{ $store.getters.getPointSignees.length }} / {{ signees.length }})
                     </td>
                   </tr>
@@ -599,8 +599,8 @@ export default {
       return self.indexOf(value) === index;
     },
     calculateAll: function() {
-      this.calculateTeamResults();
       this.calculateNormalResults();
+      this.calculateTeamResults();
       this.calculateBiggestFishes();
       this.calculateBiggestAmounts();
     },
@@ -609,7 +609,7 @@ export default {
       const cup_points_multiplier = competition.cup_points_multiplier;
       let cup_placement_points = competition.cup_placement_points;
       const cup_participation_points = competition.cup_participation_points;
-      let last_points = null;
+      let last_points = 0;
       let tied_competitors = 0;
       let placement = 1;
       let cup_temp_points;
@@ -628,7 +628,10 @@ export default {
         else if (signee.total_points == 0){
           cup_placement_points = 0;
           cup_points_total = cup_participation_points * cup_points_multiplier;
-          tied_competitors += 1;
+          if(signee.total_points === last_points){
+            tied_competitors += 1;
+          }
+          else {placement++;}
         }
         // If not first competitor and has points
         else {
@@ -643,8 +646,8 @@ export default {
           }
 
           if(cup_placement_points <= 20) {
-            // If there is the points differ from last competitor, deduct placement points
-            if(signee.total_points !== last_points || !this.results.length) {
+            // If the points differ from last competitor, deduct placement points
+            if(signee.total_points !== last_points) {
               cup_placement_points -= 2 * (tied_competitors + 1);
               tied_competitors = 0;
             }
@@ -654,7 +657,7 @@ export default {
             tied_competitors = 0;
           }
           else {
-            if (signee.total_points !== last_points || this.results.length) {
+            if (signee.total_points !== last_points) {
               cup_placement_points -= 2 * (tied_competitors + 1);
               tied_competitors = 0;
             }
@@ -680,11 +683,14 @@ export default {
           cup_participation_points: cup_participation_points,
           cup_points_total: cup_points_total,
         });
-
-        if (!tied_competitors) {
-          placement += 1;
-          last_points = signee.total_points;        
+        
+        if(!(placement == 1 && signee.total_points == 0)){
+          if (!tied_competitors) {
+            placement++;
+            last_points = signee.total_points;        
+          }          
         }
+
       });
     },
 

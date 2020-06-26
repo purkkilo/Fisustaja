@@ -8,9 +8,12 @@
         
             <div class="section row inputarea">
                 <div class="col s12">
-                    <h3><b>{{ user.name }}</b></h3>
-                    <h3><b>{{ user.email }}</b></h3>
-                    <h3><b>Tili luotu: {{ created }}</b></h3>
+                    <div v-if="user">
+                        <h3><b>{{ user.name }}</b></h3>
+                        <h3><b>{{ user.email }}</b></h3>
+                        <h3><b>Tili luotu: {{ created }}</b></h3>
+                    </div>
+
                     <div class="divider black"></div>
                     <div class="section">
                         <div class="row">

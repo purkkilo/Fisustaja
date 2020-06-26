@@ -698,12 +698,8 @@ export default {
       if (!this.cup_points_multiplier) {
         this.showError("Kilpailun pistekerroin puuttuu!");
       }
-      if (!this.start_date || !isDateValid) {
-        !this.start_date == true
-          ? this.showError("Päivämäärää ei ole valittu!")
-          : this.showError(
-              'Syötä päivämäärä muodossa "PP.KK.VVVV (esim: 06.02.2020)'
-            );
+      if(this.cup_points_multiplier < 0.1) {
+        this.showError("Kilpailun pistekerroin pitää olla vähintään 0.1!");
       }
       if (!this.start_time || !isStartTimeValid) {
         !this.start_time == true
@@ -715,12 +711,24 @@ export default {
           ? this.showError("Kilpailun loppumisaika puuttuu!")
           : this.showError('Syötä aika muodossa "hh:mm" (esim: 13:00)');
       }
-
+      if (!this.start_date || !isDateValid) {
+        !this.start_date == true
+          ? this.showError("Päivämäärää ei ole valittu!")
+          : this.showError(
+              'Syötä päivämäärä muodossa "PP.KK.VVVV (esim: 06.02.2020)'
+            );
+      }
+      else {
+        let start_date = moment(`${this.start_date} ${this.start_time}`, 'D.M.YYYY HH:mm');
+        let end_date = moment(`${this.end_date} ${this.end_time}`, 'D.M.YYYY HH:mm');
+        if(end_date.isBefore(start_date, 'minutes')){
+          this.showError("Kilpailun päättymispäivämäärä ja kellonaika ei voi olla ennen alkamispäivämäärää!");
+        }
+      }
       // If all inputs validated
       if (!this.errors.length) {
         let start_date = moment(`${this.start_date} ${this.start_time}`, 'D.M.YYYY HH:mm');
         let end_date = moment(`${this.end_date} ${this.end_time}`, 'D.M.YYYY HH:mm');
-
         this.basic_info = {
           name: this.name,
           cup_name: this.cup_name,
@@ -770,27 +778,26 @@ export default {
     },
     checkFishSpecs: function() {
       this.completed_fish_specs = [];
+      this.errors = [];
       for (let i = 1; i < this.selected.length + 1; i++) {
         let fish_spec = {
           name: document.getElementById(`fish_${i}_name`).innerHTML.replace(`${i}. `, ""),
-          multiplier: document.getElementById(`fish_${i}_multiplier`).value,
+          multiplier: Number(document.getElementById(`fish_${i}_multiplier`).value),
           minsize: document.getElementById(`fish_${i}_minsize`).value,
           weights: 0,
           color: this.generateRandomColor()
         };
 
         if (!fish_spec.multiplier || !fish_spec.minsize) {
-          this.errors = [];
-          M.toast({
-            html: `Syötä kalan '${fish_spec.name}' kaikki tiedot! (Pistekerroin = 1, Alamitta = 0 oletusarvot)`,
-          });
           this.errors.push(
-            `Syötä kalan '${fish_spec.name}' kaikki tiedot! (Pistekerroin = 1, Alamitta = 0 oletusarvot)`
+            `Syötä kalan '${fish_spec.name}' kaikki tiedot! (Pistekerroin >= 1, Alamitta = 0 oletusarvot)`
           );
           location.href = "#";
           location.href = "#app";
         } else {
+          
           this.completed_fish_specs.push(fish_spec);
+      
         }
       }
 
