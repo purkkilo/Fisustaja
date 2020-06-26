@@ -1,10 +1,8 @@
 <template>
-  <div id="app">
     <div class="container">
       <Timedate/>
       <CompetitionComponent />
     </div>
-  </div>
 </template>
 
 <script>

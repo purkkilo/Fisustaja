@@ -1,23 +1,29 @@
 <template>
   <div id="app">
-    <Header />
-    <router-view/>
+    <div class="layout">
+        <Header />
+        <router-view/>
+        <Footer />
+    </div>
   </div>
 </template>
 
 <script>
 import Header from './components/layout/Header';
-
+import Footer from './components/layout/Footer';
 
 export default {
   name: 'App',
   components: {
-    Header
+    Header,
+    Footer
   },
 }
 </script>
 
 <style>
+
+
 
 .header {
   position:fixed; /* fixing the position takes it out of html flow - knows
@@ -30,16 +36,30 @@ export default {
   height:100px;     /* define height for content */
 }
 
+.layout {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 0;
+    min-height: 100vh; /* will cover the 100% of viewport */
+    overflow: hidden;
+    display: block;
+    position: relative;
+    padding-bottom: 180px; /* height of your footer */
 }
 
 body {
+    display: flex;
+    flex-direction: column;
     background-image: url('./assets/background_waterdrop.png');
     background-repeat: no-repeat;
     background-attachment: fixed;

@@ -1,15 +1,16 @@
 <template>
-  <div id="app">
     <div class="container">
-      <Timedate/>
-      <div class="container-transparent">
-          <div class="section">
-              <div class="col s12 center-align"><h1>Fisustaja - Dashboard</h1></div>
-          </div>
+        <Timedate/>
+        <div class="container-transparent">
+            <div class="section">
+                <div class="col s12 center-align"><h1>Fisustaja - Dashboard</h1></div>
+            </div>
         
-          <div class="section row inputarea">
+            <div class="section row inputarea">
                 <div class="col s12">
-                    <h1><b>}-(((*></b></h1>
+                    <h3><b>{{ user.name }}</b></h3>
+                    <h3><b>{{ user.email }}</b></h3>
+                    <h3><b>Tili luotu: {{ created }}</b></h3>
                     <div class="divider black"></div>
                     <div class="section">
                         <div class="row">
@@ -29,14 +30,14 @@
                         </div>
                     </div>
                 </div>
-          </div>
-      </div>
+            </div>
+        </div>
     </div>
-  </div>
 </template>
 
 <script>
 import Timedate from '../components/layout/Timedate';
+import moment from 'moment';
 
 export default {
     name: 'Home',
@@ -45,12 +46,21 @@ export default {
     },
     data() {
         return {
+            user: null,
+            created: null,
         }
     },
     mounted() {
         this.$store.commit('refreshCompetition', null);
         this.checkLogin();
         localStorage.removeItem("competition");
+        if(localStorage.getItem('user') != null){
+            this.user = JSON.parse(localStorage.getItem('user'));
+            let createdAt = moment(this.user.createdAt);
+            this.created = `${createdAt.date()}.${createdAt.month()+1}.${createdAt.year()}`;
+
+        }
+
     },
     methods: {
         checkLogin: function() {

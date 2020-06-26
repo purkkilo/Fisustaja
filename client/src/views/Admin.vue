@@ -2,8 +2,7 @@
 
     <div class="container">
         <Timedate/>
-        <h1>Welcome to administrator page</h1>
-        <h2>{{msg}}</h2>
+        <h1><b>Todo: tähän jotain tarpeellista</b></h1>
     </div>
 </template>
 
@@ -12,7 +11,6 @@
     export default {
         data () {
             return {
-                msg: 'The superheros'
             }
         },
         components: {
