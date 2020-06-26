@@ -42,6 +42,9 @@ export default new Vuex.Store({
     getFinishedSignees: state => {
       return state.competition.signees.filter(signee => signee.returned == true)
     },
+    getPointSignees: state => {
+      return state.competition.signees.filter(signee => signee.total_points > 0)
+    },
     getResultSignees: state => {
       return state.competition.signees.sort(function compare(a,b) {
         return parseInt(b.total_points) - parseInt(a.total_points);
@@ -104,8 +107,7 @@ export default new Vuex.Store({
     setTeams: (state, teams) => {
       Vue.set(state.competition, 'teams', [...teams]);
     },
-    replaceSignee: (state, found_signee) => {
-        // note - findIndex might be replaced with some(), filter(), forEach() 
+    replaceSignee: (state, found_signee) => { 
       const index = state.competition.signees.findIndex(item => {
           return (parseInt(found_signee.id) === parseInt(item.id));
       })

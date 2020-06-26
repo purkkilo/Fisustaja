@@ -580,7 +580,7 @@ export default {
       cup_participation_points: 5,
       cup_points_multiplier: 1.0,
       team_competition: "Ei",
-      start_date: null, //FIXME yhteenvedossa kuukausi oikein, muualla ei !?!?
+      start_date: null,
       end_date: null,
       start_time: null,
       end_time: null,
@@ -744,7 +744,7 @@ export default {
       this.validated = false;
       if (this.selected.length) {
         let temp_array = [];
-        //TODO better solution for long names, temp fix
+        //TODO better solution for long names
         this.selected.forEach(fish => {
           if(fish.length > 40) {
             let shortened = fish.slice(0,40);
@@ -764,6 +764,10 @@ export default {
         location.href = "#app";
       }
     },
+    generateRandomColor: function() {
+        var randomColor = '#' + Math.floor(Math.random()*16777215).toString(16);
+        return randomColor;
+    },
     checkFishSpecs: function() {
       this.completed_fish_specs = [];
       for (let i = 1; i < this.selected.length + 1; i++) {
@@ -772,6 +776,7 @@ export default {
           multiplier: document.getElementById(`fish_${i}_multiplier`).value,
           minsize: document.getElementById(`fish_${i}_minsize`).value,
           weights: 0,
+          color: this.generateRandomColor()
         };
 
         if (!fish_spec.multiplier || !fish_spec.minsize) {
@@ -915,7 +920,7 @@ export default {
           await CompetitionService.insertCompetition(competition);
           M.toast({ html: "Kilpailu lisätty tietokantaan!" });
           this.$store.commit("refreshCompetition", competition);
-          this.$router.push({ path: "/overview" });
+          this.$router.push({ path: "/continue" });
         } catch (err) {
           this.errors.push(err.message);
         }

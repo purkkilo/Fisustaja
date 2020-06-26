@@ -28,9 +28,15 @@
       <div class="divider"></div>
       <div class="section inputarea">
         <div class="col s12">
-          <h4>Kilpailun nimi: {{ competition.name }}</h4>
-          <h4>Tila: {{ competition.state }}</h4>
-          <div><b>Todo:</b> Statseja, saadut kalat, kilpailun tilanne, kaavioita jne.</div>
+          <h4><b>{{ competition.name }}</b></h4>
+          <h4>Päivämäärä: {{ formatted_start_date }} - {{ formatted_end_date }}</h4>
+          <h4>Kilpailuaika: <b>{{ competition.start_time }} - {{ competition.end_time }}</b></h4>
+          <h4>Tila: <b>{{ competition.state }}</b></h4>
+          <h4>Ilmoittautuneita: <b>{{ competition.signees.length }} kpl</b></h4>
+          <h4 v-if="competition.signees.length">Vielä vesillä: <b>{{ (competition.signees.length-$store.getters.getFinishedSignees.length)/competition.signees.length*100 }}%</b> ({{ competition.signees.length-$store.getters.getFinishedSignees.length }} / {{ competition.signees.length }})</h4>
+          <h4 v-else>Ketään ei vielä vesillä!</h4>
+          <h4 v-if="competition.signees.length">Saalista saanut: <b>{{ $store.getters.getPointSignees.length/competition.signees.length*100 }}%</b> ({{ $store.getters.getPointSignees.length }} / {{ competition.signees.length }})</h4>
+          <h4>Kalaa saatu yhteensä: <b>{{ competition.total_weights/1000 }} kg</b></h4>
         </div>
       </div>
     </div>
@@ -44,7 +50,7 @@
 import Timedate from '../components/layout/Timedate';
 import ProgressBarQuery from '../components/layout/ProgressBarQuery';
 import CompetitionService from '../CompetitionService';
-
+import moment from 'moment';
 
 export default {
     name: 'Overview',
@@ -57,6 +63,8 @@ export default {
           competition: null,
           loading: false,
           errors: [],
+          formatted_start_date: null,
+          formatted_end_date: null,
         }
     },
     created() {
@@ -87,6 +95,10 @@ export default {
             if(competitions.length){
                 this.competition = competitions[0];
                 this.$store.commit('refreshCompetition', competitions[0]);
+                let start_date = moment(this.competition.start_date);
+                let end_date = moment(this.competition.end_date);
+                this.formatted_start_date = `${start_date.date()}.${start_date.month()+1}.${start_date.year()}`;
+                this.formatted_end_date = `${end_date.date()}.${end_date.month()+1}.${end_date.year()}`;
             }
             else {
                 this.competition = {"name": "Kilpailua ei löytynyt tietokannasta..."};

@@ -13,171 +13,176 @@
           <div class="col s12 center-align"><h1>Ilmoittautuminen</h1></div>
       </div>
       <div class="row">
-        <router-link to="/comp-settings">
-          <div class="col s4"><a class="waves-effect waves-light grey btn" ><i class="material-icons left">tune</i>Määritykset</a></div>
-        </router-link>
-        <router-link to="/overview">
           <div class="col s4">
-            <a class="waves-effect waves-light btn"
+          <router-link to="/comp-settings">
+            <a class="waves-effect waves-light grey btn" ><i class="material-icons left">tune</i>Määritykset</a>
+          </router-link></div>
+
+          <div class="col s4">
+            <router-link to="/overview"><a class="waves-effect waves-light btn"
               ><i class="material-icons left">info</i>Kilpailun yleisnäkymä</a
-            >
+              >
+            </router-link>
           </div>
-        </router-link>
-        <router-link to="/weighting">
+
           <div class="col s4">
-            <a class="waves-effect waves-light blue darken-2 btn"
+            <router-link to="/weighting"><a class="waves-effect waves-light blue darken-2 btn"
               ><i class="material-icons left">fitness_center</i>Punnitus</a
-            >
+              >
+            </router-link>
           </div>
-        </router-link>
+
       </div>
-      <div class="">
-        <ul class="tabs row">
+
+      <div class="row">
+        <ul class="tabs">
           <li class="tab col s6" id="signing-tab"><a class="active" href="#signing">Ilmoittautuminen</a></li>
           <li class="tab col s6" id="signees-tab"><a href="#signees-div">Ilmoittautuneet</a></li>
         </ul>
       </div>
 
-      <div v-if="!loading_site" id="signing" class="col s12 inputarea">
-        <div class="section center-align">
-          <p class="flow-text">Ilmoittautuminen</p>
+      <div id="signing" class="col s12 inputarea">
+        <div v-if="!loading_site">
+          <div class="section center-align">
+            <p class="flow-text">Ilmoittautuminen</p>
+          </div>
+
+          <div v-if="notification" class="section center-align">
+            <p class="flow-text green lighten-1 center-align" id="notification">{{ notification }}</p>
+          </div>
+          <div v-if="old_info" class="section center-align">
+
+            <div id="old-info-container col s6">
+              <h3>Numeron ({{ old_info.boat_number }}.) Vanhat tiedot</h3>
+              <p class="flow-text"><b>Kapteeni:</b> {{ old_info.captain_name }}</p>
+              <p class="flow-text"><b>Varakapteeni:</b> {{ old_info.temp_captain_name }}</p>
+              <p class="flow-text"><b>Seura/Paikkakunta:</b> {{ old_info.locality }}</p>
+              <p class="flow-text"><b>Lähtöpaikka:</b> {{ old_info.starting_place }}</p> 
+              <p v-if="isTeamCompetition" class="flow-text"><b>Joukkue:</b> {{ old_info.team }}</p>           
+            </div>
+            <div class="divider black"></div>
+            <div id="new-info-container col s6">
+              <h3>Numeron ({{ boat_number }}.) Uudet tiedot</h3>
+              <p class="flow-text"><b>Kapteeni:</b> {{ captain_name }}</p>
+              <p class="flow-text"><b>Varakapteeni:</b> {{ temp_captain_name }}</p>
+              <p class="flow-text"><b>Seura/Paikkakunta:</b> {{ locality }}</p>
+              <p class="flow-text"><b>Lähtöpaikka:</b> {{ starting_place }}</p> 
+              <p v-if="isTeamCompetition" class="flow-text"><b>Joukkue:</b> {{ team }}</p>  
+            </div>
+            <div class="row">
+              <a v-on:click="overwriteSignee(old_info, false)" class="waves-effect waves-light yellow btn black-text col s4 push-s1"><i class="material-icons left">backspace</i>Peruuta</a>
+              <a v-on:click="overwriteSignee(old_info, true)" class="waves-effect waves-light green btn col s4 push-s3"><i class="material-icons left">check</i>Päällekirjoita</a>
+            </div>
+            <div class="divider black" style="margin-bottom:20px"></div>
+          </div>
+          <div v-if="!old_info" id="signing-inputs" class="row">
+              <div class="row">
+                <div class="input-fields col s8 push-s2">
+                  <input
+                    id="boat_number"
+                    v-model="boat_number"
+                    @paste.prevent
+                    @keypress="isNumber($event)"
+                    name="boat_number"
+                    oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);"
+                    type = "number"
+                    maxlength = "6"
+                    min="1"
+                    step="1"
+                    class="validate"
+                  >
+                  <label for="boat_number" class="flow-text black-text">Venekunnan numero</label>
+                </div>
+                <div class="col s12" style="margin-top: 20px;">
+                  <a class="waves-effect waves-light blue btn col s4 push-s4" v-on:click="searchSelected"><i class="material-icons left">info</i>Hae numerolla</a>
+                </div>
+                
+              </div>
+
+              <div class="row">
+                <div class="input-fields col s8 push-s2">
+                  <input
+                    id="captain_name"
+                    v-model="captain_name"
+                    type="text"
+                    class="validate"
+                    maxlength="40"
+                  >
+                  <label for="captain_name" class="flow-text black-text">Kapteeni</label>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="input-fields col s8 push-s2">
+                  <input
+                    id="temp_captain_name"
+                    v-model="temp_captain_name"
+                    placeholder="Ei pakollinen"
+                    type="text"
+                    class="validate"
+                    maxlength="40"
+                  >
+                  <label for="temp_captain_name" class="flow-text black-text">Varakapteeni</label>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="input-fields col s8 push-s2">
+                  <input
+                    id="locality"
+                    v-model="locality"
+                    type="text"
+                    class="validate"
+                    maxlength="40"
+                  >
+                  <label for="locality" class="flow-text black-text">Seura/Paikkakunta</label>
+                </div>
+              </div>
+
+
+              <div class="row">
+                <div class="input-fields col s8 push-s2">
+                  <input
+                    id="starting_place"
+                    v-model="starting_place"
+                    name="starting_place"
+                    placeholder="Ei pakollinen"
+                    type="text"
+                    class="validate"
+                    maxlength="40"
+                  >
+                  <label for="starting_place" class="flow-text black-text">Lähtöpaikka</label>
+                </div>
+              </div>
+
+              <div class="row" v-if="isTeamCompetition">
+                <div class="input-fields col s8 push-s2">
+                  <v-select
+                    class="flow-text title"
+                    taggable
+                    placeholder="Valitse, tai kirjoita tiimin nimi"
+                    v-model="team"
+                    :options="teams"
+                  />
+                  <span class="flow-text black-text">Joukkue</span>
+                </div>
+              </div>
+            </div>
+            <div v-if="!old_info" class="row center-align">
+              <div v-if="loading">
+                <p class="flow-text">Päivitetään tiedot tietokantaan...</p>
+                <ProgressBarQuery />
+              </div>
+              <div v-else>
+                <a v-on:click="clearInputs" class="waves-effect waves-light yellow black-text btn-large col s4 offset-s2"><i class="material-icons left">backspace</i>Pyyhi Kentät</a>
+                <a v-on:click="validateInfo" class="waves-effect waves-light green black-text btn-large col s3 offset-s1"><i class="material-icons right">save_alt</i>Tallenna</a>
+              </div>
+            </div>
         </div>
-
-        <div v-if="notification" class="section center-align">
-          <p class="flow-text green lighten-1 center-align" id="notification">{{ notification }}</p>
+        <div v-else>
+          <h2>Haetaan veneitä...</h2>
+          <ProgressBarQuery />        
         </div>
-        <div v-if="old_info" class="section center-align">
-
-          <div id="old-info-container col s6">
-            <h3>Numeron ({{ old_info.boat_number }}.) Vanhat tiedot</h3>
-            <p class="flow-text"><b>Kapteeni:</b> {{ old_info.captain_name }}</p>
-            <p class="flow-text"><b>Varakapteeni:</b> {{ old_info.temp_captain_name }}</p>
-            <p class="flow-text"><b>Seura/Paikkakunta:</b> {{ old_info.locality }}</p>
-            <p class="flow-text"><b>Lähtöpaikka:</b> {{ old_info.starting_place }}</p> 
-            <p v-if="isTeamCompetition" class="flow-text"><b>Joukkue:</b> {{ old_info.team }}</p>           
-          </div>
-          <div class="divider black"></div>
-          <div id="new-info-container col s6">
-            <h3>Numeron ({{ boat_number }}.) Uudet tiedot</h3>
-            <p class="flow-text"><b>Kapteeni:</b> {{ captain_name }}</p>
-            <p class="flow-text"><b>Varakapteeni:</b> {{ temp_captain_name }}</p>
-            <p class="flow-text"><b>Seura/Paikkakunta:</b> {{ locality }}</p>
-            <p class="flow-text"><b>Lähtöpaikka:</b> {{ starting_place }}</p> 
-            <p v-if="isTeamCompetition" class="flow-text"><b>Joukkue:</b> {{ team }}</p>  
-          </div>
-          <div class="row">
-            <a v-on:click="overwriteSignee(old_info, false)" class="waves-effect waves-light yellow btn black-text col s4 push-s1"><i class="material-icons left">backspace</i>Peruuta</a>
-            <a v-on:click="overwriteSignee(old_info, true)" class="waves-effect waves-light green btn col s4 push-s3"><i class="material-icons left">check</i>Päällekirjoita</a>
-          </div>
-          <div class="divider black" style="margin-bottom:20px"></div>
-        </div>
-        <div v-if="!old_info" id="signing-inputs" class="row">
-          <div class="row">
-            <div class="input-fields col s8 push-s2">
-              <input
-                id="boat_number"
-                v-model="boat_number"
-                @paste.prevent
-                @keypress="isNumber($event)"
-                name="boat_number"
-                oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);"
-                type = "number"
-                maxlength = "6"
-                min="1"
-                step="1"
-                class="validate"
-              >
-              <label for="boat_number" class="flow-text black-text">Venekunnan numero</label>
-            </div>
-            <div class="col s12" style="margin-top: 20px;">
-              <a class="waves-effect waves-light blue btn col s4 push-s4" v-on:click="searchSelected"><i class="material-icons left">info</i>Hae numerolla</a>
-            </div>
-            
-          </div>
-
-          <div class="row">
-            <div class="input-fields col s8 push-s2">
-              <input
-                id="captain_name"
-                v-model="captain_name"
-                type="text"
-                class="validate"
-                maxlength="40"
-              >
-              <label for="captain_name" class="flow-text black-text">Kapteeni</label>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="input-fields col s8 push-s2">
-              <input
-                id="temp_captain_name"
-                v-model="temp_captain_name"
-                placeholder="Ei pakollinen"
-                type="text"
-                class="validate"
-                maxlength="40"
-              >
-              <label for="temp_captain_name" class="flow-text black-text">Varakapteeni</label>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="input-fields col s8 push-s2">
-              <input
-                id="locality"
-                v-model="locality"
-                type="text"
-                class="validate"
-                maxlength="40"
-              >
-              <label for="locality" class="flow-text black-text">Seura/Paikkakunta</label>
-            </div>
-          </div>
-
-
-          <div class="row">
-            <div class="input-fields col s8 push-s2">
-              <input
-                id="starting_place"
-                v-model="starting_place"
-                name="starting_place"
-                placeholder="Ei pakollinen"
-                type="text"
-                class="validate"
-                maxlength="40"
-              >
-              <label for="starting_place" class="flow-text black-text">Lähtöpaikka</label>
-            </div>
-          </div>
-
-          <div class="row" v-if="isTeamCompetition">
-            <div class="input-fields col s8 push-s2">
-              <v-select
-                class="flow-text title"
-                taggable
-                placeholder="Valitse, tai kirjoita tiimin nimi"
-                v-model="team"
-                :options="teams"
-              />
-              <span class="flow-text black-text">Joukkue</span>
-            </div>
-          </div>
-        </div>
-        <div v-if="!old_info" class="row center-align">
-          <div v-if="loading">
-            <p class="flow-text">Päivitetään tiedot tietokantaan...</p>
-            <ProgressBarQuery />
-          </div>
-          <div v-else>
-            <a v-on:click="clearInputs" class="waves-effect waves-light yellow black-text btn-large col s4 offset-s2"><i class="material-icons left">backspace</i>Pyyhi Kentät</a>
-            <a v-on:click="validateInfo" class="waves-effect waves-light green black-text btn-large col s3 offset-s1"><i class="material-icons right">save_alt</i>Tallenna</a>
-          </div>
-        </div>
-      </div>
-      <div v-else>
-        <h2>Haetaan veneitä...</h2>
-        <ProgressBarQuery />        
       </div>
       <div id="signees-div" class="col s12">
         <div class="center-align col s4 inputarea">
@@ -255,11 +260,11 @@ export default {
     },
     mounted() {
       this.checkLogin();
-      this.initMaterialize();
       if(localStorage.getItem('competition') != null) {
           let competition_id = localStorage.getItem('competition');
           this.refreshCompetition(competition_id);
       }
+      this.initMaterialize();
     },
     methods: {
         async refreshCompetition(competition_id) {

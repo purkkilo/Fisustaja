@@ -7,16 +7,23 @@
       </div>
 
       <div class="row">
-        <router-link to="/overview">
-          <div class="col s4 push-s4">
+
+        <div class="col s4 push-s4">
+          <router-link to="/overview">
             <a class="waves-effect waves-light btn"
               ><i class="material-icons left">info</i>Kilpailun yleisnäkymä</a
             >
-          </div>
-        </router-link>
-        <router-link to="/signing">
-          <div class="col s4 push-s4"><a class="waves-effect waves-light blue btn" ><i class="material-icons left">edit</i>Ilmoittautuminen</a></div>
-        </router-link>
+          </router-link>
+        </div>
+
+        <div class="col s4 push-s4">
+          <router-link to="/signing">
+            <a class="waves-effect waves-light blue btn" >
+              <i class="material-icons left">edit</i>Ilmoittautuminen
+            </a>
+          </router-link>
+        </div>
+
       </div>
 
       <div v-if="!loading" id="settings-info" class="section inputarea">

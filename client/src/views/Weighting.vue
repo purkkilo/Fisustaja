@@ -6,37 +6,38 @@
         <div class="col s12 center-align"><h1>Punnitus</h1></div>
       </div>
       <div class="row">
-        <router-link to="/signing">
           <div class="col s4">
-            <a class="waves-effect waves-light blue btn"
-              ><i class="material-icons left">assignment_ind</i>Ilmoittautuminen</a
-            >
+            <router-link to="/signing">
+              <a class="waves-effect waves-light blue btn"
+                ><i class="material-icons left">assignment_ind</i>Ilmoittautuminen</a
+              >
+            </router-link>
           </div>
-        </router-link>
-        <router-link to="/overview">
+
           <div class="col s4">
-            <a class="waves-effect waves-light btn"
-              ><i class="material-icons left">info</i>Kilpailun yleisnäkymä</a
-            >
+            <router-link to="/overview">
+              <a class="waves-effect waves-light btn">
+                <i class="material-icons left">info</i>Kilpailun yleisnäkymä
+              </a>
+            </router-link>
           </div>
-        </router-link>
-        <router-link to="/results">
+
           <div class="col s4">
-            <a class="waves-effect waves-light green btn"
+            <router-link to="/results"><a class="waves-effect waves-light green btn"
               ><i class="material-icons left">emoji_events</i>Tulokset</a
-            >
+              >
+            </router-link>
           </div>
-        </router-link>
+
       </div>
       <div class="row">
         <div class="col s12">
           <ul class="tabs">
-            <li class="tab col s3">
+            <li class="tab col s4">
               <a class="active" href="#weighting">Punnitus</a>
             </li>
-            <li class="tab col s3"><a href="#situation">Tilannekatsaus</a></li>
-            <li class="tab col s3"><a href="#stats">Tilastoja</a></li>
-            <li class="tab col s3">
+            <li class="tab col s4"><a href="#situation">Tilannekatsaus</a></li>
+            <li class="tab col s4">
               <a href="#still-on-water">Vielä vesillä</a>
             </li>
           </ul>
@@ -290,132 +291,6 @@
           </div>
         </div>
 
-        <div id="stats" class="col s12 inputarea">
-          <div class="section" style="margin-bottom: 50px;">
-            <div class="row center-align">
-              <p class="flow-text">Tilastoja</p>
-            </div>
-          </div>
-          <div class="section" v-if="$store.getters.getCompetition">
-            <ul class="collapsible">
-              <li>
-                <div class="collapsible-header">
-                  <i class="material-icons">calculate</i>Kertoimet, alamitat,
-                  kaloja punnittu yhteensä
-                </div>
-                <div class="collapsible-body white">
-                  <div class="fishes_summary row">
-                    <div class="col s8 push-s2">
-                      <table
-                        class="striped highlight centered responsive-table"
-                      >
-                        <thead>
-                          <tr>
-                            <th>Kalalaji</th>
-                            <th>Pistekerroin</th>
-                            <th>Alamitta</th>
-                            <th>Punnittu</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr
-                            v-for="(fish, index) in calculated_fish_weights"
-                            :key="index"
-                          >
-                            <th style="border:1px solid black;" scope="row">
-                              {{ fish.name }}
-                            </th>
-                            <td style="border:1px solid black;">
-                              x {{ fish.multiplier }}
-                            </td>
-                            <td style="border:1px solid black;">
-                              {{ fish.minsize }} cm
-                            </td>
-                            <td style="border:1px solid black;">
-                              {{ fish.weights }} g
-                            </td>
-                          </tr>
-                          <tr>
-                            <th scope="row"></th>
-                            <th></th>
-                            <th style="border:1px solid black;">
-                              Saalista yhteensä
-                            </th>
-                            <td style="border:1px solid black;">
-                              {{
-                                Math.round(
-                                  (calculated_total_weights /
-                                    1000 +
-                                    Number.EPSILON) *
-                                    100
-                                ) / 100
-                              }}
-                              kg
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              </li>
-              <li>
-                <div class="collapsible-header">
-                  <i class="material-icons">bar_chart</i>Muita tilastoja
-                </div>
-                <div class="collapsible-body white row">
-                  <table
-                    class="striped centered responsive-table highlight col s8 push-s2"
-                  >
-                    <tr>
-                      <th style="border:1px solid black;" class="center-align">
-                        <b>Veneitä yhteensä:</b>
-                      </th>
-                      <td style="border:1px solid black;" class="center-align">
-                        {{ signees.length }} venettä
-                      </td>
-                    </tr>
-                    <tr>
-                      <th style="border:1px solid black;" class="center-align">
-                        Saalista saaneita veneitä:
-                      </th>
-                      <td style="border:1px solid black;" class="center-align">
-                        {{ $store.getters.getFinishedSignees.length }} venettä
-                      </td>
-                    </tr>
-                    <tr>
-                      <th style="border:1px solid black;" class="center-align">
-                        Vielä vesillä:
-                      </th>
-                      <td style="border:1px solid black;" class="center-align">
-                        {{
-                          still_on_water.length
-                        }}
-                        venettä
-                      </td>
-                    </tr>
-                    <tr>
-                      <th style="border:1px solid black;" class="center-align">
-                        Saalista yhteensä:
-                      </th>
-                      <td style="border:1px solid black;" class="center-align">
-                        {{
-                          Math.round(
-                            (calculated_total_weights / 1000 +
-                              Number.EPSILON) *
-                              100
-                          ) / 100
-                        }}
-                        kg
-                      </td>
-                    </tr>
-                  </table>
-                </div>
-              </li>
-            </ul>
-          </div>
-        </div>
-
         <div id="still-on-water" class="col s12 inputarea">
           <div class="section">
             <div class="row center-align">
@@ -566,11 +441,7 @@ export default {
         this.loading_site = false;
         if(competitions.length){
             this.$store.commit('refreshCompetition', competitions[0]);
-            this.calculated_fish_weights = this.calculateTotalWeights();
-            this.calculated_total_weights = this.$store.getters.getCompetitionTotalWeights;
             this.competition_fishes = this.$store.getters.getCompetitionFishes;
-            this.biggest_fishes = this.$store.getters.getBiggestFishes;
-            this.biggest_amounts = this.$store.getters.getBiggestAmounts;
             this.signees = this.$store.getters.getCompetitionSignees;
             this.result_signees = this.$store.getters.getResultSignees;
             this.still_on_water = this.$store.getters.getStillOnWaterSignees;
@@ -682,7 +553,7 @@ export default {
           this.clearInputs();
       }
     },
-    // FIXME does not save to database
+
     async saveBiggestFish() {
       let fish = {name: this.selected_fish.name, boat_number: this.boat_number_input.boat_number, captain_name:this.boat_number_input.captain_name , weight: this.biggest_fish};
       this.$store.commit("addBiggestFish", fish);
@@ -762,7 +633,7 @@ export default {
       if (this.still_on_water.length) {
         comp.state = "Punnitus";
       } else {
-        comp.state = "Kaikki punnittu";
+        comp.state = "Kaikki maalissa";
       }
       this.$store.commit("refreshCompetition", comp);
       try {

@@ -36,7 +36,7 @@ export default {
       },
   },
   mounted () {
-    //TODO update timer that shows if competition has started, how much competition is left etc.
+    //TODO Fix timers to that they are in sync
     moment.locale('fi');
     if (this.$store.getters.getCompetition){
       this.competition = this.$store.getters.getCompetition;
