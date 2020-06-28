@@ -16,6 +16,7 @@ class UserService {
             name: user.name,
             email: user.email,
             is_admin: user.is_admin,
+            createdAt: user.createdAt,
           }))
         } catch (err) {
           return err

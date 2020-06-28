@@ -2,8 +2,8 @@
   <div class="container">
     <h1>Kilpailut</h1>
     <div v-if="competitions.length">
-      <table id="competitions" class="centered responsive-table tablearea highlight">
-        <thead>
+      <table border=1 id="competitions" class="centered responsive-table tablearea highlight">
+        <thead class="title">
           <tr>
             <th>Kilpailun Päivämäärä</th>
             <th>Nimi</th>
@@ -19,11 +19,11 @@
             v-bind:key="competition._id"
             v-on:dblclick="deleteCompetition(competition._id)"
           >
-              <th style="border:1px solid black" class="center-align" scope="row">{{ `${competition.start_date.date()}.${competition.start_date.month()+1}.${competition.start_date.year()} - ${competition.end_date.date()}.${competition.end_date.month()+1}.${competition.end_date.year()}` }}</th>  
-              <td style="border:1px solid black">{{ competition.name }}</td> 
-              <td style="border:1px solid black">{{ competition.cup_name }}</td> 
-              <td style="border:1px solid black">{{ competition.state }}</td>
-              <td style="border:1px solid black"><a class="waves-effect waves-light btn" v-on:click="pickCompetition(competition)"><i class="material-icons left">check</i>Valitse</a></td>
+              <th class="center-align" scope="row">{{ `${competition.start_date.date()}.${competition.start_date.month()+1}.${competition.start_date.year()} - ${competition.end_date.date()}.${competition.end_date.month()+1}.${competition.end_date.year()}` }}</th>  
+              <td>{{ competition.name }}</td> 
+              <td>{{ competition.cup_name }}</td> 
+              <td>{{ competition.state }}</td>
+              <td><a class="waves-effect waves-light btn" v-on:click="pickCompetition(competition)"><i class="material-icons left">check</i>Valitse</a></td>
           </tr>
         </tbody>
       </table>

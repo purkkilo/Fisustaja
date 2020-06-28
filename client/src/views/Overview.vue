@@ -33,9 +33,9 @@
           <h4>Kilpailuaika: <b>{{ competition.start_time }} - {{ competition.end_time }}</b></h4>
           <h4>Tila: <b>{{ competition.state }}</b></h4>
           <h4>Ilmoittautuneita: <b>{{ competition.signees.length }} kpl</b></h4>
-          <h4 v-if="competition.signees.length">Vielä vesillä: <b>{{ (competition.signees.length-$store.getters.getFinishedSignees.length)/competition.signees.length*100 }}%</b> ({{ competition.signees.length-$store.getters.getFinishedSignees.length }} / {{ competition.signees.length }})</h4>
+          <h4 v-if="competition.signees.length">Vielä vesillä: <b>{{ Math.round((competition.signees.length-$store.getters.getFinishedSignees.length)/competition.signees.length*100*100)/100 }}%</b> ({{ competition.signees.length-$store.getters.getFinishedSignees.length }} / {{ competition.signees.length }})</h4>
           <h4 v-else>Ketään ei vielä vesillä!</h4>
-          <h4 v-if="competition.signees.length">Saalista saanut: <b>{{ $store.getters.getPointSignees.length/competition.signees.length*100 }}%</b> ({{ $store.getters.getPointSignees.length }} / {{ competition.signees.length }})</h4>
+          <h4 v-if="competition.signees.length">Saalista saanut: <b>{{ Math.round($store.getters.getPointSignees.length/competition.signees.length*100*100)/100 }}%</b> ({{ $store.getters.getPointSignees.length }} / {{ competition.signees.length }})</h4>
           <h4>Kalaa saatu yhteensä: <b>{{ competition.total_weights/1000 }} kg</b></h4>
         </div>
       </div>

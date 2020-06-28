@@ -3,7 +3,14 @@ const mongodb = require('mongodb');
 
 const router = express.Router();
 
-// Get Competitions
+
+// Get all competitions
+router.get('/', async (req, res) => {
+    const competitions = await loadCompetitionsCollection();
+    res.send(await competitions.find({}).toArray());
+})
+
+// Get user's competitions
 router.get('/:user_id', async (req, res) => {
     const competitions = await loadCompetitionsCollection();
     res.send(await competitions.find({user_id: req.params.user_id}).toArray());
@@ -19,7 +26,6 @@ router.get('/competition/:competition_id', async (req, res) => {
 router.post('/', async (req, res) => {
     const competitions = await loadCompetitionsCollection();
     await competitions.insertOne({
-        competition_id: req.body.competition_id,
         user_id: req.body.user_id,
         name: req.body.name,
         cup_name:  req.body.cup_name,

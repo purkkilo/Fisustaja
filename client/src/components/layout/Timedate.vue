@@ -38,9 +38,9 @@ export default {
   mounted () {
     //TODO Fix timers to that they are in sync
     moment.locale('fi');
-    if (this.$store.getters.getCompetition){
-      this.competition = this.$store.getters.getCompetition;
-      this.remainingTime();
+    if(localStorage.getItem('competition') != null) {
+        this.competition = this.$store.getters.getCompetition;
+        this.remainingTime();
     }
     else {
       this.timer_string = "";

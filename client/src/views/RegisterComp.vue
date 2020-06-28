@@ -891,17 +891,8 @@ export default {
 
         const user = JSON.parse(localStorage.getItem('user'));
         const user_id = user["id"];
-        //temp id to get correct competition from array, even if somehow there is comp with same name etc.
-        const comp_id =
-          Math.random()
-            .toString(36)
-            .substring(2, 15) +
-          Math.random()
-            .toString(36)
-            .substring(2, 15);
 
         const competition = {
-          competition_id: comp_id,
           user_id: user_id,
           name: this.basic_info.name,
           cup_name: this.basic_info.cup_name,

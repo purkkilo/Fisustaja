@@ -136,7 +136,8 @@
                       <b>Saalista saanut</b>
                     </th>
                     <td style="border:1px solid black;" class="center-align"><!--TODO pyöristykset-->
-                      {{ $store.getters.getPointSignees.length/competition.signees.length*100 }}% ({{ $store.getters.getPointSignees.length }} / {{ signees.length }})
+                      {{ Math.round($store.getters.getPointSignees.length/competition.signees.length*100*100)/100 }}% ({{ $store.getters.getPointSignees.length }} / {{ signees.length }})
+                    
                     </td>
                   </tr>
                 </table>
@@ -170,7 +171,7 @@
                 <tbody>
                   <tr v-for="(signee, index) in results" :key="index">
                     <th class="center-align" style="border:1px solid black">
-                      {{ signee.placement }}
+                      {{ signee.placement }}.
                     </th>
                     <td style="border:1px solid black">
                       {{ signee.boat_number }}
@@ -231,7 +232,7 @@
                 <tbody>
                   <tr v-for="(team, index) in team_results" :key="index">
                     <th class="center-align" style="border:1px solid black">
-                      {{ index + 1 }}
+                      {{ index + 1 }}.
                     </th>
                     <td style="border:1px solid black">{{ team.name }}</td>
                     <td style="border:1px solid black">
@@ -281,8 +282,11 @@
                 id="biggest-fishes-table"
                 class="highlight centered responsive-table tablearea"
               >
-                <caption class="center-align flow-text">
+                <caption v-if="results_found_fishes" class="center-align flow-text">
                   Suurimmat kalat ({{ selected_biggest_fish }} {{ results_found_fishes }})
+                </caption>
+                <caption v-else class="center-align flow-text">
+                  Suurimmat kalat ({{ selected_biggest_fish }})
                 </caption>
                 <thead style="background: rgb(0, 1, 34);color:#fff;">
                   <tr>
@@ -345,8 +349,11 @@
                 id="biggest-amounts-table"
                 class="highlight centered responsive-table tablearea"
               >
-                <caption class="center-align flow-text">
+                <caption v-if="results_found_amounts" class="center-align flow-text">
                   Suurimmat kalasaaliit ({{ selected_biggest_amount }} {{ results_found_amounts }})
+                </caption>
+                <caption v-else class="center-align flow-text">
+                  Suurimmat kalasaaliit ({{ selected_biggest_amount }})
                 </caption>
                 <thead style="background: rgb(0, 1, 34);color:#fff;">
                   <tr>
@@ -457,7 +464,6 @@ export default {
     /* eslint-enable no-unused-vars */
     var elem = document.querySelectorAll(".tabs")[0];
     this.tabs = M.Tabs.getInstance(elem);
-    this.fish_names = [];
     this.checkLogin();
     if(localStorage.getItem('competition') != null) {
       let competition_id = localStorage.getItem('competition');
@@ -501,7 +507,7 @@ export default {
       }
     },
     drawCharts: function() {
-        let temp_names = this.fish_names;
+        let temp_names = [...this.fish_names];
         temp_names.shift();
         let temp_weights = [];
         let colors = [];
@@ -600,7 +606,9 @@ export default {
     },
     calculateAll: function() {
       this.calculateNormalResults();
-      this.calculateTeamResults();
+      if(this.isTeamCompetition){
+        this.calculateTeamResults();
+      }
       this.calculateBiggestFishes();
       this.calculateBiggestAmounts();
     },
@@ -618,34 +626,32 @@ export default {
       this.results = [];
       this.signees.forEach((signee) => {
         cup_points_total = 0;
-
         // First competitor
         if (!this.results.length) {
           if(signee.total_points == 0) {cup_placement_points = 0;}
           cup_points_total = (cup_placement_points + cup_participation_points) * cup_points_multiplier;
         }
-        // If competitor has no points === no fishes
-        else if (signee.total_points == 0){
-          cup_placement_points = 0;
-          cup_points_total = cup_participation_points * cup_points_multiplier;
-          if(signee.total_points === last_points){
-            tied_competitors += 1;
-          }
-          else {placement++;}
-        }
         // If not first competitor and has points
         else {
           // Tied points
-          if(signee.total_points == last_points && this.results.length) {
+          if(signee.total_points == last_points) {
             placement -= 1;
             tied_competitors += 1;
           }
           // If no tie, add tied_competitors amount of placements
           else {
-            placement += tied_competitors;
+              placement += tied_competitors;
+          }
+          // If competitor has no points === no fishes
+          if (signee.total_points == 0){
+            cup_placement_points = 0;
+            cup_points_total = cup_participation_points * cup_points_multiplier;
+            if(signee.total_points === last_points){
+              tied_competitors += 1;
+            }
           }
 
-          if(cup_placement_points <= 20) {
+          if(cup_placement_points <= 20 && signee.total_points !== 0) {
             // If the points differ from last competitor, deduct placement points
             if(signee.total_points !== last_points) {
               cup_placement_points -= 2 * (tied_competitors + 1);
@@ -657,7 +663,7 @@ export default {
             tied_competitors = 0;
           }
           else {
-            if (signee.total_points !== last_points) {
+            if (signee.total_points !== last_points && signee.total_points !== 0) {
               cup_placement_points -= 2 * (tied_competitors + 1);
               tied_competitors = 0;
             }
@@ -683,13 +689,15 @@ export default {
           cup_participation_points: cup_participation_points,
           cup_points_total: cup_points_total,
         });
-        
-        if(!(placement == 1 && signee.total_points == 0)){
-          if (!tied_competitors) {
-            placement++;
-            last_points = signee.total_points;        
-          }          
+        last_points = signee.total_points;
+
+        if (tied_competitors){
+          placement += tied_competitors;
         }
+        else {
+          placement++;
+        }          
+        
 
       });
     },
@@ -793,6 +801,8 @@ export default {
     },
     calculateBiggestFishes: function(){
       let fishes = this.biggest_fishes;
+      this.results_found_fishes = null;
+
       if(!this.selected_biggest_fish) {
         this.selected_biggest_fish = "Voittajat";
       }
@@ -815,6 +825,7 @@ export default {
     },
     calculateBiggestAmounts: function(){
       let fishes = this.biggest_amounts;
+      this.results_found_amount = "";
       if(!this.selected_biggest_amount) {
         this.selected_biggest_amount = "Voittajat";
       }

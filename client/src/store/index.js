@@ -27,9 +27,6 @@ export default new Vuex.Store({
     getCompetitionId: state => {
       return state.competition._id
     },
-    getCreatedCompetitionID: state => {
-      return state.competition.competition_id
-    },
     getCompetitionSignees: state => {
       return state.competition.signees;
     },

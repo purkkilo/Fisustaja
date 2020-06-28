@@ -3,7 +3,7 @@
         <Timedate/>
         <div class="container-transparent">
             <div class="section">
-                <div class="col s12 center-align"><h1>Fisustaja - Dashboard</h1></div>
+                <div class="col s12 center-align"><h1>Dashboard</h1></div>
             </div>
         
             <div class="section row inputarea">

@@ -586,6 +586,7 @@ export default {
 
       //if biggest fish not yet saved
       if(this.selected_fish && this.biggest_fish) {
+        // TODO sometimes names left null?
         this.saveBiggestFish();
       }
       //if reset == true, reset current weights to 0, otherwise update weights from inputs
