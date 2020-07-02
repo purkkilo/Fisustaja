@@ -15,8 +15,7 @@ New:
   ☐ Fix clock timings
   ☐ Add competitions to cups
   ☐ Sidenav only closing when clicking to feedback page (mobile)?
-  ☐ Remove competition_id
-
+  ☐ Add demo accounts
   
 Done:
   ✔ Create signees database collection @started(20-05-26 11:19) @today @done(20-05-27 19:34) @lasted(1d8h15m1s)
@@ -36,6 +35,7 @@ Done:
   ✔ Add input for competition end date @done(20-06-22 18:25)
   ✔ Fix placement if points == 0 @done(20-06-25 20:21)
   ✔ Fix competition refreshing on Results.vue @done(20-06-25 20:21)
+  ✔ Remove biggest fishes and amounts if points are reset @done(20-07-02 07:44)
   
 Cancelled:
   ✘ Press Alt+C to mark a todo as cancelled

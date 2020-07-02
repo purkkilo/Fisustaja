@@ -3,30 +3,34 @@
     <Timedate />
     <div class="container-transparent">
       <div class="section">
-        <div class="col s12 center-align"><h1>Tulokset</h1></div>
+        <div class="col s12 center-align">
+          <h1>Tulokset</h1>
+        </div>
       </div>
       <div class="row">
-
         <div class="col s4">
           <router-link to="/weighting">
-            <a class="waves-effect waves-light blue darken-2 btn"
-              ><i class="material-icons left">fitness_center</i>Punnitus</a
-            >
+            <a class="waves-effect waves-light blue darken-2 btn">
+              <i class="material-icons left">fitness_center</i>Punnitus
+            </a>
           </router-link>
         </div>
 
         <div class="col s4">
           <router-link to="/overview">
-          <a class="waves-effect waves-light btn"
-            ><i class="material-icons left">info</i>Kilpailun yleisnäkymä</a
-          >
+            <a class="waves-effect waves-light btn">
+              <i class="material-icons left">info</i>Kilpailun yleisnäkymä
+            </a>
           </router-link>
         </div>
 
-        <div class="col s4" v-if="results.length || team_results.length || biggest_fishes_results.length || biggest_amounts_results">
-          <a v-on:click="saveAllAsPDF" class="waves-effect waves-light blue darken-4 btn-large"
-            ><i class="material-icons left">picture_as_pdf</i>Lataa kaikki taulukot</a
-          >
+        <div
+          class="col s4"
+          v-if="results.length || team_results.length || biggest_fishes_results.length || biggest_amounts_results"
+        >
+          <a v-on:click="saveAllAsPDF" class="waves-effect waves-light blue darken-4 btn-large">
+            <i class="material-icons left">picture_as_pdf</i>Lataa kaikki taulukot
+          </a>
         </div>
       </div>
       <div class="row">
@@ -63,137 +67,123 @@
             <div class="divider black" style="margin:20px"></div>
           </div>
           <div class="section" v-if="competition">
-              <div class="fishes_summary row">
-                <div class="col s8 push-s2">
-                  <table
-                    id ="fish-weights-table"
-                    class="striped highlight centered responsive-table"
-                  >
-                    <thead>
-                      <tr>
-                        <th>Kalalaji</th>
-                        <th>Pistekerroin</th>
-                        <th>Alamitta</th>
-                        <th>Punnittu</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr
-                        v-for="(fish, index) in calculated_fish_weights"
-                        :key="index"
-                      >
-                        <th style="border:1px solid black;" scope="row">
-                          {{ fish.name }}
-                        </th>
-                        <td style="border:1px solid black;">
-                          x {{ fish.multiplier }}
-                        </td>
-                        <td style="border:1px solid black;">
-                          {{ fish.minsize }} cm
-                        </td>
-                        <td style="border:1px solid black;">
-                          {{ fish.weights }} g
-                        </td>
-                      </tr>
-                      <tr>
-                        <th scope="row"></th>
-                        <th></th>
-                        <th style="border:1px solid black;">
-                          Saalista yhteensä
-                        </th>
-                        <td style="border:1px solid black;">
-                          {{
-                            Math.round(
-                              (calculated_total_weights /
-                                1000 +
-                                Number.EPSILON) *
-                                100
-                            ) / 100
-                          }}
-                          kg
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              <div style="margin:30px"></div>
-              <div class="row">
-                <table
-                  id ="misc-table"
-                  class="striped centered responsive-table highlight col s8 push-s2"
-                >
-                  <tr>
-                    <th style="border:1px solid black;" class="center-align">
-                      <b>Ilmoittautuneita yhteensä</b>
-                    </th>
-                    <td style="border:1px solid black;" class="center-align">
-                      {{ signees.length }} venettä
-                    </td>
-                  </tr>
-                  <tr>
-                    <th style="border:1px solid black;" class="center-align">
-                      <b>Saalista saanut</b>
-                    </th>
-                    <td style="border:1px solid black;" class="center-align"><!--TODO pyöristykset-->
-                      {{ Math.round($store.getters.getPointSignees.length/competition.signees.length*100*100)/100 }}% ({{ $store.getters.getPointSignees.length }} / {{ signees.length }})
-                    
-                    </td>
-                  </tr>
+            <div class="fishes_summary row">
+              <div class="col s8 push-s2">
+                <table id="fish-weights-table" class="striped highlight centered responsive-table">
+                  <thead>
+                    <tr>
+                      <th>Kalalaji</th>
+                      <th>Pistekerroin</th>
+                      <th>Alamitta</th>
+                      <th>Punnittu</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(fish, index) in calculated_fish_weights" :key="index">
+                      <th style="border:1px solid black;" scope="row">{{ fish.name }}</th>
+                      <td style="border:1px solid black;">x {{ fish.multiplier }}</td>
+                      <td style="border:1px solid black;">{{ fish.minsize }} cm</td>
+                      <td style="border:1px solid black;">{{ fish.weights }} g</td>
+                    </tr>
+                    <tr>
+                      <th scope="row"></th>
+                      <th></th>
+                      <th style="border:1px solid black;">Saalista yhteensä</th>
+                      <td style="border:1px solid black;">
+                        {{
+                        Math.round(
+                        (calculated_total_weights /
+                        1000 +
+                        Number.EPSILON) *
+                        100
+                        ) / 100
+                        }}
+                        kg
+                      </td>
+                    </tr>
+                  </tbody>
                 </table>
               </div>
+            </div>
+            <div style="margin:30px"></div>
+            <div class="row">
+              <table
+                id="misc-table"
+                class="striped centered responsive-table highlight col s8 push-s2"
+              >
+                <tr>
+                  <th style="border:1px solid black;" class="center-align">
+                    <b>Ilmoittautuneita yhteensä</b>
+                  </th>
+                  <td
+                    style="border:1px solid black;"
+                    class="center-align"
+                  >{{ signees.length }} venettä</td>
+                </tr>
+                <tr>
+                  <th style="border:1px solid black;" class="center-align">
+                    <b>Saalista saaneita</b>
+                  </th>
+                  <td style="border:1px solid black;" class="center-align">
+                    <!--TODO pyöristykset-->
+
+                    {{ Math.round($store.getters.getPointSignees.length/competition.signees.length*100*100)/100 }}% ({{ $store.getters.getPointSignees.length }} / {{ signees.length }})
+                  </td>
+                </tr>
+              </table>
+            </div>
           </div>
           <div class="row">
-            <a v-on:click ="saveStatsAsPDF(`Tilastoja`)" class="waves-effect waves-light blue darken-4 btn col s4 push-s4">
+            <a
+              v-on:click="saveStatsAsPDF(`Tilastoja`)"
+              class="waves-effect waves-light blue darken-4 btn col s4 push-s4"
+            >
               <i class="material-icons left">picture_as_pdf</i>Lataa pdf
             </a>
           </div>
         </div>
         <div id="normal-competition" class="col s12 inputarea active">
-          <div class="section" >
+          <div class="section">
+            <div class="col s3 push-s4" style="margin-bottom:20px">
+              <v-select
+                class="flow-text title"
+                label="name"
+                placeholder="Valitse näytettävät tulokset"
+                v-on:input="switchNormalResults"
+                v-model="selected_normal"
+                :options="normal_options"
+              />
+            </div>
             <div class="row" v-if="results.length">
-              <table
-                id="normal-table"
-                class="highlight centered responsive-table tablearea"
-              >
+              <table id="normal-table" class="highlight centered responsive-table tablearea">
                 <thead style="background: rgb(0, 1, 34);color:#fff;">
                   <tr>
-                    <th>Sijoitus</th>
-                    <th>Nro</th>
-                    <th>Kapteeni</th>
-                    <th>Paikkakunta</th>
-                    <th>Tulos</th>
-                    <th>Cup sij. pisteet</th>
-                    <th>Cup osal. pisteet</th>
-                    <th>Cup pisteet yht.</th>
+                    <th v-for="(header, index) in normal_headers" :key="index">{{header}}</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody v-if="selected_normal =='Pisteet'">
                   <tr v-for="(signee, index) in results" :key="index">
-                    <th class="center-align" style="border:1px solid black">
-                      {{ signee.placement }}.
-                    </th>
-                    <td style="border:1px solid black">
-                      {{ signee.boat_number }}
-                    </td>
-                    <td style="border:1px solid black">
-                      {{ signee.captain_name }}
-                    </td>
-                    <td style="border:1px solid black">
-                      {{ signee.locality }}
-                    </td>
-                    <td style="border:1px solid black">
-                      {{ signee.total_points }}
-                    </td>
-                    <td style="border:1px solid black">
-                      {{ signee.cup_placement_points }}
-                    </td>
-                    <td style="border:1px solid black">
-                      {{ signee.cup_participation_points }}
-                    </td>
-                    <td style="border:1px solid black">
-                      {{ signee.cup_points_total }}
-                    </td>
+                    <th class="center-align" style="border:1px solid black">{{ signee.placement }}.</th>
+                    <td style="border:1px solid black">{{ signee.boat_number }}</td>
+                    <td style="border:1px solid black">{{ signee.captain_name }}</td>
+                    <td style="border:1px solid black">{{ signee.locality }}</td>
+                    <td style="border:1px solid black">{{ signee.total_points }} p</td>
+                    <td style="border:1px solid black">{{ signee.cup_placement_points }}</td>
+                    <td style="border:1px solid black">{{ signee.cup_participation_points }}</td>
+                    <td style="border:1px solid black">{{ signee.cup_points_total }}</td>
+                  </tr>
+                </tbody>
+                <tbody v-else>
+                  <tr v-for="(signee, index) in results" :key="index">
+                    <th class="center-align" style="border:1px solid black">{{ signee.placement }}.</th>
+                    <td style="border:1px solid black">{{ signee.boat_number }}</td>
+                    <td style="border:1px solid black">{{ signee.captain_name }}</td>
+                    <td
+                      v-for="(name, index) in table_fish_names"
+                      :key="index"
+                      style="border:1px solid black"
+                    >{{ signee[name] }} g</td>
+                    <td style="border:1px solid black">{{ signee.total_points }} p</td>
                   </tr>
                 </tbody>
               </table>
@@ -207,7 +197,10 @@
             </div>
           </div>
           <div class="row" v-if="results.length">
-            <a v-on:click ="saveAsPDF(`Normaalikilpailun tulokset`, '#normal-table')" class="waves-effect waves-light blue darken-4 btn col s4 push-s4">
+            <a
+              v-on:click="saveAsPDF(`Normaalikilpailun tulokset`, '#normal-table')"
+              class="waves-effect waves-light blue darken-4 btn col s4 push-s4"
+            >
               <i class="material-icons left">picture_as_pdf</i>Lataa pdf
             </a>
           </div>
@@ -215,10 +208,7 @@
         <div id="team-competition" class="col s12 inputarea" v-if="isTeamCompetition">
           <div class="section">
             <div class="row" v-if="team_results.length">
-              <table
-                id="team-table"
-                class="highlight centered responsive-table tablearea"
-              >
+              <table id="team-table" class="highlight centered responsive-table tablearea">
                 <thead style="background: rgb(0, 1, 34);color:#fff;">
                   <tr>
                     <th>Sijoitus</th>
@@ -231,20 +221,12 @@
                 </thead>
                 <tbody>
                   <tr v-for="(team, index) in team_results" :key="index">
-                    <th class="center-align" style="border:1px solid black">
-                      {{ index + 1 }}.
-                    </th>
+                    <th class="center-align" style="border:1px solid black">{{ index + 1 }}.</th>
                     <td style="border:1px solid black">{{ team.name }}</td>
-                    <td style="border:1px solid black">
-                      {{ team.captain_name_1 }}
-                    </td>
-                    <td style="border:1px solid black">
-                      {{ team.captain_name_2 }}
-                    </td>
-                    <td style="border:1px solid black">
-                      {{ team.captain_name_3 }}
-                    </td>
-                    <td style="border:1px solid black">{{ team.points }}</td>
+                    <td style="border:1px solid black">{{ team.captain_name_1 }}</td>
+                    <td style="border:1px solid black">{{ team.captain_name_2 }}</td>
+                    <td style="border:1px solid black">{{ team.captain_name_3 }}</td>
+                    <td style="border:1px solid black">{{ team.points }} p</td>
                   </tr>
                 </tbody>
               </table>
@@ -258,7 +240,10 @@
             </div>
           </div>
           <div class="row" v-if="team_results.length">
-            <a v-on:click ="saveAsPDF(`Tiimikilpailun tulokset`, '#team-table')" class="waves-effect waves-light blue darken-4 btn col s4 push-s4">
+            <a
+              v-on:click="saveAsPDF(`Tiimikilpailun tulokset`, '#team-table')"
+              class="waves-effect waves-light blue darken-4 btn col s4 push-s4"
+            >
               <i class="material-icons left">picture_as_pdf</i>Lataa pdf
             </a>
           </div>
@@ -271,7 +256,7 @@
                   class="flow-text title"
                   label="name"
                   placeholder="Valitse näytettävä kalalaji"
-                  v-on:input= "calculateBiggestFishes"
+                  v-on:input="calculateBiggestFishes"
                   v-model="selected_biggest_fish"
                   :options="fish_names"
                 />
@@ -282,12 +267,14 @@
                 id="biggest-fishes-table"
                 class="highlight centered responsive-table tablearea"
               >
-                <caption v-if="results_found_fishes" class="center-align flow-text">
-                  Suurimmat kalat ({{ selected_biggest_fish }} {{ results_found_fishes }})
-                </caption>
-                <caption v-else class="center-align flow-text">
-                  Suurimmat kalat ({{ selected_biggest_fish }})
-                </caption>
+                <caption
+                  v-if="results_found_fishes"
+                  class="center-align flow-text"
+                >Suurimmat kalat ({{ selected_biggest_fish }} {{ results_found_fishes }})</caption>
+                <caption
+                  v-else
+                  class="center-align flow-text"
+                >Suurimmat kalat ({{ selected_biggest_fish }})</caption>
                 <thead style="background: rgb(0, 1, 34);color:#fff;">
                   <tr>
                     <th v-if="selected_biggest_fish == 'Voittajat'">Kalalaji</th>
@@ -299,18 +286,14 @@
                 </thead>
                 <tbody>
                   <tr v-for="(fish, index) in biggest_fishes_results" :key="index">
-                    <th v-if="selected_biggest_fish == 'Voittajat'" class="center-align" style="border:1px solid black">
-                      {{ fish.name }}
-                    </th>
-                    <th v-else class="center-align" style="border:1px solid black">
-                      {{ index+1 }}.
-                    </th>
-                    <td style="border:1px solid black">
-                      {{ fish.boat_number }}
-                    </td>
-                    <td style="border:1px solid black">
-                      {{ fish.captain_name }}
-                    </td>
+                    <th
+                      v-if="selected_biggest_fish == 'Voittajat'"
+                      class="center-align"
+                      style="border:1px solid black"
+                    >{{ fish.name }}</th>
+                    <th v-else class="center-align" style="border:1px solid black">{{ index+1 }}.</th>
+                    <td style="border:1px solid black">{{ fish.boat_number }}</td>
+                    <td style="border:1px solid black">{{ fish.captain_name }}</td>
                     <td style="border:1px solid black">{{ fish.weight }} g</td>
                   </tr>
                 </tbody>
@@ -325,7 +308,10 @@
             </div>
           </div>
           <div class="row" v-if="biggest_fishes_results.length">
-            <a v-on:click ="saveAsPDF(`Suurimmat kalat`, '#biggest-fishes-table')" class="waves-effect waves-light blue darken-4 btn col s4 push-s4">
+            <a
+              v-on:click="saveAsPDF(`Suurimmat kalat`, '#biggest-fishes-table')"
+              class="waves-effect waves-light blue darken-4 btn col s4 push-s4"
+            >
               <i class="material-icons left">picture_as_pdf</i>Lataa pdf
             </a>
           </div>
@@ -349,12 +335,14 @@
                 id="biggest-amounts-table"
                 class="highlight centered responsive-table tablearea"
               >
-                <caption v-if="results_found_amounts" class="center-align flow-text">
-                  Suurimmat kalasaaliit ({{ selected_biggest_amount }} {{ results_found_amounts }})
-                </caption>
-                <caption v-else class="center-align flow-text">
-                  Suurimmat kalasaaliit ({{ selected_biggest_amount }})
-                </caption>
+                <caption
+                  v-if="results_found_amounts"
+                  class="center-align flow-text"
+                >Suurimmat kalasaaliit ({{ selected_biggest_amount }} {{ results_found_amounts }})</caption>
+                <caption
+                  v-else
+                  class="center-align flow-text"
+                >Suurimmat kalasaaliit ({{ selected_biggest_amount }})</caption>
                 <thead style="background: rgb(0, 1, 34);color:#fff;">
                   <tr>
                     <th v-if="selected_biggest_amount == 'Voittajat'">Kalalaji</th>
@@ -365,25 +353,16 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr
-                    v-for="(result, index) in biggest_amounts_results"
-                    :key="index"
-                  >
-                    <th v-if="selected_biggest_amount == 'Voittajat'" class="center-align" style="border:1px solid black">
-                      {{ result.name }}
-                    </th>
-                    <th v-else class="center-align" style="border:1px solid black">
-                      {{ index+1 }}.
-                    </th>
-                    <td style="border:1px solid black">
-                      {{ result.boat_number }}
-                    </td>
-                    <td style="border:1px solid black">
-                      {{ result.captain_name }}
-                    </td>
-                    <td style="border:1px solid black">
-                      {{ result.weight }} g
-                    </td>
+                  <tr v-for="(result, index) in biggest_amounts_results" :key="index">
+                    <th
+                      v-if="selected_biggest_amount == 'Voittajat'"
+                      class="center-align"
+                      style="border:1px solid black"
+                    >{{ result.name }}</th>
+                    <th v-else class="center-align" style="border:1px solid black">{{ index+1 }}.</th>
+                    <td style="border:1px solid black">{{ result.boat_number }}</td>
+                    <td style="border:1px solid black">{{ result.captain_name }}</td>
+                    <td style="border:1px solid black">{{ result.weight }} g</td>
                   </tr>
                 </tbody>
               </table>
@@ -397,14 +376,21 @@
             </div>
           </div>
           <div class="row" v-if="biggest_amounts_results.length">
-            <a v-on:click ="saveAsPDF(`Suurimmat kalasaaliit`, '#biggest-amounts-table')" class="waves-effect waves-light blue darken-4 btn col s4 push-s4">
+            <a
+              v-on:click="saveAsPDF(`Suurimmat kalasaaliit`, '#biggest-amounts-table')"
+              class="waves-effect waves-light blue darken-4 btn col s4 push-s4"
+            >
               <i class="material-icons left">picture_as_pdf</i>Lataa pdf
             </a>
           </div>
         </div>
       </div>
       <div v-if="competition" class="row">
-        <a v-if="!loading" v-on:click="refreshCompetition(competition._id)" class="waves-effect waves-light grey darken-4 btn-large">
+        <a
+          v-if="!loading"
+          v-on:click="refreshCompetition(competition._id)"
+          class="waves-effect waves-light grey darken-4 btn-large"
+        >
           <i class="material-icons left">update</i>Päivitä tulokset
         </a>
         <div v-else>
@@ -420,13 +406,13 @@ import Timedate from "../components/layout/Timedate";
 import M from "materialize-css";
 import { options_picker } from "../i18n";
 import "vue-select/dist/vue-select.css";
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-import moment from 'moment';
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import moment from "moment";
 import CompetitionService from "../CompetitionService";
-import ProgressBarQuery from '../components/layout/ProgressBarQuery';
-import Chart from 'chart.js';
-import 'chartjs-plugin-labels';
+import ProgressBarQuery from "../components/layout/ProgressBarQuery";
+import Chart from "chart.js";
+import "chartjs-plugin-labels";
 
 export default {
   name: "Results",
@@ -439,7 +425,10 @@ export default {
       loading: false,
       signees: [],
       fish_names: [],
+      table_fish_names: [],
       results: [],
+      normal_points: [],
+      normal_weights: [],
       team_results: [],
       biggest_fishes: {},
       biggest_fishes_results: [],
@@ -453,6 +442,18 @@ export default {
       isTeamCompetition: true,
       calculated_total_weights: null,
       calculated_fish_weights: null,
+      selected_normal: null,
+      normal_options: ["Pisteet", "Kalat"],
+      normal_headers: [
+        "Sijoitus",
+        "Nro.",
+        "Kapteeni",
+        "Paikkakunta",
+        "Tulos",
+        "Cup sij. pisteet",
+        "Cup osal. pisteet",
+        "Cup pisteet yht."
+      ]
     };
   },
   mounted() {
@@ -465,152 +466,185 @@ export default {
     var elem = document.querySelectorAll(".tabs")[0];
     this.tabs = M.Tabs.getInstance(elem);
     this.checkLogin();
-    if(localStorage.getItem('competition') != null) {
-      let competition_id = localStorage.getItem('competition');
+    if (localStorage.getItem("competition") != null) {
+      let competition_id = localStorage.getItem("competition");
       this.refreshCompetition(competition_id);
     }
   },
   methods: {
-     async refreshCompetition(competition_id) {
+    async refreshCompetition(competition_id) {
       this.loading = true;
       this.fish_names = [];
+      this.table_fish_names = [];
       try {
-        let competitions = await CompetitionService.getCompetition(competition_id);
-        if(competitions.length){
-            this.competition = competitions[0];
-            this.$store.commit('refreshCompetition', this.competition);
-            this.isTeamCompetition = this.$store.getters.isTeamCompetition;
-            this.signees = this.$store.getters.getResultSignees;
-            this.biggest_fishes = this.$store.getters.getBiggestFishes;
-            this.biggest_amounts = this.$store.getters.getBiggestAmounts;
-            this.calculateTotalWeights();
-            this.calculated_total_weights = this.$store.getters.getCompetitionTotalWeights;
-            let temp_fish_names = this.$store.getters.getCompetitionFishes;
-            this.fish_names.push("Voittajat");
-            temp_fish_names.forEach(fish => {
-              this.fish_names.push(fish.name);
-            });
-            this.selected_biggest_amount = this.selected_biggest_fish = "Voittajat";
-            this.calculateAll();
-            this.drawCharts();
-        }
-        else {
+        let competitions = await CompetitionService.getCompetition(
+          competition_id
+        );
+        if (competitions.length) {
+          this.competition = competitions[0];
+          this.$store.commit("refreshCompetition", this.competition);
+          this.isTeamCompetition = this.$store.getters.isTeamCompetition;
+          this.signees = this.$store.getters.getResultSignees;
+          this.biggest_fishes = this.$store.getters.getBiggestFishes;
+          this.biggest_amounts = this.$store.getters.getBiggestAmounts;
+          this.calculateTotalWeights();
+          this.calculated_total_weights = this.$store.getters.getCompetitionTotalWeights;
+          let temp_fish_names = this.$store.getters.getCompetitionFishes;
+          this.fish_names.push("Voittajat");
+          temp_fish_names.forEach(fish => {
+            this.fish_names.push(fish.name);
+            this.table_fish_names.push(fish.name);
+          });
+          this.selected_biggest_amount = this.selected_biggest_fish =
+            "Voittajat";
+          this.selected_normal = this.normal_options[0];
+          this.calculateAll();
+          this.drawCharts();
+        } else {
           this.signees = [];
           this.biggest_fishes = [];
           this.biggest_amounts = [];
           console.log("No competition found on database...");
         }
         this.loading = false;
-      } catch(err) {
+      } catch (err) {
         this.loading = false;
         console.log(err.message);
       }
     },
     drawCharts: function() {
-        let temp_names = [...this.fish_names];
-        temp_names.shift();
-        let temp_weights = [];
-        let colors = [];
-        this.calculated_fish_weights.forEach(fish => {
-          temp_weights.push(fish.weights);
-          colors.push(fish.color);
-        });
+      let temp_names = [...this.fish_names];
+      temp_names.shift();
+      let temp_weights = [];
+      let colors = [];
+      this.calculated_fish_weights.forEach(fish => {
+        temp_weights.push(fish.weights);
+        colors.push(fish.color);
+      });
 
-        let signee_data = [];
-        let point_signees = this.$store.getters.getPointSignees.length
-        let no_points_signees = this.signees.length - point_signees;
-        signee_data.push(point_signees);
-        signee_data.push(no_points_signees);
+      let signee_data = [];
+      let point_signees = this.$store.getters.getPointSignees.length;
+      let no_points_signees = this.signees.length - point_signees;
+      signee_data.push(point_signees);
+      signee_data.push(no_points_signees);
 
-        const fishes_chart_data = {
-            type: 'doughnut',
-            data: {
-              labels: temp_names,
-              datasets: [
-                {
-                  label: "Paino (g)",
-                  backgroundColor: colors,
-                  data: temp_weights
-                }
-              ]
-            },
-            options: {
-              plugins:{
-                  labels: {
-                    render: function (args) {
-                      return args.value + ' g';
-                    },
-                    fontSize: 14,
-                    fontStyle: 'bold',
-                    fontColor: '#000',
-                    fontFamily: '"Lucida Console", Monaco, monospace'
-                  }
-              },
-              title: {
-                display: true,
-                text: 'Kaloja saatu yhteensä',
-                fontSize: 28
-              }
+      const fishes_chart_data = {
+        type: "doughnut",
+        data: {
+          labels: temp_names,
+          datasets: [
+            {
+              label: "Paino (g)",
+              backgroundColor: colors,
+              data: temp_weights
             }
-        };
-        
-        const signee_chart_data = {
-            type: 'pie',
-            data: {
-              labels: ['Kyllä', 'Ei saalista'],
-              datasets: [
-                {
-                  label: "Lukumäärä (kpl)",
-                  backgroundColor: ["#7fbf7f","#ff7f7f"],
-                  data: signee_data
-                }
-              ]
-            },
-            options: {
-              plugins:{
-                  labels: {
-                    render: 'percentage',
-                    fontSize: 14,
-                    fontStyle: 'bold',
-                    fontColor: '#000',
-                    fontFamily: '"Lucida Console", Monaco, monospace'
-                  }
+          ]
+        },
+        options: {
+          plugins: {
+            labels: {
+              render: function(args) {
+                return args.value + " g";
               },
-              title: {
-                display: true,
-                text: 'Saalista saaneita',
-                fontSize: 28
-              }
+              fontSize: 14,
+              fontStyle: "bold",
+              fontColor: "#000",
+              fontFamily: '"Lucida Console", Monaco, monospace'
             }
-        };
-        /* eslint-disable no-unused-vars */
-        var fishes_ctx = document.getElementById('fishesChart').getContext('2d');
-        var fishesChart = new Chart(fishes_ctx, fishes_chart_data);
-        var signees_ctx = document.getElementById('signeesChart').getContext('2d');
-        var signeesChart = new Chart(signees_ctx, signee_chart_data);
-        /* eslint-disable no-unused-vars */
+          },
+          title: {
+            display: true,
+            text: "Kaloja saatu yhteensä",
+            fontSize: 28
+          }
+        }
+      };
+
+      const signee_chart_data = {
+        type: "pie",
+        data: {
+          labels: ["Kyllä", "Ei saalista"],
+          datasets: [
+            {
+              label: "Lukumäärä (kpl)",
+              backgroundColor: ["#7fbf7f", "#ff7f7f"],
+              data: signee_data
+            }
+          ]
+        },
+        options: {
+          plugins: {
+            labels: {
+              render: "percentage",
+              fontSize: 14,
+              fontStyle: "bold",
+              fontColor: "#000",
+              fontFamily: '"Lucida Console", Monaco, monospace'
+            }
+          },
+          title: {
+            display: true,
+            text: "Saalista saaneita",
+            fontSize: 28
+          }
+        }
+      };
+      /* eslint-disable no-unused-vars */
+      var fishes_ctx = document.getElementById("fishesChart").getContext("2d");
+      var fishesChart = new Chart(fishes_ctx, fishes_chart_data);
+      var signees_ctx = document
+        .getElementById("signeesChart")
+        .getContext("2d");
+      var signeesChart = new Chart(signees_ctx, signee_chart_data);
+      /* eslint-disable no-unused-vars */
     },
     checkLogin: function() {
-        if(localStorage.getItem('jwt') != null){
-            this.$store.state.logged_in = true;
-            let user = JSON.parse(localStorage.getItem('user'));
-            user.is_admin == true ? this.$store.state.is_admin = true : this.$store.state.is_admin = false;
-        }
-        else {
-            this.$store.state.logged_in = false;
-            this.$store.state.is_admin = false;
-        }
-    },  
+      if (localStorage.getItem("jwt") != null) {
+        this.$store.state.logged_in = true;
+        let user = JSON.parse(localStorage.getItem("user"));
+        user.is_admin == true
+          ? (this.$store.state.is_admin = true)
+          : (this.$store.state.is_admin = false);
+      } else {
+        this.$store.state.logged_in = false;
+        this.$store.state.is_admin = false;
+      }
+    },
     onlyUnique: function(value, index, self) {
       return self.indexOf(value) === index;
     },
     calculateAll: function() {
       this.calculateNormalResults();
-      if(this.isTeamCompetition){
+      if (this.isTeamCompetition) {
         this.calculateTeamResults();
       }
       this.calculateBiggestFishes();
       this.calculateBiggestAmounts();
+    },
+    switchNormalResults: function() {
+      if (!this.selected_normal) {
+        this.selected_normal = "Pisteet";
+      }
+      if (this.selected_normal === "Pisteet") {
+        this.normal_headers = [
+          "Sijoitus",
+          "Nro.",
+          "Kapteeni",
+          "Paikkakunta",
+          "Tulos",
+          "Cup sij. pisteet",
+          "Cup osal. pisteet",
+          "Cup pisteet yht."
+        ];
+        this.results = this.normal_points;
+      } else {
+        this.normal_headers = ["Sijoitus", "Nro.", "Kapteeni"];
+        this.table_fish_names.forEach(name => {
+          this.normal_headers.push(name);
+        });
+        this.normal_headers.push("Tulos");
+        this.results = this.normal_weights;
+      }
     },
     calculateNormalResults: function() {
       const competition = this.competition;
@@ -624,46 +658,54 @@ export default {
       let cup_points_total;
 
       this.results = [];
-      this.signees.forEach((signee) => {
+      this.normal_points = [];
+      this.normal_weights = [];
+
+      this.signees.forEach(signee => {
         cup_points_total = 0;
         // First competitor
         if (!this.results.length) {
-          if(signee.total_points == 0) {cup_placement_points = 0;}
-          cup_points_total = (cup_placement_points + cup_participation_points) * cup_points_multiplier;
+          if (signee.total_points == 0) {
+            cup_placement_points = 0;
+          }
+          cup_points_total =
+            (cup_placement_points + cup_participation_points) *
+            cup_points_multiplier;
         }
         // If not first competitor and has points
         else {
           // Tied points
-          if(signee.total_points == last_points) {
+          if (signee.total_points == last_points) {
             placement -= 1;
             tied_competitors += 1;
           }
           // If no tie, add tied_competitors amount of placements
           else {
-              placement += tied_competitors;
+            placement += tied_competitors;
           }
           // If competitor has no points === no fishes
-          if (signee.total_points == 0){
+          if (signee.total_points == 0) {
             cup_placement_points = 0;
             cup_points_total = cup_participation_points * cup_points_multiplier;
-            if(signee.total_points === last_points){
+            if (signee.total_points === last_points) {
               tied_competitors += 1;
             }
           }
 
-          if(cup_placement_points <= 20 && signee.total_points !== 0) {
+          if (cup_placement_points <= 20 && signee.total_points !== 0) {
             // If the points differ from last competitor, deduct placement points
-            if(signee.total_points !== last_points) {
+            if (signee.total_points !== last_points) {
               cup_placement_points -= 2 * (tied_competitors + 1);
               tied_competitors = 0;
             }
-          }
-          else if (cup_placement_points <= 0) {
+          } else if (cup_placement_points <= 0) {
             cup_placement_points = 0;
             tied_competitors = 0;
-          }
-          else {
-            if (signee.total_points !== last_points && signee.total_points !== 0) {
+          } else {
+            if (
+              signee.total_points !== last_points &&
+              signee.total_points !== 0
+            ) {
               cup_placement_points -= 2 * (tied_competitors + 1);
               tied_competitors = 0;
             }
@@ -672,14 +714,12 @@ export default {
           if (cup_placement_points > 0) {
             cup_temp_points = cup_placement_points + cup_participation_points;
             cup_points_total = cup_temp_points * cup_points_multiplier;
-          }
-          else {
+          } else {
             cup_points_total = cup_participation_points * cup_points_multiplier;
           }
-
         }
-
-        this.results.push({
+        //For showing cup points
+        this.normal_points.push({
           placement: placement,
           boat_number: signee.boat_number,
           captain_name: signee.captain_name,
@@ -687,18 +727,31 @@ export default {
           total_points: signee.total_points,
           cup_placement_points: cup_placement_points,
           cup_participation_points: cup_participation_points,
-          cup_points_total: cup_points_total,
+          cup_points_total: cup_points_total
         });
+
+        //For showing fish weights
+        let temp_dict = {};
+        temp_dict.placement = placement;
+        temp_dict.boat_number = signee.boat_number;
+        temp_dict.captain_name = signee.captain_name;
+
+        signee.weights.forEach(weights => {
+          let name = weights.name;
+          let weight = weights.weights;
+          temp_dict[name] = weight;
+        });
+        temp_dict.total_points = signee.total_points;
+
+        this.normal_weights.push(temp_dict);
         last_points = signee.total_points;
 
-        if (tied_competitors){
+        this.results = this.normal_points;
+        if (tied_competitors > 0) {
           placement += tied_competitors;
-        }
-        else {
+        } else {
           placement++;
-        }          
-        
-
+        }
       });
     },
 
@@ -707,7 +760,7 @@ export default {
       var team_names = [];
 
       // Get all the team names
-      this.signees.forEach((signee) => {
+      this.signees.forEach(signee => {
         if (signee.team !== "-" && signee.team !== null) {
           team_names.push(signee.team);
         }
@@ -716,12 +769,12 @@ export default {
       team_names = [...new Set(team_names)];
 
       // Get all the members of each team and add up their points
-      team_names.forEach((team_name) => {
-        let team = this.signees.filter((signee) => signee.team == team_name);
+      team_names.forEach(team_name => {
+        let team = this.signees.filter(signee => signee.team == team_name);
         let team_points = 0;
         let members = [];
 
-        team.forEach((member) => {
+        team.forEach(member => {
           members.push(member.captain_name);
           team_points += member.total_points;
         });
@@ -738,7 +791,7 @@ export default {
           captain_name_1: members[0],
           captain_name_2: members[1],
           captain_name_3: members[2],
-          points: team_points,
+          points: team_points
         });
       });
     },
@@ -754,10 +807,10 @@ export default {
         competition_fishes[i].weights = 0;
       }
       //Then add
-      finished_boats.forEach((element) => {
+      finished_boats.forEach(element => {
         for (let i = 0; i < competition_fishes.length; i++) {
           let fish_weights = element.weights.find(
-            (fish) => competition_fishes[i].name == fish.name
+            fish => competition_fishes[i].name == fish.name
           ).weights;
           competition_fishes[i].weights += parseInt(fish_weights);
           competition.total_weights += parseInt(fish_weights);
@@ -767,217 +820,380 @@ export default {
 
       try {
         this.competition = competition;
-        this.$store.commit('refreshCompetition', this.competition);
-        await CompetitionService.updateCompetition(this.competition._id, this.competition);
+        this.$store.commit("refreshCompetition", this.competition);
+        await CompetitionService.updateCompetition(
+          this.competition._id,
+          this.competition
+        );
         console.log("Updated to database!");
-
       } catch (err) {
         console.log(err.message);
         this.calculated_fish_weights = null;
       }
     },
     sortDict: function(fishes) {
-        if(fishes){
-          let all_results = [];
-          let temp_results = [];
-          this.fish_names.forEach(name => {
-              if(name !== "Voittajat") {
-                if(fishes[name]){
-                  temp_results = fishes[name].sort(function compare(a,b) {
-                      return parseInt(b.weight) - parseInt(a.weight);
-                  });
-                  fishes[name] = temp_results;
-                  //Now it's sorted so first element is fine
-                  all_results.push({name: name, boat_number: temp_results[0].boat_number, captain_name: temp_results[0].captain_name, weight: temp_results[0].weight});
-                }
-              }
-          });
+      if (fishes) {
+        let all_results = [];
+        let temp_results = [];
+        this.fish_names.forEach(name => {
+          if (name !== "Voittajat") {
+            if (fishes[name]) {
+              temp_results = fishes[name].sort(function compare(a, b) {
+                return parseInt(b.weight) - parseInt(a.weight);
+              });
+              fishes[name] = temp_results;
+              //Now it's sorted so first element is fine
+              all_results.push({
+                name: name,
+                boat_number: temp_results[0].boat_number,
+                captain_name: temp_results[0].captain_name,
+                weight: temp_results[0].weight
+              });
+            }
+          }
+        });
 
-          return fishes, all_results
-        }
-        else {
-          return {}, []
-        }
+        return fishes, all_results;
+      } else {
+        return {}, [];
+      }
     },
-    calculateBiggestFishes: function(){
+    calculateBiggestFishes: function() {
       let fishes = this.biggest_fishes;
       this.results_found_fishes = null;
 
-      if(!this.selected_biggest_fish) {
+      if (!this.selected_biggest_fish) {
         this.selected_biggest_fish = "Voittajat";
       }
-      if(this.selected_biggest_fish === "Voittajat") {
-        this.biggest_fishes, this.biggest_fishes_results = this.sortDict(fishes);
-      }
-      else {
+      if (this.selected_biggest_fish === "Voittajat") {
+        this.biggest_fishes,
+          (this.biggest_fishes_results = this.sortDict(fishes));
+      } else {
         let fish_results = [];
-        if(fishes[this.selected_biggest_fish]){
-          fish_results = fishes[this.selected_biggest_fish].sort(function compare(a,b) {
+        if (fishes[this.selected_biggest_fish]) {
+          fish_results = fishes[this.selected_biggest_fish].sort(
+            function compare(a, b) {
               return parseInt(b.weight) - parseInt(a.weight);
-          })
+            }
+          );
           this.results_found_amounts = "";
-        }
-        else {
+        } else {
           this.results_found_fishes = "- Ei tuloksia";
         }
         this.biggest_fishes_results = fish_results;
       }
     },
-    calculateBiggestAmounts: function(){
+    calculateBiggestAmounts: function() {
       let fishes = this.biggest_amounts;
       this.results_found_amount = "";
-      if(!this.selected_biggest_amount) {
+      if (!this.selected_biggest_amount) {
         this.selected_biggest_amount = "Voittajat";
       }
-      if(this.selected_biggest_amount === "Voittajat") {
-        this.biggest_amounts, this.biggest_amounts_results = this.sortDict(fishes);
-      }
-      else {
+      if (this.selected_biggest_amount === "Voittajat") {
+        this.biggest_amounts,
+          (this.biggest_amounts_results = this.sortDict(fishes));
+      } else {
         let fish_results = [];
-        if(fishes[this.selected_biggest_amount]){
-          fish_results = fishes[this.selected_biggest_amount].sort(function compare(a,b) {
+        if (fishes[this.selected_biggest_amount]) {
+          fish_results = fishes[this.selected_biggest_amount].sort(
+            function compare(a, b) {
               return parseInt(b.weight) - parseInt(a.weight);
-          })
+            }
+          );
           this.results_found_amounts = "";
-        }
-        else {
+        } else {
           this.results_found_amount = "- Ei tuloksia";
         }
-        
+
         this.biggest_amounts_results = fish_results;
       }
-
     },
     replaceAll: function(string, search, replace) {
       return string.split(search).join(replace);
     },
-  // Convert the charts and the tables to pdf
-    saveAsPDF: function (competition_type, table_id) {
-      this.competition.start_date = moment(this.competition.start_date);
-      let temp_start_date = `${this.competition.start_date.date()}.${this.competition.start_date.month()+1}.${this.competition.start_date.year()}`;
-      let doc = new jsPDF();
-      const title = `${this.competition.name} - ${competition_type}`
-      doc.text(100,10, title, {align: "center"});
-      doc.autoTable({
-        html: table_id,
-        styles: {halign : 'center'},
-        margin: {top: 20},
-      })
-      
-      doc.save(`${this.replaceAll(this.competition.name, ' ', '_')}_${this.replaceAll(temp_start_date, ".", "-")}_${this.replaceAll(competition_type, " ","_")}.pdf`);
-    },
-    saveStatsAsPDF: function (competition_type) {
-      this.competition.start_date = moment(this.competition.start_date);
-      let temp_start_date = `${this.competition.start_date.date()}.${this.competition.start_date.month()+1}.${this.competition.start_date.year()}`;
-      let doc = new jsPDF();
-      const title = `${this.competition.name} (${temp_start_date}) - ${competition_type}`
-      doc.text(100, 10, title, {align: "center"});
-
-      var fishesImg = document.getElementById('fishesChart').toDataURL("image/png", 1.0);
-      var signeeImg = document.getElementById('signeesChart').toDataURL("image/png", 1.0);
-      doc.addImage(fishesImg, 'PNG', -10,20,150,75);
-      doc.addImage(signeeImg, 'PNG', 70,20,150,75);
-    
-      doc.autoTable({
-          html: '#fish-weights-table',
-          styles: {halign : 'center'},
-          margin: {top: 110},
+    dictToArray:function(dict, type){
+      const temp_arr = Object.entries(dict);
+      const arr = [];
+      temp_arr.forEach(element => {
+        let values = Object.values(element[1]);
+        // Normaalikilpailu, pisteet
+        if(type === 1){
+          values[4] = String(values[values.length-1]) + " p"
+        }
+        // Normaalikilpailu, kalat
+        if(type === 2){
+          for (let i of range(3, values.length-2)){
+            values[i] = String(values[i]) + " g";
+          }
+          values[values.length-1] = String(values[values.length-1]) + " p"
+        }
+        // Suurimmat kalat, suurimmat kalasaaliit
+        if(type === 3){
+          values[3] = String(values[values.length-1]) + " g"
+        }
+        arr.push(values);
       });
-      doc.autoTable({
-          html: '#misc-table',
-          styles: {halign : 'center'},
-          margin: {top: 160},
-      }); 
-
-
-      doc.save(`${this.replaceAll(this.competition.name, ' ', '_')}_${this.replaceAll(temp_start_date, ".", "-")}_${this.replaceAll(competition_type, " ","_")}.pdf`);
+      return arr
     },
-    saveAllAsPDF: function () {
+    // Convert the charts and the tables to pdf
+    saveAsPDF: function(competition_type, table_id) {
       this.competition.start_date = moment(this.competition.start_date);
       this.competition.end_date = moment(this.competition.end_date);
-      let temp_start_date = `${this.competition.start_date.date()}.${this.competition.start_date.month()+1}.${this.competition.start_date.year()}`;
-      let temp_end_date = `${this.competition.end_date.date()}.${this.competition.end_date.month()+1}.${this.competition.end_date.year()}`
+      let temp_start_date = `${this.competition.start_date.date()}.${this.competition.start_date.month() +
+        1}.${this.competition.start_date.year()}`;
+      let temp_end_date = `${this.competition.end_date.date()}.${this.competition.end_date.month() +
+        1}.${this.competition.end_date.year()}`;
       let doc = new jsPDF();
       const title = `${this.competition.name}, ${temp_start_date} - ${temp_end_date}`;
       const time = `Klo. ${this.competition.start_time} - ${this.competition.end_time}`;
-      doc.text(100, 10, title, {align: "center"});
-      doc.text(100, 20, time, {align: "center"});
-      doc.text(100,35, "Normaalikilpailun tulokset", {align: "center"});
+      doc.text(100, 10, title, { align: "center" });
+      doc.text(100, 20, time, { align: "center" });
+      doc.text(100, 40, competition_type, { align: "center" });
+
       doc.autoTable({
-        html: '#normal-table',
-        styles: {halign : 'center', border:"1"},
-        margin: {top: 40},
+        html: table_id,
+        styles: { halign: "center", overflow: 'hidden', cellwidth: 'wrap'},
+        headStyles: {fillColor: "#0000b2"},
+        columnStyles: {text: {cellwidth: 'auto'}},
+        theme: "grid",
+        startY: 45,
+        margin: { top: 20 },
       });
-      if(this.isTeamCompetition) {
-          doc.addPage();
-          doc.text(100, 10, "Tiimikilpailun tulokset", {align: "center"});
-          if(this.team_results.length){
-            doc.autoTable({
-              html: '#team-table',
-              styles: {halign : 'center'},
-              margin: {top: 20},
-            });
-          }
-          else {
-            doc.text(100,20, "Ei tuloksia");
-          }
 
-      }
-
-      doc.addPage();
-      doc.text(100, 10, "Suurimmat kalat" + ` (${this.selected_biggest_fish})`, {align: "center"});
-      if(this.biggest_fishes_results.length){
-          doc.autoTable({
-            html: '#biggest-fishes-table',
-            styles: {halign : 'center'},
-            margin: {top: 20},
-          });   
-      }
-      else {
-          doc.text(100,20, "Ei tuloksia");
-      }
-      doc.addPage();
-      doc.text(100, 10, "Suurimmat kalasaaliit" + ` (${this.selected_biggest_amount})`, {align: "center"});
-
-      if(this.biggest_amounts_results.length){
-        console.log(this.biggest_amounts_results)
-          doc.autoTable({
-              html: '#biggest-amounts-table',
-              styles: {halign : 'center'},
-              margin: {top: 20},
-          });     
-      }
-      else {
-          doc.text(100,20, "Ei tuloksia");
-      }
-
-      doc.addPage();
-
-      var fishesImg = document.getElementById('fishesChart').toDataURL("image/png", 1.0);
-      var signeeImg = document.getElementById('signeesChart').toDataURL("image/png", 1.0);
-      doc.addImage(fishesImg, 'PNG', -10,20,150,75);
-      doc.addImage(signeeImg, 'PNG', 70,20,150,75);
-      doc.autoTable({
-          html: '#fish-weights-table',
-          styles: {halign : 'center'},
-          margin: {top: 100},
-      });  
-      doc.autoTable({
-          html: '#misc-table',
-          styles: {halign : 'center'},
-          margin: {top: 150},
-      }); 
-      
-
-      doc.save(`${this.replaceAll(this.competition.name, ' ', '_')}_${this.replaceAll(temp_start_date, ".", "-")}_kaikki_tulokset.pdf`);
+      doc.save(
+        `${this.replaceAll(this.competition.name, " ", "_")}_${this.replaceAll(
+          temp_start_date,
+          ".",
+          "-"
+        )}_${this.replaceAll(competition_type, " ", "_")}.pdf`
+      );
     },
-  },
+    saveStatsAsPDF: function(competition_type) {
+      this.competition.start_date = moment(this.competition.start_date);
+      this.competition.end_date = moment(this.competition.end_date);
+      let temp_start_date = `${this.competition.start_date.date()}.${this.competition.start_date.month() +
+        1}.${this.competition.start_date.year()}`;
+      let temp_end_date = `${this.competition.end_date.date()}.${this.competition.end_date.month() +
+        1}.${this.competition.end_date.year()}`;
+      let doc = new jsPDF();
+      const title = `${this.competition.name}, ${temp_start_date} - ${temp_end_date}`;
+      const time = `Klo. ${this.competition.start_time} - ${this.competition.end_time}`;
+      doc.text(100, 10, title, { align: "center" });
+      doc.text(100, 20, time, { align: "center" });
+      doc.text(100, 40, competition_type, { align: "center" });
+
+      var fishesImg = document
+        .getElementById("fishesChart")
+        .toDataURL("image/png", 1.0);
+      var signeeImg = document
+        .getElementById("signeesChart")
+        .toDataURL("image/png", 1.0);
+      doc.addImage(fishesImg, "PNG", -10, 50, 150, 75);
+      doc.addImage(signeeImg, "PNG", 70, 50, 150, 75);
+      doc.text(100, 145, "Kalalajien määritykset", { align: "center" });
+      doc.autoTable({
+        html: "#fish-weights-table",
+        styles: { halign: "center", overflow: 'hidden', cellwidth: 'wrap'},
+        headStyles: {fillColor: "#0000b2"},
+        columnStyles: {text: {cellwidth: 'auto'}},
+        theme: "grid",
+        startY: 155,
+        margin: { top: 20 },
+      });
+      
+      doc.text(100, doc.autoTable.previous.finalY + 20, "Yleisiä tilastoja", { align: "center" });
+      doc.autoTable({
+        html: "#misc-table",
+        styles: { halign: "center", overflow: 'hidden', cellwidth: 'wrap'},
+        headStyles: {fillColor: "#0000b2"},
+        columnStyles: {text: {cellwidth: 'auto'}},
+        margin: { top: 20 },
+        startY: doc.autoTable.previous.finalY + 25,
+        theme: "grid"
+      });
+
+      doc.save(
+        `${this.replaceAll(this.competition.name, " ", "_")}_${this.replaceAll(
+          temp_start_date,
+          ".",
+          "-"
+        )}_${this.replaceAll(competition_type, " ", "_")}.pdf`
+      );
+    },
+    saveAllAsPDF: function() {
+      this.competition.start_date = moment(this.competition.start_date);
+      this.competition.end_date = moment(this.competition.end_date);
+      let temp_start_date = `${this.competition.start_date.date()}.${this.competition.start_date.month() +
+        1}.${this.competition.start_date.year()}`;
+      let temp_end_date = `${this.competition.end_date.date()}.${this.competition.end_date.month() +
+        1}.${this.competition.end_date.year()}`;
+      let doc = new jsPDF();
+      const title = `${this.competition.name}, ${temp_start_date} - ${temp_end_date}`;
+      const time = `Klo. ${this.competition.start_time} - ${this.competition.end_time}`;
+      let rows = [];
+      let columns = [];
+
+      doc.text(100, 10, title, { align: "center" });
+      doc.text(100, 20, time, { align: "center" });
+      doc.text(100, 40, "Tilastoja", { align: "center" });
+      var fishesImg = document
+        .getElementById("fishesChart")
+        .toDataURL("image/png", 1.0);
+      var signeeImg = document
+        .getElementById("signeesChart")
+        .toDataURL("image/png", 1.0);
+      doc.addImage(fishesImg, "PNG", -10, 40, 150, 75);
+      doc.addImage(signeeImg, "PNG", 70, 40, 150, 75);
+      doc.text(100, 145, "Kalalajien määritykset", { align: "center" });
+      doc.autoTable({
+        html: "#fish-weights-table",
+        styles: { halign: "center", overflow: 'hidden', cellwidth: 'wrap'},
+        headStyles: {fillColor: "#0000b2"},
+        columnStyles: {text: {cellwidth: 'auto'}},
+        theme: "grid",
+        startY: 155,
+        margin: { top: 20 },
+      });
+      
+      doc.text(100, doc.autoTable.previous.finalY + 20, "Yleisiä tilastoja", { align: "center" });
+      doc.autoTable({
+        html: "#misc-table",
+        styles: { halign: "center", overflow: 'hidden', cellwidth: 'wrap'},
+        headStyles: {fillColor: "#0000b2"},
+        columnStyles: {text: {cellwidth: 'auto'}},
+        margin: { top: 20 },
+        startY: doc.autoTable.previous.finalY + 25,
+        theme: "grid"
+      });
+      doc.addPage();
+
+      //Normaalikilpailu (Pisteet)
+      columns = this.normal_headers;
+      rows = this.dictToArray(this.normal_points, 1);
+      doc.text(100, 10, "Normaalikilpailun tulokset (Pisteet)", { align: "center" });
+      doc.autoTable({
+        head: [columns],
+        body: rows,
+        styles: { halign: "center", overflow: 'hidden', cellwidth: 'wrap'},
+        headStyles: {fillColor: "#0000b2"},
+        columnStyles: {text: {cellwidth: 'auto'}},
+        startY: 20,
+        margin: { top: 20 },
+        theme: "grid"
+      });
+
+      //Normaalikilpailu (Kalat)
+      columns = ["Sijoitus", "Nro.", "Kapteeni"];
+      this.table_fish_names.forEach(name => {
+        columns.push(name);
+      });
+      columns.push("Tulos");
+      rows = this.dictToArray(this.normal_weights, 2);
+      doc.text(100, doc.autoTable.previous.finalY + 20, "Normaalikilpailun tulokset (Kalat)", { align: "center" });
+      doc.autoTable({
+        head: [columns],
+        body: rows,
+        styles: { halign: "center", overflow: 'hidden', cellwidth: 'wrap'},
+        headStyles: {fillColor: "#0000b2"},
+        columnStyles: {text: {cellwidth: 'auto'}},
+        margin: { top: 20 },
+        startY: doc.autoTable.previous.finalY + 25,
+        theme: "grid"
+      });
+
+      //Tiimikilpailu
+      if (this.isTeamCompetition) {
+        doc.addPage();
+        doc.text(100, 10, "Tiimikilpailun tulokset", { align: "center" });
+        if (this.team_results.length) {
+          doc.autoTable({
+            html: "#team-table",
+            styles: { halign: "center", overflow: 'hidden', cellwidth: 'wrap'},
+            headStyles: {fillColor: "#0000b2"},
+            columnStyles: {text: {cellwidth: 'auto'}},
+            margin: { top: 20 },
+            theme: "grid"
+          });
+        } else {
+          doc.text(100, 20, "Ei tuloksia");
+        }
+      }
+
+      //Suurimmat kalat
+      this.fish_names.forEach(name => {
+          doc.addPage();
+          this.selected_biggest_fish = name;
+          this.calculateBiggestFishes();
+          if(name === "Voittajat") {columns = ["Kalalaji", "Veneen nro", "Kapteeni", "Paino"];}
+          else {columns = ["Sijoitus", "Veneen nro", "Kapteeni", "Paino"];}
+          rows = this.dictToArray(this.biggest_fishes_results, 3);
+          doc.text(
+            100,
+            10,
+            "Suurimmat kalat" + ` (${name})`,
+            { align: "center" }
+          );
+          if (this.biggest_fishes_results.length) {
+            doc.autoTable({
+              head: [columns],
+              body: rows,
+              styles: { halign: "center", overflow: 'hidden', cellwidth: 'wrap'},
+              headStyles: {fillColor: "#0000b2"},
+              columnStyles: {text: {cellwidth: 'auto'}},
+              margin: { top: 20 },
+              startY: 20,
+              theme: "grid"
+            });
+          } else {
+            doc.text(100, 20, "Ei tuloksia");
+          }
+          
+
+          //Suurimmat kalasaaliit
+          rows = this.dictToArray(this.biggest_amounts_results, 3);
+          doc.text(
+            100,
+            doc.autoTable.previous.finalY + 20,
+            "Suurimmat kalasaaliit" + ` (${name})`,
+            { align: "center" }
+          );
+
+          if (this.biggest_amounts_results.length) {
+            doc.autoTable({
+              head: [columns],
+              body: rows,
+              styles: { halign: "center", overflow: 'hidden', cellwidth: 'wrap'},
+              headStyles: {fillColor: "#0000b2"},
+              columnStyles: {text: {cellwidth: 'auto'}},
+              margin: { top: 20 },
+              startY: doc.autoTable.previous.finalY + 25,
+              theme: "grid"
+            });
+          } else {
+            doc.text(100, doc.autoTable.previous.finalY + 25, "Ei tuloksia");
+          }
+      });
+
+      doc.save(
+        `${this.replaceAll(this.competition.name, " ", "_")}_${this.replaceAll(
+          temp_start_date,
+          ".",
+          "-"
+        )}_kaikki_tulokset.pdf`
+      );
+    }
+  }
 };
+// Custom range function for for loop, with recursion
+function* range(start, end) {
+    yield start;
+    if (start === end) return;
+    yield* range(start + 1, end);
+}
 </script>
 
 <style scoped>
-
-li.disabled{
+li.disabled {
   background: grey;
 }
 </style>

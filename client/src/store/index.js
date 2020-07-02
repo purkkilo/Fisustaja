@@ -91,18 +91,46 @@ export default new Vuex.Store({
       state.competition.signees.splice(state.competition.signees.indexOf(signee), 1);
     },
     addBiggestFish: (state, fish) => {
-      if(state.competition.biggest_fishes[fish.name]){
-        state.competition.biggest_fishes[fish.name].push({boat_number: fish.boat_number, captain_name:fish.captain_name , weight: fish.weight});
+      if(state.competition.biggest_fishes){
+        if(state.competition.biggest_fishes[fish.name]){
+          let index = state.competition.biggest_fishes[fish.name].findIndex(item => {
+            return (parseInt(fish.boat_number) === parseInt(item.boat_number));
+          });
+          //If there is already biggest fish from this boat
+          if (index > -1) {
+            state.competition.biggest_fishes[fish.name].splice(index, 1);
+          }
+          state.competition.biggest_fishes[fish.name].push({boat_number: fish.boat_number, captain_name:fish.captain_name , weight: fish.weight});
+        }
+        else {
+          state.competition.biggest_fishes[fish.name] = [{boat_number: fish.boat_number, captain_name:fish.captain_name , weight: fish.weight}];
+        }
       }
       else {
+        Vue.set(state.competition, 'biggest_fishes', {});
         state.competition.biggest_fishes[fish.name] = [{boat_number: fish.boat_number, captain_name:fish.captain_name , weight: fish.weight}];
       }
+
     },
     addBiggestAmount: (state, fish) => {
-      if(state.competition.biggest_amounts[fish.name]){
-        state.competition.biggest_amounts[fish.name].push({boat_number: fish.boat_number, captain_name:fish.captain_name , weight: fish.weight});
+      if(state.competition.biggest_amounts){
+        if(state.competition.biggest_amounts[fish.name]){
+          let index = state.competition.biggest_amounts[fish.name].findIndex(item => {
+            return (parseInt(fish.boat_number) === parseInt(item.boat_number));
+          });
+          //If there is already biggest fish from this boat
+          if (index > -1) {
+            state.competition.biggest_amounts[fish.name].splice(index, 1);
+          }
+
+          state.competition.biggest_amounts[fish.name].push({boat_number: fish.boat_number, captain_name:fish.captain_name , weight: fish.weight});
+        }
+        else {
+          state.competition.biggest_amounts[fish.name] = [{boat_number: fish.boat_number, captain_name:fish.captain_name , weight: fish.weight}];
+        }
       }
       else {
+        Vue.set(state.competition, 'biggest_amounts', {});
         state.competition.biggest_amounts[fish.name] = [{boat_number: fish.boat_number, captain_name:fish.captain_name , weight: fish.weight}];
       }
     },
