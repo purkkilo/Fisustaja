@@ -1,6 +1,7 @@
 <template>
   <div id="app">
     <div class="container">
+      <Header />
       <Timedate/>
       <div id="errordiv" v-if="errors.length">
         <ul class="collection with-header">
@@ -558,6 +559,7 @@ import M from "materialize-css";
 import "vue-select/dist/vue-select.css";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import Timedate from '../components/layout/Timedate';
+import Header from "../components/layout/Header";
 import { options_picker } from "../i18n";
 import CompetitionService from "../CompetitionService";
 import moment from "moment";
@@ -566,6 +568,7 @@ export default {
   name: "RegisterComp",
   components: {
     ProgressBarQuery,
+    Header,
     Timedate
   },
   data() {

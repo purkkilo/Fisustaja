@@ -2,7 +2,7 @@
     <div class="row black-text valign-wrapper time">
         <div class="col s3 center-align"><h4 id="date"> </h4></div>
         <div class="col s6 center-align">
-          <h4 v-if="competitionChosen">{{ timer_string }}</h4>
+          <h4 id="comp-left" v-if="competitionChosen">{{ timer_string }}</h4>
         </div>
         <div class="col s3 center-align"><h4 id="clock"> </h4></div>
     </div>
@@ -41,27 +41,41 @@ export default {
     if(localStorage.getItem('competition') != null) {
         this.competition = this.$store.getters.getCompetition;
         this.remainingTime();
+        setInterval(this.remainingTime, this.remaining_interval);
     }
     else {
       this.timer_string = "";
       this.setTime();
-      this.setDate();   
-      clearTimeout(this.remainingTime);
+      this.setDate();
+      setInterval(this.setTime, this.clock_interval);
+      setInterval(this.setDate, this.date_interval);
+      clearInterval(this.remainingTime);
     }
+  },
+  beforeDestroy() {
+    clearInterval(this.setTime);
+    clearInterval(this.setDate);
+    clearInterval(this.remainingTime);
   },
   methods: {
     setTime: function(){
-        // Get time, parse it and change the text of the clock
-        const today = new Date();
-        let h = today.getHours();
-        let m = today.getMinutes();
-        let s = today.getSeconds();
-        m = this.checkZeros(m);
-        s = this.checkZeros(s);
-        document.getElementById('clock').innerText = h + ":" + m + ":" + s;
-        setTimeout(this.setTime, this.clock_interval); //timeout for a bit
+        if(document.getElementById('clock')){
+          // Get time, parse it and change the text of the clock
+          const today = new Date();
+          let h = today.getHours();
+          let m = today.getMinutes();
+          let s = today.getSeconds();
+          m = this.checkZeros(m);
+          s = this.checkZeros(s);
+          document.getElementById('clock').innerText = h + ":" + m + ":" + s;
+        }
+        else {
+          clearInterval(this.setTime);
+        }
+
     },
     setDate: function(){
+      if(document.getElementById('date')){
         const today = new Date();
         let day = today.getDate();
         let month = today.getMonth() + 1; //month is zero indexed
@@ -69,9 +83,13 @@ export default {
         day = this.checkZeros(day);
         month = this.checkZeros(month);
         document.getElementById('date').innerText =day + "." + month + "." + year;
-        setTimeout(this.setDate, this.remaining_interval);
+        }
+        else {
+          clearInterval(this.setDate);
+        }
     },
     remainingTime: function(){
+      if(document.getElementById('comp-left')) {
           if (this.competition) {
               let start_dateTime = moment(this.competition.start_date);
               let end_dateTime = moment(this.competition.end_date);
@@ -111,10 +129,11 @@ export default {
               else {
                 this.timer_string = `Kilpailu päättynyt!`;
               }
-
-              setTimeout(this.remainingTime, this.remaining_interval); //Check every minute
           }
-
+        }
+        else {
+          clearInterval(this.remainingTime);
+        }
     },
     checkZeros: function(time){
         if (time < 10) {

@@ -1,25 +1,13 @@
 <template>
+    <div class="container" style="margin-top:100px">
+        <MainHeader />
+        <div class="section">
+            <div class="col s12 center-align"><h1>Fisustaja</h1></div>
+        </div>
 
-    <div class="container">
-      <Timedate/>
-      <div class="container-transparent" style="margin-top:5px">
-          <div class="section">
-              <div class="col s12 center-align"><h1>Fisustaja - Kotisivu</h1></div>
-          </div>
-        
-            <div class="section row inputarea">
-                <div class="col s12">
-                    <h4>Sovellus kalastuskilpailujen järjestämistä varten</h4>
-                    <p class="flow-text">Todo: Tähän jotain järkevää...</p>
-                </div>
-            </div>
-            <div class="row">
-                <router-link to="/register">
-                    <a class="waves-effect waves-light blue darken-2 btn-large col s4 push-s1"><i class="material-icons left">add_circle_outline</i>Rekisteröidy</a>
-                </router-link>
-                <router-link to="/login">
-                    <a class="waves-effect waves-light green darken-2 btn-large col s4 push-s2"><i class="material-icons left">play_circle_filled</i>Kirjaudu</a>
-                </router-link>
+        <div class="section row inputarea">
+            <div class="col s12">
+                <h4>Sovellus kalastuskilpailujen järjestämistä varten</h4>
             </div>
         </div>
     </div>
@@ -27,12 +15,12 @@
 </template>
 
 <script>
-import Timedate from '../components/layout/Timedate';
+import MainHeader from '../components/layout/MainHeader';
 
 export default {
     name: 'Home',
     components: {
-        Timedate
+        MainHeader,
     },
     data() {
         return {

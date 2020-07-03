@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+    <Header />
     <Timedate />
     <div class="container-transparent">
       <div class="section">
@@ -58,16 +59,19 @@
         </div>
         <div id="stats" class="col s12 inputarea">
           <div class="section row" style="margin-bottom: 50px;">
-            <div class="col s6">
-              <canvas id="fishesChart"></canvas>
+            <div class="row">
+              <canvas class="col s8" id="fishesChart"></canvas>
             </div>
-            <div class="col s6">
-              <canvas id="signeesChart"></canvas>
+            <div class="row">
+              <canvas class="col s8" id="signeesChart"></canvas>
             </div>
             <div class="divider black" style="margin:20px"></div>
           </div>
           <div class="section" v-if="competition">
             <div class="fishes_summary row">
+              <div class="row">
+                <h3>Kalalajien määritykset</h3>
+              </div>
               <div class="col s8 push-s2">
                 <table id="fish-weights-table" class="striped highlight centered responsive-table">
                   <thead>
@@ -105,7 +109,9 @@
                 </table>
               </div>
             </div>
-            <div style="margin:30px"></div>
+            <div class="row">
+              <h3>Yleisiä tilastoja</h3>
+            </div>
             <div class="row">
               <table
                 id="misc-table"
@@ -144,15 +150,17 @@
         </div>
         <div id="normal-competition" class="col s12 inputarea active">
           <div class="section">
-            <div class="col s3 push-s4" style="margin-bottom:20px">
-              <v-select
-                class="flow-text title"
-                label="name"
-                placeholder="Valitse näytettävät tulokset"
-                v-on:input="switchNormalResults"
-                v-model="selected_normal"
-                :options="normal_options"
-              />
+            <div class="row" style="margin-bottom:20px">
+              <div class="col s3 push-s4">
+                <v-select
+                  class="flow-text title"
+                  label="name"
+                  placeholder="Valitse näytettävät tulokset"
+                  v-on:input="switchNormalResults"
+                  v-model="selected_normal"
+                  :options="normal_options"
+                />
+              </div>
             </div>
             <div class="row" v-if="results.length">
               <table id="normal-table" class="highlight centered responsive-table tablearea">
@@ -164,7 +172,7 @@
                 <tbody v-if="selected_normal =='Pisteet'">
                   <tr v-for="(signee, index) in results" :key="index">
                     <th class="center-align" style="border:1px solid black">{{ signee.placement }}.</th>
-                    <td style="border:1px solid black">{{ signee.boat_number }}</td>
+                    <td style="border:1px solid black">({{ signee.boat_number }})</td>
                     <td style="border:1px solid black">{{ signee.captain_name }}</td>
                     <td style="border:1px solid black">{{ signee.locality }}</td>
                     <td style="border:1px solid black">{{ signee.total_points }} p</td>
@@ -176,7 +184,7 @@
                 <tbody v-else>
                   <tr v-for="(signee, index) in results" :key="index">
                     <th class="center-align" style="border:1px solid black">{{ signee.placement }}.</th>
-                    <td style="border:1px solid black">{{ signee.boat_number }}</td>
+                    <td style="border:1px solid black">({{ signee.boat_number }})</td>
                     <td style="border:1px solid black">{{ signee.captain_name }}</td>
                     <td
                       v-for="(name, index) in table_fish_names"
@@ -188,7 +196,7 @@
                 </tbody>
               </table>
             </div>
-            <div v-else>
+            <div class="row" v-else>
               <p v-if="!loading" class="flow-text">Ei tuloksia, vielä...</p>
               <div v-else>
                 <h2>Päivitetään tuloksia tietokannasta...</h2>
@@ -292,7 +300,7 @@
                       style="border:1px solid black"
                     >{{ fish.name }}</th>
                     <th v-else class="center-align" style="border:1px solid black">{{ index+1 }}.</th>
-                    <td style="border:1px solid black">{{ fish.boat_number }}</td>
+                    <td style="border:1px solid black">({{ fish.boat_number }})</td>
                     <td style="border:1px solid black">{{ fish.captain_name }}</td>
                     <td style="border:1px solid black">{{ fish.weight }} g</td>
                   </tr>
@@ -360,7 +368,7 @@
                       style="border:1px solid black"
                     >{{ result.name }}</th>
                     <th v-else class="center-align" style="border:1px solid black">{{ index+1 }}.</th>
-                    <td style="border:1px solid black">{{ result.boat_number }}</td>
+                    <td style="border:1px solid black">({{ result.boat_number }})</td>
                     <td style="border:1px solid black">{{ result.captain_name }}</td>
                     <td style="border:1px solid black">{{ result.weight }} g</td>
                   </tr>
@@ -403,6 +411,7 @@
 </template>
 <script>
 import Timedate from "../components/layout/Timedate";
+import Header from "../components/layout/Header";
 import M from "materialize-css";
 import { options_picker } from "../i18n";
 import "vue-select/dist/vue-select.css";
@@ -418,6 +427,7 @@ export default {
   name: "Results",
   components: {
     Timedate,
+    Header,
     ProgressBarQuery
   },
   data() {
@@ -817,7 +827,7 @@ export default {
         }
       });
       this.calculated_fish_weights = competition_fishes;
-
+      //NOTE not ideal solution
       try {
         this.competition = competition;
         this.$store.commit("refreshCompetition", this.competition);
@@ -825,7 +835,6 @@ export default {
           this.competition._id,
           this.competition
         );
-        console.log("Updated to database!");
       } catch (err) {
         console.log(err.message);
         this.calculated_fish_weights = null;
@@ -918,10 +927,14 @@ export default {
         let values = Object.values(element[1]);
         // Normaalikilpailu, pisteet
         if(type === 1){
-          values[4] = String(values[values.length-1]) + " p"
+          values[0] = String(values[0]) + ".";
+          values[1] = "(" + String(values[1]) + ")";
+          values[4] = String(values[values.length-1]) + " p";
         }
         // Normaalikilpailu, kalat
         if(type === 2){
+          values[0] = String(values[0]) + ".";
+          values[1] = "(" + String(values[1]) + ")";
           for (let i of range(3, values.length-2)){
             values[i] = String(values[i]) + " g";
           }
@@ -929,6 +942,12 @@ export default {
         }
         // Suurimmat kalat, suurimmat kalasaaliit
         if(type === 3){
+          values[0] = String(values[1]) + ".";
+          values[1] = "(" + String(values[1]) + ")";
+          values[3] = String(values[values.length-1]) + " g"
+        }
+        if(type === 4){
+          values[1] = "(" + String(values[1]) + ")";
           values[3] = String(values[values.length-1]) + " g"
         }
         arr.push(values);
@@ -988,16 +1007,16 @@ export default {
       var signeeImg = document
         .getElementById("signeesChart")
         .toDataURL("image/png", 1.0);
-      doc.addImage(fishesImg, "PNG", -10, 50, 150, 75);
-      doc.addImage(signeeImg, "PNG", 70, 50, 150, 75);
-      doc.text(100, 145, "Kalalajien määritykset", { align: "center" });
+      doc.addImage(fishesImg, "PNG", -50, 40, 200, 100);
+      doc.addImage(signeeImg, "PNG", 60, 40, 200, 100);
+      doc.text(100, 155, "Kalalajien määritykset", { align: "center" });
       doc.autoTable({
         html: "#fish-weights-table",
         styles: { halign: "center", overflow: 'hidden', cellwidth: 'wrap'},
         headStyles: {fillColor: "#0000b2"},
         columnStyles: {text: {cellwidth: 'auto'}},
         theme: "grid",
-        startY: 155,
+        startY: 160,
         margin: { top: 20 },
       });
       
@@ -1042,16 +1061,16 @@ export default {
       var signeeImg = document
         .getElementById("signeesChart")
         .toDataURL("image/png", 1.0);
-      doc.addImage(fishesImg, "PNG", -10, 40, 150, 75);
-      doc.addImage(signeeImg, "PNG", 70, 40, 150, 75);
-      doc.text(100, 145, "Kalalajien määritykset", { align: "center" });
+      doc.addImage(fishesImg, "PNG", -50, 40, 200, 100);
+      doc.addImage(signeeImg, "PNG", 60, 40, 200, 100);
+      doc.text(100, 155, "Kalalajien määritykset", { align: "center" });
       doc.autoTable({
         html: "#fish-weights-table",
         styles: { halign: "center", overflow: 'hidden', cellwidth: 'wrap'},
         headStyles: {fillColor: "#0000b2"},
         columnStyles: {text: {cellwidth: 'auto'}},
         theme: "grid",
-        startY: 155,
+        startY: 160,
         margin: { top: 20 },
       });
       
@@ -1150,7 +1169,7 @@ export default {
           
 
           //Suurimmat kalasaaliit
-          rows = this.dictToArray(this.biggest_amounts_results, 3);
+          rows = this.dictToArray(this.biggest_amounts_results, 4);
           doc.text(
             100,
             doc.autoTable.previous.finalY + 20,

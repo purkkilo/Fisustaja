@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+    <Header />
     <Timedate />
     <div class="container-transparent">
       <div class="section">
@@ -116,6 +117,13 @@
               </table>
             </div>
           </div>
+
+          <div class="row section center-align">
+              <a v-on:click="deleteCompetition(competition._id, false)" class="waves-effect waves-light red btn white-text col s4 push-s4">
+                  <i class="material-icons left">delete_forever</i>
+                  Poista Kilpailu
+              </a>
+          </div>
         </div>
       </div>
       <div v-else>
@@ -126,7 +134,9 @@
   </div>
 </template>
 <script>
+import M from "materialize-css";
 import Timedate from "../components/layout/Timedate";
+import Header from "../components/layout/Header";
 import moment from 'moment';
 import CompetitionService from "../CompetitionService";
 import ProgressBarQuery from '../components/layout/ProgressBarQuery';
@@ -135,7 +145,8 @@ export default {
   name: "CompSettings",
   components: {
     Timedate,
-    ProgressBarQuery
+    ProgressBarQuery,
+    Header
   },
   data() {
     return {
@@ -189,6 +200,32 @@ export default {
         this.loading = false;
         console.log(err.message);
       }
+    },
+    async deleteCompetition(id, confirmed) {
+        if(confirmed) {
+            M.toast({html: "Poistetaan tietokannasta!"});
+            try{
+                await CompetitionService.deleteCompetition(id);
+                this.$store.state.competition = null;
+                localStorage.removeItem("competition");
+                this.$router.push({path: '/dashboard'});
+            } catch(err) {
+                this.error = err.message;
+            }                
+        }
+        else {
+            this.$confirm("Oletko varma?", "Poista kilpailu", 'question')
+            .then((r) => {
+                if(r) {
+                    this.deleteCompetition(id, r);
+                }
+            })
+            .catch((error) => {
+                if(error){
+                    console.error(error);
+                }
+            });
+        }
     },
     checkLogin: function() {
         if(localStorage.getItem('jwt') != null){

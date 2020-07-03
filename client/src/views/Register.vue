@@ -1,8 +1,7 @@
 <template>
     <div class="container">
-      <Timedate/>
-      <div class="container-transparent" style="margin-top:10px">
-
+      <MainHeader />
+      <div class="container-transparent" style="margin-top:100px">
         <div id="errordiv" v-if="errors.length">
             <ul class="collection with-header">
             <li class="collection-header"><h4>Korjaa seuraavat virheet:</h4></li>
@@ -117,7 +116,7 @@
     import M from "materialize-css";
     import "vue-select/dist/vue-select.css";
     import UserService from '../UserService';
-    import Timedate from '../components/layout/Timedate';
+    import MainHeader from '../components/layout/MainHeader';
     import ProgressBarQuery from '../components/layout/ProgressBarQuery';
 
     export default {
@@ -134,8 +133,8 @@
             }
         },
         components: {
-        Timedate,
-        ProgressBarQuery
+            MainHeader,
+            ProgressBarQuery
         },
         methods : {
             showError: function(error) {

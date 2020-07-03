@@ -1,5 +1,6 @@
 <template>
     <div class="container">
+      <Header />
       <Timedate/>
       <div class="container-transparent" style="margin-top:100px">
       <div v-if="error" class="row">
@@ -7,6 +8,9 @@
       </div>
 
       <div class="section" id="send-feedback">
+        <div class="row">
+            <a class="waves-effect waves-light yellow black-text btn col s2 push-s1" v-on:click="$router.go(-1)"><i class="material-icons left">history</i>Palaa takaisin</a>
+        </div>
         <h1>Lähetä palautetta</h1>
         <p class="flow-text title black-text">Ilmoita bugeista, kehitysehdotuksista jne jne.</p>
         <div class="row inputarea">
@@ -35,11 +39,13 @@ import { options_picker } from "../i18n";
 import "vue-select/dist/vue-select.css";
 import FeedbackService from '../FeedbackService';
 import Timedate from '../components/layout/Timedate';
+import Header from "../components/layout/Header";
 
 export default {
     name: 'Feedback',
     components: {
-      Timedate
+      Timedate,
+      Header
     },
     data() {
         return {

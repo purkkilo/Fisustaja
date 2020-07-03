@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+    <Header />
     <Timedate />
     <div id="errordiv" v-if="errors.length">
       <ul class="collection with-header">
@@ -48,6 +49,7 @@
 </template>
 <script>
 import Timedate from '../components/layout/Timedate';
+import Header from "../components/layout/Header";
 import ProgressBarQuery from '../components/layout/ProgressBarQuery';
 import CompetitionService from '../CompetitionService';
 import moment from 'moment';
@@ -56,6 +58,7 @@ export default {
     name: 'Overview',
     components: {
       Timedate,
+      Header,
       ProgressBarQuery
     },
     data() {

@@ -1,5 +1,6 @@
 <template>
     <div class="container">
+        <Header />
         <Timedate/>
         <div class="container-transparent">
             <div class="section">
@@ -29,7 +30,6 @@
                                 <a class="waves-effect waves-light green lighten-1 btn-large"><i class="material-icons left">play_circle_filled</i>Jatka kilpailua</a>
                                 </router-link>
                             </div>
-                            
                         </div>
                     </div>
                 </div>
@@ -40,12 +40,14 @@
 
 <script>
 import Timedate from '../components/layout/Timedate';
+import Header from "../components/layout/Header";
 import moment from 'moment';
 
 export default {
     name: 'Home',
     components: {
-      Timedate
+      Timedate,
+      Header
     },
     data() {
         return {

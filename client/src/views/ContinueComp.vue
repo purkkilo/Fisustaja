@@ -1,5 +1,6 @@
 <template>
     <div class="container">
+      <Header />
       <Timedate/>
       <CompetitionComponent />
     </div>
@@ -8,12 +9,14 @@
 <script>
 import CompetitionComponent from '../components/CompetitionComponent.vue'
 import Timedate from '../components/layout/Timedate';
+import Header from "../components/layout/Header";
 
 export default {
     name: 'ContinueComp',
     components: {
       CompetitionComponent,
-      Timedate
+      Timedate,
+      Header
     },
     mounted() {
         this.checkLogin();

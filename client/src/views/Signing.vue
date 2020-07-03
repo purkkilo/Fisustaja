@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+    <Header />
     <Timedate />
     <div id="errordiv" v-if="errors.length">
       <ul class="collection with-header">
@@ -83,6 +84,7 @@
                     v-model="boat_number"
                     @paste.prevent
                     @keypress="isNumber($event)"
+                    @input="searchSelected"
                     name="boat_number"
                     oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);"
                     type = "number"
@@ -92,11 +94,7 @@
                     class="validate"
                   >
                   <label for="boat_number" class="flow-text black-text">Venekunnan numero</label>
-                </div>
-                <div class="col s12" style="margin-top: 20px;">
-                  <a class="waves-effect waves-light blue btn col s4 push-s4" v-on:click="searchSelected"><i class="material-icons left">info</i>Hae numerolla</a>
-                </div>
-                
+                </div>        
               </div>
 
               <div class="row">
@@ -200,7 +198,7 @@
             </thead>
             <tbody>
               <tr @click="selectRow(signee.id)" :class="{ selected : selected_id == signee.id }" v-for="(signee, index) in signees" :key="index">
-                  <th class="center-align" style="border:1px solid black">{{ signee.boat_number }} ({{ signee.id }})</th>  
+                  <th class="center-align" style="border:1px solid black">{{ signee.boat_number }}</th>  
                   <td style="border:1px solid black">{{ signee.captain_name }}</td> 
                   <td style="border:1px solid black">{{ signee.temp_captain_name }}</td>
                   <td style="border:1px solid black">{{ signee.locality }}</td>   
@@ -222,6 +220,7 @@
 </template>
 <script>
 import Timedate from '../components/layout/Timedate';
+import Header from "../components/layout/Header";
 import ProgressBarQuery from '../components/layout/ProgressBarQuery';
 import M from 'materialize-css';
 import { options_picker } from '../i18n';
@@ -232,6 +231,7 @@ export default {
     name: 'Signing',
     components: {
       Timedate,
+      Header,
       ProgressBarQuery
     },
     data() {
@@ -338,6 +338,7 @@ export default {
             this.team = null;
             this.errors = [];
             this.old_info = null;
+            this.notification = "";
         },
         overwriteSignee: function(signee, overwrite) {
             overwrite === true ? console.log("Overwrite!") : console.log("Don't overwrite!")
@@ -474,7 +475,6 @@ export default {
             try{
               this.loading = true;
               await CompetitionService.updateCompetition(comp._id, comp);
-              console.log("Updated to database!");
               this.loading = false;
             } catch(err) {
               console.log(err.message);

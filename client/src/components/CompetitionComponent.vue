@@ -17,7 +17,6 @@
             v-bind:item = "competition"
             v-bind:index = "index"
             v-bind:key="competition._id"
-            v-on:dblclick="deleteCompetition(competition._id)"
           >
               <th class="center-align" scope="row">{{ `${competition.start_date.date()}.${competition.start_date.month()+1}.${competition.start_date.year()} - ${competition.end_date.date()}.${competition.end_date.month()+1}.${competition.end_date.year()}` }}</th>  
               <td>{{ competition.name }}</td> 
@@ -27,10 +26,14 @@
           </tr>
         </tbody>
       </table>
-      <h3 class="red-text">Voi poistaa kilpailun tuplaklikkaamalla riviä</h3>
     </div>
     <div v-else>
-      <h2 v-if="!loading">Ei kilpailuja!</h2>
+      <div v-if="!loading" class="col s6 center-align">
+        <h2 >Ei kilpailuja!</h2>
+        <router-link to="/register-comp">
+            <a class="waves-effect waves-light blue lighten-1 btn-large"><i class="material-icons left">add_circle_outline</i>Luo kilpailu!</a>
+        </router-link>
+      </div>
       <h2 v-else-if="error" class="error">{{ error }}</h2>
       <div v-else>
         <h2>Ladataan kilpailuja...</h2>
@@ -82,25 +85,7 @@ export default {
         this.$store.state.competition = competition;
         localStorage.setItem("competition", competition._id);
         this.$router.push({path: '/overview'});
-    },// TEMP!
-    async deleteCompetition(id) {
-      M.toast({html: "Poistetaan tietokannasta!"});
-      this.loading = true;
-      try{
-        await CompetitionService.deleteCompetition(id);
-        const user = JSON.parse(localStorage.getItem('user'));
-        const user_id = user["id"];
-        this.competitions = await CompetitionService.getCompetitions(user_id);
-        this.competitions.forEach(competition => {
-          competition.start_date = moment(competition.start_date);
-          competition.end_date = moment(competition.end_date);
-        });
-        this.$store.state.competitions = this.competitions;
-        this.loading = false;
-      } catch(err) {
-        this.error = err.message;
-      } 
-    }
+    },
   }
 }
 

@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+    <Header />
     <Timedate />
     <div class="container-transparent">
       <div class="section">
@@ -262,7 +263,7 @@
                       -
                     </th>
                     <td style="border:1px solid black">
-                      {{ signee.boat_number }}
+                      ({{ signee.boat_number }})
                     </td>
                     <td style="border:1px solid black">
                       {{ signee.captain_name }}
@@ -278,23 +279,27 @@
               v-if="selected_id && result_signees.length"
               class="section inputarea"
             >
-              <div class="col s12 center-align">
-                <a
-                  class="waves-effect waves-light blue btn"
-                  v-on:click="searchSelected"
-                  ><i class="material-icons left">info</i>Siirry punnitukseen</a
-                >
+              <div class="row center-align">
+                <div class="col s12" style="margin-top:20px">
+                  <a
+                    class="waves-effect waves-light blue darken-4 btn-large"
+                    v-on:click="searchSelected"
+                    ><i class="material-icons left">assignment_return</i>Siirry punnitukseen</a
+                  >
+                </div>
               </div>
             </div>
             <div v-else class="section inputarea center-align">
-              <p
-                v-if="result_signees.length"
-                class="flow-text"
-              >
-                Voit siirtyä punnitukseen myös klikkaamalla haluamaasi riviä
-                taulukosta ja painamalla ilmestyvää nappulaa
-              </p>
-              <h3 v-else class="flow-text">Ei vielä tuloksia!</h3>
+              <div class="row center-align">
+                <p
+                  v-if="result_signees.length"
+                  class="flow-text"
+                >
+                  Voit siirtyä punnitukseen myös klikkaamalla haluamaasi riviä
+                  taulukosta ja painamalla ilmestyvää nappulaa
+                </p>
+                <h3 v-else class="flow-text">Ei vielä tuloksia!</h3>
+              </div>
             </div>
           </div>
         </div>
@@ -340,7 +345,7 @@
                     :key="index"
                   >
                     <th class="center-align" style="border:1px solid black">
-                      {{ signee.boat_number }} ({{ signee.id }})
+                      ({{ signee.boat_number }})
                     </th>
                     <td style="border:1px solid black">
                       {{ signee.captain_name }}
@@ -359,12 +364,14 @@
               v-if="selected_id && still_on_water.length"
               class="section inputarea"
             >
-              <div class="col s12 center-align">
-                <a
-                  class="waves-effect waves-light blue btn"
-                  v-on:click="searchSelected"
-                  ><i class="material-icons left">info</i>Siirry punnitukseen</a
-                >
+              <div class="row center-align">
+                <div class="col s12" style="margin-top:20px">
+                  <a
+                    class="waves-effect waves-light blue darken-4 btn-large"
+                    v-on:click="searchSelected"
+                    ><i class="material-icons left">assignment_return</i>Siirry punnitukseen</a
+                  >
+                </div>
               </div>
             </div>
             <div v-else class="section inputarea center-align">
@@ -390,6 +397,7 @@
 </template>
 <script>
 import Timedate from "../components/layout/Timedate";
+import Header from "../components/layout/Header";
 import M from "materialize-css";
 import { options_picker } from "../i18n";
 import CompetitionService from "../CompetitionService";
@@ -400,6 +408,7 @@ export default {
   name: "Weighting",
   components: {
     Timedate,
+    Header,
     ProgressBarQuery,
   },
   data() {
@@ -490,7 +499,6 @@ export default {
       try {
         this.loading = true;
         await CompetitionService.updateCompetition(comp._id, comp);
-        console.log("Updated to database!");
         this.loading = false;
         this.still_on_water = this.$store.getters.getStillOnWaterSignees;
         M.toast({ html: "Kaikki kilpailijat merkattu maaliin saapuneeksi!" });
@@ -598,7 +606,6 @@ export default {
         try {
           this.loading_fish = true;
           await CompetitionService.updateCompetition(comp._id, comp);
-          console.log("Updated to database!");
           this.notification = `Tiedot päivitetty tietokantaan!`;
           this.loading_fish = false;
           this.selected_fish = null,
@@ -711,7 +718,6 @@ export default {
         this.loading = true;
         this.loading_fish = true;
         await CompetitionService.updateCompetition(comp._id, comp);
-        console.log("Updated to database!");
         this.notification = `Tiedot päivitetty tietokantaan!`;
         this.loading = false;
         this.loading_fish = false;
