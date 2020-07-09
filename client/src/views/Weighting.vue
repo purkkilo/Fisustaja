@@ -269,7 +269,7 @@
                       {{ signee.captain_name }}
                     </td>
                     <td style="border:1px solid black">
-                      {{ signee.total_points }} p
+                      {{ signee.total_points.toLocaleString() }} p
                     </td>
                   </tr>
                 </tbody>

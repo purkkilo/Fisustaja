@@ -84,7 +84,6 @@
                     v-model="boat_number"
                     @paste.prevent
                     @keypress="isNumber($event)"
-                    @input="searchSelected"
                     name="boat_number"
                     oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);"
                     type = "number"
@@ -92,9 +91,14 @@
                     min="1"
                     step="1"
                     class="validate"
+                    ref="boat_number"
                   >
                   <label for="boat_number" class="flow-text black-text">Venekunnan numero</label>
-                </div>        
+                
+                </div>
+                <div class="col s12" style="margin-top: 20px;">
+                  <a class="waves-effect waves-light blue darken-2 btn col s4 push-s4" v-on:click="searchSelected"><i class="material-icons left">find_replace</i>Hae tiedot</a>
+                </div>     
               </div>
 
               <div class="row">
@@ -172,8 +176,9 @@
                 <ProgressBarQuery />
               </div>
               <div v-else>
-                <a v-on:click="clearInputs" class="waves-effect waves-light yellow black-text btn-large col s4 offset-s2"><i class="material-icons left">backspace</i>Pyyhi Kentät</a>
-                <a v-on:click="validateInfo" class="waves-effect waves-light green black-text btn-large col s3 offset-s1"><i class="material-icons right">save_alt</i>Tallenna</a>
+                <a v-on:click="deleteSignee(false, -1)" class="waves-effect waves-light red black-text btn-large col s2 push-s2"><i class="material-icons left">delete_forever</i>Poista Venekunta</a>
+                <a v-on:click="clearInputs" class="waves-effect waves-light yellow black-text btn-large col s2 push-s3"><i class="material-icons left">backspace</i>Pyyhi Kentät</a>
+                <a v-on:click="validateInfo" class="waves-effect waves-light green black-text btn-large col s2 push-s4" style="margin-bottom:30px"><i class="material-icons right">save_alt</i>Tallenna</a>
               </div>
             </div>
         </div>
@@ -480,6 +485,76 @@ export default {
               console.log(err.message);
             } 
         },
+        async deleteSignee(confirmed, id) {
+            this.errors = [];
+            
+            if(!confirmed) {
+              if (!this.boat_number) {
+                  this.showError('Venekunnan kilpailunumero puuttuu!');
+              }
+              if(!this.errors.length) {
+                  // If selected on the signees list or with the search button
+                  if(this.selected_id) {
+                    // If id on signees
+                    let found_signee = this.searchId(this.selected_id);
+                    if(found_signee){
+                      this.$confirm(`Oletko varma että haluat poistaa kilpailijan: (${found_signee.boat_number}), ${found_signee.captain_name}?`, "Poista kilpailija", 'question')
+                      .then((r) => {
+                          if(r) {
+                              this.deleteSignee(r, found_signee.id);
+                          }
+                      })
+                      .catch((error) => {
+                          if(error){
+                              console.error(error);
+                          }
+                      });
+                    }
+                  }
+                  else {
+                      // No selected id, so new input
+                      let temp_boat = this.searchBoatNumber(this.boat_number);
+                      if(temp_boat) {
+                          this.$confirm(`Oletko varma että haluat poistaa kilpailijan: (${temp_boat.boat_number}), ${temp_boat.captain_name}?`, "Poista kilpailija", 'question')
+                          .then((r) => {
+                              if(r) {
+                                  this.deleteSignee(r, temp_boat.id);
+                              }
+                          })
+                          .catch((error) => {
+                              if(error){
+                                  console.error(error);
+                              }
+                          });
+                      }
+                  }
+              }
+            }
+            else {
+                let found_signee = this.searchId(id);
+                if(found_signee){
+                  this.$store.commit("removeSignee", found_signee);
+                  let comp = this.$store.getters.getCompetition;
+                  this.signees = this.$store.getters.getSignees;
+                  comp.signees = this.signees;
+                  this.$store.commit('refreshCompetition', comp);
+                  try{
+                    this.loading = true;
+                    await CompetitionService.updateCompetition(comp._id, comp);
+                    this.loading = false;
+                    this.clearInputs();
+                    M.toast({html: `Poistettu (Nro: ${found_signee.boat_number}, Kapteeni: ${found_signee.captain_name}) Tiedot!`});
+                    location.href = "#";
+                    location.href = "#signing";
+                  } catch(err) {
+                    console.log(err.message);
+                  } 
+                }
+                else {
+                  console.log("Tällä id:llä ei löytynyt kilpailijaa...");
+                }
+            }
+        },
         // TODO input validation
         validateInfo: function() {
             this.notification = null;
@@ -540,9 +615,10 @@ export default {
                             this.teams.push(this.team);
                             this.$store.commit('setTeams', this.teams);
                           }
-                          console.log("Updating info...");
                           M.toast({html: `Päivitetty venekunnan (Nro: ${this.new_signee.boat_number}, Kapteeni: ${this.new_signee.captain_name}) Tiedot!`});
                           this.clearInputs();
+                          location.href = "#";
+                          location.href = "#signing";
                           this.boat_number = Math.max.apply(Math, this.signees.map(function(o) { return o.boat_number; })) + 1;
                           this.id = Math.max.apply(Math, this.signees.map(function(o) { return o.id; })) + 1;
                           this.selected_id = null;
@@ -592,6 +668,8 @@ export default {
                         }
                         M.toast({html: `Venekunta ilmoitettu kisaan! (Nro: ${this.new_signee.boat_number}, Kapteeni: ${this.new_signee.captain_name})`});
                         this.clearInputs();
+                        location.href = "#";
+                        location.href = "#signing";
                         this.boat_number = Math.max.apply(Math, this.signees.map(function(o) { return o.boat_number; })) + 1;
                         this.id = Math.max.apply(Math, this.signees.map(function(o) { return o.id; })) + 1;
                         this.selected_id = null;
