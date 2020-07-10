@@ -638,6 +638,8 @@ export default {
         let fish = {name: this.selected_fish.name, boat_number: this.boat_number_input.boat_number, captain_name:this.boat_number_input.captain_name , weight: this.biggest_fish};
         this.$store.commit("addBiggestFish", fish);
         this.biggest_fishes = this.$store.getters.getBiggestFishes;
+        this.selected_fish = null,
+        this.biggest_fish = null;
       }
       //if reset == true, reset current weights to 0, otherwise update weights from inputs
       if (reset) {

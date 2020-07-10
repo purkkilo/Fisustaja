@@ -111,6 +111,15 @@
               >
                 <tr>
                   <th style="border:1px solid black;" class="center-align">
+                    <b>Cup pistekerroin</b>
+                  </th>
+                  <td
+                    style="border:1px solid black;"
+                    class="center-align"
+                  ><b>x {{ competition.cup_points_multiplier }}</b></td>
+                </tr>
+                <tr>
+                  <th style="border:1px solid black;" class="center-align">
                     <b>Ilmoittautuneita yhteensä</b>
                   </th>
                   <td
@@ -196,7 +205,7 @@
           </div>
           <div class="row" v-if="results.length">
             <a
-              v-on:click="saveAsPDF(`Normaalikilpailun tulokset`, '#normal-table')"
+              v-on:click="saveAsPDF(`Normaalikilpailun tulokset (${selected_normal})`, '#normal-table')"
               class="waves-effect waves-light blue darken-4 btn col s4 push-s4"
             >
               <i class="material-icons left">picture_as_pdf</i>Lataa pdf
@@ -375,7 +384,7 @@
           </div>
           <div class="row" v-if="biggest_amounts_results.length">
             <a
-              v-on:click="saveAsPDF(`Suurimmat kalasaaliit`, '#biggest-amounts-table')"
+              v-on:click="saveAsPDF(`Suurimmat kalat (${selected_biggest_amount})`, '#biggest-amounts-table')"
               class="waves-effect waves-light blue darken-4 btn col s4 push-s4"
             >
               <i class="material-icons left">picture_as_pdf</i>Lataa pdf
@@ -981,10 +990,10 @@ export default {
       doc.setFontSize(14);
       doc.text(10, 20, this.competition.cup_name, { align: "left"});
       doc.text(10, 30, time, { align: "left"});
+      doc.line(0, 35, 400, 35);
       doc.setFontSize(20);
+
       doc.text(100, 50, competition_type, { align: "center"});
-
-
       doc.autoTable({
         html: table_id,
         styles: { halign: "center", overflow: 'hidden', cellwidth: 'wrap'},
@@ -1023,6 +1032,7 @@ export default {
       doc.setFontSize(14);
       doc.text(10, 20, this.competition.cup_name, { align: "left"});
       doc.text(10, 30, time, { align: "left"});
+      doc.line(0, 35, 400, 35);
       doc.setFontSize(18);
 
       var fishesImg = document
@@ -1083,6 +1093,7 @@ export default {
       doc.setFontSize(14);
       doc.text(10, 20, this.competition.cup_name, { align: "left"});
       doc.text(10, 30, time, { align: "left"});
+      doc.line(0, 35, 400, 35);
       doc.setFontSize(18);
 
       var fishesImg = document
@@ -1162,7 +1173,14 @@ export default {
       //Tiimikilpailu
       if (this.isTeamCompetition) {
         doc.addPage();
-        doc.text(100, 10, "Tiimikilpailun tulokset", { align: "center" });
+        doc.setFontSize(24);
+        doc.text(10, 10, title, { align: "left"});
+        doc.setFontSize(14);
+        doc.text(10, 20, this.competition.cup_name, { align: "left"});
+        doc.text(10, 30, time, { align: "left"});
+        doc.line(0, 35, 400, 35);
+        doc.setFontSize(18);
+        doc.text(100, 50, "Tiimikilpailun tulokset", { align: "center" });
         if (this.team_results.length) {
           doc.autoTable({
             html: "#team-table",
@@ -1170,6 +1188,7 @@ export default {
             headStyles: {fillColor: "#0000b2"},
             columnStyles: {text: {cellwidth: 'auto'}},
             margin: { top: 20 },
+            startY: 55,
             theme: "grid"
           });
         }
@@ -1180,12 +1199,20 @@ export default {
       this.selected_biggest_fish = "Voittajat";
       columns = ["Kalalaji", "Veneen nro", "Kapteeni", "Paino"];
       this.calculateBiggestFishes();
-      rows = this.dictToArray(this.biggest_fishes_results, 4);
 
       if (this.biggest_fishes_results.length) {
+        doc.setFontSize(24);
+        doc.text(10, 10, title, { align: "left"});
+        doc.setFontSize(14);
+        doc.text(10, 20, this.competition.cup_name, { align: "left"});
+        doc.text(10, 30, time, { align: "left"});
+        doc.line(0, 35, 400, 35);
+        doc.setFontSize(18);
+
+        rows = this.dictToArray(this.biggest_fishes_results, 4);
         doc.text(
           100,
-          10,
+          50,
           "Suurimmat kalat" + ` (${this.selected_biggest_fish})`,
           { align: "center" }
         );
@@ -1196,7 +1223,7 @@ export default {
           headStyles: {fillColor: "#0000b2"},
           columnStyles: {text: {cellwidth: 'auto'}},
           margin: { top: 20 },
-          startY: 20,
+          startY: 55,
           theme: "grid"
         });
 
@@ -1207,15 +1234,16 @@ export default {
       }
 
       //Suurimmat kalasaaliit
-      rows = this.dictToArray(this.biggest_amounts_results, 4);
-      doc.text(
-        100,
-        start_coord - 5,
-        "Suurimmat kalasaaliit" + ` (${this.selected_biggest_fish})`,
-        { align: "center" }
-      );
+      this.calculateBiggestAmounts();
 
       if (this.biggest_amounts_results.length) {
+        rows = this.dictToArray(this.biggest_amounts_results, 4);
+        doc.text(
+          100,
+          start_coord - 5,
+          "Suurimmat kalasaaliit" + ` (${this.selected_biggest_fish})`,
+          { align: "center" }
+        );
         doc.autoTable({
           head: [columns],
           body: rows,
@@ -1231,18 +1259,28 @@ export default {
       this.table_fish_names.forEach(name => {
           this.selected_biggest_fish = name;
           this.calculateBiggestFishes();
-
-          columns = ["Sijoitus", "Veneen nro", "Kapteeni", "Paino"];
-          rows = this.dictToArray(this.biggest_fishes_results, 3);
-
+          start_coord = 10;
           if(this.biggest_amounts[name].length || this.biggest_fishes_results.length) {
             doc.addPage();
+            doc.setFontSize(24);
+            doc.text(10, 10, title, { align: "left"});
+            doc.setFontSize(14);
+            doc.text(10, 20, this.competition.cup_name, { align: "left"});
+            doc.text(10, 30, time, { align: "left"});
+            doc.line(0, 35, 400, 35);
+            doc.setFontSize(18);
+            start_coord = 50;
           }
 
+          columns = ["Sijoitus", "Veneen nro", "Kapteeni", "Paino"];
+
+
           if (this.biggest_fishes_results.length) {
+
+            rows = this.dictToArray(this.biggest_fishes_results, 3);
             doc.text(
               100,
-              10,
+              start_coord,
               "Suurimmat kalat" + ` (${name})`,
               { align: "center" }
             );
@@ -1253,15 +1291,16 @@ export default {
               headStyles: {fillColor: "#0000b2"},
               columnStyles: {text: {cellwidth: 'auto'}},
               margin: { top: 20 },
-              startY: 15,
+              startY: start_coord + 5,
               theme: "grid"
             });
           }
           
 
           //Suurimmat kalasaaliit
+          this.calculateBiggestAmounts();
           if(this.biggest_amounts[name].length) {
-            this.calculateBiggestAmounts();
+
             rows = this.dictToArray(this.biggest_amounts[name], 3);
             doc.text(
               100,
