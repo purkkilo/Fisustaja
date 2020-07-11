@@ -554,14 +554,21 @@ export default {
               render: function(args) {
                 return ((args.value/ (1000 + Number.EPSILON) * 100) / 100) + " kg";
               },
-              fontSize: 24,
+              fontSize: 14,
               fontStyle: "bold",
               // draw text shadows under labels, default is false
               textShadow: true,
+              position: 'border',
+              textmargin: 1,
               // text shadow intensity, default is 6
               shadowBlur: 1,
+              // text shadow X offset, default is 3
+              shadowOffsetX: 2,
+
+              // text shadow Y offset, default is 3
+              shadowOffsetY: 2,
               // text shadow color, default is 'rgba(0,0,0,0.3)'
-              shadowColor: 'rgba(0,0,0,0.75)',
+              shadowColor: 'rgba(0,0,0,1)',
               fontColor: 'white',
               fontFamily: '"Lucida Console", Monaco, monospace'
             }
@@ -1152,13 +1159,14 @@ export default {
       });
 
       //Normaalikilpailu (Kalat)
+      doc.addPage();
       columns = ["Sijoitus", "Nro.", "Kapteeni"];
       this.table_fish_names.forEach(name => {
         columns.push(name);
       });
       columns.push("Tulos");
       rows = this.dictToArray(this.normal_weights, 2);
-      doc.text(100, doc.autoTable.previous.finalY + 20, "Normaalikilpailun tulokset (Kalat)", { align: "center" });
+      doc.text(100, 10, "Normaalikilpailun tulokset (Kalat)", { align: "center" });
       doc.autoTable({
         head: [columns],
         body: rows,
@@ -1166,7 +1174,7 @@ export default {
         headStyles: {fillColor: "#0000b2"},
         columnStyles: {text: {cellwidth: 'auto'}},
         margin: { top: 20 },
-        startY: doc.autoTable.previous.finalY + 25,
+        startY: 20,
         theme: "grid"
       });
 
@@ -1196,11 +1204,12 @@ export default {
 
       doc.addPage();
       
-      this.selected_biggest_fish = "Voittajat";
+      this.selected_biggest_fish = this.selected_biggest_amount = "Voittajat";
       columns = ["Kalalaji", "Veneen nro", "Kapteeni", "Paino"];
       this.calculateBiggestFishes();
+      this.calculateBiggestAmounts();
 
-      if (this.biggest_fishes_results.length) {
+      if(this.biggest_fishes_results.length || this.biggest_amounts_results.length) {
         doc.setFontSize(24);
         doc.text(10, 10, title, { align: "left"});
         doc.setFontSize(14);
@@ -1208,7 +1217,9 @@ export default {
         doc.text(10, 30, time, { align: "left"});
         doc.line(0, 35, 400, 35);
         doc.setFontSize(18);
+      }
 
+      if (this.biggest_fishes_results.length) {
         rows = this.dictToArray(this.biggest_fishes_results, 4);
         doc.text(
           100,
@@ -1226,11 +1237,10 @@ export default {
           startY: 55,
           theme: "grid"
         });
-
         start_coord = doc.autoTable.previous.finalY + 25;
       }
       else {
-        start_coord = 20;
+        start_coord = 50;
       }
 
       //Suurimmat kalasaaliit
@@ -1240,7 +1250,7 @@ export default {
         rows = this.dictToArray(this.biggest_amounts_results, 4);
         doc.text(
           100,
-          start_coord - 5,
+          start_coord,
           "Suurimmat kalasaaliit" + ` (${this.selected_biggest_fish})`,
           { align: "center" }
         );
@@ -1251,7 +1261,7 @@ export default {
           headStyles: {fillColor: "#0000b2"},
           columnStyles: {text: {cellwidth: 'auto'}},
           margin: { top: 20 },
-          startY: start_coord,
+          startY: start_coord + 5,
           theme: "grid"
         });
       }
@@ -1260,6 +1270,7 @@ export default {
           this.selected_biggest_fish = name;
           this.calculateBiggestFishes();
           start_coord = 10;
+
           if(this.biggest_amounts[name].length || this.biggest_fishes_results.length) {
             doc.addPage();
             doc.setFontSize(24);
@@ -1300,11 +1311,17 @@ export default {
           //Suurimmat kalasaaliit
           this.calculateBiggestAmounts();
           if(this.biggest_amounts[name].length) {
+            if(!this.biggest_fishes_results.length) {
+              start_coord = 50;
+            }
+            else {
+              start_coord = doc.autoTable.previous.finalY + 20;
+            }
 
             rows = this.dictToArray(this.biggest_amounts[name], 3);
             doc.text(
               100,
-              doc.autoTable.previous.finalY + 20,
+              start_coord,
               "Suurimmat kalasaaliit" + ` (${name})`,
               { align: "center" }
             );
@@ -1316,7 +1333,7 @@ export default {
               headStyles: {fillColor: "#0000b2"},
               columnStyles: {text: {cellwidth: 'auto'}},
               margin: { top: 20 },
-              startY: doc.autoTable.previous.finalY + 25,
+              startY: start_coord + 5,
               theme: "grid"
             });
           }
