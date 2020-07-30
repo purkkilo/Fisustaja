@@ -11,10 +11,8 @@ New:
   ☐ Input validation! @started(20-05-26 12:06) @high @today
   ☐ Comment all the files... @started(20-05-26 12:11) @low
   ☐ Update competition from database on some time interval (allows using multiple computers at the same time), at least on result.vue  @high
-  ☐ Fix clock timings
-  ☐ Add competitions to cups
+  ☐ Fix clock timings and bugs
   ☐ Add demo accounts
-  ☐ Style with Vuetify (https://vuetifyjs.com/en/components/api-explorer/)
   ☐ Vuetify can also be used for unit testing, add testing
   ☐ Add intro.js?
   ☐ Add qr code possibility to signing/weighting
@@ -39,6 +37,8 @@ Done:
   ✔ Fix placement if points == 0 @done(20-06-25 20:21)
   ✔ Fix competition refreshing on Results.vue @done(20-06-25 20:21)
   ✔ Remove biggest fishes and amounts if points are reset @done(20-07-02 07:44)
+  ✔ Style with Vuetify (https://vuetifyjs.com/en/components/api-explorer/) @done(20-07-30 19:05)
+  ✔ Add competitions to cups @done(20-07-30 19:05)
   
 Cancelled:
   ✘ Press Alt+C to mark a todo as cancelled
