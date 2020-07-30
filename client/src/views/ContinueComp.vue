@@ -310,6 +310,7 @@ export default {
             // redirect to /cup-overview
             this.$router.push({path: '/cup-overview'});
         },
+        //TODO dropdown to select current year as highlighted when opened
         saveYear (year) {
             year = year.split("-")[0];
             this.year = year;
