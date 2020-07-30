@@ -22,6 +22,12 @@ router.get('/', async (req, res) => {
     res.send(await users.find({}).toArray());
 })
 
+// Get user
+router.get('/:email', async (req, res) => {
+    const users = await loadUsersCollection();
+    res.send(await users.find({email: req.params.email}).toArray());
+})
+
 // REGISTER ROUTES
 router.post('/register', async (req, res) => {
     const users = await loadUsersCollection();

@@ -5,14 +5,14 @@
         <nav>
           <div class="nav-wrapper blue lighten-2">
             <router-link to="/"><img src="../../assets/clienticon_new.png" alt="" class="circle responsive-img left" style="height:55px;width:55px;margin:5px 10px;"></router-link>
-            <router-link to="/"><a href="#!" class="brand-logo">Fisustaja</a></router-link>
+            <router-link to="/"><a href="#!" class="brand-logo white-text">Fisustaja</a></router-link>
             <a href="#" data-target="slide-out" class="sidenav-trigger right"><i class="material-icons">menu</i></a>
             <ul class="right hide-on-med-and-down" v-if="isUserLoggedIn">
-                <li v-bind:class="isDashboardPage"><router-link to="/dashboard"><a><i class="material-icons left">home</i>Dashboardiin</a></router-link></li>
-                <li v-if="isCompetitionSet" v-bind:class="isOverviewPage"><router-link to="/overview"><a><i class="material-icons left">directions_boat</i>Yleisnäkymä</a></router-link></li>
-                <li v-if="isAdmin" v-bind:class="isAdminPage"><router-link to="/admin"><a><i class="material-icons left">admin_panel_settings</i>Admin</a></router-link></li>
-                <li v-bind:class="isFeedbackPage"><router-link to="/feedback"><a><i class="material-icons left">feedback</i>Palaute</a></router-link></li>
-                <li><a v-on:click="logout" class="waves-effect waves-light red darken-4 btn-large"><i class="material-icons left">power_settings_new</i>Kirjaudu ulos</a></li>
+                <li v-bind:class="isDashboardPage"><router-link to="/dashboard"><a class="white-text"><i class="material-icons left">home</i>Dashboardiin</a></router-link></li>
+                <li v-if="isCompetitionSet" v-bind:class="isOverviewPage"><router-link to="/overview"><a class="white-text"><i class="material-icons left">directions_boat</i>Yleisnäkymä</a></router-link></li>
+                <li v-if="isAdmin" v-bind:class="isAdminPage"><router-link to="/admin"><a class="white-text"><i class="material-icons left">admin_panel_settings</i>Admin</a></router-link></li>
+                <li v-bind:class="isFeedbackPage"><router-link to="/feedback"><a class="white-text"><i class="material-icons left">feedback</i>Palaute</a></router-link></li>
+                <li><v-btn large rounded color="red" @click="logout"><i class="material-icons left">power_settings_new</i>Kirjaudu ulos</v-btn></li>
             </ul>
           </div>
         </nav>
@@ -28,11 +28,11 @@
           <span class="white-text name">{{ isUser.name }}</span>
           <span class="white-text email">{{ isUser.email }}</span>
         </div></li>
-        <li v-bind:class="isDashboardPage" style="margin-top:20px"><router-link to="/dashboard"><a><i class="material-icons left">home</i>Dashboardiin</a></router-link></li>
+        <li v-bind:class="isDashboardPage" style="margin-top:20px"><router-link to="/dashboard"><a class="white-text"><i class="material-icons left">home</i>Dashboardiin</a></router-link></li>
         <li style="margin-top:20px" v-if="isCompetitionSet" v-bind:class="isOverviewPage"><router-link to="/overview"><a><i class="material-icons left">directions_boat</i>Yleisnäkymä</a></router-link></li>
-        <li style="margin-top:20px" v-if="isAdmin" v-bind:class="isAdminPage"><router-link to="/admin"><a><i class="material-icons left">admin_panel_settings</i>Admin</a></router-link></li>
-        <li style="margin-top:20px" v-bind:class="isFeedbackPage"><router-link to="/feedback"><a><i class="material-icons left">feedback</i>Palaute</a></router-link></li>
-        <li style="margin-top:20px"><a class="waves-effect waves-light red darken-4 btn-large" v-on:click="logout"><i class="material-icons left">power_settings_new</i>Kirjaudu ulos</a></li>        
+        <li style="margin-top:20px" v-if="isAdmin" v-bind:class="isAdminPage"><router-link to="/admin"><a class="white-text"><i class="material-icons left">admin_panel_settings</i>Admin</a></router-link></li>
+        <li style="margin-top:20px" v-bind:class="isFeedbackPage"><router-link to="/feedback"><a class="white-text"><i class="material-icons left">feedback</i>Palaute</a></router-link></li>
+        <li style="margin-top:20px"><v-btn large rounded color="red" @click="logout"><i class="material-icons left">power_settings_new</i>Kirjaudu ulos</v-btn></li>        
       </div>
     </ul>
   </div>
@@ -102,7 +102,7 @@ export default {
       localStorage.removeItem('jwt');
       this.$store.state.logged_in = false;
       this.$store.state.is_admin = false;
-      this.$router.push("/");
+      this.$router.push({path: '/'});
       this.$store.commit('refreshCompetition', null);
       this.user = null;
       M.toast({html: "Kirjattu ulos onnistuneesti!"});

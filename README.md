@@ -1,14 +1,29 @@
 # FisuJS
 Fishing competition application
 
-# Run Backend server
+# Run The application server
 
-## Server setup
+## Server setup, Run backend server, dev version with nodemon
 ```
 npm install
+npm run dev
 ```
 
-### Run backend, dev version with nodemon
+### Client setup and init
 ```
-npm run dev
+Open new console
+cd client
+npm install
+npm run serve
+
+For more see: FisuJS/client/README.md 
+```
+
+### Express server
+```
+FisuJS/server/index.js
+```
+### Client
+```
+FisuJS/client/src/
 ```

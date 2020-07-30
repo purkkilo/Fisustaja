@@ -10,13 +10,12 @@ Todos:
 New:
   ☐ Input validation! @started(20-05-26 12:06) @high @today
   ☐ Comment all the files... @started(20-05-26 12:11) @low
-  ☐ Implement multiple day competitions
-  ☐ Update competition from database on some time interval (allows using multiple computers at the same time)
+  ☐ Update competition from database on some time interval (allows using multiple computers at the same time), at least on result.vue  @high
   ☐ Fix clock timings
   ☐ Add competitions to cups
-  ☐ Sidenav only closing when clicking to feedback page (mobile)?
   ☐ Add demo accounts
-  ☐ Add vuetify
+  ☐ Style with Vuetify (https://vuetifyjs.com/en/components/api-explorer/)
+  ☐ Vuetify can also be used for unit testing, add testing
   ☐ Add intro.js?
   ☐ Add qr code possibility to signing/weighting
   ☐ Add possibility to get weights from usb

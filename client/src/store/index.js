@@ -3,6 +3,7 @@ import Vuex from 'vuex'
 
 Vue.use(Vuex)
 
+// Vuex, basically localstorage but inside Vue
 export default new Vuex.Store({
   state: {
     competition: null,
@@ -11,6 +12,7 @@ export default new Vuex.Store({
     logged_in: false,
     is_admin: false,
   },
+  // Get data from vuex
   getters: {
     getSigneesCount: state => {
       return state.competition.signees.length
@@ -74,6 +76,7 @@ export default new Vuex.Store({
       return state.is_admin;
     }
   },
+  // Call these if data needs to be changed
   mutations: {
     refreshSignees: (state, signees) => {
       Vue.set(state.competition, 'signees', [...signees]);
@@ -146,7 +149,11 @@ export default new Vuex.Store({
     refreshCompetition: (state, competition) => {
       Vue.set(state, 'competition', competition);
     },
+    refreshCup: (state, cup) => {
+      Vue.set(state, 'cup', cup);
+    },
   },
+  // advanced functionalities
   actions: {
   },
   modules: {

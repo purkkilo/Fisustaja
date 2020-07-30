@@ -1,14 +1,15 @@
-const path = require('path');
-
 module.exports = {
-    outputDir: path.resolve(__dirname, '../server/public'),
-    devServer: {
-        proxy: {
-            '^/api': {
-                target: "http://localhost:5000",
-                ws: true,
-                changeOrigin: true
-            }
-        }
+  "outputDir": "J:\\Fisustaja\\JSVersion\\FisuJS\\server\\public",
+  "devServer": {
+    "proxy": {
+      "^/api": {
+        "target": "http://localhost:5000",
+        "ws": true,
+        "changeOrigin": true
+      }
     }
+  },
+  "transpileDependencies": [
+    "vuetify"
+  ]
 }

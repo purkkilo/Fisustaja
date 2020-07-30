@@ -16,7 +16,13 @@ router.get('/:user_id', async (req, res) => {
     res.send(await competitions.find({user_id: req.params.user_id}).toArray());
 })
 
-// Get Competitions
+// Get user's competitions
+router.get('/cup/:cup_id', async (req, res) => {
+    const competitions = await loadCompetitionsCollection();
+    res.send(await competitions.find({cup_id: req.params.cup_id}).toArray());
+})
+
+// Get certain competition
 router.get('/competition/:competition_id', async (req, res) => {
     const competitions = await loadCompetitionsCollection();
     res.send(await competitions.find({_id: new mongodb.ObjectID(req.params.competition_id)}).toArray());
@@ -27,6 +33,7 @@ router.post('/', async (req, res) => {
     const competitions = await loadCompetitionsCollection();
     await competitions.insertOne({
         user_id: req.body.user_id,
+        cup_id: req.body.cup_id,
         name: req.body.name,
         cup_name:  req.body.cup_name,
         cup_placement_points: req.body.cup_placement_points,

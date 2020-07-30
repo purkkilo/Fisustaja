@@ -23,6 +23,19 @@ class UserService {
         }
     }
 
+    // Get users
+    static async getEmail(email) {
+        const res = await axios.get(`${url}${email}`);
+        try {
+          const data = res.data
+          return data.map(user => ({
+            email: user.email,
+          }))
+        } catch (err) {
+          return err
+        }
+    }
+
     // Create user
     static insertUser(user) {
         return axios.post(register_url, {

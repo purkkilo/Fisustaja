@@ -5,21 +5,21 @@
         <nav>
             <div class="nav-wrapper blue lighten-2">
                 <router-link to="/"><img src="../../assets/clienticon_new.png" alt="" class="circle responsive-img left" style="height:55px;width:55px;margin:5px 10px;"></router-link>
-                <router-link to="/"><a href="#!" class="brand-logo">Fisustaja</a></router-link>
+                <router-link to="/"><a href="#!" class="brand-logo white-text">Fisustaja</a></router-link>
                 <a href="#" data-target="slide-out" class="sidenav-trigger right"><i class="material-icons">menu</i></a>
                 <ul class="right hide-on-med-and-down">
-                    <li v-bind:class="isHome"><router-link to="/"><a><i class="material-icons left">home</i>Kotisivu</a></router-link></li>
-                    <li v-bind:class="isRegister"><router-link to="/register"><a><i class="material-icons left">add_circle_outline</i>Rekisteröidy</a></router-link>
-                    <li v-bind:class="isLogin"><router-link to="/login"><a><i class="material-icons left">play_circle_filled</i>Kirjaudu</a></router-link></li>
+                    <li v-bind:class="isHome"><router-link to="/"><a class="white-text"><i class="material-icons left">home</i>Kotisivu</a></router-link></li>
+                    <li v-bind:class="isRegister"><router-link to="/register"><a class="white-text"><i class="material-icons left">add_circle_outline</i>Rekisteröidy</a></router-link>
+                    <li v-bind:class="isLogin"><router-link to="/login"><a class="white-text"><i class="material-icons left">play_circle_filled</i>Kirjaudu</a></router-link></li>
                 </ul>
             </div>
         </nav>
       </div>
     </header>
     <ul id="slide-out" class="sidenav background grey darken-4">
-        <li v-bind:class="isHome"><router-link to="/"><a><i class="material-icons left">home</i>Kotisivu</a></router-link></li>
-        <li v-bind:class="isRegister"><router-link to="/register"><a><i class="material-icons left">add_circle_outline</i>Rekisteröidy</a></router-link>
-        <li v-bind:class="isLogin"><router-link to="/login"><a><i class="material-icons left">play_circle_filled</i>Kirjaudu</a></router-link></li>
+        <li v-bind:class="isHome"><router-link to="/"><a class="white-text"><i class="material-icons left">home</i>Kotisivu</a></router-link></li>
+        <li v-bind:class="isRegister"><router-link to="/register"><a class="white-text"><i class="material-icons left">add_circle_outline</i>Rekisteröidy</a></router-link>
+        <li v-bind:class="isLogin"><router-link to="/login"><a class="white-text"><i class="material-icons left">play_circle_filled</i>Kirjaudu</a></router-link></li>
     </ul>
   </div>
 </template>

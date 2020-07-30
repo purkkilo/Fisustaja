@@ -1,9 +1,7 @@
 import Vue from 'vue'
-import vSelect from "vue-select";
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 
-Vue.component("v-select", vSelect);
 Vue.use(VueRouter)
 
   const routes = [
@@ -68,6 +66,14 @@ Vue.use(VueRouter)
     }
   },
   {
+    path: '/cup-overview',
+    name: 'CupOverview',
+    component: () => import(/* webpackChunkName: "about" */ '../views/CupOverview.vue'),
+    meta: {
+        requiresAuth: true
+    }
+  },
+  {
     path: '/register-comp',
     name: 'RegisterComp',
     component: () => import(/* webpackChunkName: "about" */ '../views/RegisterComp.vue'),
@@ -122,6 +128,7 @@ let router = new VueRouter({
   routes
 })
 
+// Check auth before loading page
 router.beforeEach((to, from, next) => {
   if(to.matched.some(record => record.meta.requiresAuth)) {
       if (localStorage.getItem('jwt') == null) {
