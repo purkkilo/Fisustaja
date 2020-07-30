@@ -9,7 +9,7 @@ Nested:
 Todos:
 New:
   ☐ Input validation! @started(20-05-26 12:06) @high @today
-  ☐ Comment all the files... @started(20-05-26 12:11) @low
+  ✔ Comment all the files... @started(20-05-26 12:11) @low @done(20-07-30 19:10) @lasted(9w2d6h59m37s)
   ☐ Update competition from database on some time interval (allows using multiple computers at the same time), at least on result.vue  @high
   ☐ Fix clock timings and bugs
   ☐ Add demo accounts
