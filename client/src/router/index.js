@@ -22,14 +22,6 @@ Vue.use(VueRouter)
       }
   },
   {
-      path: '/register',
-      name: 'register',
-      component: () => import(/* webpackChunkName: "about" */ '../views/Register.vue'),
-      meta: {
-          guest: true
-      }
-  },
-  {
       path: '/dashboard',
       name: 'dashboard',
       component: () => import(/* webpackChunkName: "about" */ '../views/Dashboard.vue'),
@@ -120,13 +112,25 @@ Vue.use(VueRouter)
     meta: {
         requiresAuth: true
     }
-  }
+  },
 ]
 
 let router = new VueRouter({
   mode: 'history',
   routes
 })
+
+
+//TODO add this back after user test
+// {
+//      path: '/register',
+//      name: 'register',
+//      component: () => import(/* webpackChunkName: "about" */ '../views/Register.vue'),
+//      meta: {
+//        guest: true
+//      }
+// },
+
 
 // Check auth before loading page
 router.beforeEach((to, from, next) => {
@@ -143,6 +147,7 @@ router.beforeEach((to, from, next) => {
                   next()
               }
               else{
+                  // If token found, direct admin
                   next({ name: 'dashboard'})
               }
           }else {
@@ -151,13 +156,16 @@ router.beforeEach((to, from, next) => {
       }
   } else if(to.matched.some(record => record.meta.guest)) {
       if(localStorage.getItem('jwt') == null){
+          // token not found
           next()
       }
       else{
+          // If token found, direct guest to dashboard (e.g '/test')
           next({ name: 'dashboard'})
       }
   }else {
-      next()
+      // If route doesn't match any page (e.g '/test')
+      next({ name: 'Home'})
   }
 })
 

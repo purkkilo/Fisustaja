@@ -30,32 +30,38 @@
         Footer
     },
     mounted() {
-        // Tab or browser close
-        window.addEventListener("beforeunload", async function() {
-            //TODO implement this in express? with a '/logout' route and verifyToken middleware somehow?
-            if(localStorage.getItem('jwt') !== null){
-                let token = localStorage.getItem('jwt');
-                //FIXME gives 400 bad request error on console when token is expired, but still works
-                await UserService.checkToken(token)
-                .then(response => {
-                    // Token valid, no action needed
-                    console.log(response);
-                })
-                .catch(err => {
-                    // Expired token
-                    if (err.response.status === 400) {
-                        localStorage.removeItem('jwt');
-                        localStorage.removeItem('user');
-                        return;
-                    }
-                    // No token
-                    if(err.response.status === 401){
-                        return;
-                    }
-                    return console.log(err);
-                });
-            }
-        })
+        try {
+            window.addEventListener("beforeunload", async function() {
+                //TODO implement this in express? with a '/logout' route and verifyToken middleware somehow?
+                if(localStorage.getItem('jwt') !== null){
+                    let token = localStorage.getItem('jwt');
+                    //FIXME gives 400 bad request error on console when token is expired, but still works
+                    await UserService.checkToken(token)
+                    .then(response => {
+                        // Token valid, no action needed
+                        console.log(response);
+                    })
+                    .catch(err => {
+                        if(err.message === 'Request aborted') {
+                            return;
+                        }
+                        // Expired token
+                        if (err.response.status === 400) {
+                            localStorage.removeItem('jwt');
+                            localStorage.removeItem('user');
+                            return;
+                        }
+                        // No token
+                        if(err.response.status === 401){
+                            return;
+                        }
+                        return console.log(err);
+                    });
+                }
+            })
+        } catch (err) {
+            console.log(err.message);
+        }
     },
     }
 </script>
