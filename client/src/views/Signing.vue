@@ -1,7 +1,7 @@
 <template>
   <!-- /signing -->  
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <div class="container">
+  <v-container>
     <Header />
     <Timedate />
     <div id="errordiv" v-if="errors.length">
@@ -22,7 +22,7 @@
           <div class="col s12 center-align"><h1>Ilmoittautuminen</h1></div>
       </div>
       <!-- Navigation to other competition pages -->
-      <v-container>
+      <v-row>
         <v-row>
           <v-col order="first">
             <router-link to="/comp-settings">
@@ -40,7 +40,7 @@
             </router-link>
           </v-col>
         </v-row>
-      </v-container>
+      </v-row>
       <!-- Tabs -->
 
       <v-tabs
@@ -57,231 +57,233 @@
       <v-tabs-items v-model="tab" style="background: rgba(0,0,0,0.4);">
         <!-- Signing tab -->
         <v-tab-item class="inputarea" :value="'signing'">
-          <v-container v-if="!loading_site">
-            <v-row>
-              <v-col md="8" offset-md="2">
-                <p class="flow-text">Ilmoittautuminen</p>  
-              </v-col>
-            </v-row>
-
-            <v-row v-if="notification">
-              <v-col md="8" offset-md="2">
-                <v-alert type="info" class="flow-text">
-                  {{ notification }}
-                </v-alert>
-              </v-col>
-            </v-row>
-            <!-- If there user is trying to overwrite data to other boat number, which is in use, show differences and ask are you sure -->
-            <v-row v-if="old_info">
-              <v-col md="8" offset-md="2">
-                <h3>Numeron ({{ old_info.boat_number }}.) Vanhat tiedot</h3>
-                <p class="flow-text"><b>Kapteeni:</b> {{ old_info.captain_name }}</p>
-                <p class="flow-text"><b>Varakapteeni:</b> {{ old_info.temp_captain_name }}</p>
-                <p class="flow-text"><b>Seura/Paikkakunta:</b> {{ old_info.locality }}</p>
-                <p class="flow-text"><b>Lähtöpaikka:</b> {{ old_info.starting_place }}</p> 
-                <p v-if="isTeamCompetition" class="flow-text"><b>Joukkue:</b> {{ old_info.team }}</p>   
-              </v-col>
-
-              <v-col md="8" offset-md="2">
-                <v-divider class="black"></v-divider>
-              </v-col>
-
-              <v-col md="8" offset-md="2">
-                <h3>Numeron ({{ boat_number }}.) Uudet tiedot</h3>
-                <p class="flow-text"><b>Kapteeni:</b> {{ captain_name }}</p>
-                <p class="flow-text"><b>Varakapteeni:</b> {{ temp_captain_name }}</p>
-                <p class="flow-text"><b>Seura/Paikkakunta:</b> {{ locality }}</p>
-                <p class="flow-text"><b>Lähtöpaikka:</b> {{ starting_place }}</p> 
-                <p v-if="isTeamCompetition" class="flow-text"><b>Joukkue:</b> {{ team }}</p>  
-              </v-col>
-
-              <v-col md="8" offset-md="2" style="margin-bottom:50px">
-                <v-divider class="black"></v-divider>
-              </v-col>
-              <v-row>
-                <v-col order="first">
-                  <v-btn large tile color="yellow" @click="overwriteSignee(old_info, false)"><i class="material-icons left">backspace</i>Peruuta</v-btn>
-                </v-col>
-                <v-col order="last">
-                  <v-btn large tile color="green" @click="overwriteSignee(old_info, true)"><i class="material-icons left">check</i>Päällekirjoita</v-btn>
+          <v-row v-if="!loading_site">
+            <v-col>
+              <v-row style="margin-top:20px;">
+                <v-col md="10" offset-md="1">
+                  <p class="flow-text">Ilmoittautuminen</p>  
                 </v-col>
               </v-row>
-            </v-row>
-            <!-- Inputs -->
-            <v-row v-if="!old_info" id="signing-inputs">
-              <v-col>
-                <v-row>
-                  <v-col md="2" offset-md="4" class="input-fields">
-                    <v-text-field
-                      label="Venekunnan numero"
-                      v-model="boat_number"
-                      append-outer-icon="add"
-                      maxlength="6"
-                      @click:append-outer="boat_number > 0 ? boat_number++ : boat_number = 1" 
-                      prepend-icon="remove" 
-                      @click:prepend="boat_number > 1 ? boat_number-- : boat_number = 1"
-                      @paste.prevent
-                      :counter="6"
-                      @keypress="isNumber($event, true)"
-                      :rules="number_rules"
-                      :loading="loading"
-                    />
-                  </v-col>
-                
-                  <v-col md="2">
-                    <v-btn outlined large color="indigo" @click="searchSelected"><i class="material-icons left">find_replace</i>Hae tiedot</v-btn>
-                  </v-col>
-                </v-row> 
 
+              <v-row v-if="notification">
+                <v-col md="8" offset-md="2">
+                  <v-alert type="info" class="flow-text">
+                    {{ notification }}
+                  </v-alert>
+                </v-col>
+              </v-row>
+              <!-- If there user is trying to overwrite data to other boat number, which is in use, show differences and ask are you sure -->
+              <v-row v-if="old_info">
+                <v-col md="8" offset-md="2">
+                  <h3>Numeron ({{ old_info.boat_number }}.) Vanhat tiedot</h3>
+                  <p class="flow-text"><b>Kapteeni:</b> {{ old_info.captain_name }}</p>
+                  <p class="flow-text"><b>Varakapteeni:</b> {{ old_info.temp_captain_name }}</p>
+                  <p class="flow-text"><b>Seura/Paikkakunta:</b> {{ old_info.locality }}</p>
+                  <p class="flow-text"><b>Lähtöpaikka:</b> {{ old_info.starting_place }}</p> 
+                  <p v-if="isTeamCompetition" class="flow-text"><b>Joukkue:</b> {{ old_info.team }}</p>   
+                </v-col>
+
+                <v-col md="8" offset-md="2">
+                  <v-divider class="black"></v-divider>
+                </v-col>
+
+                <v-col md="8" offset-md="2">
+                  <h3>Numeron ({{ boat_number }}.) Uudet tiedot</h3>
+                  <p class="flow-text"><b>Kapteeni:</b> {{ captain_name }}</p>
+                  <p class="flow-text"><b>Varakapteeni:</b> {{ temp_captain_name }}</p>
+                  <p class="flow-text"><b>Seura/Paikkakunta:</b> {{ locality }}</p>
+                  <p class="flow-text"><b>Lähtöpaikka:</b> {{ starting_place }}</p> 
+                  <p v-if="isTeamCompetition" class="flow-text"><b>Joukkue:</b> {{ team }}</p>  
+                </v-col>
+
+                <v-col md="8" offset-md="2" style="margin-bottom:50px">
+                  <v-divider class="black"></v-divider>
+                </v-col>
                 <v-row>
-                  <v-col md="5" offset-md="3" class="input-fields">
-                    <v-text-field
-                      label="Kapteeni"
-                      v-model="captain_name"
-                      :maxlength="maxlength"
-                      :loading="loading"
-                      :counter="maxlength"
-                    />
+                  <v-col order="first">
+                    <v-btn large tile color="yellow" @click="overwriteSignee(old_info, false)"><i class="material-icons left">backspace</i>Peruuta</v-btn>
+                  </v-col>
+                  <v-col order="last">
+                    <v-btn large tile color="green" @click="overwriteSignee(old_info, true)"><i class="material-icons left">check</i>Päällekirjoita</v-btn>
                   </v-col>
                 </v-row>
-
-                <v-row>
-                  <v-col md="5" offset-md="3" class="input-fields">
-                    <v-text-field
-                      label="Varakapteeni"
-                      v-model="temp_captain_name"
-                      :maxlength="maxlength"
-                      :loading="loading"
-                      :counter="maxlength"
-                    />
-                  </v-col>
-                </v-row>
-
-                <v-row>
-                  <v-col md="5" offset-md="3" class="input-fields">
-                    <v-text-field
-                      label="Seura/Paikkakunta"
-                      v-model="locality"
-                      :maxlength="maxlength"
-                      :loading="loading"
-                      :counter="maxlength"
-                    />
-                  </v-col>
-                </v-row>
-
-                <v-row>
-                  <v-col md="5" offset-md="3" class="input-fields">
+              </v-row>
+              <!-- Inputs -->
+              <v-row v-if="!old_info" id="signing-inputs">
+                <v-col>
+                  <v-row>
+                    <v-col md="2" offset-md="4" class="input-fields">
                       <v-text-field
-                        label="Lähtöpaikka"
-                        v-model="starting_place"
+                        label="Venekunnan numero"
+                        v-model="boat_number"
+                        append-outer-icon="add"
+                        maxlength="6"
+                        @click:append-outer="boat_number > 0 ? boat_number++ : boat_number = 1" 
+                        prepend-icon="remove" 
+                        @click:prepend="boat_number > 1 ? boat_number-- : boat_number = 1"
+                        @paste.prevent
+                        :counter="6"
+                        @keypress="isNumber($event, true)"
+                        :rules="number_rules"
+                        :loading="loading"
+                      />
+                    </v-col>
+                  
+                    <v-col md="2">
+                      <v-btn outlined large color="indigo" @click="searchSelected"><i class="material-icons left">find_replace</i>Hae tiedot</v-btn>
+                    </v-col>
+                  </v-row> 
+
+                  <v-row>
+                    <v-col md="5" offset-md="3" class="input-fields">
+                      <v-text-field
+                        label="Kapteeni"
+                        v-model="captain_name"
                         :maxlength="maxlength"
                         :loading="loading"
                         :counter="maxlength"
                       />
-                  </v-col>
-                </v-row>
-                <!-- Ask team only if isTeamCompetition is true -->
-                <v-row v-if="isTeamCompetition">
-                  <v-col md="5" offset-md="3" class="input-fields">
-                    <div class="input-fields">
-                      <vue-select
-                        class="flow-text title"
-                        taggable
-                        placeholder="Valitse, tai kirjoita tiimin nimi"
-                        v-model="team"
-                        :options="teams"
-                      />
-                      <span class="flow-text black-text">Joukkue</span>
-                    </div>
-                  </v-col>
-                </v-row>
-
-                <v-row v-if="!old_info">
-                  <v-row v-if="loading">
-                    <v-col md="12">
-                      <p class="flow-text">Päivitetään tiedot tietokantaan...</p>
-                      <ProgressBarQuery />
                     </v-col>
                   </v-row>
 
-                  <v-row v-else style="margin:40px">
-                    <v-row>
-                      <v-col
-                        md="4"
-                      >
-                        <v-btn large tile color="red" @click="deleteSignee(false, -1)"><i class="material-icons left">delete_forever</i>Poista Venekunta</v-btn>
-                      </v-col>
-                      <v-col
-                        md="4"
-                      >
-                        <v-btn large tile color="yellow" @click="clearInputs"><i class="material-icons left">backspace</i>Pyyhi Kentät</v-btn>
-                      </v-col>
-                      <v-col
-                        md="4"
-                      >
-                        <v-btn large tile color="green" @click="validateInfo"><i class="material-icons right">save_alt</i>Tallenna</v-btn>
+                  <v-row>
+                    <v-col md="5" offset-md="3" class="input-fields">
+                      <v-text-field
+                        label="Varakapteeni"
+                        v-model="temp_captain_name"
+                        :maxlength="maxlength"
+                        :loading="loading"
+                        :counter="maxlength"
+                      />
+                    </v-col>
+                  </v-row>
+
+                  <v-row>
+                    <v-col md="5" offset-md="3" class="input-fields">
+                      <v-text-field
+                        label="Seura/Paikkakunta"
+                        v-model="locality"
+                        :maxlength="maxlength"
+                        :loading="loading"
+                        :counter="maxlength"
+                      />
+                    </v-col>
+                  </v-row>
+
+                  <v-row>
+                    <v-col md="5" offset-md="3" class="input-fields">
+                        <v-text-field
+                          label="Lähtöpaikka"
+                          v-model="starting_place"
+                          :maxlength="maxlength"
+                          :loading="loading"
+                          :counter="maxlength"
+                        />
+                    </v-col>
+                  </v-row>
+                  <!-- Ask team only if isTeamCompetition is true -->
+                  <v-row v-if="isTeamCompetition">
+                    <v-col md="5" offset-md="3" class="input-fields">
+                      <div class="input-fields">
+                        <vue-select
+                          class="flow-text title"
+                          taggable
+                          placeholder="Valitse, tai kirjoita tiimin nimi"
+                          v-model="team"
+                          :options="teams"
+                        />
+                        <span class="flow-text black-text">Joukkue</span>
+                      </div>
+                    </v-col>
+                  </v-row>
+
+                  <v-row v-if="!old_info">
+                    <v-row v-if="loading">
+                      <v-col md="12">
+                        <p class="flow-text">Päivitetään tiedot tietokantaan...</p>
+                        <ProgressBarQuery />
                       </v-col>
                     </v-row>
+
+                    <v-row v-else style="margin:40px">
+                      <v-row>
+                        <v-col
+                          md="4"
+                        >
+                          <v-btn large tile color="red" @click="deleteSignee(false, -1)"><i class="material-icons left">delete_forever</i>Poista Venekunta</v-btn>
+                        </v-col>
+                        <v-col
+                          md="4"
+                        >
+                          <v-btn large tile color="yellow" @click="clearInputs"><i class="material-icons left">backspace</i>Pyyhi Kentät</v-btn>
+                        </v-col>
+                        <v-col
+                          md="4"
+                        >
+                          <v-btn large tile color="green" @click="validateInfo"><i class="material-icons right">save_alt</i>Tallenna</v-btn>
+                        </v-col>
+                      </v-row>
+                    </v-row>
                   </v-row>
-                </v-row>
-              </v-col>
-            </v-row>
-          </v-container>
-          <v-container v-else>
+                </v-col>
+              </v-row>
+            </v-col>
+          </v-row>
+          <v-row v-else>
             <!-- Show progressbar if loading -->
-            <v-row>
-              <v-col>
-                <h2>Haetaan veneitä...</h2>
-                <ProgressBarQuery /> 
-              </v-col>
-            </v-row>
-          </v-container>
+            <v-col>
+              <h2>Haetaan veneitä...</h2>
+              <ProgressBarQuery /> 
+            </v-col>
+          </v-row>
         </v-tab-item>
         <v-tab-item class="inputarea" :value="'signees'">
-          <v-container>
-            <v-row>
-              <v-col class="title" offset-md="4" md="4">
-                <p style="margin:10px 10px;" class="flow-text">Ilmoittautuneita yhteensä: <b>{{ signees.length }}</b></p>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col md="8" offset-md="2">
-                <table id="signees-table" class="highlight centered responsive-table fixed_header tablearea" v-if="signees.length">
-                  <thead>
-                    <tr>
-                      <th>Nro.</th>
-                      <th>Kapteeni</th>
-                      <th>Varakapteeni</th>
-                      <th>Seura/Paikkakunta</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr @click="selectRow(signee.id)" :class="{ selected : selected_id == signee.id }" v-for="(signee, index) in signees" :key="index">
-                        <th class="center-align" style="border:1px solid black">{{ signee.boat_number }}</th>  
-                        <td style="border:1px solid black">{{ signee.captain_name }}</td> 
-                        <td style="border:1px solid black">{{ signee.temp_captain_name }}</td>
-                        <td style="border:1px solid black">{{ signee.locality }}</td>   
-                    </tr>
-                    </tbody>
-                </table>
-              </v-col>
-            </v-row>
-            <v-row v-if="selected_id">
-              <v-col style="margin:20px 50px;">
-                <v-btn large tile color="blue" @click="searchSelected"><i class="material-icons left">info</i>Näytä valitun ilmoittautumistiedot</v-btn>
-              </v-col>
-            </v-row>
-            <v-row v-else>
-              <v-col style="margin:20px 50px;">
-                <p v-if="signees.length" class="flow-text">Voit katsella venekunnan tietoja myös klikkaamalla haluamaasi riviä taulukosta ja painamalla ilmestyvää nappulaa</p>
-                <h3 v-else class="center-align">Ei ilmoittautuneita!</h3>
-              </v-col>
-            </v-row>        
-          </v-container>
+          <v-row>
+            <v-col>
+              <v-row style="margin-top:20px;">
+                <v-col class="title" offset-md="4" md="4">
+                  <p class="flow-text">Ilmoittautuneita yhteensä: <b>{{ signees.length }}</b></p>
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col md="10" offset-md="1" class="scroll_table">
+                  <table id="signees-table" class="highlight centered responsive-table table_header tablearea" v-if="signees.length">
+                    <thead>
+                      <tr>
+                        <th>Nro.</th>
+                        <th>Kapteeni</th>
+                        <th>Varakapteeni</th>
+                        <th>Seura/Paikkakunta</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr @click="selectRow(signee.id)" :class="{ selected : selected_id == signee.id }" v-for="(signee, index) in signees" :key="index">
+                          <th class="center-align" style="border:1px solid black">{{ signee.boat_number }}</th>  
+                          <td style="border:1px solid black">{{ signee.captain_name }}</td> 
+                          <td style="border:1px solid black">{{ signee.temp_captain_name }}</td>
+                          <td style="border:1px solid black">{{ signee.locality }}</td>   
+                      </tr>
+                      </tbody>
+                  </table>
+                </v-col>
+              </v-row>
+              <v-row v-if="selected_id">
+                <v-col style="margin:20px 50px;">
+                  <v-btn large tile color="blue" @click="searchSelected"><i class="material-icons left">info</i>Näytä valitun ilmoittautumistiedot</v-btn>
+                </v-col>
+              </v-row>
+              <v-row v-else>
+                <v-col style="margin:20px 50px;">
+                  <p v-if="signees.length" class="flow-text">Voit katsella venekunnan tietoja myös klikkaamalla haluamaasi riviä taulukosta ja painamalla ilmestyvää nappulaa</p>
+                  <h3 v-else class="center-align">Ei ilmoittautuneita!</h3>
+                </v-col>
+              </v-row>    
+            </v-col>    
+          </v-row>
         </v-tab-item>
       </v-tabs-items>
     </div>
-  </div>
+  </v-container>
 </template>
 <script>
     "use strict"
@@ -333,6 +335,10 @@
               let competition_id = localStorage.getItem('competition');
               this.refreshCompetition(competition_id);
           }
+
+          // Focus on top of the page when changing pages
+          location.href = "#";
+          location.href = "#app";
         },
         methods: {
             // Fetch competition from database, and update variables
@@ -374,7 +380,7 @@
                     this.$store.state.logged_in = true;
                     let user = JSON.parse(localStorage.getItem('user'));
                     // Check if user is admin
-                    // NOTE safer way to check this than use localstorage?
+                    //TODO safer way to check this than use localstorage?
                     user.is_admin == true ? this.$store.state.is_admin = true : this.$store.state.is_admin = false;
                 }
                 else {

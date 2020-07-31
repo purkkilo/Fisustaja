@@ -1,7 +1,7 @@
 <template>
   <!-- /overview -->  
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <div class="container">
+  <v-container>
     <Header />
     <Timedate />
     <div id="errordiv" v-if="errors.length">
@@ -20,34 +20,34 @@
       <div class="section">
           <div class="col s12 center-align"><h1>Yleisnäkymä</h1></div>
       </div>
-      <v-container>
-        <v-row>
-          <v-col order="first">
-            <router-link to="/comp-settings">
-              <v-btn large rounded color="grey" class="white--text"><i class="material-icons left">tune</i>Määritykset</v-btn>
-            </router-link>
-          </v-col>
-          <v-col>
-            <router-link to="/signing">
-              <v-btn large rounded color="blue" class="white--text"><i class="material-icons left">edit</i>Ilmoittautuminen</v-btn>
-            </router-link>
-          </v-col> 
-          <v-col>
-            <router-link to="/weighting">
-              <v-btn large rounded color="blue darken-4" class="white--text"><i class="material-icons left">fitness_center</i>Punnitus</v-btn>
-            </router-link>
-          </v-col>
-          <v-col order="last">
-            <router-link to="/results">
-              <v-btn large rounded color="green" class="white--text"><i class="material-icons left">emoji_events</i>Tulokset</v-btn>
-            </router-link>
-          </v-col>
-        </v-row>
-      </v-container>
+
+      <v-row>
+        <v-col order="first">
+          <router-link to="/comp-settings">
+            <v-btn large rounded color="grey" class="white--text"><i class="material-icons left">tune</i>Määritykset</v-btn>
+          </router-link>
+        </v-col>
+        <v-col>
+          <router-link to="/signing">
+            <v-btn large rounded color="blue" class="white--text"><i class="material-icons left">edit</i>Ilmoittautuminen</v-btn>
+          </router-link>
+        </v-col> 
+        <v-col>
+          <router-link to="/weighting">
+            <v-btn large rounded color="blue darken-4" class="white--text"><i class="material-icons left">fitness_center</i>Punnitus</v-btn>
+          </router-link>
+        </v-col>
+        <v-col order="last">
+          <router-link to="/results">
+            <v-btn large rounded color="green" class="white--text"><i class="material-icons left">emoji_events</i>Tulokset</v-btn>
+          </router-link>
+        </v-col>
+      </v-row>
+
         
       <div class="divider"></div>
       <div class="section inputarea">  
-        <!-- TODO make it pretty... -->
+        <!-- TODO make it pretty... Everyting else is better than this-->
         <div class="col s12">
           <h4><b>{{ competition.name }}</b></h4>
           <h4>Päivämäärä: {{ formatted_start_date }} - {{ formatted_end_date }}</h4>
@@ -66,7 +66,7 @@
       <h2>Valmistellaan kilpailua...</h2>
       <ProgressBarQuery />
     </div>
-  </div>
+  </v-container>
 </template>
 <script>
     "use strict";
@@ -106,6 +106,9 @@
           //Check if user is logged in has admin status, update header
           this.checkLogin();
 
+          // Focus on top of the page when changing pages
+          location.href = "#";
+          location.href = "#app";
           // IF competition on localstorage
           if(localStorage.getItem('competition') != null) {
               // update from database
@@ -157,7 +160,7 @@
                     this.$store.state.logged_in = true;
                     let user = JSON.parse(localStorage.getItem('user'));
                     // Check if user is admin
-                    // NOTE safer way to check this than use localstorage?
+                    //TODO safer way to check this than use localstorage?
                     user.is_admin == true ? this.$store.state.is_admin = true : this.$store.state.is_admin = false;
                 }
                 else {

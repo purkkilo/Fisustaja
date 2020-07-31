@@ -1,11 +1,15 @@
 <template>
-    <div class="row black-text valign-wrapper time">
-        <div class="col s3 center-align"><h4 id="date"> </h4></div>
-        <div class="col s6 center-align">
-          <h4 id="comp-left" v-if="competitionChosen">{{ timer_string }}</h4>
-        </div>
-        <div class="col s3 center-align"><h4 id="clock"> </h4></div>
-    </div>
+    <v-row class="valign-wrapper time">
+      <v-col md="3">
+        <h4 id="date">{{ date }}</h4>
+      </v-col>
+      <v-col md="6">
+        <h4 id="comp-left" v-if="competitionChosen">{{ timer_string }}</h4>
+      </v-col>
+      <v-col md="3">
+        <h4 id="clock">{{ clock }}</h4>
+      </v-col>
+    </v-row>
     
 </template>
 
@@ -20,11 +24,11 @@ export default {
         competition_started: false,
         competition_ended: false,
         calculated_time: null,
-        date_interval: 500,
+        date_interval: 3000,
         clock_interval: 500,
         remaining_interval: 500,
         clock: null,
-        date_timer: null,
+        date: null,
         timer: null,
         timer_string: "",
         amount: 40,
@@ -67,26 +71,26 @@ export default {
           let s = today.getSeconds();
           m = this.checkZeros(m);
           s = this.checkZeros(s);
-          document.getElementById('clock').innerText = h + ":" + m + ":" + s;
+          this.clock = `${h}:${m}:${s}`
+          //document.getElementById('clock').innerText = h + ":" + m + ":" + s;
         }
         else {
           clearInterval(this.setTime);
         }
-
     },
     setDate: function(){
       if(document.getElementById('date')){
-        const today = new Date();
-        let day = today.getDate();
-        let month = today.getMonth() + 1; //month is zero indexed
-        let year = today.getFullYear();
-        day = this.checkZeros(day);
-        month = this.checkZeros(month);
-        document.getElementById('date').innerText =day + "." + month + "." + year;
-        }
-        else {
-          clearInterval(this.setDate);
-        }
+          const today = new Date();
+          let day = today.getDate();
+          let month = today.getMonth() + 1; //month is zero indexed
+          let year = today.getFullYear();
+          day = this.checkZeros(day);
+          month = this.checkZeros(month);
+          this.date = `${day}.${month}.${year}`
+      }
+      else {
+        clearInterval(this.setDate);
+      }
     },
     remainingTime: function(){
       if(document.getElementById('comp-left')) {
@@ -146,7 +150,5 @@ export default {
 </script>
 
 <style scoped>
-  .md-progress-bar {
-    margin: 24px;
-  }
+
 </style>

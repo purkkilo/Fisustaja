@@ -145,6 +145,7 @@
             ProgressBarQuery
         },
         mounted() {
+            // Press button by enter key when focusing password_confirmation input
             var input = document.getElementById('password_confirmation');
             input.addEventListener("keyup", function(event){
                 if (event.keyCode === 13){
@@ -152,6 +153,10 @@
                     document.getElementById("sbtn").click();
                 }
             })
+
+            // Focus on top of the page when changing pages
+            location.href = "#";
+            location.href = "#app";
         },
         methods : {
             // Add error to error array and direct user to it

@@ -1,25 +1,31 @@
 <template>
-    <!-- TODO https://vuetifyjs.com/en/components/footer/#footers -->
-    <footer id="footer" class="page-footer blue darken-2">
-        <div class="container">
-        <div class="row">
-            <div class="col l6 s12">
-                <h5 class="white-text">Work in progress</h5>
-            </div>
-            <div class="col l4 offset-l2 s12">
-            <h5 class="white-text">Linkkejä</h5>
-            <ul>
-                <li><a class="grey-text text-lighten-3" href="#!">-</a></li>
-            </ul>
-            </div>
-        </div>
-        </div>
-        <div class="footer-copyright blue darken-4">
-        <div class="container">
-            © 2020 Jori Kosonen, All rights reserved
-        </div>
-        </div>
-    </footer>
+    <v-footer
+        app
+        color="primary lighten-1"
+        paddless
+        absolute
+    >
+        <v-row
+        justify="center"
+        >
+            <v-btn
+                v-for="link in links"
+                :key="link"
+                color="white"
+                text
+                rounded
+                class="my-2"
+            >
+                {{ link }}
+            </v-btn>
+            <v-col
+                class="primary lighten-2 py-4 text-center white--text"
+                cols="12"
+            >
+                {{ new Date().getFullYear() }} — <strong>Jori Kosonen</strong>
+            </v-col>
+        </v-row>
+    </v-footer>
 </template>
 
 <script>
@@ -28,6 +34,9 @@ export default {
   name: "Footer",
     data(){
         return {
+            links: [
+                'Work In Progress',
+            ],
         }
     },
   mounted() {
@@ -39,13 +48,7 @@ export default {
   }
 }
 </script>
-
+//FIXME not idea solution to for the footer (bottom:-50px)!
 <style scoped>
-footer {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 180px;
-    width: 100%;
-}
+
 </style>

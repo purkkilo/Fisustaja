@@ -27,7 +27,6 @@ class FeedbackService {
         });
     }
 
-    // TODO Delete this when deployed
     static deleteFeedback(id) {
         return axios.delete(`${url}${id}`);
     }

@@ -37,8 +37,8 @@
                         </v-col>
                     </v-row>
                     <v-row>
-                        <v-col md="10" offset-md="1">
-                            <div v-if="competitions.length">
+                        <v-col>
+                            <div v-if="competitions.length" class="scroll_table">
                                 <table border=1 id="competitions-table" class="centered responsive-table tablearea highlight">
                                     <thead class="title">
                                     <tr>
@@ -89,6 +89,11 @@
                                     <ProgressBarQuery />
                                 </v-col> 
                             </div>
+                            <v-col v-if="competitions.length" style="margin-top:20px;">
+                                <router-link to="/register-comp">
+                                    <v-btn tile color="blue lighten-1"><i class="material-icons left">add_circle_outline</i>Luo uusi kilpailu!</v-btn>
+                                </router-link>
+                            </v-col>
                         </v-col>
                     </v-row>
                 </v-container>
@@ -101,7 +106,7 @@
                         </v-col>
                     </v-row>
                     <v-row>
-                        <v-col md="6" offset-md="3" class="input-fields">
+                        <v-col md="8" offset-md="2" class="input-fields">
                             <v-text-field
                                 label="Cupin nimi"
                                 v-model="name"
@@ -112,7 +117,7 @@
                         </v-col>
                     </v-row>
                     <v-row>
-                        <v-col md="4" offset-md="4" class="input-fields">
+                        <v-col md="6" offset-md="3" class="input-fields">
                             <v-menu
                             ref="menu"
                             :close-on-content-click="false"
@@ -158,8 +163,8 @@
                         </v-col>
                     </v-row>
                     <v-row>
-                        <v-col md="10" offset-md="1">
-                            <div v-if="cups.length">
+                        <v-col>
+                            <div v-if="cups.length" class="scroll_table">
                                 <table border=1 id="competitions-table" class="centered responsive-table tablearea highlight">
                                     <thead class="title">
                                     <tr>
@@ -269,6 +274,10 @@ export default {
     mounted() {
         M.AutoInit();
         this.checkLogin();
+
+        // Focus on top of the page when changing pages
+        location.href = "#";
+        location.href = "#app";
     },
     methods: {
         // Add error to error array and direct user to it
@@ -285,7 +294,7 @@ export default {
                 this.$store.state.logged_in = true;
                 let user = JSON.parse(localStorage.getItem('user'));
                 // Check if user is admin
-                // NOTE safer way to check this than use localstorage?
+                //TODO safer way to check this than use localstorage?
                 user.is_admin == true ? this.$store.state.is_admin = true : this.$store.state.is_admin = false;
             }
             else {

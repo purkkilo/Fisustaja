@@ -12,7 +12,7 @@
       <div class="section" id="send-feedback">
         <v-row>
           <v-col>
-            <v-btn large rounded color="yellow" @click="$router.go(-1)"><i class="material-icons left">history</i>Palaa takaisin</v-btn>
+            <v-btn large rounded color="yellow" @click="$router.go(-3)"><i class="material-icons left">history</i>Palaa takaisin</v-btn>
           </v-col>
         </v-row>
         <h1>Lähetä palautetta</h1>
@@ -31,10 +31,16 @@
           </v-row>
         </v-container>
           <v-row>
-            <v-col md="8" offset-md="2">
-              <div class="inputarea">
-                <textarea maxlength="800" style="min-height:200px;padding:10px" class="flow-text" v-model="message" placeholder="Palaute tähän"></textarea>
-              </div>
+            <v-col md="8" offset-md="2" class="grey lighten-2">
+              <v-textarea
+                v-model="message"
+                name="input-7-1"
+                filled
+                label="Palaute tähän"
+                auto-grow
+                :value="message"
+                maxlength="800"
+              ></v-textarea>
             </v-col>
           </v-row>
         <v-container>
@@ -88,6 +94,10 @@
           this.type = this.type_options[0];
           //Check if user is logged in has admin status, update header
           this.checkLogin();
+
+          // Focus on top of the page when changing pages
+          location.href = "#";
+          location.href = "#app";
         },
         methods: {
           async sendFeedback() {
@@ -127,7 +137,7 @@
                   this.$store.state.logged_in = true;
                   let user = JSON.parse(localStorage.getItem('user'));
                   // Check if user is admin
-                  // NOTE safer way to check this than use localstorage?
+                  //TODO safer way to check this than use localstorage?
                   user.is_admin == true ? this.$store.state.is_admin = true : this.$store.state.is_admin = false;
               }
               else {

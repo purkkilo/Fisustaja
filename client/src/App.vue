@@ -1,8 +1,8 @@
 <template>
-  <!-- Main file for the application -->  
-  <!-- html and js autoinjects to here (on index.html in server) -->
-  <div id ="app">
+    <!-- Main file for the application -->  
+    <!-- html and js autoinjects to here (on index.html in server) -->
     <v-app
+        id ="app"
         style="
         background: rgba(0,0,0,0);"
     >
@@ -17,8 +17,6 @@
             <Footer />
         </v-footer>
     </v-app>
-  </div>
-
 </template>
 
 <script>
@@ -73,7 +71,6 @@ body {
     background-size: cover;
 }
 #app .container-transparent {
-    margin-top: 50px;
     background: rgba(149, 233, 248, 0.4);
     border-radius: 2%;
     border: white 1px solid;
@@ -145,27 +142,23 @@ table.highlight>tr:hover {
     border-radius: 2%;
     border: 1px solid rgb(0, 0, 61);
 }
-#app .fixed_header{
+#app .table_header{
     width: 100%;
-    table-layout: fixed;
-    border-collapse: collapse;
 }
-#app .fixed_header tbody{
-  display:block;
+#app .table_header tbody{
   width: 100%;
   overflow: auto;
   max-height: 400px;
 }
-#app .fixed_header thead tr {
-   display: block;
-}
-#app .fixed_header thead {
+
+#app .table_header thead {
   background: rgb(0, 1, 34);
   color:#fff;
 }
-#app .fixed_header th, .fixed_header td {
-  padding: 5px;
-  width: 400px;
-  height: 50px;
+
+#app .scroll_table {
+    max-height: 500px;
+    overflow: auto;
 }
+
 </style>

@@ -29,7 +29,7 @@
     <v-tabs-items v-model="tab" style="background: rgba(0,0,0,0.4);">
       <v-tab-item :value="'overview'">
         <v-container>
-          <div v-if="!loading" class="container-transparent">
+          <v-row v-if="!loading">
               <v-row class="section">
                 <v-col v-if="cup">
                   <h1>{{cup.name}}, {{cup.year}}</h1>
@@ -39,10 +39,10 @@
                 </v-col>
               </v-row>
               <v-row v-if="competitions.length">
-                <v-col md="10" offset-md="1">
-                    <div v-if="competitions.length">
+                <v-col>
+                    <div v-if="competitions.length" class="scroll_table">
                         <table border=1 id="competitions-table" class="centered responsive-table tablearea highlight">
-                            <caption class="flow-text">Cupin kilpailut</caption>
+                            <caption class="flow-text white--text">Cupin kilpailut</caption>
                             <thead class="title">
                             <tr>
                                 <th>Kilpailun Päivämäärä</th>
@@ -90,15 +90,15 @@
                     </router-link>
                 </v-col>
               </v-row>
-          </div>
-          <div v-else>
+          </v-row>
+          <v-row v-else>
             <v-row>
               <v-col>
                 <h2>Valmistellaan Cuppia...</h2>
                 <ProgressBarQuery />
               </v-col>
             </v-row>
-          </div>
+          </v-row>
         </v-container>
       </v-tab-item>
       <v-tab-item :value="'points'">
@@ -162,6 +162,10 @@
           else {
             console.log("No cup in localstorage!");
           }
+
+          // Focus on top of the page when changing pages
+          location.href = "#";
+          location.href = "#app";
         },
         methods: {
             // fetch/update competition from database
@@ -205,7 +209,7 @@
                     this.$store.state.logged_in = true;
                     let user = JSON.parse(localStorage.getItem('user'));
                     // Check if user is admin
-                    // NOTE safer way to check this than use localstorage?
+                    //TODO safer way to check this than use localstorage?
                     user.is_admin == true ? this.$store.state.is_admin = true : this.$store.state.is_admin = false;
                 }
                 else {

@@ -1,7 +1,7 @@
 <template>
   <!-- /comp-settings -->  
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <div class="container">
+  <v-container>
     <Header />
     <Timedate />
     <div class="container-transparent">
@@ -23,109 +23,113 @@
         </v-col>
       </v-row>
       <!-- if this.loading === false, meaning app isn't loading competition data from database --> 
-      <v-container v-if="!loading" id="settings-info" class="inputarea">
-        <v-row>
-          <v-col md="8" offset-md="2">
-            <table class="striped centered responsive-table highlight">
-              <caption class="flow-text">
-                Perustiedot
-              </caption>
-              <tr>
-                <th style="border:1px solid black;">Kilpailu</th>
-                <!-- competition.name would be this.competition.name if referenced on javascript etc. --> 
-                <td style="border:1px solid black;" class="center-align">
-                  {{ competition.name }}
-                </td>
-              </tr>
-              <tr>
-                <th style="border:1px solid black;">Cup</th>
-                <td style="border:1px solid black;" class="center-align">
-                  {{ competition.cup_name }}
-                </td>
-              </tr>
-                  <tr>
-                    <th style="border:1px solid black;">Voittajan Cup sijoittumispisteet</th>
-                    <td style="border:1px solid black;" class="center-align">
-                      {{ competition.cup_placement_points }}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th style="border:1px solid black;">Kilpailijoiden Cup osallistumispisteet</th>
-                    <td style="border:1px solid black;" class="center-align">
-                      {{ competition.cup_participation_points }}
-                    </td>
-                  </tr>
-              <tr>
-                <th style="border:1px solid black;">
-                  Kilpailun pistekerroin
-                </th>
-                <td style="border:1px solid black;" class="center-align">
-                  {{ competition.cup_points_multiplier }}
-                </td>
-              </tr>
-              <tr>
-                <th style="border:1px solid black;">Aloituspäivä</th>
-                <td style="border:1px solid black;" class="center-align">
-                  {{ formatted_start_date }}
-                </td>
-              </tr>
-              <tr>
-                <th style="border:1px solid black;">Lopetuspäivämäärä</th>
-                <td style="border:1px solid black;" class="center-align">
-                  {{ formatted_end_date }}
-                </td>
-              </tr>
-              <tr>
-                <th style="border:1px solid black;">Kilpailuaika</th>
-                <td style="border:1px solid black;" class="center-align">
-                  {{ competition.start_time }} -
-                  {{ competition.end_time }}
-                </td>
-              </tr>
-            </table>
-          </v-col>
-        </v-row>
-
-        <v-row class="fishes_summary">
-          <v-col md="8" offset-md="2">
-            <p class="flow-text">Kalojen määritykset</p>
-          </v-col>
-          <v-col md="8" offset-md="2">
-            <table class="striped highlight centered responsive-table">
-              <thead>
+      <v-row v-if="!loading" id="settings-info" class="inputarea">
+        <v-col> 
+          <v-row>
+            <v-col md="10" offset-md="1" class="scroll_table">
+              <table class="striped centered responsive-table highlight">
+                <caption class="flow-text">
+                  Perustiedot
+                </caption>
                 <tr>
-                  <th>Kalalaji</th>
-                  <th>Pistekerroin</th>
-                  <th>Alamitta</th>
-                </tr>
-              </thead>
-              <tbody>
-                <!-- for every fish in this.fish_specs, show info for that fish --> 
-                <tr v-for="(fish, index) in fish_specs" :key="index">
-                  <th style="border:1px solid black;" scope="row">
-                    {{ fish.name }}
-                  </th>
-                  <td style="border:1px solid black;">
-                    x {{ fish.multiplier }}
+                  <th style="border:1px solid black;">Kilpailu</th>
+                  <!-- competition.name would be this.competition.name if referenced on javascript etc. --> 
+                  <td style="border:1px solid black;" class="center-align">
+                    {{ competition.name }}
                   </td>
-                  <td style="border:1px solid black;">{{ fish.minsize }} cm</td>
                 </tr>
-              </tbody>
-            </table>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col md="4" offset-md="4">
-            <v-btn block color="red" @click="deleteCompetition(competition._id, false)" class="white--text"><i class="material-icons left">delete_forever</i>Poista Kilpailu</v-btn>
-          </v-col>
-        </v-row>
-      </v-container>
-      <v-container v-else>
-        <h2>Haetaan määrityksiä...</h2>
-        <ProgressBarQuery />
-      </v-container>
+                <tr>
+                  <th style="border:1px solid black;">Cup</th>
+                  <td style="border:1px solid black;" class="center-align">
+                    {{ competition.cup_name }}
+                  </td>
+                </tr>
+                    <tr>
+                      <th style="border:1px solid black;">Voittajan Cup sijoittumispisteet</th>
+                      <td style="border:1px solid black;" class="center-align">
+                        {{ competition.cup_placement_points }}
+                      </td>
+                    </tr>
+                    <tr>
+                      <th style="border:1px solid black;">Kilpailijoiden Cup osallistumispisteet</th>
+                      <td style="border:1px solid black;" class="center-align">
+                        {{ competition.cup_participation_points }}
+                      </td>
+                    </tr>
+                <tr>
+                  <th style="border:1px solid black;">
+                    Kilpailun pistekerroin
+                  </th>
+                  <td style="border:1px solid black;" class="center-align">
+                    x {{ competition.cup_points_multiplier }}
+                  </td>
+                </tr>
+                <tr>
+                  <th style="border:1px solid black;">Aloituspäivä</th>
+                  <td style="border:1px solid black;" class="center-align">
+                    {{ formatted_start_date }}
+                  </td>
+                </tr>
+                <tr>
+                  <th style="border:1px solid black;">Lopetuspäivämäärä</th>
+                  <td style="border:1px solid black;" class="center-align">
+                    {{ formatted_end_date }}
+                  </td>
+                </tr>
+                <tr>
+                  <th style="border:1px solid black;">Kilpailuaika</th>
+                  <td style="border:1px solid black;" class="center-align">
+                    {{ competition.start_time }} -
+                    {{ competition.end_time }}
+                  </td>
+                </tr>
+              </table>
+            </v-col>
+          </v-row>
+
+          <v-row class="fishes_summary">
+            <v-col md="10" offset-md="1">
+              <p class="flow-text">Kalojen määritykset</p>
+            </v-col>
+            <v-col md="10" offset-md="1" class="scroll_table">
+              <table class="striped highlight centered responsive-table">
+                <thead>
+                  <tr>
+                    <th>Kalalaji</th>
+                    <th>Pistekerroin</th>
+                    <th>Alamitta</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- for every fish in this.fish_specs, show info for that fish --> 
+                  <tr v-for="(fish, index) in fish_specs" :key="index">
+                    <th style="border:1px solid black;" scope="row">
+                      {{ fish.name }}
+                    </th>
+                    <td style="border:1px solid black;">
+                      x {{ fish.multiplier }}
+                    </td>
+                    <td style="border:1px solid black;">{{ fish.minsize }} cm</td>
+                  </tr>
+                </tbody>
+              </table>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col md="4" offset-md="4">
+              <v-btn block color="red" @click="deleteCompetition(competition._id, false)" class="white--text"><i class="material-icons left">delete_forever</i>Poista Kilpailu</v-btn>
+            </v-col>
+          </v-row>
+        </v-col>
+      </v-row>
+      <v-row v-else>
+        <v-col>
+          <h2>Haetaan määrityksiä...</h2>
+          <ProgressBarQuery />
+        </v-col>
+      </v-row>
     </div>
-  </div>
+  </v-container>
 </template>
   <script>
     "use strict";
@@ -175,6 +179,10 @@
         else {
           console.log("No competition in localstorage!");
         }
+    
+        // Focus on top of the page when changing pages
+        location.href = "#";
+        location.href = "#app";
       },
       methods: {
         //Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)
@@ -184,7 +192,7 @@
                 this.$store.state.logged_in = true;
                 let user = JSON.parse(localStorage.getItem('user'));
                 // Check if user is admin
-                // NOTE safer way to check this than use localstorage?
+                //TODO safer way to check this than use localstorage?
                 user.is_admin == true ? this.$store.state.is_admin = true : this.$store.state.is_admin = false;
             }
             else {
@@ -239,7 +247,6 @@
                 }                
             }
             else {
-                //TODO change language to finland on the buttons
                 // demos for this -->  https://constkhi.github.io/vue-simple-alert/
                 this.$confirm("Oletko varma?", "Poista kilpailu", 'question')
                 .then((r) => {

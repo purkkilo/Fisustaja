@@ -11,26 +11,25 @@
           <h1>Tulokset</h1>
         </div>
       </div>
-      <v-container>
-        <v-row>
-          <v-col order="first">
-            <router-link to="/weighting">
-              <v-btn large rounded color="blue darken-4" class="white--text"><i class="material-icons left">fitness_center</i>Punnitus</v-btn>
-            </router-link>
-          </v-col>
-          <v-col>
-            <router-link to="/overview">
-              <v-btn large rounded color="primary"><i class="material-icons left">info</i>Kilpailun yleisnäkymä</v-btn>
-            </router-link>
-          </v-col>
-            <!-- If one of these has results, show "Lataa kaikki pdf" button -->   
-          <v-col order="last" v-if="results.length || team_results.length || biggest_fishes_results.length || biggest_amounts_results">
-              <v-btn large tile color="green darken-4" class="white--text" @click="saveAllAsPDF" :disabled="!biggest_amounts_results.length">
-                <i class="material-icons left">picture_as_pdf</i>Lataa kaikki taulukot
-              </v-btn>
-          </v-col>
-        </v-row>
-      </v-container>
+
+      <v-row>
+        <v-col order="first">
+          <router-link to="/weighting">
+            <v-btn large rounded color="blue darken-4" class="white--text"><i class="material-icons left">fitness_center</i>Punnitus</v-btn>
+          </router-link>
+        </v-col>
+        <v-col>
+          <router-link to="/overview">
+            <v-btn large rounded color="primary"><i class="material-icons left">info</i>Kilpailun yleisnäkymä</v-btn>
+          </router-link>
+        </v-col>
+          <!-- If one of these has results, show "Lataa kaikki pdf" button -->   
+        <v-col order="last" v-if="results.length || team_results.length || biggest_fishes_results.length || biggest_amounts_results">
+            <v-btn large tile color="green darken-4" class="white--text" @click="saveAllAsPDF" :disabled="!biggest_amounts_results.length">
+              <i class="material-icons left">picture_as_pdf</i>Lataa kaikki taulukot
+            </v-btn>
+        </v-col>
+      </v-row>
 
       <!-- Tabs -->
       <v-tabs
@@ -51,17 +50,20 @@
       <v-tabs-items v-model="tab" style="background: rgba(0,0,0,0.4);">
           <!-- Tilastoja --> 
           <v-tab-item class="inputarea" :value="'stats'">
-            <v-container>
-              <v-row style="margin-bottom:50px;margin-top:50px">
-                <v-col md="6">
-                  <canvas id="fishesChart"></canvas>
-                </v-col>
-                <v-col md="6">
-                  <canvas id="signeesChart"></canvas>
-                </v-col>
-                <v-col md="12" style="margin-top:50px">
+              <v-row style="padding-bottom:50px">
+                <v-row>
+                  <v-col md="6">
+                    <canvas id="fishesChart"></canvas>
+                  </v-col>
+                  <v-col md="6">
+                    <canvas id="signeesChart"></canvas>
+                  </v-col>
+                </v-row>
+                <v-row>
+                <v-col style="margin-top:50px">
                   <v-divider class="black"></v-divider>
                 </v-col>
+                </v-row>
               </v-row>
               <v-row v-if="competition">
                 <v-col md="8" offset-md="2">
@@ -71,7 +73,7 @@
                     </v-col>
                   </v-row>
                   <v-row>
-                    <v-col>
+                    <v-col class="scroll_table">
                       <table id="fish-weights-table" class="striped highlight centered responsive-table">
                         <thead>
                           <tr>
@@ -146,10 +148,9 @@
               <!-- Save as pdf button, is disabled if there are no results --> 
               <v-row class="row">
                 <v-col>
-                  <v-btn large tile color="green darken-4" class="white--text" @click="saveStatsAsPDF(`Tilastoja`)" :disabled="!biggest_amounts_results.length"><i class="material-icons left">picture_as_pdf</i>Lataa pdf</v-btn>
+                  <v-btn large tile color="green darken-4" class="white--text" @click="saveStatsAsPDF(`Tilastoja`)" :disabled="!biggest_amounts_results.length" style="margin-bottom:20px"><i class="material-icons left">picture_as_pdf</i>Lataa pdf</v-btn>
                 </v-col>
               </v-row>
-            </v-container>
           </v-tab-item>
 
           <!-- Normaalikilpailu -->
@@ -169,14 +170,15 @@
                   </v-col>
                 </v-row>
                 <v-row class="row" v-if="results.length">
-                  <v-col>
-                    <table id="normal-table" class="highlight centered responsive-table tablearea">
+                  <v-col class="scroll_table">
+                    <!--TODO Possibly change tables to https://vuetifyjs.com/en/components/data-tables/#data-tables ? or implement on vue-->
+                    <table id="normal-table" class="highlight centered responsive-table tablearea table_header scroll_table">
                       <caption
                         v-if="results.length"
                         class="center-align flow-text">
                         Normaalikilpailu ({{selected_normal}})
                       </caption>
-                      <thead style="background: rgb(0, 1, 34);color:#fff;">
+                      <thead>
                         <tr>
                           <th v-for="(header, index) in normal_headers" :key="index">{{header}}</th>
                         </tr>
@@ -233,7 +235,7 @@
           <!-- Tiimikilpailu --> 
           <v-tab-item class="inputarea" :value="'team-competition'" v-if="isTeamCompetition">
             <v-row>
-              <v-col md="10" offset-md="1" style="padding-top:50px;padding-bottom:20px" v-if="team_results.length">
+              <v-col md="10" offset-md="1" style="padding-top:50px;padding-bottom:20px" v-if="team_results.length"  class="scroll_table">
                 <table id="team-table" class="highlight centered responsive-table tablearea">
                   <caption
                     v-if="team_results.length"
@@ -298,7 +300,7 @@
                   </v-col>
                 </v-row>
                 <v-row v-if="biggest_fishes_results.length">
-                  <v-col style="margin-top:50px">
+                  <v-col style="margin-top:50px" class="scroll_table">
                     <table
                       id="biggest-fishes-table"
                       class="highlight centered responsive-table tablearea"
@@ -373,7 +375,7 @@
                   </v-col>
                 </v-row>
                 <v-row v-if="biggest_amounts_results.length">
-                  <v-col style="margin-top:50px">
+                  <v-col style="margin-top:50px" class="scroll_table">
                     <table
                       id="biggest-amounts-table"
                       class="highlight centered responsive-table tablearea"
@@ -433,7 +435,7 @@
       </v-tabs-items>
       <div v-if="competition">
         <v-row v-if="!loading">
-          <v-col style="margin-top:50px;margin-bottom:50px">
+          <v-col>
             <v-btn large tile color="grey darken-4" @click="refreshCompetition(competition._id)" class="white--text">
               <i class="material-icons left">update</i>Päivitä tulokset
             </v-btn>
@@ -517,6 +519,10 @@
           let competition_id = localStorage.getItem("competition");
           this.refreshCompetition(competition_id);
         }
+
+        // Focus on top of the page when changing pages
+        location.href = "#";
+        location.href = "#app";
       },
       methods: {
         // Fetch competition from database, and update all the arrays
@@ -547,6 +553,7 @@
                 this.fish_names.push(fish.name);
                 this.table_fish_names.push(fish.name);
               });
+              // TODO update all the results with some time interval from database
               this.calculateAll();
               this.drawCharts();
             } else {
@@ -674,7 +681,7 @@
                 this.$store.state.logged_in = true;
                 let user = JSON.parse(localStorage.getItem('user'));
                 // Check if user is admin
-                // NOTE safer way to check this than use localstorage?
+                //TODO safer way to check this than use localstorage?
                 user.is_admin == true ? this.$store.state.is_admin = true : this.$store.state.is_admin = false;
             }
             else {
@@ -692,8 +699,9 @@
             }
             this.calculateBiggestFishes();
             this.calculateBiggestAmounts();
-            //TODO update only this one variable to database, not the whole competition
+          
             try {
+              //TODO update only this one variable (competition.results) to database, not the whole competition
               this.competition.results = this.normal_points;
               this.$store.commit("refreshCompetition", this.competition);
               await CompetitionService.updateCompetition(
@@ -759,7 +767,7 @@
           this.normal_weights = [];
 
           // For every signee, calculate their cup points and placing
-          //TODO rework the structure!
+          //TODO rework the structure, seems more complex than it should be
           this.signees.forEach(signee => {
             cup_points_total = 0;
             // First competitor
@@ -865,7 +873,6 @@
           this.switchNormalResults();
         },
 
-        // TODO update all the results with some time interval
         calculateTeamResults: function() {
           var team_names = [];
 
@@ -925,11 +932,11 @@
                 fish => competition_fishes[i].name == fish.name
               ).weights;
               competition_fishes[i].weights += parseInt(fish_weights);
+              //TODO update only this one variable to database, not the whole competition
               competition.total_weights += parseInt(fish_weights);
             }
           });
           this.calculated_fish_weights = competition_fishes;
-          //TODO update only this one variable to database, not the whole competition
           try {
             this.competition = competition;
             this.$store.commit("refreshCompetition", this.competition);
@@ -1150,8 +1157,8 @@
           var signeeImg = document
             .getElementById("signeesChart")
             .toDataURL("image/png", 1.0);
-          doc.addImage(fishesImg, "PNG", -50, 50, 200, 100);
-          doc.addImage(signeeImg, "PNG", 60, 50, 200, 100);
+          doc.addImage(fishesImg, "PNG", -10, 50, 140, 70);
+          doc.addImage(signeeImg, "PNG", 90, 50, 140, 70);
           doc.text(100, 165, "Kalalajien määritykset", { align: "center" });
           // Table straight from html
           doc.autoTable({
@@ -1210,8 +1217,8 @@
           var signeeImg = document
             .getElementById("signeesChart")
             .toDataURL("image/png", 1.0);
-          doc.addImage(fishesImg, "PNG", -50, 50, 200, 100);
-          doc.addImage(signeeImg, "PNG", 60, 50, 200, 100);
+          doc.addImage(fishesImg, "PNG", -10, 50, 140, 70);
+          doc.addImage(signeeImg, "PNG", 90, 50, 140, 70);
           doc.text(100, 165, "Kalalajien määritykset", { align: "center" });
           // Table generated straight from html
           doc.autoTable({
@@ -1311,7 +1318,7 @@
             doc.text(100, 50, "Tiimikilpailun tulokset", { align: "center" });
             // Add results, if there are any
             if (this.team_results.length) {
-              //TODO generate table in code instead of html
+              //TODO generate table in code instead of html, like the others
               doc.autoTable({
                 html: "#team-table",
                 "styles": { "overflow": "linebreak", "cellWidth": "wrap", "rowPageBreak": "avoid", "halign": "justify", "fontSize": "8", "lineColor": "100", "lineWidth": ".25" }, 

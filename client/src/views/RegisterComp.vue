@@ -54,7 +54,7 @@
               </v-col>
             </v-row>
             <v-row>
-              <v-col md="8" offset-md="2">
+              <v-col md="12">
                 <v-row v-if="cup.name">
                   <v-col md="6" offset-md="3" class="input-fields">
                     <v-text-field
@@ -69,14 +69,16 @@
                 </v-row>
 
                 <v-row v-if="cup.name">
-                  <v-col class="d-flex" md="6" offset-md="3">
+                  <v-col md="3">
+                    <p class="center-align flow-text black--text">Valitse Cup</p>
+                  </v-col>
+                  <v-col class="d-flex" md="6">
                     <v-select
                       v-model="cup"
                       :items="cups"
                       item-text="select"
                       item-value="_id"
                       :hint="`${cup.name} (${cup.year})`"
-                      label="Cup sss"
                       :disabled="basic_info_validated"
                       outlined
                       return-object
@@ -292,7 +294,7 @@
             <v-row>
               <v-col>    
                 <v-row>
-                  <v-col md="6" offset-md="3">
+                  <v-col>
                     <p class="center-align">
                       Valitse allaolevasta laatikosta, voit myös lisätä oman kalalajin
                       kirjoittamalla
@@ -303,7 +305,7 @@
                   </v-col>
                 </v-row>
                 <v-row>
-                  <v-col md="6" offset-md="3">
+                  <v-col>
                     <vue-select
                       class="col s10 push-s1 flow-text"
                       taggable
@@ -362,7 +364,7 @@
               </v-col>
             </v-row>
             <v-row>
-              <v-col md="8" offset-md="2" class="specs" id="select_specs">
+              <v-col  class="specs" id="select_specs">
                 <ul id="fish_specs" v-if="selected.length">
                   <li class="row"
                     id="fish_spec"
@@ -442,7 +444,7 @@
         <v-tab-item class="inputarea" :value="'summary'">
           <v-container v-if="!loading">
             <v-row class="basic_summary">
-              <v-col md="8" offset-md="2">
+              <v-col >
                 <table class="striped centered responsive-table highlight">
                   <caption class="flow-text">
                     Perustiedot
@@ -509,10 +511,10 @@
               </v-col>
             </v-row>
             <v-row class="fishes_summary">           
-              <v-col md="8" offset-md="2">
+              <v-col md="12">
                 <p class="flow-text">Kalojen määritykset</p>
               </v-col>
-              <v-col md="8" offset-md="2">
+              <v-col md="12">
                 <table class="striped highlight centered responsive-table">
                   <thead>
                     <tr>
@@ -628,8 +630,12 @@
         var collabs = document.querySelectorAll(".collapsible");
         var instances3 = M.Collapsible.init(collabs, options_picker);
         /* eslint-enable no-unused-vars */
-        moment.locale("fi");
+        moment.locale("fi"); //FIXME redundant declaration?
         this.getCups();
+
+        // Focus on top of the page when changing pages
+        location.href = "#";
+        location.href = "#app";
       },
       methods: {
         changeTab: function(id) {
@@ -649,7 +655,7 @@
                   this.cups.forEach(cup => {
                     cup.select = `${cup.name} (${cup.year})`;
                   });
-                  this.cup = this.cups[0];
+                  this.cup = this.cups[this.cups.length - 1];
               }
           }catch(err) {
               this.error = err.message;
@@ -663,7 +669,7 @@
                 this.$store.state.logged_in = true;
                 let user = JSON.parse(localStorage.getItem('user'));
                 // Check if user is admin
-                // NOTE safer way to check this than use localstorage?
+                //TODO safer way to check this than use localstorage?
                 user.is_admin == true ? this.$store.state.is_admin = true : this.$store.state.is_admin = false;
             }
             else {
@@ -829,7 +835,7 @@
           // If there are at least one fish chosen from vue-select
           if (this.selected.length) {
             let temp_array = [];
-            //TODO better solution for long names
+            //TODO better solution for long names, change to vuetify combobox(https://vuetifyjs.com/en/components/combobox/) or vuetify select(https://vuetifyjs.com/en/components/selects/)
             this.selected.forEach(fish => {
               if(fish.length > 40) {
                 let shortened = fish.slice(0,40);
@@ -850,7 +856,7 @@
           }
         },
         // Generate random colors for the fish chart in Result.vue (since adding fishes is dynamic)
-        //TODO look for 8-15 good colors to add
+        //TODO look for 8-15 good colors to add/choose from, maybe with color picker next to fish name
         generateRandomColor: function() {
             var randomColor = '#' + Math.floor(Math.random()*16777215).toString(16);
             return randomColor;

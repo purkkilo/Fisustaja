@@ -38,6 +38,10 @@
             localStorage.removeItem("competition");
             this.$store.commit('refreshCup', null);
             localStorage.removeItem("cup");
+
+            // Focus on top of the page when changing pages
+            location.href = "#";
+            location.href = "#app";
         },
         methods: {
             //Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)
@@ -47,7 +51,7 @@
                     this.$store.state.logged_in = true;
                     let user = JSON.parse(localStorage.getItem('user'));
                     // Check if user is admin
-                    // NOTE safer way to check this than use localstorage?
+                    //TODO safer way to check this than use localstorage?
                     user.is_admin == true ? this.$store.state.is_admin = true : this.$store.state.is_admin = false;
                 }
                 else {

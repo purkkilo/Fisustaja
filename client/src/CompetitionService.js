@@ -169,7 +169,6 @@ class CompetitionService {
       return axios.put(`${url}${id}`, competition);
     }
 
-    // TODO Delete this when deployed
     static deleteCompetition(id) {
         return axios.delete(`${url}${id}`);
     }

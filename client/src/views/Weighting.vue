@@ -1,7 +1,7 @@
 <template>
   <!-- /weighting -->  
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <div class="container">
+  <v-container>
     <Header />
     <Timedate />
     <div class="container-transparent">
@@ -9,25 +9,25 @@
         <div class="col s12 center-align"><h1>Punnitus</h1></div>
       </div>
       <!-- Navigation to other competition pages -->
-      <v-container>
-        <v-row>
-          <v-col order="first">
-            <router-link to="/signing">
-              <v-btn large rounded color="blue" class="white--text"><i class="material-icons left">edit</i>Ilmoittautuminen</v-btn>
-            </router-link>
-          </v-col>
-          <v-col>
-            <router-link to="/overview">
-              <v-btn large rounded color="primary"><i class="material-icons left">info</i>Kilpailun yleisnäkymä</v-btn>
-            </router-link>
-          </v-col> 
-          <v-col  order="last">
-            <router-link to="/results">
-              <v-btn large rounded color="green" class="white--text"><i class="material-icons left">emoji_events</i>Tulokset</v-btn>
-            </router-link>
-          </v-col>
-        </v-row>
-      </v-container>
+
+      <v-row>
+        <v-col order="first">
+          <router-link to="/signing">
+            <v-btn large rounded color="blue" class="white--text"><i class="material-icons left">edit</i>Ilmoittautuminen</v-btn>
+          </router-link>
+        </v-col>
+        <v-col>
+          <router-link to="/overview">
+            <v-btn large rounded color="primary"><i class="material-icons left">info</i>Kilpailun yleisnäkymä</v-btn>
+          </router-link>
+        </v-col> 
+        <v-col  order="last">
+          <router-link to="/results">
+            <v-btn large rounded color="green" class="white--text"><i class="material-icons left">emoji_events</i>Tulokset</v-btn>
+          </router-link>
+        </v-col>
+      </v-row>
+
 
       <!-- Tabs -->
       <v-tabs
@@ -44,364 +44,372 @@
       <v-tabs-items v-model="tab" style="background: rgba(0,0,0,0.4);">
         <!-- "Punnitus" tab --> 
         <v-tab-item class="inputarea" :value="'weighting'">
-          <v-container v-if="!loading_site">
-            <v-row v-if="signees.length">
-              <v-col>
-                <v-row>
-                  <v-col>
-                    <p class="flow-text center">Punnitus</p>
-                  </v-col>
-                </v-row>
-                <v-row v-if="notification">
-                  <v-col>
-                    <v-alert type="success">
-                      {{ notification }}
-                    </v-alert>  
-                  </v-col>
-                </v-row>
-                <v-row v-if="!loading">
-                  <v-col class="input-fields" md="6" offset-md="3" style="padding:20px;">
-                    <v-col md="6">
-                      <p class="flow-text">Venekunnan numero</p>
+          <v-row v-if="!loading_site">
+            <v-col>
+              <v-row v-if="signees.length">
+                <v-col>
+                  <v-row>
+                    <v-col>
+                      <p class="flow-text center">Punnitus</p>
                     </v-col>
-                    <v-col class="d-flex" md="6">
-                      <vue-select
-                        class="flow-text input-fields"
-                        label="boat_number"
-                        placeholder="Valitse tai hae veneen numero"
-                        v-model="boat_number_input"
-                        v-on:input="fetchFromDatabase(boat_number_input ? boat_number_input.boat_number : -1)"
-                        :options="sortedArray"
-                      />
+                  </v-row>
+                  <v-row v-if="notification">
+                    <v-col>
+                      <v-alert type="success">
+                        {{ notification }}
+                      </v-alert>  
                     </v-col>
-                                      
-                  </v-col>
-                </v-row>
-
-                <v-row v-if="competition_boat">
-                  <v-col md="8" offset-md="2">
-                    <v-row class="title">
-                      <v-col md="12">
-                        <p class="flow-text">Valitun venekunnan tiedot</p>
-                      </v-col>
-                      <v-col md="4">
+                  </v-row>
+                  <v-row v-if="!loading">
+                    <v-col class="input-fields" md="6" offset-md="3" style="padding:20px;">
+                      <v-col md="6">
                         <p class="flow-text">Venekunnan numero</p>
                       </v-col>
-                      <v-col md="4">
-                        <p class="flow-text">Kapteeni</p>
+                      <v-col class="d-flex" md="6">
+                        <vue-select
+                          class="flow-text input-fields"
+                          label="boat_number"
+                          placeholder="Valitse tai hae veneen numero"
+                          v-model="boat_number_input"
+                          v-on:input="fetchFromDatabase(boat_number_input ? boat_number_input.boat_number : -1)"
+                          :options="sortedArray"
+                        />
                       </v-col>
-                      <v-col md="4">
-                        <p class="flow-text">Varakapteeni</p>
-                      </v-col>
-                      <v-col md="4" class="input-fields">
-                        <p class="flow-text">({{ competition_boat.boat_number }})</p>
-                      </v-col>
-                      <v-col md="4" class="input-fields">
-                        <p class="flow-text">{{ competition_boat.captain_name }}</p>
-                      </v-col>
-                      <v-col md="4" class="input-fields">
-                        <p class="flow-text">
-                          {{ competition_boat.temp_captain_name }}
-                        </p>
-                      </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col md="4" offset-md="4">
-                        <v-btn large block color="yellow" @click="clearInputs"><i class="material-icons left">backspace</i>Peruuta valinta</v-btn>
-                      </v-col>
-                    </v-row>
-                  </v-col>
-                  <v-col md="12" style="margin:50px 50px">
-                    <v-divider class="black"></v-divider>
-                  </v-col>
-                  <v-col md="10" offset-md="1">
-                    <v-col>
-                        <ul
-                          id="fish_weights"
-                          v-if="$store.getters.getCompetitionFishes.length"
-                        >
-                          <li>
-                            <v-row v-if="!loading_fish">
-                              <v-col md="3">
-                                <span
-                                  class="flow-text"
-                                >Suurin kala?</span
-                                >
-                              </v-col>                       
-                              <v-col md="3" class="input-fields">
-                                <vue-select
-                                  class="flow-text"
-                                  label="name"
-                                  placeholder="Valitse kalalaji painamalla"
-                                  v-model="selected_fish"
-                                  :options="competition_fishes"
-                                />
-                              </v-col>                         
-                              <v-col class="input-fields" md="3">
-                                <v-text-field
-                                  label="Paino grammoina"
-                                  v-model="biggest_fish"
-                                  type="number"
-                                  @paste.prevent
-                                  @keypress="isNumber($event)"
-                                  value="0"
-                                  step="50"
-                                  min="0"
-                                  :rules="number_rules"
-                                  :loading="loading_fish"
-                                />
-                              </v-col>                              
-                              <v-col md="3" >
-                                <v-btn v-if="selected_fish && biggest_fish" large tile color="green" @click="saveBiggestFish"><i class="material-icons left">add_box</i>Lisää kilpailuun</v-btn>
-                              </v-col>
-                            </v-row>
-                            <v-row v-else>
-                              <p class="flow-text">Lisätään kala tietokantaan...</p>
-                              <ProgressBarQuery />
-                            </v-row>
-                            <v-row>
-                              <v-col md="12">
-                                <v-divider class="black"></v-divider>
-                              </v-col>
-                            </v-row>
-                          </li>
-                          <li
-                            v-for="(fish, index) in $store.getters
-                              .getCompetitionFishes"
-                            :key="fish.name"
-                          >
-                            <v-row>
-                              <v-col md="6">
-                                <span class="flow-text">{{ index + 1 }}. </span
-                                ><span
-                                  class="flow-text"
-                                  :id="'fish_' + (index + 1) + '_name'"
-                                  >{{ fish.name }}</span
-                                >
-                              </v-col>
-                              <v-col md="6" class="input-fields">
-                                <v-text-field
-                                  label="Paino grammoina"
-                                  :id="'fish_' + (index + 1) + '_weight'"
-                                  type="number"
-                                  @paste.prevent
-                                  @keypress="isNumber($event)"
-                                  value="0"
-                                  step="50"
-                                  min="0"
-                                  :rules="number_rules"
-                                  :loading="loading_fish"
-                                />
-                              </v-col>
-                            </v-row>
-                            <v-row>
-                              <v-col md="12">
-                                <v-divider class="black"></v-divider>
-                              </v-col>
-                            </v-row>
-                          </li>
-                        </ul>
-                      <v-row v-if="!loading">
-                        <v-col>
-                          <v-btn large tile color="red" @click="saveToDatabase(true)"><i class="material-icons left">delete_forever</i>Nollaa</v-btn>
+                                        
+                    </v-col>
+                  </v-row>
+
+                  <v-row v-if="competition_boat">
+                    <v-col md="8" offset-md="2">
+                      <v-row class="title">
+                        <v-col md="12">
+                          <p class="flow-text">Valitun venekunnan tiedot</p>
                         </v-col>
-                        <v-col>
-                          <v-btn large tile color="green" @click="saveToDatabase(false)"><i class="material-icons left">check</i>Tallenna</v-btn>
+                        <v-col md="4">
+                          <p class="flow-text">Venekunnan numero</p>
+                        </v-col>
+                        <v-col md="4">
+                          <p class="flow-text">Kapteeni</p>
+                        </v-col>
+                        <v-col md="4">
+                          <p class="flow-text">Varakapteeni</p>
+                        </v-col>
+                        <v-col md="4" class="input-fields">
+                          <p class="flow-text">({{ competition_boat.boat_number }})</p>
+                        </v-col>
+                        <v-col md="4" class="input-fields">
+                          <p class="flow-text">{{ competition_boat.captain_name }}</p>
+                        </v-col>
+                        <v-col md="4" class="input-fields">
+                          <p class="flow-text">
+                            {{ competition_boat.temp_captain_name }}
+                          </p>
                         </v-col>
                       </v-row>
-                      <v-row v-else>
-                        <v-col>
-                          <p class="flow-text">Päivitetään tiedot tietokantaan...</p>
-                          <ProgressBarQuery />
+                      <v-row>
+                        <v-col md="4" offset-md="4">
+                          <v-btn large block color="yellow" @click="clearInputs"><i class="material-icons left">backspace</i>Peruuta valinta</v-btn>
                         </v-col>
                       </v-row>
                     </v-col>
-                  </v-col>
-                </v-row>
-                <v-row v-else>
-                  <v-col>
-                    <v-alert v-if="loading" type="info">
-                    </v-alert>
-                    <v-alert v-if="!searched" type="warning">
-                      Venekuntaa ei valittuna
-                    </v-alert>
-                    <v-alert v-else type="error">
-                      Numerolla ei löytynyt venekuntaa tietokannasta!
-                    </v-alert>
-                  </v-col>
-                </v-row >
-              </v-col>
-            </v-row>
-            <v-row v-else>
-              <v-col>
-                <p class="flow-text">Kilpailussa ei vielä ilmoittautuneita!</p>
-              </v-col>
-            </v-row>
-          </v-container>
-          <v-container v-if="loading_site">
-            <h2>Haetaan veneitä...</h2>
-            <ProgressBarQuery />        
-          </v-container>
+                    <v-col md="12" style="margin:50px 50px">
+                      <v-divider class="black"></v-divider>
+                    </v-col>
+                    <v-col md="10" offset-md="1">
+                      <v-col>
+                          <ul
+                            id="fish_weights"
+                            v-if="$store.getters.getCompetitionFishes.length"
+                          >
+                            <li>
+                              <v-row v-if="!loading_fish">
+                                <v-col md="3">
+                                  <span
+                                    class="flow-text"
+                                  >Suurin kala?</span
+                                  >
+                                </v-col>                       
+                                <v-col md="3" class="input-fields">
+                                  <vue-select
+                                    class="flow-text"
+                                    label="name"
+                                    placeholder="Valitse kalalaji painamalla"
+                                    v-model="selected_fish"
+                                    :options="competition_fishes"
+                                  />
+                                </v-col>                         
+                                <v-col class="input-fields" md="3">
+                                  <v-text-field
+                                    label="Paino grammoina"
+                                    v-model="biggest_fish"
+                                    type="number"
+                                    @paste.prevent
+                                    @keypress="isNumber($event)"
+                                    value="0"
+                                    step="50"
+                                    min="0"
+                                    :rules="number_rules"
+                                    :loading="loading_fish"
+                                  />
+                                </v-col>                              
+                                <v-col md="3" >
+                                  <v-btn v-if="selected_fish && biggest_fish" large tile color="green" @click="saveBiggestFish"><i class="material-icons left">add_box</i>Lisää kilpailuun</v-btn>
+                                </v-col>
+                              </v-row>
+                              <v-row v-else>
+                                <p class="flow-text">Lisätään kala tietokantaan...</p>
+                                <ProgressBarQuery />
+                              </v-row>
+                              <v-row>
+                                <v-col md="12">
+                                  <v-divider class="black"></v-divider>
+                                </v-col>
+                              </v-row>
+                            </li>
+                            <li
+                              v-for="(fish, index) in $store.getters
+                                .getCompetitionFishes"
+                              :key="fish.name"
+                            >
+                              <v-row>
+                                <v-col md="6">
+                                  <span class="flow-text">{{ index + 1 }}. </span
+                                  ><span
+                                    class="flow-text"
+                                    :id="'fish_' + (index + 1) + '_name'"
+                                    >{{ fish.name }}</span
+                                  >
+                                </v-col>
+                                <v-col md="6" class="input-fields">
+                                  <v-text-field
+                                    label="Paino grammoina"
+                                    :id="'fish_' + (index + 1) + '_weight'"
+                                    type="number"
+                                    @paste.prevent
+                                    @keypress="isNumber($event)"
+                                    value="0"
+                                    step="50"
+                                    min="0"
+                                    :rules="number_rules"
+                                    :loading="loading_fish"
+                                  />
+                                </v-col>
+                              </v-row>
+                              <v-row>
+                                <v-col md="12">
+                                  <v-divider class="black"></v-divider>
+                                </v-col>
+                              </v-row>
+                            </li>
+                          </ul>
+                        <v-row v-if="!loading">
+                          <v-col>
+                            <v-btn large tile color="red" @click="saveToDatabase(true)"><i class="material-icons left">delete_forever</i>Nollaa</v-btn>
+                          </v-col>
+                          <v-col>
+                            <v-btn large tile color="green" @click="saveToDatabase(false)"><i class="material-icons left">check</i>Tallenna</v-btn>
+                          </v-col>
+                        </v-row>
+                        <v-row v-else>
+                          <v-col>
+                            <p class="flow-text">Päivitetään tiedot tietokantaan...</p>
+                            <ProgressBarQuery />
+                          </v-col>
+                        </v-row>
+                      </v-col>
+                    </v-col>
+                  </v-row>
+                  <v-row v-else>
+                    <v-col>
+                      <v-alert v-if="loading" type="info">
+                      </v-alert>
+                      <v-alert v-if="!searched" type="warning">
+                        Venekuntaa ei valittuna
+                      </v-alert>
+                      <v-alert v-else type="error">
+                        Numerolla ei löytynyt venekuntaa tietokannasta!
+                      </v-alert>
+                    </v-col>
+                  </v-row >
+                </v-col>
+              </v-row>
+              <v-row v-else>
+                <v-col>
+                  <p class="flow-text">Kilpailussa ei vielä ilmoittautuneita!</p>
+                </v-col>
+              </v-row>
+            </v-col>
+          </v-row>
+          <v-row v-if="loading_site">
+            <v-col>
+              <h2>Haetaan veneitä...</h2>
+              <ProgressBarQuery />     
+            </v-col>
+          </v-row>
         </v-tab-item>
 
         <!-- "Tilannekatsaus" tab --> 
         <v-tab-item class="inputarea" :value="'situation'">
-          <v-container>
-            <v-row>
-              <v-col md="8" offset-md="2">
-                <p class="flow-text">Tilannekatsaus</p>
-              </v-col>               
-            </v-row>
+          <v-row>
+            <v-col>
+              <v-row style="margin-top:20px">
+                <v-col md="8" offset-md="2">
+                  <p class="flow-text">Tilannekatsaus</p>
+                </v-col>               
+              </v-row>
 
-            <v-row>
-              <v-col md="8" offset-md="2">
-                <table
-                  id="situation-table"
-                  class="highlight centered responsive-table fixed_header tablearea"
-                  v-if="result_signees.length"
-                >
-                  <thead>
-                    <tr>
-                      <th>Sijoitus</th>
-                      <th>Numero</th>
-                      <th>Kapteeni</th>
-                      <th>Pisteet</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      @click="selectRow(signee.id, signee.boat_number)"
-                      :class="{ selected: selected_id == signee.id }"
-                      v-for="(signee, index) in result_signees"
-                      :key="index"
+              <v-row>
+                <v-col md="8" offset-md="2" class="scroll_table">
+                    <table
+                      id="situation-table"
+                      class="highlight centered responsive-table table_header tablearea"
+                      v-if="result_signees.length"
                     >
-                      <th v-if="signee.total_points > 0" class="center-align" style="border:1px solid black">
-                        {{ index + 1 }}.
-                      </th>
-                      <th v-else class="center-align" style="border:1px solid black">
-                        -
-                      </th>
-                      <td style="border:1px solid black">
-                        ({{ signee.boat_number }})
-                      </td>
-                      <td style="border:1px solid black">
-                        {{ signee.captain_name }}
-                      </td>
-                      <td style="border:1px solid black">
-                        {{ signee.total_points.toLocaleString() }} p
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>               
-              </v-col>
-            </v-row>
-            <v-row
-              v-if="selected_id && result_signees.length"
-            >
-              <v-col md="8" offset-md="2" style="margin-top:30px;margin-bottom:30px">
-                <v-btn large tile color="blue" @click="searchSelected"><i class="material-icons left">assignment_return</i>Siirry punnitukseen</v-btn>
-              </v-col>
-            </v-row>
-            <v-row v-else>
-              <v-col md="8" offset-md="2" style="margin-top:30px;margin-bottom:30px">
-                <p
-                  v-if="result_signees.length"
-                  class="flow-text"
-                >
-                  Voit siirtyä punnitukseen myös klikkaamalla haluamaasi riviä
-                  taulukosta ja painamalla ilmestyvää nappulaa
-                </p>
-                <h3 v-else class="flow-text">Ei vielä tuloksia!</h3>
-              </v-col>
-            </v-row> 
-          </v-container>
+                    <thead>
+                      <tr>
+                        <th>Sijoitus</th>
+                        <th>Numero</th>
+                        <th>Kapteeni</th>
+                        <th>Pisteet</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        @click="selectRow(signee.id, signee.boat_number)"
+                        :class="{ selected: selected_id == signee.id }"
+                        v-for="(signee, index) in result_signees"
+                        :key="index"
+                      >
+                        <th v-if="signee.total_points > 0" class="center-align" style="border:1px solid black">
+                          {{ index + 1 }}.
+                        </th>
+                        <th v-else class="center-align" style="border:1px solid black">
+                          -
+                        </th>
+                        <td style="border:1px solid black">
+                          ({{ signee.boat_number }})
+                        </td>
+                        <td style="border:1px solid black">
+                          {{ signee.captain_name }}
+                        </td>
+                        <td style="border:1px solid black">
+                          {{ signee.total_points.toLocaleString() }} p
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>  
+                </v-col>
+              </v-row>
+              <v-row
+                v-if="selected_id && result_signees.length"
+              >
+                <v-col md="8" offset-md="2" style="margin-top:30px;margin-bottom:30px">
+                  <v-btn large tile color="blue" @click="searchSelected"><i class="material-icons left">assignment_return</i>Siirry punnitukseen</v-btn>
+                </v-col>
+              </v-row>
+              <v-row v-else>
+                <v-col md="8" offset-md="2" style="margin-top:30px;margin-bottom:30px">
+                  <p
+                    v-if="result_signees.length"
+                    class="flow-text"
+                  >
+                    Voit siirtyä punnitukseen myös klikkaamalla haluamaasi riviä
+                    taulukosta ja painamalla ilmestyvää nappulaa
+                  </p>
+                  <h3 v-else class="flow-text">Ei vielä tuloksia!</h3>
+                </v-col>
+              </v-row> 
+            </v-col>
+          </v-row>
         </v-tab-item>
 
         <!-- "Vielä vesillä" tab -->
         <v-tab-item class="inputarea" :value="'onwater'">
-          <v-container>
-            <v-row>
-              <v-col md="8" offset-md="2" style="margin-top:100px;">
-                <p
-                  v-if="still_on_water.length"
-                  class="flow-text"
-                >
-                  Venekunnat, jotka ovat vielä vesillä
-                </p>
-                <p
-                  v-else-if="!signees.length"
-                  class="flow-text red--text"
-                >
-                  Kilpailussa ei vielä ilmoittautuneita!
-                </p>
-                <p v-else class="flow-text green--text">
-                  Kaikki venekunnat palanneet maaliin!
-                </p>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col md="8" offset-md="2">
-                <table
-                  id="on-water-table"
-                  class="highlight centered responsive-table fixed_header tablearea"
-                  v-if="still_on_water.length"
-                >
-                  <thead>
-                    <tr>
-                      <th>Nro.</th>
-                      <th>Kapteeni</th>
-                      <th>Varakapteeni</th>
-                      <th>Lähtöpaikka</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      @click="selectRow(signee.id, signee.boat_number)"
-                      :class="{ selected: selected_id == signee.id }"
-                      v-for="(signee, index) in still_on_water"
-                      :key="index"
-                    >
-                      <th class="center-align" style="border:1px solid black">
-                        ({{ signee.boat_number }})
-                      </th>
-                      <td style="border:1px solid black">
-                        {{ signee.captain_name }}
-                      </td>
-                      <td style="border:1px solid black">
-                        {{ signee.temp_captain_name }}
-                      </td>
-                      <td style="border:1px solid black">
-                        {{ signee.starting_place }}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </v-col>
-            </v-row>
-            <v-row
-              v-if="selected_id && still_on_water.length"
-            >
-              <v-col md="8" offset-md="2" style="margin-top:30px;margin-bottom:30px">
-                <v-btn large tile color="blue" @click="searchSelected"><i class="material-icons left">assignment_return</i>Siirry punnitukseen</v-btn>
-              </v-col>
-            </v-row>
-            <v-row v-else>
-              <v-col md="8" offset-md="2" style="margin-top:30px;margin-bottom:30px">
-                <p
-                  v-if="still_on_water.length"
-                  class="flow-text"
-                >
-                  Voit siirtyä punnitukseen myös klikkaamalla haluamaasi riviä
-                  taulukosta ja painamalla ilmestyvää nappulaa
-                </p>
-                <v-btn v-if="still_on_water.length" large tile color="grey darken-4" class="white--text" @click="allFinished" :loading="loading"><i class="material-icons left">check_circle_outline</i>Kaikki saapuneet maaliin</v-btn>
-              </v-col>
-            </v-row>        
-          </v-container>
+          <v-row>
+            <v-col>
+              <v-row>
+                <v-col md="8" offset-md="2" class="input-fields" style="margin-top:100px;">
+                  <p
+                    v-if="still_on_water.length"
+                    class="flow-text"
+                  >
+                    Venekunnat, jotka ovat vielä vesillä
+                  </p>
+                  <p
+                    v-else-if="!signees.length"
+                    class="flow-text red--text"
+                  >
+                    Kilpailussa ei vielä ilmoittautuneita!
+                  </p>
+                  <p v-else class="flow-text green--text">
+                    Kaikki venekunnat palanneet maaliin!
+                  </p>
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col md="8" offset-md="2" class="scroll_table">
+                  <table
+                    id="on-water-table"
+                    class="highlight centered responsive-table table_header tablearea"
+                    v-if="still_on_water.length"
+                  >
+                    <thead>
+                      <tr>
+                        <th>Nro.</th>
+                        <th>Kapteeni</th>
+                        <th>Varakapteeni</th>
+                        <th>Lähtöpaikka</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        @click="selectRow(signee.id, signee.boat_number)"
+                        :class="{ selected: selected_id == signee.id }"
+                        v-for="(signee, index) in still_on_water"
+                        :key="index"
+                      >
+                        <th class="center-align" style="border:1px solid black">
+                          ({{ signee.boat_number }})
+                        </th>
+                        <td style="border:1px solid black">
+                          {{ signee.captain_name }}
+                        </td>
+                        <td style="border:1px solid black">
+                          {{ signee.temp_captain_name }}
+                        </td>
+                        <td style="border:1px solid black">
+                          {{ signee.starting_place }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </v-col>
+              </v-row>
+              <v-row
+                v-if="selected_id && still_on_water.length"
+              >
+                <v-col md="8" offset-md="2" style="margin-top:30px;margin-bottom:30px">
+                  <v-btn large tile color="blue" @click="searchSelected"><i class="material-icons left">assignment_return</i>Siirry punnitukseen</v-btn>
+                </v-col>
+              </v-row>
+              <v-row v-else>
+                <v-col md="8" offset-md="2" style="margin-top:30px;margin-bottom:30px">
+                  <p
+                    v-if="still_on_water.length"
+                    class="flow-text"
+                  >
+                    Voit siirtyä punnitukseen myös klikkaamalla haluamaasi riviä
+                    taulukosta ja painamalla ilmestyvää nappulaa
+                  </p>
+                  <v-btn v-if="still_on_water.length" large tile color="grey darken-4" class="white--text" @click="allFinished" :loading="loading"><i class="material-icons left">check_circle_outline</i>Kaikki saapuneet maaliin</v-btn>
+                </v-col>
+              </v-row>
+            </v-col>        
+          </v-row>
         </v-tab-item>
       </v-tabs-items>
     </div>
-  </div>
+  </v-container>
 </template>
 <script>
     "use strict"
@@ -466,6 +474,10 @@
             let competition_id = localStorage.getItem('competition');
             this.refreshCompetition(competition_id);
         }
+
+        // Focus on top of the page when changing pages
+        location.href = "#";
+        location.href = "#app";
       },
       methods: {
         // Fetch competition from database, and update variables
@@ -497,7 +509,7 @@
                 this.$store.state.logged_in = true;
                 let user = JSON.parse(localStorage.getItem('user'));
                 // Check if user is admin
-                // NOTE safer way to check this than use localstorage?
+                //TODO safer way to check this than use localstorage?
                 user.is_admin == true ? this.$store.state.is_admin = true : this.$store.state.is_admin = false;
             }
             else {

@@ -1,7 +1,7 @@
 <template>
     <!-- /admin -->  
     <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-    <div class="container">
+    <v-container>
         <Header />
         <Timedate />
 
@@ -20,259 +20,267 @@
         </v-tabs>
         <v-tabs-items v-model="tab" style="background: rgba(0,0,0,0.4);">
             <v-tab-item :value="'overview'">
-                <v-container>
-                    <v-row>
-                        <v-col>
-                          <v-btn large rounded color="yellow" @click="$router.go(-1)"><i class="material-icons left">history</i>Palaa takaisin</v-btn>
-                        </v-col>
-                    </v-row>
-                    <v-row>
-                        <v-col>
-                            <h1>Yleistietoja</h1>
-                        </v-col>
-                    </v-row>
-                    <!-- if this.loading === false, meaning app isn't loading feedback from database, then show this div --> 
-                    <v-row v-if="!loading">
-                        <v-col class="inputarea black--text" md="6" offset-md="3">
-                            <p v-if="feedback.length" class="flow-text"><i class="material-icons">feedback</i> Palautetta annettu: {{feedback.length}} kpl</p>
-                            <p v-else class="flow-text"><i class="material-icons">feedback</i> Ei palautetta!</p>
-                        </v-col>
-                    </v-row>
-                    <v-row v-else>
-                        <v-col md="6" offset-md="3">
-                            <h3>Ladataan palautteita...</h3>
-                            <ProgressBarQuery />
-                        </v-col>
-                    </v-row>
-                    <!-- if this.loading_users === false, meaning app isn't loading users, then show this div --> 
-                    <v-row v-if="!loading_users">
-                        <v-col class="inputarea black--text" md="6" offset-md="3">
-                            <p v-if="users.length" class="flow-text"><i class="material-icons">account_circle</i> Käyttäjiä yhteensä: {{users.length}} kpl</p>
-                            <p v-else class="flow-text"><i class="material-icons">account_circle</i> Ei käyttäjiä!</p>
-                        </v-col>
-                    </v-row>
-                    <v-row v-else>
-                        <v-col md="6" offset-md="3">
-                            <h3>Ladataan käyttäjiä...</h3>
-                            <ProgressBarQuery />
-                        </v-col>
-                    </v-row>
-                    <!-- if this.loading_competitions === false, meaning app isn't loading competitions, then show this div --> 
-                    <v-row v-if="!loading_competitions">
-                        <v-col class="inputarea black--text" md="6" offset-md="3">
-                            <p v-if="competitions.length" class="flow-text"><i class="material-icons">directions_boat</i> Kilpailuja yhteensä: {{competitions.length}} kpl</p>
-                            <p v-else class="flow-text"><i class="material-icons">directions_boat</i> Ei kilpailuja!</p>
-                        </v-col>
-                    </v-row>
-                    <v-row v-else>
-                        <v-col md="6" offset-md="3">
-                            <h3>Ladataan kilpailuja...</h3>
-                            <ProgressBarQuery />  
-                        </v-col>
-                    </v-row>
-                </v-container>
+                <v-row>
+                    <v-col>
+                        <v-row>
+                            <v-col>
+                            <v-btn large rounded color="yellow" @click="$router.go(-3)"><i class="material-icons left">history</i>Palaa takaisin</v-btn>
+                            </v-col>
+                        </v-row>
+                        <v-row>
+                            <v-col>
+                                <h1>Yleistietoja</h1>
+                            </v-col>
+                        </v-row>
+                        <!-- if this.loading === false, meaning app isn't loading feedback from database, then show this div --> 
+                        <v-row v-if="!loading">
+                            <v-col class="inputarea black--text" md="6" offset-md="3">
+                                <p v-if="feedback.length" class="flow-text"><i class="material-icons">feedback</i> Palautetta annettu: {{feedback.length}} kpl</p>
+                                <p v-else class="flow-text"><i class="material-icons">feedback</i> Ei palautetta!</p>
+                            </v-col>
+                        </v-row>
+                        <v-row v-else>
+                            <v-col md="6" offset-md="3">
+                                <h3>Ladataan palautteita...</h3>
+                                <ProgressBarQuery />
+                            </v-col>
+                        </v-row>
+                        <!-- if this.loading_users === false, meaning app isn't loading users, then show this div --> 
+                        <v-row v-if="!loading_users">
+                            <v-col class="inputarea black--text" md="6" offset-md="3">
+                                <p v-if="users.length" class="flow-text"><i class="material-icons">account_circle</i> Käyttäjiä yhteensä: {{users.length}} kpl</p>
+                                <p v-else class="flow-text"><i class="material-icons">account_circle</i> Ei käyttäjiä!</p>
+                            </v-col>
+                        </v-row>
+                        <v-row v-else>
+                            <v-col md="6" offset-md="3">
+                                <h3>Ladataan käyttäjiä...</h3>
+                                <ProgressBarQuery />
+                            </v-col>
+                        </v-row>
+                        <!-- if this.loading_competitions === false, meaning app isn't loading competitions, then show this div --> 
+                        <v-row v-if="!loading_competitions">
+                            <v-col class="inputarea black--text" md="6" offset-md="3">
+                                <p v-if="competitions.length" class="flow-text"><i class="material-icons">directions_boat</i> Kilpailuja yhteensä: {{competitions.length}} kpl</p>
+                                <p v-else class="flow-text"><i class="material-icons">directions_boat</i> Ei kilpailuja!</p>
+                            </v-col>
+                        </v-row>
+                        <v-row v-else>
+                            <v-col md="6" offset-md="3">
+                                <h3>Ladataan kilpailuja...</h3>
+                                <ProgressBarQuery />  
+                            </v-col>
+                        </v-row>
+                    </v-col>
+                </v-row>
             </v-tab-item>
             <v-tab-item :value="'users'">
-                <v-container>
-                    <v-row>
-                        <v-col>
-                            <v-btn large rounded color="yellow" @click="$router.go(-1)"><i class="material-icons left">history</i>Palaa takaisin</v-btn>
-                        </v-col>
-                    </v-row>
-                    <v-row>
-                        <v-col>
-                            <h1>Käyttäjät</h1>
-                        </v-col>
-                    </v-row>
-                    <v-row v-if="users.length">
-                        <v-col>
-                            <ul
-                            id="fish_weights"
-                            >
-                                <!-- Vue loop --> 
-                                <!-- similar to js foreach loop --> 
-                                <li
-                                    v-for="(user, index) in users"
-                                    :key="index"
+                <v-row>
+                    <v-col>
+                        <v-row>
+                            <v-col>
+                                <v-btn large rounded color="yellow" @click="$router.go(-3)"><i class="material-icons left">history</i>Palaa takaisin</v-btn>
+                            </v-col>
+                        </v-row>
+                        <v-row>
+                            <v-col>
+                                <h1>Käyttäjät</h1>
+                            </v-col>
+                        </v-row>
+                        <v-row v-if="users.length">
+                            <v-col>
+                                <ul
+                                id="fish_weights"
                                 >
-                                    <!-- For every user in this.users array --> 
-                                    <v-row>
-                                        <v-col class="card-panel blue lighten-5 z-depth-1">
-                                            <p v-if="user.is_admin" class="flow-text">#{{index+1}}. {{user.name}} (Admin)<i class="material-icons">admin_panel_settings</i></p>
-                                            <p v-else class="flow-text">#{{index+1}}. {{user.name}} (Käyttäjä)<i class="material-icons">account_circle</i></p>
-                                            
-                                            <div class="row valign-wrapper">
-                                                <div class="col s12">
-                                                    <p class="black-text flow-text " style="word-break: break-all;">
-                                                        Sähköposti: {{ user.email }}
-                                                    </p>
-                                                    <p class="black-text flow-text " style="word-break: break-all;">
-                                                        Tili luotu: {{ user.createdAt }}
-                                                    </p>
+                                    <!-- Vue loop --> 
+                                    <!-- similar to js foreach loop --> 
+                                    <li
+                                        v-for="(user, index) in users"
+                                        :key="index"
+                                    >
+                                        <!-- For every user in this.users array --> 
+                                        <v-row>
+                                            <v-col class="card-panel blue lighten-5 z-depth-1">
+                                                <p v-if="user.is_admin" class="flow-text">#{{index+1}}. {{user.name}} (Admin)<i class="material-icons">admin_panel_settings</i></p>
+                                                <p v-else class="flow-text">#{{index+1}}. {{user.name}} (Käyttäjä)<i class="material-icons">account_circle</i></p>
+                                                
+                                                <div class="row valign-wrapper">
+                                                    <div class="col s12">
+                                                        <p class="black-text flow-text " style="word-break: break-all;">
+                                                            Sähköposti: {{ user.email }}
+                                                        </p>
+                                                        <p class="black-text flow-text " style="word-break: break-all;">
+                                                            Tili luotu: {{ user.createdAt }}
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </v-col>
-                                    </v-row>
-                                </li>
-                            </ul>
-                        </v-col>
-                    </v-row>
-                    <!-- users.length === 0 === false-->
-                    <v-row v-else-if="loading_users">
-                        <v-col md="10" offset-md="1">
-                            <v-sheet
-                                :color="`grey ${theme.isDark ? 'darken-2' : 'lighten-4'}`"
-                                class="px-3 pt-3 pb-3"
-                            >
-                                <v-skeleton-loader
-                                class="mx-auto"
-                                type="card"
-                                ></v-skeleton-loader>
-                            </v-sheet>
-                        </v-col>
-                    </v-row>
-                    <v-row v-else>
-                        <v-col>
-                            <h2>Ei käyttäjiä!</h2>
-                        </v-col>
-                    </v-row>
-                </v-container>
+                                            </v-col>
+                                        </v-row>
+                                    </li>
+                                </ul>
+                            </v-col>
+                        </v-row>
+                        <!-- users.length === 0 === false-->
+                        <v-row v-else-if="loading_users">
+                            <v-col md="10" offset-md="1">
+                                <v-sheet
+                                    :color="`grey ${theme.isDark ? 'darken-2' : 'lighten-4'}`"
+                                    class="px-3 pt-3 pb-3"
+                                >
+                                    <v-skeleton-loader
+                                    class="mx-auto"
+                                    type="card"
+                                    ></v-skeleton-loader>
+                                </v-sheet>
+                            </v-col>
+                        </v-row>
+                        <v-row v-else>
+                            <v-col>
+                                <h2>Ei käyttäjiä!</h2>
+                            </v-col>
+                        </v-row>
+                    </v-col>
+                </v-row>
             </v-tab-item>
             <v-tab-item :value="'competitions'">
-                <v-container>
-                    <v-row>
-                        <v-col>
-                            <v-btn large rounded color="yellow" @click="$router.go(-1)"><i class="material-icons left">history</i>Palaa takaisin</v-btn>
-                        </v-col>
-                    </v-row>
-                    <v-row>
-                        <v-col>
-                            <h1>Kilpailut</h1>
-                        </v-col>
-                    </v-row>
-                    <!-- if there are competitions in database--> 
-                    <v-row v-if="competitions.length">
-                        <v-col md="10" offset-md="1">
-                            <table border=1 id="competitions" class="centered responsive-table tablearea highlight">
-                                <thead class="title">
-                                <tr>
-                                    <th>Kilpailun Päivämäärä</th>
-                                    <th>Nimi</th>
-                                    <th>Käyttäjän id</th>
-                                    <th>Cup</th>
-                                    <th>Tila</th>
-                                    <th></th>
-                                    <th></th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <!-- For every competition in this.competitions array --> 
-                                <tr v-for="(competition, index) in competitions"
-                                    v-bind:item = "competition"
-                                    v-bind:index = "index"
-                                    v-bind:key="competition._id"
+                <v-row>
+                    <v-col>
+                        <v-row>
+                            <v-col>
+                                <v-btn large rounded color="yellow" @click="$router.go(-3)"><i class="material-icons left">history</i>Palaa takaisin</v-btn>
+                            </v-col>
+                        </v-row>
+                        <v-row>
+                            <v-col>
+                                <h1>Kilpailut</h1>
+                            </v-col>
+                        </v-row>
+                        <!-- if there are competitions in database--> 
+                        <v-row v-if="competitions.length">
+                            <v-col md="10" offset-md="1" class="scroll_table">
+                                <table border=1 id="competitions" class="centered responsive-table tablearea highlight ">
+                                    <thead class="title">
+                                    <tr>
+                                        <th>Kilpailun Päivämäärä</th>
+                                        <th>Nimi</th>
+                                        <th>Käyttäjän id</th>
+                                        <th>Cup</th>
+                                        <th>Tila</th>
+                                        <th></th>
+                                        <th></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <!-- For every competition in this.competitions array --> 
+                                    <tr v-for="(competition, index) in competitions"
+                                        v-bind:item = "competition"
+                                        v-bind:index = "index"
+                                        v-bind:key="competition._id"
+                                    >
+                                        <th style class="center-align" scope="row">{{ `${competition.start_date.date()}.${competition.start_date.month()+1}.${competition.start_date.year()} - ${competition.end_date.date()}.${competition.end_date.month()+1}.${competition.end_date.year()}` }}</th>  
+                                        <td style>{{ competition.name }}</td>
+                                        <td style>{{ competition.user_id }}</td> 
+                                        <td style>{{ competition.cup_name }}</td> 
+                                        <td style>{{ competition.state }}</td>
+                                        <td><v-btn tile color="primary" @click="pickCompetition(competition)" :loading="loading_competitions"><i class="material-icons left">check</i>Valitse</v-btn></td>
+                                        <td><v-btn tile color="red" @click="deleteCompetition(competition._id, false)" :loading="loading_competitions"><i class="material-icons left">delete_forever</i>Poista</v-btn></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </v-col>
+                        </v-row>
+                        <!-- this.competitions.length === 0 === false --> 
+                        <v-row v-else>
+                            <v-col v-if="loading_competitions" md="10" offset-md="1">
+                                <v-sheet
+                                    :color="`grey ${theme.isDark ? 'darken-2' : 'lighten-4'}`"
+                                    class="px-3 pt-3 pb-3"
                                 >
-                                    <th style class="center-align" scope="row">{{ `${competition.start_date.date()}.${competition.start_date.month()+1}.${competition.start_date.year()} - ${competition.end_date.date()}.${competition.end_date.month()+1}.${competition.end_date.year()}` }}</th>  
-                                    <td style>{{ competition.name }}</td>
-                                    <td style>{{ competition.user_id }}</td> 
-                                    <td style>{{ competition.cup_name }}</td> 
-                                    <td style>{{ competition.state }}</td>
-                                    <td><v-btn tile color="primary" @click="pickCompetition(competition)" :loading="loading_competitions"><i class="material-icons left">check</i>Valitse</v-btn></td>
-                                    <td><v-btn tile color="red" @click="deleteCompetition(competition._id, false)" :loading="loading_competitions"><i class="material-icons left">delete_forever</i>Poista</v-btn></td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </v-col>
-                    </v-row>
-                    <!-- this.competitions.length === 0 === false --> 
-                    <v-row v-else>
-                        <v-col v-if="loading_competitions" md="10" offset-md="1">
-                            <v-sheet
-                                :color="`grey ${theme.isDark ? 'darken-2' : 'lighten-4'}`"
-                                class="px-3 pt-3 pb-3"
-                            >
-                                <v-skeleton-loader
-                                class="mx-auto"
-                                type="card"
-                                ></v-skeleton-loader>
-                            </v-sheet>
-                        </v-col>
-                        <v-col v-else>
-                            <h2 >Ei Kilpailuja!</h2>
-                        </v-col>
-                    </v-row>
-                </v-container>
+                                    <v-skeleton-loader
+                                    class="mx-auto"
+                                    type="card"
+                                    ></v-skeleton-loader>
+                                </v-sheet>
+                            </v-col>
+                            <v-col v-else>
+                                <h2 >Ei Kilpailuja!</h2>
+                            </v-col>
+                        </v-row>
+                    </v-col>
+                </v-row>
             </v-tab-item>
             <v-tab-item :value="'feedback'">
-                <v-container>
-                    <v-row>
-                        <v-col>
-                            <v-btn large rounded color="yellow" @click="$router.go(-1)"><i class="material-icons left">history</i>Palaa takaisin</v-btn>
-                        </v-col>
-                    </v-row>
-                    <v-row>
-                        <v-col>
-                            <h1>Saatu Palaute</h1>
-                        </v-col>
-                    </v-row>
+                <v-row>
+                    <v-col>
+                        <v-row>
+                            <v-col>
+                                <v-btn large rounded color="yellow" @click="$router.go(-3)"><i class="material-icons left">history</i>Palaa takaisin</v-btn>
+                            </v-col>
+                        </v-row>
+                        <v-row>
+                            <v-col>
+                                <h1>Saatu Palaute</h1>
+                            </v-col>
+                        </v-row>
 
-                    <v-row v-if="feedback.length">
-                        <v-col>
-                          <ul
-                            id="fish_weights"
-                            >
-                                <!-- For every feedback in this.feedback array --> 
-                                <li
-                                
-                                    v-for="(feedback, index) in feedback"
-                                    :key="index"
+                        <v-row v-if="feedback.length">
+                            <v-col>
+                            <ul
+                                id="fish_weights"
                                 >
-                                    <v-card
-                                        class="mx-auto"
-                                        dark
-                                        min-width="200px"
-                                        max-width="850px"
-                                        style="margin-bottom:30px;margin-top:30px"
+                                    <!-- For every feedback in this.feedback array --> 
+                                    <li
+                                    
+                                        v-for="(feedback, index) in feedback"
+                                        :key="index"
                                     >
-                                        <v-card-title>
-                                            <v-col md="10" offset-md="1">
-                                                <span class="title font-weight-light">#{{index+1}} {{feedback.type}}</span>
-                                            </v-col>
-                                        </v-card-title>
-                                        <v-card-text class="headline font-weight-bold white--text" style="word-break: break-all;">
-                                            {{ feedback.message }}
-                                        </v-card-text>
-                                        <v-card-actions>
-                                            <v-col>
-                                                <v-btn large rounded color="yellow" :loading="loading" @click="deleteFeedback(feedback._id)" class="black--text"><i class="material-icons left">done_outline</i>Ratkaise</v-btn>
-                                            </v-col>
-                                        </v-card-actions>
-                                    </v-card>
-                                </li>
-                            </ul>                            
-                        </v-col>
-                    </v-row>
-                    <!-- this.feedback.length === 0 === false --> 
-                    <v-row v-else>
-                        <v-col v-if="loading" md="10" offset-md="1">
-                            <v-sheet
-                                :color="`grey ${theme.isDark ? 'darken-2' : 'lighten-4'}`"
-                                class="px-3 pt-3 pb-3"
-                            >
-                                <v-skeleton-loader
-                                class="mx-auto"
-                                type="card"
-                                ></v-skeleton-loader>
-                            </v-sheet>
-                        </v-col>
-                        <v-col v-else>
-                            <h2 >Palautetta ei vielä annettu!</h2>
-                        </v-col>
-                    </v-row>
-                </v-container>
+                                        <v-card
+                                            class="mx-auto"
+                                            dark
+                                            min-width="200px"
+                                            max-width="850px"
+                                            style="margin-bottom:30px;margin-top:30px"
+                                        >
+                                            <v-card-title>
+                                                <v-col md="10" offset-md="1">
+                                                    <span class="title font-weight-light">#{{index+1}} {{feedback.type}}</span>
+                                                </v-col>
+                                            </v-card-title>
+                                            <v-card-text class="headline font-weight-bold white--text" style="word-break: break-all;">
+                                                {{ feedback.message }}
+                                            </v-card-text>
+                                            <v-card-actions>
+                                                <v-col>
+                                                    <v-btn large rounded color="yellow" :loading="loading" @click="deleteFeedback(feedback._id)" class="black--text"><i class="material-icons left">done_outline</i>Ratkaise</v-btn>
+                                                </v-col>
+                                            </v-card-actions>
+                                        </v-card>
+                                    </li>
+                                </ul>                            
+                            </v-col>
+                        </v-row>
+                        <!-- this.feedback.length === 0 === false --> 
+                        <v-row v-else>
+                            <v-col v-if="loading" md="10" offset-md="1">
+                                <v-sheet
+                                    :color="`grey ${theme.isDark ? 'darken-2' : 'lighten-4'}`"
+                                    class="px-3 pt-3 pb-3"
+                                >
+                                    <v-skeleton-loader
+                                    class="mx-auto"
+                                    type="card"
+                                    ></v-skeleton-loader>
+                                </v-sheet>
+                            </v-col>
+                            <v-col v-else>
+                                <h2 >Palautetta ei vielä annettu!</h2>
+                            </v-col>
+                        </v-row>
+                    </v-col>
+                </v-row>
             </v-tab-item>
         </v-tabs-items>
-    </div>
+    </v-container>
 </template>
 
 <script>
@@ -309,9 +317,12 @@
         async mounted() {
             //Init materialize elements
             M.AutoInit();
-            //TODO clocks doesn't appear on refreshing the tab
+            //FIXME clocks doesn't appear on refreshing the tab
             //Check if user is logged in has admin status, update header
             this.checkLogin();
+            // Focus on top of the page 
+            location.href = "#";
+            location.href = "#app";
             // Show loading progressbars
             this.loading = this.loading_users = this.loading_competitions = true;
             try {
@@ -342,7 +353,7 @@
                     this.$store.state.logged_in = true;
                     let user = JSON.parse(localStorage.getItem('user'));
                     // Check if user is admin
-                    // NOTE safer way to check this than use localstorage?
+                    //TODO safer way to check this than use localstorage?
                     user.is_admin == true ? this.$store.state.is_admin = true : this.$store.state.is_admin = false;
                 }
                 else {

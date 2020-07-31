@@ -62,7 +62,6 @@ class CupService {
         });
     }
 
-    // TODO Delete this when deployed
     static deleteCup(id) {
         return axios.delete(`${url}${id}`);
     }
