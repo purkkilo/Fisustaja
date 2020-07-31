@@ -2,6 +2,7 @@ const express = require('express');
 const mongodb = require('mongodb');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const verify = require('./verifyToken');
 const router = express.Router();
 let mongodb_url = "";
 let secret = "";
@@ -75,12 +76,33 @@ router.post('/login', async (req, res) => {
         if (!user) return res.status(404).send('No user found.');
         let passwordIsValid = bcrypt.compareSync(req.body.password, user.password);
         if (!passwordIsValid) return res.status(401).send({ auth: false, token: null });
-        let token = jwt.sign({ id: user.id }, secret);
+        let token = jwt.sign({ id: user.id }, secret, {expiresIn: 10 // expires in 24 hours
+        });
+        res.header('auth-token', token);
         res.status(200).send({ auth: true, token: token, user: user });
     })
 });
 
+router.post('/auth', async (req, res) => {
+    const token = req.body.token;
+    if(!token) return res.status(401).send('No token!');
 
+    try {
+        // Check token, if expired throws an error
+        const verified = jwt.verify(token, secret);
+        req.user = verified;
+    }catch (err) {
+        //TokenExpiredError
+        if(err.message === 'jwt expired')  {
+            res.status(400).send('Expired Token');
+        }
+        //All other errors?
+        else {
+            res.status(400).send('Invalid Token');
+        }
+    }
+    
+});
 
 async function loadUsersCollection() {
     const client = await mongodb.MongoClient.connect(mongodb_url, {

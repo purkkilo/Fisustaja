@@ -4,6 +4,7 @@ const url = "api/users/";
 const register_url = "api/users/register";
 const register_admin_url = "api/users/register-admin";
 const login_url = "api/users/login";
+const auth_url = "api/users/auth";
 
 class UserService {
     // Get users
@@ -64,6 +65,13 @@ class UserService {
             email: user.email,
             password: user.password,
         });
+    }
+
+    //TODO Logout
+
+    //Verify token
+    static checkToken(token) {
+      return axios.post(auth_url, {token: token});
     }
 }
 export default UserService;
