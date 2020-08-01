@@ -17,6 +17,7 @@
             <v-tab href="#users">Käyttäjät</v-tab>
             <v-tab href="#competitions">Kilpailut</v-tab>
             <v-tab href="#feedback">Saatu palaute</v-tab>
+            <v-tab href="#generate">Kilpailun generointi</v-tab>
         </v-tabs>
         <v-tabs-items v-model="tab" style="background: rgba(0,0,0,0.4);">
             <v-tab-item :value="'overview'">
@@ -24,7 +25,7 @@
                     <v-col>
                         <v-row>
                             <v-col>
-                            <v-btn large rounded color="yellow" @click="$router.go(-3)"><i class="material-icons left">history</i>Palaa takaisin</v-btn>
+                                <v-btn large rounded color="yellow" @click="$router.go(-3)"><i class="material-icons left">history</i>Palaa takaisin</v-btn>
                             </v-col>
                         </v-row>
                         <v-row>
@@ -279,6 +280,87 @@
                     </v-col>
                 </v-row>
             </v-tab-item>
+            <v-tab-item :value="'generate'">
+                <v-row>
+                    <v-col>
+                        <v-row>
+                            <v-col>
+                                <v-btn large rounded color="yellow" @click="$router.go(-3)"><i class="material-icons left">history</i>Palaa takaisin</v-btn>
+                            </v-col>
+                        </v-row>
+                        <v-row>
+                            <v-col>
+                                <h1>Kilpailun generointi</h1>
+                            </v-col>
+                        </v-row>
+                        <v-row v-if="cup.name">
+                            <v-col md="3">
+                                <p class="center-align flow-text black--text">Valitse Cup</p>
+                            </v-col>
+                            <v-col class="d-flex" md="6">
+                                <v-select
+                                v-model="cup"
+                                :items="cups"
+                                item-text="select"
+                                item-value="_id"
+                                :hint="`${cup.name} (${cup.year})`"
+                                :disabled="!cup.name"
+                                outlined
+                                return-object
+                                single-line
+                                ></v-select>
+                            </v-col>
+                            <v-col md="3">
+                                <router-link to="/continue">
+                                    <v-btn tile color="green lighten-1"><i class="material-icons left">add_circle_outline</i>Luo uusi cup!</v-btn>
+                                </router-link>
+                            </v-col>
+                        </v-row>
+                        <v-row v-if="cup.name">
+                            <v-col md="6" offset-md="3" class="input-fields">
+                                <v-text-field
+                                label="Kilpailijoiden määrä"
+                                v-model="signees_amount"
+                                append-outer-icon="add"
+                                maxlength="6"
+                                @click:append-outer="signees_amount >= 0 ? signees_amount++ : signees_amount = 1" 
+                                prepend-icon="remove" 
+                                @click:prepend="signees_amount >= 1 ? signees_amount-- : signees_amount = 0"
+                                @paste.prevent
+                                :counter="6"
+                                @keypress="isNumber($event, true)"
+                                :rules="number_rules"
+                                :disabled="!cup.name"
+                                />
+                            </v-col>
+                        </v-row>
+                        <v-row v-if="cup.name">
+                            <v-col md="6" offset-md="3" class="input-fields">
+                                    <v-col>
+                                    <span class="flow-text black-text">Onko Tiimikilpailua?</span>
+                                    </v-col>
+                                    <v-col offset-md="4">
+                                    <v-radio-group v-model="team_competition" row :disabled="!cup.name">
+                                        <v-radio label="Kyllä" value="Kyllä"></v-radio>
+                                        <v-radio label="Ei" value="Ei"></v-radio>
+                                    </v-radio-group>
+                                    </v-col>
+                            </v-col>
+                        </v-row>
+                        <v-row v-else>
+                            <v-col md="6" offset-md="3">
+                                <h3>Ladataan Cuppeja...</h3>
+                                <ProgressBarQuery />  
+                            </v-col>
+                        </v-row>
+                        <v-row>
+                            <v-col>
+                                <v-btn large rounded color="green" @click="generateCompetition"><i class="material-icons left">history</i>Generoi kilpailu</v-btn>
+                            </v-col>
+                        </v-row>
+                    </v-col>
+                </v-row>
+            </v-tab-item>
         </v-tabs-items>
     </v-container>
 </template>
@@ -288,12 +370,13 @@
     import M from "materialize-css";
     import "vue-select/dist/vue-select.css";
     import FeedbackService from '../FeedbackService';
+    import CompetitionService from '../CompetitionService';
+    import UserService from '../UserService';
+    import CupService from '../CupService';
+    import ProgressBarQuery from '../components/layout/ProgressBarQuery';
     import Timedate from '../components/layout/Timedate';
     import Header from "../components/layout/Header";
-    import UserService from '../UserService';
-    import CompetitionService from '../CompetitionService';
     import moment from 'moment';
-    import ProgressBarQuery from '../components/layout/ProgressBarQuery';
 
     export default {
         data () {
@@ -305,7 +388,15 @@
                 loading: false,
                 loading_users: false,
                 loading_competitions: false,
-                theme: {isDark:true}
+                theme: {isDark:true},
+                cup: {},
+                signees_amount: 30,
+                team_competition: "Ei",
+                number_rules: [
+                    value => !!value || 'Kenttä ei voi jäädä tyhjäksi!',
+                    value => !isNaN((value || '')) || 'Ei ole numero!',
+                    value =>  (value || '') >= 0  || 'Numeron pitää olla positiivinen!',
+                ],
             }
         },
         components: {
@@ -340,12 +431,208 @@
                 this.competitions.sort(function compare(a,b) {
                     return moment(b.start_date).isAfter(moment(a.start_date));
                 })
+                this.getCups();
                 this.loading_competitions = false;
             } catch(err) {
                 console.error(err.message);
             }
         },
         methods: {
+
+            generateCompetition: function() {
+                const user = JSON.parse(localStorage.getItem('user'));
+                const user_id = user["id"];
+                M.toast({html: "TODO: Generoi kilpailu!"});
+                console.log("TODO: Generoi kilpailu!");
+                const competition = {
+                    user_id: user_id,
+                    cup_id: this.cup._id,
+                    team_competition: this.team_competition === "Ei" ? false : true,
+                    //Kaikki muu generointi, katso alta
+                };
+                console.log('Kilpailu olio:', competition);
+            },
+            /* 
+            Kilpailun generointi:
+
+            Kilpailun luonti:
+                - checkBasicInformation: function() | RegisterComp.vue, 719
+                - CompetitionService.js | static insertCompetition(competition) 
+
+            Mahdollisesti samalla loopilla:
+                - Kilpailijoiden luonti: validateInfo: function() | Signing.vue, 661
+                - Kilpailijalle pisteet: async saveToDatabase(reset) | Weighting.vue, 652
+
+            Kilpailu olio tietokannassa, kilpailijat ja painot lisättynä
+
+            {
+                "user_id": "5f24045d2ee89c595c075149",
+                "cup_id": "5f2404882ee89c595c07514a",
+                "name": "Kerimäki-uistelu 2020",
+                "cup_name": "Savo-Karjala CUP",
+                "cup_placement_points": 30,
+                "cup_participation_points": 5,
+                "cup_points_multiplier": 1,
+                "start_date": "2020-07-11T06:00:00.000Z",
+                "end_date": "2020-07-11T13:00:00.000Z",
+                "start_time": "09:00",
+                "end_time": "16:00",
+                "total_weights": 190830,
+                "fishes": [
+                    {
+                        "name": "Ahven",
+                        "multiplier": 3,
+                        "minsize": "30",
+                        "weights": 9400,
+                        "color": "#8d2d20"
+                    },
+                    {
+                        "name": "Hauki",
+                        "multiplier": 1,
+                        "minsize": "50",
+                        "weights": 172290,
+                        "color": "#53b84b"
+                    },
+                    {
+                        "name": "Kuha",
+                        "multiplier": 3,
+                        "minsize": "50",
+                        "weights": 0,
+                        "color": "#3f618f"
+                    },
+                    {
+                        "name": "Lohi",
+                        "multiplier": 25,
+                        "minsize": "61",
+                        "weights": 0,
+                        "color": "#8c16e9"
+                    },
+                    {
+                        "name": "Taimen",
+                        "multiplier": 25,
+                        "minsize": "51",
+                        "weights": 9140,
+                        "color": "#4aeda0"
+                    }
+                ],
+                "state": "Punnitus",
+                "createdAt": "2020-07-10T23:52:33.944Z",
+                "signees":
+                [
+                    {
+                        "id": 1,
+                        "boat_number": 1,
+                        "starting_place": "-",
+                        "captain_name": "Veetu Varis",
+                        "temp_captain_name": "Tuomas Halko",
+                        "locality": "Imatra",
+                        "team": "-",
+                        "total_points": 16080,
+                        "total_weights": 14820,
+                        "returned": true,
+                        "weights": [
+                            {
+                                "name": "Ahven",
+                                "weights": 630,
+                                "points": 1890
+                            },
+                            {
+                                "name": "Hauki",
+                                "weights": 14190,
+                                "points": 14190
+                            },
+                            {
+                                "name": "Kuha",
+                                "weights": 0,
+                                "points": 0
+                            },
+                            {
+                                "name": "Lohi",
+                                "weights": 0,
+                                "points": 0
+                            },
+                            {
+                                "name": "Taimen",
+                                "weights": 0,
+                                "points": 0
+                            }
+                        ]
+                    },
+                ],
+                "results": [],
+                "teams": [],
+                "team_competition": false,
+                "biggest_fishes": {},
+                "biggest_amounts": {
+                    "Taimen": [
+                        {
+                            "boat_number": 14,
+                            "captain_name": "Jarmo Nuopponen",
+                            "weight": 5530
+                        },
+                        {
+                            "boat_number": 33,
+                            "captain_name": "Joona Partanen",
+                            "weight": 1840
+                        },
+                        {
+                            "boat_number": 20,
+                            "captain_name": "Jere Kosonen",
+                            "weight": 1770
+                        }
+                    ]}
+            }
+
+                //Generate competition data
+                    const competition = {
+                        cup_id: cup_id,
+                        user_id: user_id,
+                        name: this.basic_info.name,
+                        cup_name: this.basic_info.cup_name,
+                        cup_placement_points: this.basic_info.cup_placement_points,
+                        cup_participation_points: this.basic_info.cup_participation_points,
+                        cup_points_multiplier: this.basic_info.cup_points_multiplier,
+                        team_competition: this.basic_info.team_competition,
+                        start_date: this.basic_info.start_date,
+                        end_date: this.basic_info.end_date,
+                        duration: this.basic_info.duration,
+                        start_time: this.basic_info.start_time,
+                        end_time: this.basic_info.end_time,
+                        fishes: this.completed_fish_specs,
+                        state: "Rekisteröity",
+                        total_weights: 0,
+                        signees: [],
+                        results: [],
+                        teams: [],
+                        biggest_fishes: {},
+                        biggest_amounts: {}
+                    };
+
+                //Generate signee data on loop to signees array
+                //Generate fish weights and points to every signee to every signee on signees array
+                //When signees array complete, Add competition to database: await CompetitionService.insertCompetition(competition);
+*/
+            async getCups() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            const user_id = user["id"];
+            this.loading = true;
+            // Get Cups
+            try {
+                this.cups = await CupService.getCups(user_id);
+                if(this.cups.length){
+                    this.cups.sort(function compare(a,b) {
+                        return a.name - b.name;
+                    });
+                    this.cups.forEach(cup => {
+                        cup.select = `${cup.name} (${cup.year})`;
+                    });
+                    this.cup = this.cups[this.cups.length - 1];
+                }
+            }catch(err) {
+                this.error = err.message;
+            }
+            this.loading = false;
+            },
             //Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)
             checkLogin: function() {
                 // If login token present --> user is logged in

@@ -22,6 +22,14 @@ Vue.use(VueRouter)
       }
   },
   {
+      path: '/register',
+      name: 'register',
+      component: () => import(/* webpackChunkName: "about" */ '../views/Register.vue'),
+      meta: {
+        guest: true
+      }
+  },
+  {
       path: '/dashboard',
       name: 'dashboard',
       component: () => import(/* webpackChunkName: "about" */ '../views/Dashboard.vue'),
@@ -119,18 +127,6 @@ let router = new VueRouter({
   mode: 'history',
   routes
 })
-
-
-//TODO add this back after user test
-// {
-//      path: '/register',
-//      name: 'register',
-//      component: () => import(/* webpackChunkName: "about" */ '../views/Register.vue'),
-//      meta: {
-//        guest: true
-//      }
-// },
-
 
 // Check auth before loading page
 router.beforeEach((to, from, next) => {
