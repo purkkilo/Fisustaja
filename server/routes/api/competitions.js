@@ -34,6 +34,7 @@ router.post('/', async (req, res) => {
         user_id: req.body.user_id,
         cup_id: req.body.cup_id,
         name: req.body.name,
+        locality: req.body.locality,
         cup_name:  req.body.cup_name,
         cup_placement_points: req.body.cup_placement_points,
         cup_participation_points: req.body.cup_participation_points,

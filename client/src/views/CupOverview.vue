@@ -39,47 +39,54 @@
                 </v-col>
               </v-row>
               <v-row v-if="competitions.length">
-                <v-col>
-                    <div v-if="competitions.length" class="scroll_table">
-                        <table border=1 id="competitions-table" class="centered responsive-table tablearea highlight">
-                            <caption class="flow-text white--text">Cupin kilpailut</caption>
-                            <thead class="title">
-                            <tr>
-                                <th>Kilpailun Päivämäärä</th>
-                                <th>Nimi</th>
-                                <th>Pistekerroin</th>
-                                <th>Tila</th>
-                                <th></th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="(competition, index) in competitions"
-                                    v-bind:item = "competition"
-                                    v-bind:index = "index"
-                                    v-bind:key="competition._id"
-                                >
-                                    <th class="center-align" scope="row">{{ `${competition.start_date.date()}.${competition.start_date.month()+1}.${competition.start_date.year()} - ${competition.end_date.date()}.${competition.end_date.month()+1}.${competition.end_date.year()}` }}</th>  
-                                    <td>{{ competition.name }}</td> 
-                                    <td>x {{ competition.cup_points_multiplier }}</td> 
-                                    <td>{{ competition.state }}</td>
-                                    <td><v-btn tile color="primary" @click="pickCompetition(competition)"><i class="material-icons left">check</i>Valitse</v-btn></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div v-else>
-                        <div v-if="!loading" class="col s6 center-align">
-                            <h2 >Ei kilpailuja!</h2>
-                            <router-link to="/register-comp">
-                                <v-btn tile color="blue lighten-1"><i class="material-icons left">add_circle_outline</i>Luo kilpailu!</v-btn>
-                            </router-link>
-                        </div>
-                        <h2 v-else-if="error" class="error">{{ error }}</h2>
-                        <div v-else>
-                            <h2>Ladataan kilpailuja...</h2>
-                            <ProgressBarQuery />
-                        </div> 
-                    </div>
+                <v-col> 
+                    <v-row v-if="competitions.length" class="scroll_table">
+                      <table border=1 id="competitions-table" class="centered responsive-table tablearea highlight">
+                        <caption class="flow-text white--text">Cupin kilpailut</caption>
+                        <thead class="title">
+                          <tr>
+                              <th>Kilpailun Päivämäärä</th>
+                              <th>Nimi</th>
+                              <th>Pistekerroin</th>
+                              <th>Tila</th>
+                              <th></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr v-for="(competition, index) in competitions"
+                              v-bind:item = "competition"
+                              v-bind:index = "index"
+                              v-bind:key="competition._id"
+                          >
+                              <th class="center-align" scope="row">{{ `${competition.start_date.date()}.${competition.start_date.month()+1}.${competition.start_date.year()} - ${competition.end_date.date()}.${competition.end_date.month()+1}.${competition.end_date.year()}` }}</th>  
+                              <td>{{ competition.name }}</td> 
+                              <td>x {{ competition.cup_points_multiplier }}</td> 
+                              <td>{{ competition.state }}</td>
+                              <td><v-btn tile color="primary" @click="pickCompetition(competition)"><i class="material-icons left">check</i>Valitse</v-btn></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                  </v-row>
+                  <v-row v-if="competitions.length">
+                    <v-col>
+                      <router-link to="/register-comp">
+                            <v-btn tile color="blue lighten-1"><i class="material-icons left">add_circle_outline</i>Luo kilpailu!</v-btn>
+                      </router-link>
+                    </v-col>
+                  </v-row>
+                  <v-row v-else>
+                    <v-col v-if="!loading">
+                        <h2 >Ei kilpailuja!</h2>
+                        <router-link to="/register-comp">
+                            <v-btn tile color="blue lighten-1"><i class="material-icons left">add_circle_outline</i>Luo kilpailu!</v-btn>
+                        </router-link>
+                    </v-col>
+                    <h2 v-else-if="error" class="error">{{ error }}</h2>
+                    <v-col v-else>
+                        <h2>Ladataan kilpailuja...</h2>
+                        <ProgressBarQuery />
+                    </v-col> 
+                  </v-row>
                 </v-col>
               </v-row>
               <v-row v-else>
@@ -102,14 +109,57 @@
         </v-container>
       </v-tab-item>
       <v-tab-item :value="'points'">
-        <v-container>
-          <v-row>
-            <v-col>
-              <h1>Cupin pisteet</h1>
-              <v-btn tile color="blue lighten-1" @click="calculateAll"><i class="material-icons left">add_circle_outline</i>Testaa consoliin</v-btn>
-            </v-col>
-          </v-row>
-        </v-container>
+        <v-row>
+          <v-col>
+            <v-row>
+              <v-col>
+                <h1>Cupin pisteet</h1>
+              </v-col>
+            </v-row>
+            <v-row v-if="results.length">
+              <v-col class="d-flex" md="4" offset-md="4">
+                <v-select
+                  :items="select_numbers"
+                  label="Cup-pisteisiin vaikuttavien kilpailujen määrä"
+                  outlined
+                  v-model="selected_competitions"
+                  @input="calculateAll(competitions, selected_competitions)"
+                ></v-select>
+              </v-col>
+              <v-col md="4">
+                <v-btn large tile color="green darken-4" class="white--text" @click="saveAsPDF(`Cupin Kokonaistulokset`, '#normal-table')">
+                  <i class="material-icons left">picture_as_pdf</i>Lataa pdf
+                </v-btn>
+              </v-col> 
+            </v-row>
+            <v-row v-if="competitions.length">
+              <v-col class="scroll_table">
+                <table id="normal-table" class="highlight centered responsive-table tablearea table_header">
+                  <thead>
+                    <tr>
+                      <th v-for="(header, index) in headers" :key="index">{{header}}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(signee, index) in results" :key="index">
+                      <th style="border:1px solid black;" scope="row">{{ index+1 }}.</th>
+                      <td style="border:1px solid black;">({{ signee.boat_number }})</td>
+                      <td style="border:1px solid black;">{{ signee.captain_name }}</td>
+                      <td style="border:1px solid black;">{{ signee.locality }}</td>
+                      <td style="border:1px solid black;" v-for="(competition, index) in competitions" :key="index">{{ signee.cup_results[competition.name] ? signee.cup_results[competition.name] : 0}}</td>
+                      <td style="border:1px solid black;">{{ signee.cup_results["Total"] ? signee.cup_results["Total"] : 0}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </v-col>
+            </v-row>
+            <v-row v-else>
+              <v-col>
+                <h2>Ei kilpailuja rekisteröitynä!</h2>
+              </v-col>
+            </v-row>
+          </v-col>
+        </v-row>
       </v-tab-item>
     </v-tabs-items>
   </div>
@@ -122,6 +172,8 @@
     import CupService from '../CupService';
     import CompetitionService from '../CompetitionService';
     import moment from 'moment';
+    import jsPDF from "jspdf";
+    import "jspdf-autotable";
 
     export default {
         name: 'CupOverview',
@@ -134,20 +186,17 @@
             return {
               cup: null,
               competitions: [],
+              headers: [],
+              results: [],
               loading: false,
               errors: [],
+              select_numbers: [],
+              selected_competitions: 0,
               tab: null,
             }
         },
         created() {
-          // IF competition on localstorage
-          if(localStorage.getItem('cup') != null) {
-              // update from database
-              this.refreshCup(localStorage.getItem('cup'));
-          }
-          else {
-            console.log("No cup in localstorage!");
-          }
+
         },
         mounted() {
           //Check if user is logged in has admin status, update header
@@ -168,11 +217,93 @@
           location.href = "#app";
         },
         methods: {
-            // fetch/update competition from database
-            calculateAll: function() {
-              this.competitions.forEach(competition => {
-                console.log(competition.results);
+            // Calculate all the cup points, and limit the number of races taken into account
+            // If limit = 4, 4 races with highest points will be calculated, other races will have 5 points where the signee has participated
+            calculateAll: function(competitions, limit) {
+              let all_results = [];
+              this.headers = [];
+              this.headers.push("Sijoitus");
+              this.headers.push("Kilp. Nro");
+              this.headers.push("Kippari");
+              this.headers.push("Paikkakunta");
+              competitions.forEach(competition => {
+                // Dynamic headers, because competition names change
+                this.headers.push(competition.name);
+                //If there are any results in the competition
+                if(competition.results.length) {
+                  //Loop through each competition's results
+                  competition.results.forEach(signee => {
+                      // Get each signee's results from array that has all the results
+                      let index = all_results.findIndex(item => {
+                        return (parseInt(signee.boat_number) === parseInt(item.boat_number));
+                      });
+                      //If the signee is found there
+                      if (index > -1) {
+                        // Get the signee, and add competitions results to array, under the competition.name key
+                        let found_signee = all_results[index];
+                        found_signee.points_compare.push(signee.cup_points_total); // For comparing
+                        found_signee.cup_results[competition.name] = signee.cup_points_total;
+                        // For tracking total points
+                        all_results.splice(index, 1, found_signee);
+                      }
+                      // Not any points on cup_results yet
+                      else {
+                        // Initialize variables and add first points
+                        signee.cup_results = [];
+                        // Array for comparing points with limit
+                        signee.points_compare = [];
+                        signee.points_compare.push(signee.cup_points_total); // For comparing
+                        signee.cup_results[competition.name] = signee.cup_points_total;
+                        all_results.push(signee);
+                      }
+                  });
+                }
               });
+
+              // limits the amount of competitions are taken into account in the cup
+              all_results = this.limitCompetitions(all_results, limit-1);
+
+              this.headers.push("Yhteensä");
+              // Sort the array based on total cup points
+              this.results = all_results.sort(function compare(a,b) {
+                  return parseInt(b.cup_results["Total"]) - parseInt(a.cup_results["Total"]);
+              })
+            },
+            limitCompetitions: function(results, limit) {
+                limit = limit < 0 ? 0 : limit; // Make sure limit is at least 1
+                
+                results.forEach(signee => {
+                    // If there are more competitions than the limit, limit remaining competitions after the limit
+                    if(this.competitions.length > limit){
+                        // sort the array that points are compared to
+                        // so first "limit" amount of competitions are only taken into account
+                        signee.points_compare.sort(function compare(a,b) {
+                            return parseInt(b) - parseInt(a);
+                        });
+                        // Initialize total points to 0
+                        signee.cup_results["Total"] = 0;
+                        // Check each competition
+                        //FIXME doesn't handle tied points if they happen to be on the limit, like here: https://gyazo.com/387d88f42fc38b3de8ef336fe82ecc49
+                        this.competitions.forEach(competition => { 
+                          // If signee has points for this competition    
+                          if(signee.cup_results[competition.name]) {
+                              // If signee's points are less than the limit points from the array
+                              if(signee.cup_results[competition.name] < signee.points_compare[limit]) {
+                                  // Give signee only participation points
+                                  signee.cup_results[competition.name] = competition.cup_participation_points;
+                                  signee.cup_results["Total"] += competition.cup_participation_points;
+                              }
+                              else {
+                                  // Points are greater than the limit points, give full points
+                                  signee.cup_results["Total"] += signee.cup_results[competition.name];
+                              }
+                            }
+                        });
+                    }
+                    // No need to do anything if limit is bigger 
+                });
+                // Return sorted results
+                return results;
             },
             async refreshCup(cup_id) {
               this.loading = true;
@@ -187,12 +318,24 @@
                     this.cup = cups[0];
                     // Update to vuex, Assing variables from vuex (see client/store/index.js)
                     this.$store.commit('refreshCup', cups[0]);
-                    this.competitions = await CompetitionService.getCupCompetitions(cup_id);
-                    // Convert dates to moment objects
-                    this.competitions.forEach(competition => {
-                        competition.start_date = moment(competition.start_date);
-                        competition.end_date = moment(competition.end_date);
-                    });
+                    try{
+                        this.competitions = await CompetitionService.getCupCompetitions(cup_id);
+                        // Convert dates to moment objects
+                        let counter = 1;
+                        this.competitions.forEach(competition => {
+                            this.select_numbers.push(counter);
+                            competition.start_date = moment(competition.start_date);
+                            competition.end_date = moment(competition.end_date);
+                            counter++;
+                        });
+                        this.competitions.sort(function compare(a,b) {
+                            return moment(b.start_date).isBefore(moment(a.start_date));
+                        });
+                        this.selected_competitions = this.competitions.length - 1;
+                        this.calculateAll(this.competitions, this.selected_competitions);
+                    } catch (error) {
+                      console.error(error.message);
+                    }
                 }
                 else {
                     this.cup = {"name": "Kilpailua ei löytynyt tietokannasta..."};
@@ -226,6 +369,44 @@
                 localStorage.setItem("competition", competition._id);
                 // redirect to /overview
                 this.$router.push({path: '/overview'});
+            },
+            // For naming the pdf, replace certain characters
+            replaceAll: function(string, search, replace) {
+              return string.split(search).join(replace);
+            },
+            capitalize_words: function(str) {
+                return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+            },
+            // Convert the charts and the tables to pdf
+            saveAsPDF: function(table_title, table_id) {
+              // Format dates for easier reding
+              // PDF creation
+              let doc = new jsPDF();
+              // Title
+              const title = `${this.cup.name} (${this.cup.year})`;
+
+              doc.setFontSize(24);
+              doc.text(10, 10, title, { align: "left"});
+              doc.line(0, 15, 400, 15);
+              doc.setFontSize(20);
+
+              // Table, based on given table_id, and table title based on competition_type
+              doc.text(100, 30, table_title, { align: "center"});
+              doc.autoTable({
+                html: table_id,
+                "styles": { "overflow": "linebreak", "cellWidth": "wrap", "rowPageBreak": "avoid", "halign": "justify", "fontSize": "8", "lineColor": "100", "lineWidth": ".25" }, 
+                "columnStyles": {text: {cellwidth: 'auto'}},
+                "theme": "striped", 
+                "pageBreak": "auto", 
+                "tableWidth": "auto", 
+                startY: 35,
+                margin: { top: 20 },
+              });
+
+              // Save the pdf
+              doc.save(
+                `${this.cup.year}_${this.replaceAll("Cup", " ", "")}_${this.replaceAll(this.capitalize_words(table_title), " ", "")}.pdf`
+              );
             },
         },
     }

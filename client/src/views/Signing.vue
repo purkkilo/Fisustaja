@@ -163,6 +163,7 @@
                       <v-text-field
                         label="Seura/Paikkakunta"
                         v-model="locality"
+                        id="locality"
                         :maxlength="maxlength"
                         :loading="loading"
                         :counter="maxlength"
@@ -175,6 +176,7 @@
                         <v-text-field
                           label="Lähtöpaikka"
                           v-model="starting_place"
+                          id="starting_place"
                           :maxlength="maxlength"
                           :loading="loading"
                           :counter="maxlength"
@@ -220,7 +222,7 @@
                         <v-col
                           md="4"
                         >
-                          <v-btn large tile color="green" @click="validateInfo"><i class="material-icons right">save_alt</i>Tallenna</v-btn>
+                          <v-btn large tile color="green" @click="validateInfo" id="sbtn"><i class="material-icons right">save_alt</i>Tallenna</v-btn>
                         </v-col>
                       </v-row>
                     </v-row>
@@ -344,6 +346,7 @@
             // Fetch competition from database, and update variables
             async refreshCompetition(competition_id) {
               this.loading_site = true;
+
               try {
                 let competitions = await CompetitionService.getCompetition(competition_id);
                 this.loading_site = false;
@@ -353,7 +356,6 @@
                     this.isTeamCompetition = this.$store.getters.isTeamCompetition;
                     this.signees =  this.$store.getters.getSignees;
                     this.teams = this.$store.getters.getTeams;
-
                     // Get max values and assign them
                     if (this.signees.length) {
                         this.boat_number = Math.max.apply(Math, this.signees.map(function(o) { return o.boat_number; })) + 1;
@@ -404,6 +406,9 @@
                   }
                 }
             },
+            capitalize_words: function(str) {
+                return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+            },
             // Clear all selections and inputs and errors
             clearInputs: function() {
                 this.boat_number = null;
@@ -426,9 +431,9 @@
                     // Replace the old existing signee info with new info, without changing the id
                     signee.boat_number = parseInt(this.boat_number);
                     signee.starting_place = this.starting_place;
-                    signee.captain_name = this.captain_name;
-                    signee.temp_captain_name = this.temp_captain_name;
-                    signee.locality = this.locality;
+                    signee.captain_name = this.capitalize_words(this.captain_name);
+                    signee.temp_captain_name = this.capitalize_words(this.temp_captain_name);
+                    signee.locality = this.capitalize_words(this.locality);
                     signee.team = this.team;
                     // Shorten team name if over 40 characters
                     if (this.team.length > 40) {
@@ -670,6 +675,16 @@
                 if (!this.captain_name) {
                     this.showError('Kapteenin nimi puuttuu!');
                 }
+                else {
+                  this.captain_name = this.capitalize_words(this.captain_name);
+                }
+
+                if (!this.temp_captain_name) {
+                    this.temp_captain_name = "-";
+                }
+                else {
+                  this.temp_captain_name = this.capitalize_words(this.temp_captain_name);
+                }
 
                 if(!this.starting_place) {
                     this.starting_place = "-";
@@ -677,6 +692,7 @@
                 if(!this.team) {
                     this.team = "-";
                 }
+
                 if (this.team.length > 40) {
                   let temp_team = this.team
                   temp_team = temp_team.slice(0, 40);
@@ -684,14 +700,13 @@
                   this.showError("Valitse tiimin nimeksi alle 40 merkkiä pitkä nimi (nimi lyhennetty 40 merkkiin, valittavissa pudotusvalikosta)!");
                 }
 
-                if (!this.temp_captain_name) {
-                    this.temp_captain_name = "-";
-                }
-
                 if (!this.locality) {
                     this.showError('Seura/Paikkakunta puuttuu!');
                 }
-                
+                else {
+                  this.locality = this.capitalize_words(this.locality);
+                }
+ 
                 // If no errors, proceed
                 if(!this.errors.length) {
                     // If selected on the signees list or with the search button

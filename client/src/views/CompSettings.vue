@@ -35,7 +35,7 @@
                   <th style="border:1px solid black;">Kilpailu</th>
                   <!-- competition.name would be this.competition.name if referenced on javascript etc. --> 
                   <td style="border:1px solid black;" class="center-align">
-                    {{ competition.name }}
+                    {{ competition.name }} ({{ competition.locality}})
                   </td>
                 </tr>
                 <tr>

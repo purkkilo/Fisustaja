@@ -69,6 +69,19 @@
                 </v-row>
 
                 <v-row v-if="cup.name">
+                  <v-col md="6" offset-md="3" class="input-fields">
+                    <v-text-field
+                      label="Paikkakunta"
+                      v-model="locality"
+                      :maxlength="max_input"
+                      :disabled="basic_info_validated"
+                      :rules="rules"
+                      :counter="max_input"
+                    />
+                  </v-col>
+                </v-row>
+
+                <v-row v-if="cup.name">
                   <v-col md="3">
                     <p class="center-align flow-text black--text">Valitse Cup</p>
                   </v-col>
@@ -452,7 +465,7 @@
                   <tr>
                     <th style="border:1px solid black;">Kilpailu</th>
                     <td style="border:1px solid black;" class="center-align">
-                      {{ name }}
+                      {{ name }} ({{ locality}})
                     </td>
                   </tr>
                   <tr>
@@ -590,6 +603,7 @@
           selected: [],
           days_options: [1,2,3,4,5,6,7],
           name: null,
+          locality: null,
           cups: [],
           cup: {},
           cup_placement_points: 30,
@@ -749,6 +763,12 @@
           if (!this.name) {
             this.showError("Kilpailun nimi puuttuu!");
           }
+
+          // Check other variables
+          if (!this.locality) {
+            this.showError("Kilpailun paikkakunta puuttuu!");
+          }
+
           if (!this.cup._id) {
             this.showError("Cuppia ei valittuna!");
           }
@@ -809,6 +829,7 @@
             // Competition object, basic info
             this.basic_info = {
               name: this.name,
+              locality: this.locality,
               cup_name: this.cup.name,
               cup_placement_points: Number(this.cup_placement_points),
               cup_participation_points: Number(this.cup_participation_points),
@@ -979,6 +1000,7 @@
               cup_id: cup_id,
               user_id: user_id,
               name: this.basic_info.name,
+              locality: this.basic_info.locality,
               cup_name: this.basic_info.cup_name,
               cup_placement_points: this.basic_info.cup_placement_points,
               cup_participation_points: this.basic_info.cup_participation_points,
