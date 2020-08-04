@@ -1,125 +1,47 @@
 <template>
   <!-- /cup-overview -->  
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <div class="container">
-    <Header />
-    <Timedate />
-    <div id="errordiv" v-if="errors.length">
-      <ul class="collection with-header" style="border:1px solid red;">
-        <li class="collection-header" style="background: rgba(0,0,0,0);">
-          <v-alert type="error">
-            Korjaa seuraavat virheet:
-          </v-alert>
-        </li>
-        <li class="collection-item" id="error" v-for="(error,index) in errors" v-bind:key="index">
-          <p class="flow-text">{{ index+1}}. {{ error }}</p>
-        </li>
-      </ul>
-    </div>
-    <v-tabs
-        v-model="tab"
-        background-color="blue lighten-2"
-        color="basil"
-        grow
-    >
-        <v-tabs-slider color="blue darken-4"></v-tabs-slider>
-        <v-tab href="#overview">Yleisnäkymä</v-tab>
-        <v-tab href="#points" :disabled="!competitions.length">Cup pisteet</v-tab>
-    </v-tabs>
-    <v-tabs-items v-model="tab" style="background: rgba(0,0,0,0.4);">
-      <v-tab-item :value="'overview'">
-        <v-container>
-          <v-row v-if="!loading">
-              <v-row class="section">
-                <v-col v-if="cup">
-                  <h1>{{cup.name}}, {{cup.year}}</h1>
-                </v-col>
-                <v-col v-else>
-                  <p class="flow-text">Ei kuppia valittuna</p>
-                </v-col>
-              </v-row>
-              <v-row v-if="competitions.length">
-                <v-col> 
-                    <v-row v-if="competitions.length" class="scroll_table">
-                      <table border=1 id="competitions-table" class="centered responsive-table tablearea highlight">
-                        <caption class="flow-text white--text">Cupin kilpailut</caption>
-                        <thead class="title">
-                          <tr>
-                              <th>Kilpailun Päivämäärä</th>
-                              <th>Nimi</th>
-                              <th>Pistekerroin</th>
-                              <th>Tila</th>
-                              <th></th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr v-for="(competition, index) in competitions"
-                              v-bind:item = "competition"
-                              v-bind:index = "index"
-                              v-bind:key="competition._id"
-                          >
-                              <th class="center-align" scope="row">{{ `${competition.start_date.date()}.${competition.start_date.month()+1}.${competition.start_date.year()} - ${competition.end_date.date()}.${competition.end_date.month()+1}.${competition.end_date.year()}` }}</th>  
-                              <td>{{ competition.name }}</td> 
-                              <td>x {{ competition.cup_points_multiplier }}</td> 
-                              <td>{{ competition.state }}</td>
-                              <td><v-btn tile color="primary" @click="pickCompetition(competition)"><i class="material-icons left">check</i>Valitse</v-btn></td>
-                          </tr>
-                        </tbody>
-                      </table>
-                  </v-row>
-                  <v-row v-if="competitions.length">
-                    <v-col>
-                      <router-link to="/register-comp">
-                            <v-btn tile color="blue lighten-1"><i class="material-icons left">add_circle_outline</i>Luo kilpailu!</v-btn>
-                      </router-link>
-                    </v-col>
-                    <v-col v-if="cup.isPublic">
-                      <v-btn large tile color="grey darken-4" @click="publishCup(false)" :loading="publishing" class="white--text">
-                        <i class="material-icons left">unpublished</i>Aseta cup salaiseksi
-                      </v-btn>
-                    </v-col>
-                    <v-col v-else>
-                      <v-btn large tile color="green darken-4" @click="publishCup(true)" :loading="publishing" class="white--text">
-                        <i class="material-icons left">published_with_changes</i>Aseta cup julkiseksi
-                      </v-btn>
-                    </v-col>
-                  </v-row>
-                  <v-row v-else>
-                    <v-col v-if="!loading">
-                        <h2 >Ei kilpailuja!</h2>
-                        <router-link to="/register-comp">
-                            <v-btn tile color="blue lighten-1"><i class="material-icons left">add_circle_outline</i>Luo kilpailu!</v-btn>
-                        </router-link>
-                    </v-col>
-                    <h2 v-else-if="error" class="error">{{ error }}</h2>
-                    <v-col v-else>
-                        <h2>Ladataan kilpailuja...</h2>
-                        <ProgressBarQuery />
-                    </v-col> 
-                  </v-row>
-                </v-col>
-              </v-row>
-              <v-row v-else>
-                <v-col>
-                    <h2 >Ei kilpailuja!</h2>
-                    <router-link to="/register-comp">
-                        <v-btn tile color="blue lighten-1"><i class="material-icons left">add_circle_outline</i>Luo kilpailu!</v-btn>
-                    </router-link>
-                </v-col>
-              </v-row>
-          </v-row>
-          <v-row v-else>
-            <v-row>
-              <v-col>
-                <h2>Valmistellaan Cuppia...</h2>
-                <ProgressBarQuery />
-              </v-col>
-            </v-row>
-          </v-row>
-        </v-container>
-      </v-tab-item>
-      <v-tab-item :value="'points'">
-        <v-row>
+    <v-container class="container-transparent">
+        <MainHeader />
+        <v-row id="errordiv" v-if="errors.length">
+        <ul class="collection with-header" style="border:1px solid red;">
+            <li class="collection-header" style="background: rgba(0,0,0,0);">
+            <v-alert type="error">
+                Korjaa seuraavat virheet:
+            </v-alert>
+            </li>
+            <li class="collection-item" id="error" v-for="(error,index) in errors" v-bind:key="index">
+            <p class="flow-text">{{ index+1}}. {{ error }}</p>
+            </li>
+        </ul>
+        </v-row>
+        <v-row class="section">
+            <v-col>
+              <h1>Cuppien tuloksia</h1>
+            </v-col>
+        </v-row>
+        <v-row v-if="cups.length" class="scroll_table">
+          <v-col md="6" offset-md="3">
+            <v-select
+                v-model="selected_cup"
+                :items="cups"
+                item-text="select"
+                item-value="_id"
+                :hint="`${cup.name} (${cup.year})`"
+                outlined
+                return-object
+                single-line
+            ></v-select>
+          </v-col>
+          <v-col md="3">
+            <router-link to="/public-results">
+                <v-btn large rounded color="green darken-4" class="white--text">
+                <i class="material-icons left">emoji_events</i>Kilpailujen tuloksia
+                </v-btn>
+            </router-link>
+          </v-col>
+        </v-row>
+        <v-row v-if="!loading">
           <v-col>
             <v-row>
               <v-col>
@@ -173,20 +95,29 @@
               </v-col>
             </v-row>
             <v-row v-else>
-              <v-col>
-                <h2>Ei kilpailuja rekisteröitynä!</h2>
+              <v-col v-if="loading">
+                <h2>Ei cuppeja rekisteröitynä!</h2>
+              </v-col>
+              <v-col v-else>
+                <h2>Haetaan kilpailuja...</h2>
+                <ProgressBarQuery />
               </v-col>
             </v-row>
           </v-col>
         </v-row>
-      </v-tab-item>
-    </v-tabs-items>
-  </div>
+        <v-row v-else>
+            <v-row>
+                <v-col>
+                <h2>Haetaan Cuppeja...</h2>
+                <ProgressBarQuery />
+                </v-col>
+            </v-row>
+        </v-row>
+    </v-container>
 </template>
 <script>
     "use strict";
-    import Timedate from '../components/layout/Timedate';
-    import Header from "../components/layout/Header";
+    import MainHeader from "../components/layout/MainHeader";
     import ProgressBarQuery from '../components/layout/ProgressBarQuery';
     import CupService from '../CupService';
     import CompetitionService from '../CompetitionService';
@@ -195,48 +126,51 @@
     import "jspdf-autotable";
 
     export default {
-        name: 'CupOverview',
+        name: 'PublicCups',
         components: {
-          Timedate,
-          Header,
+          MainHeader,
           ProgressBarQuery
         },
         data() {
             return {
               cup: null,
+              cups: [],
               competitions: [],
               headers: [],
               results: [],
               loading: false,
-              publishing: false,
               errors: [],
               select_numbers: [],
               header_options: ["Paikkakunta", "Kilpailun nimi"],
               header_selection: "Paikkakunta",
               selected_competitions: 0,
+              selected_cup: null,
               tab: null,
             }
         },
         created() {
 
         },
-        mounted() {
-          //Check if user is logged in has admin status, update header
-          this.checkLogin();
+        async mounted() {
+            //Check if user is logged in has admin status, update header
+            this.checkLogin();
 
-          // IF competition on localstorage
-          if(localStorage.getItem('cup') != null) {
-              // update from database
-              this.refreshCup(localStorage.getItem('cup'));
-              this.$store.state.cup = this.cup;
-          }
-          else {
-            console.log("No cup in localstorage!");
-          }
+            this.loading = true;
+            let cups = await CupService.getAllCups();
+            if (cups.length) {
+                this.cups = cups.filter(cup => {return cup.isPublic});
+                this.cups.forEach(cup => {
+                    cup.select = `${cup.name} (${cup.year})`;
+                });
+                this.selected_cup = this.cups[this.cups.length - 1];
+                // update from database
+                this.refreshCup(this.selected_cup);
+            }
+            this.loading = false;
 
-          // Focus on top of the page when changing pages
-          location.href = "#";
-          location.href = "#app";
+            // Focus on top of the page when changing pages
+            location.href = "#";
+            location.href = "#app";
         },
         methods: {
             changeHeaders: function() {
@@ -256,21 +190,10 @@
               });
               this.headers.push("Yhteensä");
             },
-            async publishCup(isPublic) {
-              this.cup.isPublic = isPublic;
-
-              try {
-                //TODO update only this one variable (competition.results) to database, not the whole competition
-                this.$store.state.cup = this.cup;
-                this.publishing = true;
-                await CupService.updateCup(
-                  this.cup.id,
-                  this.cup
-                );
-              } catch (err) {
-                console.error(err.message);
-              }
-              this.publishing = false;
+            pickCup: function() {
+                this.$store.commit("refreshCup", this.selected_cup);
+                this.cup = this.selected_cup;
+                this.refreshCup(this.cup);
             },
             // Calculate all the cup points, and limit the number of races taken into account
             // If limit = 4, 4 races with highest points will be calculated, other races will have 5 points where the signee has participated
@@ -375,45 +298,35 @@
                 // Return sorted results
                 return results;
             },
-            async refreshCup(cup_id) {
-              this.loading = true;
-              this.errors = [];
-              try {
-                //Get competition from database (check 'client\src\CupService.js' and 'server\routes\api\cups.js' to see how this works)
-                let cups = await CupService.getCup(cup_id);
-                // IF competition found from database
-                if(cups.length){
-                    // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
-                    //TODO make a test for this?
-                    this.cup = cups[0];
-                    // Update to vuex, Assing variables from vuex (see client/store/index.js)
-                    this.$store.commit('refreshCup', cups[0]);
-                    try{
-                        this.competitions = await CompetitionService.getCupCompetitions(cup_id);
-                        // Convert dates to moment objects
-                        let counter = 1;
-                        this.competitions.forEach(competition => {
-                            this.select_numbers.push(counter);
-                            competition.start_date = moment(competition.start_date);
-                            competition.end_date = moment(competition.end_date);
-                            counter++;
-                        });
-                        this.competitions.sort(function compare(a,b) {
-                            return moment(b.start_date).isBefore(moment(a.start_date));
-                        });
-                        this.selected_competitions = this.competitions.length;
-                        this.calculateAll(this.competitions, this.selected_competitions);
-                    } catch (error) {
-                      console.error(error.message);
-                    }
+            async refreshCup(cup) {
+                this.loading = true;
+                this.errors = [];
+
+                // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
+                //TODO make a test for this?
+                this.cup = cup;
+                // Update to vuex, Assing variables from vuex (see client/store/index.js)
+                this.$store.commit('refreshCup', this.cup);
+                try{
+                    this.competitions = await CompetitionService.getCupCompetitions(cup.id);
+                    // Convert dates to moment objects
+                    let counter = 1;
+                    this.competitions.forEach(competition => {
+                        this.select_numbers.push(counter);
+                        competition.start_date = moment(competition.start_date);
+                        competition.end_date = moment(competition.end_date);
+                        counter++;
+                    });
+                    this.competitions.sort(function compare(a,b) {
+                        return moment(b.start_date).isBefore(moment(a.start_date));
+                    });
+                    this.selected_competitions = this.competitions.length;
+                    this.calculateAll(this.competitions, this.selected_competitions);
+                } catch (error) {
+                    console.error(error.message);
                 }
-                else {
-                    this.cup = {"name": "Kilpailua ei löytynyt tietokannasta..."};
-                }
-              } catch(err) {
-                console.log(err.message);
-              }
-              this.loading = false;
+
+                this.loading = false;
             },
             //Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)
             checkLogin: function() {

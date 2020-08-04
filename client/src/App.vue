@@ -195,5 +195,10 @@ table.highlight>tr:hover {
     max-height: 500px;
     overflow: auto;
 }
-
+.v-tab--disabled {
+  background: grey;
+}
+.v-tab--active {
+  background: rgb(65, 141, 255);
+}
 </style>

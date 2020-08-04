@@ -31,6 +31,7 @@ router.post('/', async (req, res) => {
         name: req.body.name,
         year: req.body.year,
         signees: req.body.signees,
+        isPublic: req.body.isPublic,
         createdAt: new Date()
     });
 
@@ -40,12 +41,12 @@ router.post('/', async (req, res) => {
 
 // Update one competition
 router.put('/:id', async (req, res) => {
-    const cups = await loadCompetitionsCollection();
+    const cups = await loadCupsCollection();
     const cup = req.body;
     delete cup._id
     await cups.replaceOne(
         {_id: new mongodb.ObjectID(req.params.id)},
-        competition
+        cup
     );
     res.status(204).send();
 })

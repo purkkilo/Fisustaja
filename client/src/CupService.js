@@ -13,6 +13,7 @@ class CupService {
             name: cup.name,
             year: cup.year,
             signees: cup.signees,
+            isPublic: cup.isPublic,
             createdAt: new Date(cup.createdAt)
           }))
         } catch (err) {
@@ -31,6 +32,7 @@ class CupService {
           name: cup.name,
           year: cup.year,
           signees: cup.signees,
+          isPublic: cup.isPublic,
           createdAt: new Date(cup.createdAt),
         }))
       } catch (err) {
@@ -49,6 +51,7 @@ class CupService {
             name: cup.name,
             year: cup.year,
             signees: cup.signees,
+            isPublic: cup.isPublic,
             createdAt: new Date(cup.createdAt)
           }))
         } catch (err) {
@@ -63,10 +66,11 @@ class CupService {
             name: cup.name,
             year: cup.year,
             signees: [],
+            isPublic: false,
         });
     }
 
-    static updateCompetition(id, cup) {
+    static updateCup(id, cup) {
       return axios.put(`${url}${id}`, cup);
     }
 

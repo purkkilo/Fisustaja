@@ -15,7 +15,7 @@ router.get('/:user_id', async (req, res) => {
     res.send(await competitions.find({user_id: req.params.user_id}).toArray());
 })
 
-// Get user's competitions
+// Get cup's competitions
 router.get('/cup/:cup_id', async (req, res) => {
     const competitions = await loadCompetitionsCollection();
     res.send(await competitions.find({cup_id: req.params.cup_id}).toArray());
@@ -25,6 +25,12 @@ router.get('/cup/:cup_id', async (req, res) => {
 router.get('/competition/:competition_id', async (req, res) => {
     const competitions = await loadCompetitionsCollection();
     res.send(await competitions.find({_id: new mongodb.ObjectID(req.params.competition_id)}).toArray());
+})
+
+// Get public competitions
+router.get('/public', async (req, res) => {
+    const competitions = await loadCompetitionsCollection();
+    res.send(await competitions.find({}).toArray());
 })
 
 // Add Competition
@@ -52,6 +58,7 @@ router.post('/', async (req, res) => {
         results: req.body.results,
         biggest_fishes:  req.body.biggest_fishes,
         biggest_amounts:  req.body.biggest_amounts,
+        isPublic: req.body.isPublic,
         createdAt: new Date()
     });
 

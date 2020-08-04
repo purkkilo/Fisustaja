@@ -112,7 +112,7 @@
               <v-row v-if="!old_info" id="signing-inputs">
                 <v-col>
                   <v-row>
-                    <v-col md="2" offset-md="4" class="input-fields">
+                    <v-col md="3" offset-md="3" class="input-fields">
                       <v-text-field
                         label="Venekunnan numero"
                         v-model="boat_number"
@@ -130,7 +130,11 @@
                     </v-col>
                   
                     <v-col md="2">
-                      <v-btn outlined large color="indigo" @click="searchSelected"><i class="material-icons left">find_replace</i>Hae tiedot</v-btn>
+                      <v-btn large color="blue" @click="searchFromCup"><i class="material-icons left">find_replace</i>Hae cupista</v-btn>
+                    </v-col>
+
+                    <v-col md="2">
+                      <v-btn large color="indigo" @click="searchSelected"><i class="material-icons left">find_replace</i>Hae ilmoittautuneista</v-btn>
                     </v-col>
                   </v-row> 
 
@@ -294,6 +298,7 @@
     import ProgressBarQuery from '../components/layout/ProgressBarQuery';
     import M from 'materialize-css';
     import CompetitionService from '../CompetitionService';
+    import CupService from '../CupService';
     import "vue-select/dist/vue-select.css";
 
     export default {
@@ -321,6 +326,7 @@
               loading_site: false,
               old_info: null,
               signees: [],
+              cup: [],
               teams: [],
               maxlength: 40,
               isTeamCompetition: false,
@@ -334,8 +340,7 @@
           M.AutoInit();
           this.checkLogin();
           if(localStorage.getItem('competition') != null) {
-              let competition_id = localStorage.getItem('competition');
-              this.refreshCompetition(competition_id);
+              this.refreshCompetition(localStorage.getItem('competition'));
           }
 
           // Focus on top of the page when changing pages
@@ -349,7 +354,6 @@
 
               try {
                 let competitions = await CompetitionService.getCompetition(competition_id);
-                this.loading_site = false;
                 if(competitions.length){
                     // Update to vuex, Assing variables and arrays from vuex (see client/store/index.js)
                     this.$store.commit('refreshCompetition', competitions[0]);
@@ -365,15 +369,20 @@
                       // Otherwise init with 1
                       this.boat_number = 1;
                       this.id = 1;
-                    }   
+                    }
+                    // Fetch cup info, to check signee from cups signees array
+                    let cups = await CupService.getCup(competitions[0].cup_id);
+                    if(cups.length) {
+                      this.cup = cups[0];
+                    }
                 }
                 else {
                   console.log("No competition found on database...");
                 }
               } catch(err) {
-                this.loading_site = false;
                 console.log(err.message);
               }
+              this.loading_site = false;
             },
             //Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)
             checkLogin: function() {
@@ -497,7 +506,7 @@
                 }
 
                 else {
-                    // Searched from Signees tab (tab with this.tab.index = 1), from table
+                    // Searched from Signees tab (this.tab === 'signees'), from table
                     if(this.selected_id){
                         let search_id = this.selected_id;
                         // Signee found based on id
@@ -535,6 +544,34 @@
 
                 }
             },
+            async searchFromCup() {
+              this.selected_id = null;
+              if(this.boat_number){
+                 let found_signee = this.cup.signees.find(signee => {
+                    return (parseInt(this.boat_number) === parseInt(signee.boat_number));
+                });
+                //If the signee is not found on cup, add it
+                if (found_signee) {
+                    this.notification = "Cupista löydetty seuraavat tiedot:"
+                    this.captain_name = found_signee.captain_name;
+                    this.temp_captain_name = found_signee.temp_captain_name;
+                    this.locality = found_signee.locality;
+                    this.team = found_signee.team;
+                    this.starting_place = found_signee.starting_place;  
+                }
+                else {
+                  // Nothing found
+                  let temp_boat_number = this.boat_number;
+                  this.clearInputs();
+                  this.boat_number = temp_boat_number;
+                  this.notification = "Tällä numerolla ei löydy cupista venekuntaa!"
+                }
+              }
+              else {
+                this.notification = "Syötä venekunnan numero ennen hakemista!";
+              }
+              
+            },
             // Select row from table, if selected --> unselect
             // selected_id bound to selected css class (on App.vue)
             selectRow:function(id){
@@ -567,6 +604,20 @@
             async saveToDatabase(new_signee, replace) {
                 // if replace == true, replace existing info, otherwise add new signee
                 replace === true ? this.$store.commit('replaceSignee', new_signee) : this.$store.commit('addSignee', new_signee);
+                 let index = this.cup.signees.findIndex(signee => {
+                    return (parseInt(new_signee.boat_number) === parseInt(signee.boat_number));
+                });
+                //If the signee is not found on cup, add it
+                if (index === -1) {
+                  console.log("Not found on cup!");
+                  this.cup.signees.push({
+                    boat_number: new_signee.boat_number,
+                    captain_name: new_signee.captain_name,
+                    temp_captain_name: new_signee.temp_captain_name,
+                    locality: new_signee.locality,
+                    starting_place: new_signee.starting_place
+                  })
+                }
                 // Create competition object
                 let comp = this.$store.getters.getCompetition;
                 this.signees = this.$store.getters.getSignees;
@@ -579,9 +630,11 @@
                   // Store to database
                   await CompetitionService.updateCompetition(comp._id, comp);
                   this.loading = false;
+                  // Update signees to cup
+                  await CupService.updateCup(comp.cup_id, this.cup);
                 } catch(err) {
                   console.error(err.message);
-                } 
+                }
             },
             // Delete signee from vuex and database
             async deleteSignee(confirmed, id) {

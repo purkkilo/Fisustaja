@@ -30,6 +30,22 @@ Vue.use(VueRouter)
       }
   },
   {
+    path: '/public-results',
+    name: 'PublicResults',
+    component: () => import(/* webpackChunkName: "about" */ '../views/PublicResults.vue'),
+    meta: {
+      guest: true
+    }
+  },
+  {
+    path: '/public-cups',
+    name: 'PublicCups',
+    component: () => import(/* webpackChunkName: "about" */ '../views/PublicCups.vue'),
+    meta: {
+      guest: true
+    }
+  },
+  {
       path: '/dashboard',
       name: 'dashboard',
       component: () => import(/* webpackChunkName: "about" */ '../views/Dashboard.vue'),

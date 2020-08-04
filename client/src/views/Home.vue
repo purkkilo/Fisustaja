@@ -1,19 +1,35 @@
 <template>
     <!-- Starting page, / -->  
     <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-    <div class="container" style="margin-top:100px">
+    <v-container style="margin-top:50px">
         <MainHeader />
-        <div class="section">
-            <div class="col s12 center-align"><h1>Fisustaja</h1></div>
-        </div>
+        <v-row class="section">
+            <v-col>
+                <h1>Fisustaja</h1>
+            </v-col>
+        </v-row>
 
-        <div class="section row inputarea">
+        <v-row>
             <!-- TODO Cool starting page... -->  
-            <div class="col s12">
+            <v-col>
                 <h4>Sovellus kalastuskilpailujen järjestämistä varten</h4>
-            </div>
-        </div>
-    </div>
+            </v-col>
+        </v-row>
+      <v-row>
+        <v-col order="first">
+          <router-link to="/public-results">
+            <v-btn large rounded color="blue darken-4" class="white--text"><i class="material-icons left">emoji_events</i>Kilpailujen tuloksia</v-btn>
+          </router-link>
+        </v-col>  
+        <v-col order="last">
+            <router-link to="/public-cups">
+                <v-btn large rounded color="green darken-4" class="white--text">
+                <i class="material-icons left">emoji_events</i>Cuppien tuloksia
+                </v-btn>
+            </router-link>
+        </v-col>
+      </v-row>
+    </v-container>
 
 </template>
 

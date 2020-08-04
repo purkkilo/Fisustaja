@@ -1,51 +1,67 @@
 <template>
 
-  <!-- /results -->  
+  <!-- /public-results -->  
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <div class="container">
-    <Header />
-    <Timedate />
-    <div class="container-transparent">
-      <div class="section">
-        <div class="col s12 center-align">
-          <h1>Tulokset</h1>
-        </div>
-      </div>
-
-      <v-row>
-        <v-col order="first">
-          <router-link to="/weighting">
-            <v-btn large rounded color="blue darken-4" class="white--text"><i class="material-icons left">fitness_center</i>Punnitus</v-btn>
-          </router-link>
-        </v-col>
-        <v-col>
-          <router-link to="/overview">
-            <v-btn large rounded color="primary"><i class="material-icons left">info</i>Kilpailun yleisnäkymä</v-btn>
-          </router-link>
-        </v-col>
-          <!-- If one of these has results, show "Lataa kaikki pdf" button -->   
-        <v-col order="last" v-if="results.length || team_results.length || biggest_fishes_results.length || biggest_amounts_results">
-            <v-btn large tile color="green darken-4" class="white--text" @click="saveAllAsPDF" :disabled="!biggest_amounts_results.length">
+    <MainHeader />
+    <v-row class="container-transparent">
+      <v-col>
+        <v-row class="section">
+            <v-col>
+              <h1>Kilpailujen tuloksia</h1>
+            </v-col>
+        </v-row>
+        <v-row v-if="competitions.length" class="scroll_table">
+          <v-col md="6" offset-md="3">
+            <v-select
+              v-model="selected_competition"
+              :items="competitions"
+              item-text="select"
+              item-value="_id"
+              label="Valitse näytettävä kilpailu"
+              :loading="loading"
+              outlined
+              @input="pickCompetition"
+              return-object
+              single-line
+            ></v-select>
+          </v-col>
+          <v-col md="3">
+            <router-link to="/public-cups">
+                <v-btn large rounded color="green darken-4" class="white--text">
+                <i class="material-icons left">emoji_events</i>Cuppien tuloksia
+                </v-btn>
+            </router-link>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col md="3" offset-md="9">
+             <v-btn large tile color="green darken-4" class="white--text" @click="saveAllAsPDF" :disabled="!biggest_amounts_results.length">
               <i class="material-icons left">picture_as_pdf</i>Lataa kaikki taulukot
             </v-btn>
-        </v-col>
-      </v-row>
-
+          </v-col>
+        </v-row>
+        <v-row v-if="loading">
+          <v-col>
+            <h2>Haetaan kilpailuja...</h2>
+            <ProgressBarQuery />
+          </v-col>
+        </v-row>
       <!-- Tabs -->
-      <v-tabs
-        v-model="tab"
-        background-color="blue lighten-2"
-        color="basil"
-        grow
-      >
-        <v-tabs-slider color="blue darken-4"></v-tabs-slider>
-        <v-tab href="#stats">Tilastoja</v-tab>
-        <v-tab href="#normal-competition">Normaalikilpailu</v-tab>
-        <v-tab v-if="isTeamCompetition" href="#team-competition">Tiimikilpailu</v-tab>
-        <v-tab v-else href="#team-competition" disabled>Ei Tiimikilpailua</v-tab>
-        <v-tab href="#biggest-fishes">Suurimmat Kalat</v-tab>
-        <v-tab href="#biggest-fish-amounts">Suurimmat Kalasaaliit</v-tab>
-      </v-tabs>
+        <v-tabs
+          v-model="tab"
+          background-color="blue lighten-2"
+          color="basil"
+          grow
+        >
+          <v-tabs-slider color="blue darken-4"></v-tabs-slider>
+          <v-tab href="#stats">Tilastoja</v-tab>
+          <v-tab href="#normal-competition">Normaalikilpailu</v-tab>
+          <v-tab v-if="isTeamCompetition" href="#team-competition">Tiimikilpailu</v-tab>
+          <v-tab v-else href="#team-competition" disabled>Ei Tiimikilpailua</v-tab>
+          <v-tab href="#biggest-fishes">Suurimmat Kalat</v-tab>
+          <v-tab href="#biggest-fish-amounts">Suurimmat Kalasaaliit</v-tab>
+        </v-tabs>
 
       <v-tabs-items v-model="tab" style="background: rgba(0,0,0,0.4);">
           <!-- Tilastoja --> 
@@ -437,55 +453,34 @@
             </v-row>
           </v-tab-item>
       </v-tabs-items>
-      <div v-if="competition">
-        <v-row v-if="!loading">
-          <v-col v-if="competition.isPublic">
-            <v-btn large tile color="grey darken-4" @click="publishCompetition(false)" class="white--text">
-              <i class="material-icons left">unpublished</i>Aseta kilpailu salaiseksi
-            </v-btn>
-          </v-col>
-          <v-col v-else>
-            <v-btn large tile color="green darken-4" @click="publishCompetition(true)" class="white--text">
-              <i class="material-icons left">published_with_changes</i>Aseta kilpailu julkiseksi
-            </v-btn>
-          </v-col>
-          <v-col>
-            <v-btn large tile color="blue darken-4" @click="refreshCompetition(competition._id)" class="white--text">
-              <i class="material-icons left">update</i>Päivitä tulokset
-            </v-btn>
-          </v-col> 
-        </v-row>
-        <div v-else>
-          <h2>Päivitetään tuloksia tietokannasta...</h2>
-          <ProgressBarQuery />
-        </div>
-      </div>
-    </div>
+      </v-col>
+    </v-row>
   </div>
 </template>
 <script>
     "use strict";
-    import Timedate from "../components/layout/Timedate";
-    import Header from "../components/layout/Header";
+    import MainHeader from "../components/layout/MainHeader";
     import M from "materialize-css";
     import "vue-select/dist/vue-select.css";
-    import jsPDF from "jspdf";
-    import "jspdf-autotable";
     import moment from "moment";
     import CompetitionService from "../CompetitionService";
     import ProgressBarQuery from "../components/layout/ProgressBarQuery";
     import Chart from "chart.js";
     import "chartjs-plugin-labels";
+    import jsPDF from "jspdf";
+    import "jspdf-autotable";
 
     export default {
-      name: "Results",
+      name: "PublicResults",
       components: {
-        Timedate,
-        Header,
+        MainHeader,
         ProgressBarQuery
       },
       data() {
         return {
+          competitions: [],
+          competition: null,
+          selected_competition: null,
           loading: false,
           tab: null,
           signees: [],
@@ -503,7 +498,6 @@
           selected_biggest_amount: null,
           results_found_fishes: "",
           results_found_amounts: "",
-          competition: null,
           isTeamCompetition: true,
           calculated_total_weights: null,
           calculated_fish_weights: null,
@@ -522,39 +516,58 @@
             "Cup osal. pisteet",
             "Yht."
           ]
+  
         };
       },
-      mounted() {
+      async mounted() {
         //Init materialize elements
         M.AutoInit();
         /* eslint-disable no-unused-vars */
-        this.checkLogin();
-        if (localStorage.getItem("competition") != null) {
-          let competition_id = localStorage.getItem("competition");
-          this.refreshCompetition(competition_id);
-        }
 
+        try {
+          this.loading = true;
+          // Query competition with id
+          //TODO move the filtering of public competitions to Competitionservice.js and competitions.js
+          // this.competitions = await CompetitionService.getPublicCompetitions();
+          this.competitions = await CompetitionService.getAllCompetitions();
+          if(this.competitions.length) {
+            this.competitions = this.competitions.filter(competition => {return competition.isPublic});
+            this.competitions.forEach(competition => {
+
+                competition.start_date = moment(competition.start_date);
+                competition.end_date = moment(competition.end_date);
+                competition.select = `${competition.name}, ${competition.start_date.year()}  (${competition.cup_name})`
+            });
+            this.selected_competition = this.competitions[0];
+            this.competition = this.selected_competition;
+            // Sort them based on start_date so the oldest competitions are the last
+            this.competitions.sort(function compare(a,b) {
+                return moment(b.start_date).isAfter(moment(a.start_date));
+            });
+            // Update to vuex, Assing variables and arrays from vuex (see client/store/index.js)
+            this.$store.commit("refreshCompetition", this.competition);
+            this.refreshCompetition();
+          }
+          else {
+              this.signees = [];
+              this.biggest_fishes = [];
+              this.biggest_amounts = [];
+          }
+        } catch (error) {
+          console.error(error.message);
+        }
+        this.loading = false;
         // Focus on top of the page when changing pages
         location.href = "#";
         location.href = "#app";
       },
       methods: {
         // Fetch competition from database, and update all the arrays
-        async refreshCompetition(competition_id) {
+        async refreshCompetition() {
           this.loading = true;
           this.fish_names = []; // Fish names, including "Voittajat"
           this.table_fish_names = []; // only fish names
           try {
-            // Query competition with id
-            let competitions = await CompetitionService.getCompetition(
-              competition_id
-            );
-            // If competition found
-            if (competitions.length) {
-              // Pick first result (the array should only have one, since id's are unique)
-              this.competition = competitions[0];
-              // Update to vuex, Assing variables and arrays from vuex (see client/store/index.js)
-              this.$store.commit("refreshCompetition", this.competition);
               this.isTeamCompetition = this.$store.getters.isTeamCompetition;
               this.signees = this.$store.getters.getResultSignees;
               this.biggest_fishes = this.$store.getters.getBiggestFishes;
@@ -570,32 +583,15 @@
               // TODO update all the results with some time interval from database
               this.calculateAll();
               this.drawCharts();
-            } else {
-              this.signees = [];
-              this.biggest_fishes = [];
-              this.biggest_amounts = [];
-              console.log("No competition found on database...");
-            }
           } catch (err) {
-            console.log(err.message);
+            console.error(err);
           }
           this.loading = false;
         },
-        async publishCompetition(isPublic) {
-          this.competition.isPublic = isPublic;
-
-          try {
-            //TODO update only this one variable (competition.results) to database, not the whole competition
-            this.$store.commit("refreshCompetition", this.competition);
-            this.loading = true;
-            await CompetitionService.updateCompetition(
-              this.competition._id,
-              this.competition
-            );
-          } catch (err) {
-            console.error(err.message);
-          }
-          this.loading = false;
+        pickCompetition: function() {
+          this.$store.commit("refreshCompetition", this.selected_competition);
+          this.competition = this.selected_competition;
+          this.refreshCompetition();
         },
         // Parse data, define charts, draw them
         drawCharts: function() {
@@ -700,12 +696,18 @@
           /* eslint-disable no-unused-vars */
           // Draw the charts to canvas
           var fishes_ctx = document.getElementById("fishesChart").getContext("2d");
-          this.fishes_chart = new Chart(fishes_ctx, fishes_chart_data);
+          let fishes_chart = new Chart(fishes_ctx, fishes_chart_data);
           var signees_ctx = document
             .getElementById("signeesChart")
             .getContext("2d");
-          this.signees_chart = new Chart(signees_ctx, signee_chart_data);
+          let signees_chart = new Chart(signees_ctx, signee_chart_data);
           /* eslint-disable no-unused-vars */
+          if(this.fishes_chart){
+            this.fishes_chart.destroy();
+            this.signees_chart.destroy();
+          }
+          this.fishes_chart = fishes_chart;
+          this.signees_chart = signees_chart;
         },
         //Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)
         checkLogin: function() {
@@ -966,7 +968,7 @@
               this.competition
             );
           } catch (err) {
-            console.log(err.message);
+            console.error(err.message);
             this.calculated_fish_weights = null;
           }
         },
@@ -1059,60 +1061,6 @@
 
             this.biggest_amounts_results = fish_results;
           }
-        },
-        // For naming the pdf, replace certain characters
-        replaceAll: function(string, search, replace) {
-          return string.split(search).join(replace);
-        },
-        // Parses dictionary/json to array, for pdf autotables
-        dictToArray:function(dict, type){
-          const temp_arr = Object.entries(dict);
-          const arr = [];
-          let placement = 1;
-          temp_arr.forEach(element => {
-            let values = Object.values(element[1]);
-            // Normaalikilpailu, pisteet
-            if(type === 1){
-              values[0] = String(values[0]) + ".";
-              values[1] = "(" + String(values[1]) + ")";
-              values[5] = values[5].toLocaleString() + " p";
-            }
-            // Normaalikilpailu, kalat
-            if(type === 2){
-              values[0] = String(values[0]) + ".";
-              values[1] = "(" + String(values[1]) + ")";
-              for (let i of range(3, values.length-2)){
-                values[i] = values[i].toLocaleString() + " g";
-              }
-              values[values.length-1] = values[values.length-1].toLocaleString() + " p"
-            }
-            // Suurimmat kalat, suurimmat kalasaaliit
-            if(type === 3){
-              let temp_bnumber = values[0];
-              let temp_captain = values[1];
-              let temp_points = values[2].toLocaleString() + " g";
-              values[0] = String(placement) + ".";
-              values[1] = "(" + String(temp_bnumber) + ")";
-              values[2] = temp_captain;
-              values[3] = temp_points;
-            }
-            //Voittajat
-            if(type === 4){
-              values[1] = "(" + String(values[1]) + ")";
-              values[3] = values[values.length-1].toLocaleString() + " g"
-            }
-            placement++;
-            arr.push(values);
-          });
-          return arr
-        },
-        // Returns date in format dd/mm/yyyy as string
-        formatDate: function(start_date) {
-            start_date = moment(start_date);
-            let formatted_date = `${start_date.date()}.${start_date.month() +
-            1}.${start_date.year()}`;
-
-            return formatted_date
         },
         // Convert the charts and the tables to pdf
         saveAsPDF: function(competition_type, table_id) {
@@ -1523,5 +1471,6 @@
         yield* range(start + 1, end);
     }
 </script>
+
 <style scoped>
 </style>
