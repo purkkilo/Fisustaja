@@ -795,7 +795,6 @@ export default {
       });
       //If the signee is not found on cup, add it
       if (index === -1) {
-        console.log("Not found on cup!");
         this.cup.signees.push({
           boat_number: new_signee.boat_number,
           captain_name: new_signee.captain_name,

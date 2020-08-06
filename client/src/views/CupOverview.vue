@@ -167,9 +167,9 @@
       <v-tab-item :value="'points'">
         <v-row>
           <v-col>
-            <v-row>
+            <v-row v-if="results.length">
               <v-col>
-                <h1>Cupin pisteet</h1>
+                <h1>Cupin kokonaispisteet</h1>
               </v-col>
             </v-row>
             <v-row
@@ -189,7 +189,7 @@
               <v-col class="d-flex" md="4">
                 <v-select
                   :items="select_numbers"
-                  label="Cup-sijoittumispisteisiin vaikuttavien kilpailujen määrä"
+                  label="Cup sijoittumispisteisiin vaikuttavien kilpailujen määrä"
                   outlined
                   v-model="selected_competitions"
                   @input="calculateAll(competitions, selected_competitions)"
@@ -207,7 +207,7 @@
                 </v-btn>
               </v-col>
             </v-row>
-            <v-row v-if="competitions.length">
+            <v-row v-if="isResults">
               <v-col class="scroll_table">
                 <table
                   id="normal-table"
@@ -259,6 +259,33 @@
             </v-row>
             <v-row v-else>
               <v-col>
+                <h2>Kilpailuissa ei vielä tuloksia!</h2>
+              </v-col>
+            </v-row>
+            <v-row v-if="competitions.length && cup">
+              <v-col v-if="loading">
+                <p class="flow-text">Päivitetään tuloksia...</p>
+              </v-col>
+            </v-row>
+            <v-row v-if="competitions.length && cup">
+              <v-col>
+                <v-btn
+                  id="updatebtn"
+                  large
+                  tile
+                  :loading="loading"
+                  :disabled="!isResults"
+                  color="blue darken-4"
+                  @click="refreshCup(cup.id)"
+                  class="white--text"
+                >
+                  <i class="material-icons left">update</i>Päivitä cupin
+                  tulokset
+                </v-btn>
+              </v-col>
+            </v-row>
+            <v-row v-else>
+              <v-col>
                 <h2>Ei kilpailuja rekisteröitynä!</h2>
               </v-col>
             </v-row>
@@ -270,6 +297,7 @@
 </template>
 <script>
 "use strict";
+import M from "materialize-css";
 import Timedate from "../components/layout/Timedate";
 import Header from "../components/layout/Header";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
@@ -292,6 +320,7 @@ export default {
       competitions: [],
       headers: [],
       results: [],
+      isResults: false,
       loading: false,
       publishing: false,
       errors: [],
@@ -341,7 +370,7 @@ export default {
       this.cup.isPublic = isPublic;
 
       try {
-        //TODO update only this one variable (competition.results) to database, not the whole competition
+        //TODO update only this one variable (competition.normal_points) to database, not the whole competition
         this.$store.state.cup = this.cup;
         this.publishing = true;
         await CupService.updateCup(this.cup.id, this.cup);
@@ -354,6 +383,7 @@ export default {
     // If limit = 4, 4 races with highest points will be calculated, other races will have 5 points where the signee has participated
     calculateAll: function(competitions, limit) {
       let all_results = [];
+      this.isResults = false;
       this.headers = [];
       this.headers.push("Sijoitus");
       this.headers.push("Kilp. Nro");
@@ -363,9 +393,9 @@ export default {
         // Dynamic headers, because competition names change
         this.headers.push(competition.locality);
         //If there are any results in the competition
-        if (competition.results.length) {
+        if (competition.normal_points.length) {
           //Loop through each competition's results
-          competition.results.forEach((signee) => {
+          competition.normal_points.forEach((signee) => {
             // Get each signee's results from array that has all the results
             let index = all_results.findIndex((item) => {
               return (
@@ -395,17 +425,19 @@ export default {
           });
         }
       });
+      if (all_results.length) {
+        this.isResults = true;
+        // limits the amount of competitions are taken into account in the cup
+        all_results = this.limitCompetitions(all_results, limit);
 
-      // limits the amount of competitions are taken into account in the cup
-      all_results = this.limitCompetitions(all_results, limit);
-
-      this.headers.push("Yhteensä");
-      // Sort the array based on total cup points
-      this.results = all_results.sort(function compare(a, b) {
-        return (
-          parseInt(b.cup_results["Total"]) - parseInt(a.cup_results["Total"])
-        );
-      });
+        this.headers.push("Yhteensä");
+        // Sort the array based on total cup points
+        this.results = all_results.sort(function compare(a, b) {
+          return (
+            parseInt(b.cup_results["Total"]) - parseInt(a.cup_results["Total"])
+          );
+        });
+      }
     },
     limitCompetitions: function(results, limit) {
       limit = limit < 0 ? 0 : limit; // Make sure limit is at least 1
@@ -499,11 +531,10 @@ export default {
             });
             this.selected_competitions = this.competitions.length;
             this.calculateAll(this.competitions, this.selected_competitions);
+            M.toast({ html: "Tiedot ajantasalla!" });
           } catch (error) {
             console.error(error.message);
           }
-        } else {
-          this.cup = { name: "Kilpailua ei löytynyt tietokannasta..." };
         }
       } catch (err) {
         console.log(err.message);
@@ -563,10 +594,16 @@ export default {
       doc.setFontSize(24);
       doc.text(10, 10, title, { align: "left" });
       doc.line(0, 15, 400, 15);
-      doc.setFontSize(20);
+      doc.setFontSize(14);
 
       // Table, based on given table_id, and table title based on competition_type
-      doc.text(100, 30, table_title, { align: "center" });
+      doc.text(
+        100,
+        30,
+        table_title +
+          ` (${this.selected_competitions}/${this.competitions.length} parasta kilpailua otettu huomioon)`,
+        { align: "center" }
+      );
       doc.autoTable({
         html: table_id,
         styles: {

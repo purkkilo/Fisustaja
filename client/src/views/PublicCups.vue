@@ -34,6 +34,7 @@
           item-value="_id"
           :hint="`${cup.name} (${cup.year})`"
           outlined
+          @input="pickCup"
           return-object
           single-line
         ></v-autocomplete>
@@ -48,9 +49,9 @@
     </v-row>
     <v-row v-if="!loading">
       <v-col>
-        <v-row>
+        <v-row v-if="results.length">
           <v-col>
-            <h1>Cupin pisteet</h1>
+            <h1>Cupin kokonaispisteet</h1>
           </v-col>
         </v-row>
         <v-row
@@ -70,7 +71,7 @@
           <v-col class="d-flex" md="4">
             <v-select
               :items="select_numbers"
-              label="Cup-sijoittumispisteisiin vaikuttavien kilpailujen määrä"
+              label="Cup sijoittumispisteisiin vaikuttavien kilpailujen määrä"
               outlined
               v-model="selected_competitions"
               @input="calculateAll(competitions, selected_competitions)"
@@ -136,12 +137,32 @@
             </table>
           </v-col>
         </v-row>
+        <v-row v-if="competitions.length && selected_cup">
+          <v-col v-if="loading">
+            <p class="flow-text">Päivitetään tuloksia...</p>
+          </v-col>
+        </v-row>
+        <v-row v-if="competitions.length && selected_cup">
+          <v-col>
+            <v-btn
+              id="updatebtn"
+              large
+              tile
+              :loading="loading"
+              color="blue darken-4"
+              @click="refreshCup(selected_cup)"
+              class="white--text"
+            >
+              <i class="material-icons left">update</i>Päivitä cupin tulokset
+            </v-btn>
+          </v-col>
+        </v-row>
         <v-row v-else>
           <v-col v-if="loading">
             <h2>Ei cuppeja rekisteröitynä!</h2>
           </v-col>
           <v-col v-else>
-            <h2>Haetaan kilpailuja...</h2>
+            <h2>Haetaan kilpailujen tuloksia...</h2>
             <ProgressBarQuery />
           </v-col>
         </v-row>
@@ -150,7 +171,7 @@
     <v-row v-else>
       <v-row>
         <v-col>
-          <h2>Haetaan Cuppeja...</h2>
+          <h2>Haetaan uusimpia kilpailujen tietoja...</h2>
           <ProgressBarQuery />
         </v-col>
       </v-row>
@@ -159,6 +180,7 @@
 </template>
 <script>
 "use strict";
+import M from "materialize-css";
 import MainHeader from "../components/layout/MainHeader";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import CupService from "../CupService";
@@ -195,7 +217,6 @@ export default {
     //Check if user is logged in has admin status, update header
     this.checkLogin();
 
-    this.loading = true;
     let cups = await CupService.getAllCups();
     if (cups.length) {
       this.cups = cups.filter((cup) => {
@@ -208,7 +229,6 @@ export default {
       // update from database
       this.refreshCup(this.selected_cup);
     }
-    this.loading = false;
 
     // Focus on top of the page when changing pages
     location.href = "#";
@@ -249,9 +269,9 @@ export default {
         // Dynamic headers, because competition names change
         this.headers.push(competition.locality);
         //If there are any results in the competition
-        if (competition.results.length) {
+        if (competition.normal_points.length) {
           //Loop through each competition's results
-          competition.results.forEach((signee) => {
+          competition.normal_points.forEach((signee) => {
             // Get each signee's results from array that has all the results
             let index = all_results.findIndex((item) => {
               return (
@@ -368,6 +388,9 @@ export default {
         this.competitions = await CompetitionService.getCupCompetitions(cup.id);
         // Convert dates to moment objects
         let counter = 1;
+        this.competitions = this.competitions.filter((competition) => {
+          return competition.isPublic;
+        });
         this.competitions.forEach((competition) => {
           this.select_numbers.push(counter);
           competition.start_date = moment(competition.start_date);
@@ -379,6 +402,7 @@ export default {
         });
         this.selected_competitions = this.competitions.length;
         this.calculateAll(this.competitions, this.selected_competitions);
+        M.toast({ html: "Tiedot ajantasalla!" });
       } catch (error) {
         console.error(error.message);
       }
@@ -411,6 +435,7 @@ export default {
         "competition",
         JSON.stringify({
           id: competition._id,
+          start_date: competition.start_date,
           end_date: competition.end_date,
         })
       );
@@ -437,10 +462,16 @@ export default {
       doc.setFontSize(24);
       doc.text(10, 10, title, { align: "left" });
       doc.line(0, 15, 400, 15);
-      doc.setFontSize(20);
+      doc.setFontSize(14);
 
       // Table, based on given table_id, and table title based on competition_type
-      doc.text(100, 30, table_title, { align: "center" });
+      doc.text(
+        100,
+        30,
+        table_title +
+          ` (${this.selected_competitions}/${this.competitions.length} parasta kilpailua otettu huomioon)`,
+        { align: "center" }
+      );
       doc.autoTable({
         html: table_id,
         styles: {

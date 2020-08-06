@@ -34,14 +34,28 @@
           </v-col>
         </v-row>
         <v-row>
-          <v-col md="3" offset-md="9">
+          <v-col md="3" offset-md="4">
+            <v-btn
+              large
+              tile
+              color="yellow"
+              @click="
+                competition = null;
+                selected_competition = null;
+              "
+              :disabled="!competition"
+            >
+              <i class="material-icons left">remove_circle</i>Peruuta valinta
+            </v-btn>
+          </v-col>
+          <v-col md="3" offset-md="2">
             <v-btn
               large
               tile
               color="green darken-4"
               class="white--text"
               @click="saveAllAsPDF"
-              :disabled="!biggest_amounts_results.length"
+              :disabled="!biggest_amounts_results.length || !competition"
             >
               <i class="material-icons left">picture_as_pdf</i>Lataa kaikki
               taulukot
@@ -56,6 +70,7 @@
         </v-row>
         <!-- Tabs -->
         <v-tabs
+          v-if="!loading"
           v-model="tab"
           background-color="blue lighten-2"
           color="basil"
@@ -63,21 +78,34 @@
         >
           <v-tabs-slider color="blue darken-4"></v-tabs-slider>
           <v-tab href="#stats">Tilastoja</v-tab>
-          <v-tab href="#normal-competition">Normaalikilpailu</v-tab>
-          <v-tab v-if="isTeamCompetition" href="#team-competition"
+          <v-tab href="#normal-competition" :disabled="!selected_competition"
+            >Normaalikilpailu</v-tab
+          >
+          <v-tab
+            v-if="isTeamCompetition"
+            href="#team-competition"
+            :disabled="!selected_competition"
             >Tiimikilpailu</v-tab
           >
           <v-tab v-else href="#team-competition" disabled
             >Ei Tiimikilpailua</v-tab
           >
-          <v-tab href="#biggest-fishes">Suurimmat Kalat</v-tab>
-          <v-tab href="#biggest-fish-amounts">Suurimmat Kalasaaliit</v-tab>
+          <v-tab href="#biggest-fishes" :disabled="!selected_competition"
+            >Suurimmat Kalat</v-tab
+          >
+          <v-tab href="#biggest-fish-amounts" :disabled="!selected_competition"
+            >Suurimmat Kalasaaliit</v-tab
+          >
         </v-tabs>
 
-        <v-tabs-items v-model="tab" style="background: rgba(0,0,0,0.4);">
+        <v-tabs-items
+          v-if="!loading"
+          v-model="tab"
+          style="background: rgba(0,0,0,0.4);"
+        >
           <!-- Tilastoja -->
           <v-tab-item class="inputarea" :value="'stats'">
-            <v-row style="padding-bottom:50px">
+            <v-row style="padding-bottom:50px" v-if="competition">
               <v-row>
                 <v-col md="12">
                   <div
@@ -241,7 +269,7 @@
               </v-col>
             </v-row>
             <!-- Save as pdf button, is disabled if there are no results -->
-            <v-row class="row">
+            <v-row class="row" v-if="competition">
               <v-col>
                 <v-btn
                   large
@@ -254,6 +282,11 @@
                   ><i class="material-icons left">picture_as_pdf</i>Lataa
                   pdf</v-btn
                 >
+              </v-col>
+            </v-row>
+            <v-row v-else>
+              <v-col class="title">
+                <p class="flow-text">Kilpailua ei valittuna!</p>
               </v-col>
             </v-row>
           </v-tab-item>
@@ -277,7 +310,7 @@
                     />
                   </v-col>
                 </v-row>
-                <v-row class="row" v-if="results.length">
+                <v-row class="row" v-if="normal_points.length">
                   <v-col class="scroll_table">
                     <!--TODO Possibly change tables to https://vuetifyjs.com/en/components/data-tables/#data-tables ? or implement on vue-->
                     <table
@@ -285,7 +318,7 @@
                       class="highlight centered responsive-table tablearea table_header scroll_table"
                     >
                       <caption
-                        v-if="results.length"
+                        v-if="normal_points.length"
                         class="center-align flow-text"
                       >
                         Normaalikilpailu ({{
@@ -303,7 +336,10 @@
                         </tr>
                       </thead>
                       <tbody v-if="selected_normal == 'Pisteet'">
-                        <tr v-for="(signee, index) in results" :key="index">
+                        <tr
+                          v-for="(signee, index) in normal_points"
+                          :key="index"
+                        >
                           <th
                             class="center-align"
                             style="border:1px solid black"
@@ -337,7 +373,10 @@
                         </tr>
                       </tbody>
                       <tbody v-else>
-                        <tr v-for="(signee, index) in results" :key="index">
+                        <tr
+                          v-for="(signee, index) in normal_weights"
+                          :key="index"
+                        >
                           <th
                             class="center-align"
                             style="border:1px solid black"
@@ -374,7 +413,7 @@
                     <ProgressBarQuery />
                   </v-col>
                 </v-row>
-                <v-row v-if="results.length">
+                <v-row v-if="normal_points.length">
                   <v-col>
                     <v-btn
                       large
@@ -453,12 +492,15 @@
                 </table>
               </v-col>
               <v-col v-else>
-                <v-col v-if="!loading"> </v-col>
-                <p v-if="!loading" class="flow-text">Ei tuloksia, vielä...</p>
-                <v-col v-else>
-                  <h2>Päivitetään tuloksia tietokannasta...</h2>
-                  <ProgressBarQuery />
-                </v-col>
+                <v-row>
+                  <v-col v-if="!loading">
+                    <p class="flow-text">Ei tuloksia, vielä...</p>
+                  </v-col>
+                  <v-col v-else>
+                    <h2>Päivitetään tuloksia tietokannasta...</h2>
+                    <ProgressBarQuery />
+                  </v-col>
+                </v-row>
               </v-col>
             </v-row>
             <v-row v-if="team_results.length">
@@ -701,6 +743,29 @@
             </v-row>
           </v-tab-item>
         </v-tabs-items>
+        <div v-if="competition">
+          <v-row v-if="!loading">
+            <v-col>
+              <v-btn
+                id="updatebtn"
+                large
+                tile
+                :loading="loading"
+                color="blue darken-4"
+                @click="refreshCompetition(true)"
+                class="white--text"
+              >
+                <i class="material-icons left">update</i>Päivitä tulokset
+              </v-btn>
+            </v-col>
+          </v-row>
+          <v-row v-else>
+            <v-col>
+              <h2>Päivitetään tuloksia tietokannasta...</h2>
+              <ProgressBarQuery />
+            </v-col>
+          </v-row>
+        </div>
       </v-col>
     </v-row>
   </v-container>
@@ -787,15 +852,13 @@ export default {
             competition.name
           }, ${competition.start_date.year()}  (${competition.cup_name})`;
         });
-        this.selected_competition = this.competitions[0];
-        this.competition = this.selected_competition;
         // Sort them based on start_date so the oldest competitions are the last
         this.competitions.sort(function compare(a, b) {
           return moment(b.start_date).isAfter(moment(a.start_date));
         });
         // Update to vuex, Assing variables and arrays from vuex (see client/store/index.js)
         this.$store.commit("refreshCompetition", this.competition);
-        this.refreshCompetition();
+        this.refreshCompetition(false);
       } else {
         this.signees = [];
         this.biggest_fishes = [];
@@ -811,35 +874,67 @@ export default {
   },
   methods: {
     // Fetch competition from database, and update all the arrays
-    async refreshCompetition() {
-      this.loading = true;
-      this.fish_names = []; // Fish names, including "Voittajat"
-      this.table_fish_names = []; // only fish names
-      try {
-        this.isTeamCompetition = this.$store.getters.isTeamCompetition;
-        this.signees = this.$store.getters.getResultSignees;
-        this.biggest_fishes = this.$store.getters.getBiggestFishes;
-        this.biggest_amounts = this.$store.getters.getBiggestAmounts;
-        this.calculateTotalWeights();
-        this.calculated_total_weights = this.$store.getters.getCompetitionTotalWeights;
-        let temp_fish_names = this.$store.getters.getCompetitionFishes;
-        this.fish_names.push("Voittajat");
-        temp_fish_names.forEach((fish) => {
-          this.fish_names.push(fish.name);
-          this.table_fish_names.push(fish.name);
-        });
-        // TODO update all the results with some time interval from database
-        this.calculateAll();
-        this.drawCharts();
-      } catch (err) {
-        console.error(err);
+    async refreshCompetition(reload) {
+      if (this.competition) {
+        this.loading = true;
+        // Load from database
+        if (reload) {
+          //Get competition from database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
+          let competitions = await CompetitionService.getCompetition(
+            this.competition._id
+          );
+          this.loading = false;
+          // IF competition found from database
+          if (competitions.length) {
+            // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
+            //TODO make a test for this?
+            this.competition = competitions[0];
+            this.$store.commit("refreshCompetition", competitions[0]);
+          }
+        }
+        // Else update and calculate from picked competition
+        this.fish_names = []; // Fish names, including "Voittajat"
+        this.table_fish_names = []; // only fish names
+        try {
+          this.isTeamCompetition = this.$store.getters.isTeamCompetition;
+          this.signees = this.$store.getters.getResultSignees;
+          this.normal_points = this.competition.normal_points;
+          this.normal_weights = this.competition.normal_weights;
+          if (this.isTeamCompetition) {
+            this.team_results = this.competition.team_results;
+          }
+          this.biggest_fishes = this.$store.getters.getBiggestFishes;
+          this.biggest_amounts = this.$store.getters.getBiggestAmounts;
+          this.calculated_total_weights = this.$store.getters.getCompetitionTotalWeights;
+          this.calculated_fish_weights = this.competition.fish_stats;
+          this.selected_normal = "Pisteet";
+          let temp_fish_names = this.$store.getters.getCompetitionFishes;
+          this.fish_names.push("Voittajat");
+          temp_fish_names.forEach((fish) => {
+            this.fish_names.push(fish.name);
+            this.table_fish_names.push(fish.name);
+          });
+          // TODO update all the results with some time interval from database
+          this.calculateAll();
+          if (this.fishes_chart && this.signees_chart) {
+            this.fishes_chart.destroy();
+            this.signees_chart.destroy();
+          }
+          this.$nextTick(() => this.drawCharts());
+          if (reload) {
+            M.toast({ html: "Tiedot ajantasalla!" });
+          }
+        } catch (err) {
+          console.error(err);
+        }
+
+        this.loading = false;
       }
-      this.loading = false;
     },
     pickCompetition: function() {
       this.$store.commit("refreshCompetition", this.selected_competition);
       this.competition = this.selected_competition;
-      this.refreshCompetition();
+      this.refreshCompetition(false);
     },
     // Parse data, define charts, draw them
     drawCharts: function() {
@@ -943,23 +1038,22 @@ export default {
           },
         },
       };
-      //FIXME not showing the animation when this is here, but throws and error when it's below the let signees_chart
-      if (this.fishes_chart && this.signees_chart) {
-        this.fishes_chart.destroy();
-        this.signees_chart.destroy();
-      }
       /* eslint-disable no-unused-vars */
       // Draw the charts to canvas
-      var fishes_ctx = document.getElementById("fishesChart").getContext("2d");
-      let fishes_chart = new Chart(fishes_ctx, fishes_chart_data);
-      var signees_ctx = document
-        .getElementById("signeesChart")
-        .getContext("2d");
-      let signees_chart = new Chart(signees_ctx, signee_chart_data);
-      /* eslint-disable no-unused-vars */
+      if (document.getElementById("fishesChart")) {
+        var fishes_ctx = document
+          .getElementById("fishesChart")
+          .getContext("2d");
+        let fishes_chart = new Chart(fishes_ctx, fishes_chart_data);
+        var signees_ctx = document
+          .getElementById("signeesChart")
+          .getContext("2d");
+        let signees_chart = new Chart(signees_ctx, signee_chart_data);
+        /* eslint-disable no-unused-vars */
 
-      this.fishes_chart = fishes_chart;
-      this.signees_chart = signees_chart;
+        this.fishes_chart = fishes_chart;
+        this.signees_chart = signees_chart;
+      }
     },
     //Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)
     checkLogin: function() {
@@ -981,10 +1075,6 @@ export default {
 
     // "Wrapper" to calculate all the results at once
     async calculateAll() {
-      this.calculateNormalResults();
-      if (this.isTeamCompetition) {
-        this.calculateTeamResults();
-      }
       this.calculateBiggestFishes();
       this.calculateBiggestAmounts();
     },
@@ -1008,8 +1098,6 @@ export default {
           "Cup osal. pisteet",
           "Yht.",
         ];
-
-        this.results = this.normal_points;
       }
       // If "Kalat" selected in v-select, update headers and this.results (table data)
       else {
@@ -1019,211 +1107,6 @@ export default {
           this.normal_headers.push(name);
         });
         this.normal_headers.push("Tulos");
-        this.results = this.normal_weights;
-      }
-    },
-
-    // "Normaalikilpailu" results
-    calculateNormalResults: function() {
-      const competition = this.competition;
-      const cup_points_multiplier = competition.cup_points_multiplier;
-      let cup_placement_points = competition.cup_placement_points;
-      const cup_participation_points = competition.cup_participation_points;
-      let last_points = 0;
-      let tied_competitors = 0;
-      let placement = 1;
-      let counter = 0;
-      let cup_temp_points;
-      let cup_points_total;
-
-      this.results = [];
-      this.normal_points = [];
-      this.normal_weights = [];
-
-      // For every signee, calculate their cup points and placing
-      //TODO rework the structure, seems more complex than it should be
-      this.signees.forEach((signee) => {
-        cup_points_total = 0;
-        // First competitor
-        if (!this.results.length) {
-          // If no points --> no placement points
-          if (signee.total_points == 0) {
-            cup_placement_points = 0;
-          }
-          // Formula for cup points calculations, cup_points_multiplier only scales the placement points
-          cup_points_total =
-            cup_placement_points * cup_points_multiplier +
-            cup_participation_points;
-        }
-        // After first competitor
-        else {
-          // If competitor has same points as last competitor
-          if (signee.total_points == last_points) {
-            placement -= 1; // Keep the same placing (adds 1 later)
-            tied_competitors += 1; // remember amount of tied competitors for later to deduct more points from next not tied competitor
-          }
-          // If no tie, add tied_competitors to placement, to give correct placement to next not tied competitor
-          else {
-            placement += tied_competitors;
-          }
-
-          // If no points --> no placement points
-          if (signee.total_points == 0) {
-            cup_placement_points = 0;
-            // if there is a tie on points, increment tied competitors
-            if (signee.total_points === last_points) {
-              tied_competitors += 1;
-            }
-          }
-
-          // For the first 6 competitors, deduct 2 points, after the first 5 deductions, deduct 1
-          // tied_competitors makes sure that ties are taken into account
-          if (counter <= 5) {
-            // If there are no ties
-            if (signee.total_points !== last_points) {
-              cup_placement_points -= 2 * (tied_competitors + 1);
-              tied_competitors = 0;
-            }
-          } else if (cup_placement_points <= 0) {
-            // make sure points won't go negative
-            cup_placement_points = 0;
-            tied_competitors = 0;
-          } else {
-            // If the points differ from last competitor, deduct placement points
-            if (signee.total_points !== last_points) {
-              //Normal point calculation
-              cup_placement_points -= 1 * (tied_competitors + 1);
-              tied_competitors = 0;
-            }
-          }
-        }
-
-        // Calculate total cup points, cup points multiplier only scales the placement points
-        if (cup_placement_points > 0) {
-          cup_points_total =
-            cup_placement_points * cup_points_multiplier +
-            cup_participation_points;
-        } else {
-          cup_points_total = cup_participation_points;
-        }
-
-        //For showing cup points, "Pisteet" on v-select
-        this.normal_points.push({
-          placement: placement,
-          boat_number: signee.boat_number,
-          captain_name: signee.captain_name,
-          temp_captain_name: signee.temp_captain_name,
-          locality: signee.locality,
-          total_points: signee.total_points.toLocaleString(),
-          cup_placement_points: cup_placement_points * cup_points_multiplier,
-          cup_participation_points: cup_participation_points,
-          cup_points_total: cup_points_total,
-        });
-
-        counter++;
-
-        //For showing fish weights, "Kalat" on v-select
-        let temp_dict = {};
-        temp_dict.placement = placement;
-        temp_dict.boat_number = signee.boat_number;
-        temp_dict.captain_name = signee.captain_name;
-
-        // For each fish, get the weight and fish name
-        signee.weights.forEach((weights) => {
-          let name = weights.name;
-          let weight = weights.weights;
-          temp_dict[name] = weight;
-        });
-        temp_dict.total_points = signee.total_points;
-        this.normal_weights.push(temp_dict);
-        last_points = signee.total_points;
-        // Default the table to show "Pisteet"
-        this.results = this.normal_points;
-        // Calculate next placement
-        if (tied_competitors > 0) {
-          placement += tied_competitors;
-        } else {
-          placement++;
-        }
-      });
-
-      this.switchNormalResults();
-    },
-
-    calculateTeamResults: function() {
-      var team_names = [];
-
-      // Get all the team names
-      this.signees.forEach((signee) => {
-        if (signee.team !== "-" && signee.team !== null) {
-          team_names.push(signee.team);
-        }
-      });
-      // Only unique ones needed
-      team_names = [...new Set(team_names)];
-
-      // Get all the members of each team and add up their points
-      team_names.forEach((team_name) => {
-        let team = this.signees.filter((signee) => signee.team == team_name);
-        let team_points = 0;
-        let members = [];
-
-        team.forEach((member) => {
-          members.push(member.captain_name);
-          team_points += member.total_points;
-        });
-
-        // If there aren't 3 members in a team, add "-"'s as members for nicer looking table
-        if (members.length === 1) {
-          members.push("-");
-          members.push("-");
-        }
-        if (members.length === 2) {
-          members.push("-");
-        }
-        this.team_results.push({
-          name: team_name,
-          captain_name_1: members[0],
-          captain_name_2: members[1],
-          captain_name_3: members[2],
-          points: team_points.toLocaleString(),
-        });
-      });
-    },
-    // Calculate total weight of all the fishes in competition
-    async calculateTotalWeights() {
-      let finished_boats = this.$store.getters.getFinishedSignees;
-      let competition_fishes = this.$store.getters.getCompetitionFishes;
-      let competition = this.$store.getters.getCompetition;
-      competition.total_weights = 0;
-      // For each boat, get every fish weight and add them to competition_fishes and total_weights in competition
-      // For statistics
-      // First reset
-      for (let i = 0; i < competition_fishes.length; i++) {
-        competition_fishes[i].weights = 0;
-      }
-      //Then add
-      finished_boats.forEach((element) => {
-        for (let i = 0; i < competition_fishes.length; i++) {
-          let fish_weights = element.weights.find(
-            (fish) => competition_fishes[i].name == fish.name
-          ).weights;
-          competition_fishes[i].weights += parseInt(fish_weights);
-          //TODO update only this one variable to database, not the whole competition
-          competition.total_weights += parseInt(fish_weights);
-        }
-      });
-      this.calculated_fish_weights = competition_fishes;
-      try {
-        this.competition = competition;
-        this.$store.commit("refreshCompetition", this.competition);
-        await CompetitionService.updateCompetition(
-          this.competition._id,
-          this.competition
-        );
-      } catch (err) {
-        console.error(err.message);
-        this.calculated_fish_weights = null;
       }
     },
     // Sorts the dictionary based on weights
