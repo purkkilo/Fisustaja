@@ -498,16 +498,21 @@ export default {
       let doc = new jsPDF();
       // Title
       const title = `${this.selected_cup.name} (${this.selected_cup.year})`;
-
+      const last_competition = this.competitions[this.competitions.length - 1];
+      const start_date = moment(last_competition.start_date);
+      const formatted_date = `${start_date.date()}.${start_date.month() +
+        1}.${start_date.year()}`;
+      const sub_title = `Tilanne ${formatted_date}, ${last_competition.name} (${last_competition.locality}) jälkeen`;
       doc.setFontSize(24);
       doc.text(10, 10, title, { align: "left" });
       doc.line(0, 15, 400, 15);
       doc.setFontSize(14);
 
       // Table, based on given table_id, and table title based on competition_type
+      doc.text(100, 25, sub_title, { align: "center" });
       doc.text(
         100,
-        30,
+        35,
         table_title +
           ` (${this.selected_competitions}/${this.competitions.length} parasta kilpailua otettu huomioon)`,
         { align: "center" }
@@ -527,7 +532,7 @@ export default {
         theme: "striped",
         pageBreak: "auto",
         tableWidth: "auto",
-        startY: 35,
+        startY: 40,
         margin: { top: 20 },
       });
 

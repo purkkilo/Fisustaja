@@ -1,9 +1,9 @@
 <template>
   <!-- /cup-overview -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <div class="container">
+  <v-container class="container">
     <Header />
-    <Timedate />
+    <Timedate style="margin-top:0" />
     <div id="errordiv" v-if="errors.length">
       <ul class="collection with-header" style="border:1px solid red;">
         <li class="collection-header" style="background: rgba(0,0,0,0);">
@@ -28,7 +28,7 @@
     </v-tabs>
     <v-tabs-items v-model="tab" style="background: rgba(0,0,0,0.4);">
       <v-tab-item :value="'overview'">
-        <v-container>
+        <v-row class="container-transparent">
           <v-row v-if="!loading">
             <v-row class="section">
               <v-col v-if="cup">
@@ -165,10 +165,10 @@
               </v-col>
             </v-row>
           </v-row>
-        </v-container>
+        </v-row>
       </v-tab-item>
       <v-tab-item :value="'points'">
-        <v-row>
+        <v-row class="container-transparent">
           <v-col>
             <v-row v-if="results.length">
               <v-col>
@@ -307,7 +307,7 @@
         </v-row>
       </v-tab-item>
     </v-tabs-items>
-  </div>
+  </v-container>
 </template>
 <script>
 "use strict";
@@ -613,16 +613,21 @@ export default {
       let doc = new jsPDF();
       // Title
       const title = `${this.cup.name} (${this.cup.year})`;
-
+      const last_competition = this.competitions[this.competitions.length - 1];
+      const start_date = moment(last_competition.start_date);
+      const formatted_date = `${start_date.date()}.${start_date.month() +
+        1}.${start_date.year()}`;
+      const sub_title = `Tilanne ${formatted_date}, ${last_competition.name} (${last_competition.locality}) jälkeen`;
       doc.setFontSize(24);
       doc.text(10, 10, title, { align: "left" });
       doc.line(0, 15, 400, 15);
       doc.setFontSize(14);
 
       // Table, based on given table_id, and table title based on competition_type
+      doc.text(100, 25, sub_title, { align: "center" });
       doc.text(
         100,
-        30,
+        35,
         table_title +
           ` (${this.selected_competitions}/${this.competitions.length} parasta kilpailua otettu huomioon)`,
         { align: "center" }
@@ -642,7 +647,7 @@ export default {
         theme: "striped",
         pageBreak: "auto",
         tableWidth: "auto",
-        startY: 35,
+        startY: 40,
         margin: { top: 20 },
       });
 

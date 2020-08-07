@@ -34,7 +34,7 @@
             normal_points.length ||
               team_results.length ||
               biggest_fishes_results.length ||
-              biggest_amounts_results
+              biggest_amounts_results.length
           "
         >
           <v-btn
@@ -43,11 +43,11 @@
             color="green darken-4"
             class="white--text"
             @click="saveAllAsPDF"
-            :disabled="!biggest_amounts_results.length"
             :loading="loading"
+            :disabled="!biggest_amounts_results.length || !competition"
           >
             <i class="material-icons left">picture_as_pdf</i>Lataa kaikki
-            taulukot
+            tulokset
           </v-btn>
         </v-col>
       </v-row>
@@ -75,6 +75,22 @@
       <v-tabs-items v-model="tab" style="background: rgba(0,0,0,0.4);">
         <!-- Tilastoja -->
         <v-tab-item class="inputarea" :value="'stats'">
+          <!-- Save as pdf button, is disabled if there are no results -->
+          <v-row style="padding-top:50px">
+            <v-col md="3" offset-md="8">
+              <v-btn
+                large
+                tile
+                color="green darken-4"
+                class="white--text"
+                @click="saveStatsAsPDF(`Tilastoja`)"
+                :disabled="!biggest_amounts_results.length"
+                style="margin-bottom:20px"
+                ><i class="material-icons left">picture_as_pdf</i>Lataa
+                pdf</v-btn
+              >
+            </v-col>
+          </v-row>
           <v-row style="padding-bottom:50px">
             <v-row>
               <v-col md="12">
@@ -231,22 +247,6 @@
               </v-row>
             </v-col>
           </v-row>
-          <!-- Save as pdf button, is disabled if there are no results -->
-          <v-row class="row">
-            <v-col>
-              <v-btn
-                large
-                tile
-                color="green darken-4"
-                class="white--text"
-                @click="saveStatsAsPDF(`Tilastoja`)"
-                :disabled="!biggest_amounts_results.length"
-                style="margin-bottom:20px"
-                ><i class="material-icons left">picture_as_pdf</i>Lataa
-                pdf</v-btn
-              >
-            </v-col>
-          </v-row>
         </v-tab-item>
 
         <!-- Normaalikilpailu -->
@@ -266,6 +266,22 @@
                     @input="switchNormalResults"
                     v-model="selected_normal"
                   />
+                </v-col>
+                <v-col v-if="normal_points.length" md="3" offset-md="1">
+                  <v-btn
+                    large
+                    tile
+                    color="green darken-4"
+                    class="white--text"
+                    @click="
+                      saveAsPDF(
+                        `Normaalikilpailun tulokset (${selected_normal})`,
+                        '#normal-table'
+                      )
+                    "
+                  >
+                    <i class="material-icons left">picture_as_pdf</i>Lataa pdf
+                  </v-btn>
                 </v-col>
               </v-row>
               <v-row class="row" v-if="normal_points.length">
@@ -362,24 +378,6 @@
                   <ProgressBarQuery />
                 </v-col>
               </v-row>
-              <v-row v-if="normal_points.length">
-                <v-col>
-                  <v-btn
-                    large
-                    tile
-                    color="green darken-4"
-                    class="white--text"
-                    @click="
-                      saveAsPDF(
-                        `Normaalikilpailun tulokset (${selected_normal})`,
-                        '#normal-table'
-                      )
-                    "
-                  >
-                    <i class="material-icons left">picture_as_pdf</i>Lataa pdf
-                  </v-btn>
-                </v-col>
-              </v-row>
             </v-col>
           </v-row>
         </v-tab-item>
@@ -390,11 +388,24 @@
           :value="'team-competition'"
           v-if="isTeamCompetition"
         >
+          <v-row v-if="team_results.length">
+            <v-col style="padding-top:50px;" md="3" offset-md="8">
+              <v-btn
+                large
+                tile
+                color="green darken-4"
+                class="white--text"
+                @click="saveAsPDF(`Tiimikilpailun tulokset`, '#team-table')"
+              >
+                <i class="material-icons left">picture_as_pdf</i>Lataa pdf
+              </v-btn>
+            </v-col>
+          </v-row>
           <v-row>
             <v-col
               md="10"
               offset-md="1"
-              style="padding-top:50px;padding-bottom:20px"
+              style="padding-bottom:20px"
               v-if="team_results.length"
               class="scroll_table"
             >
@@ -449,115 +460,21 @@
               </v-col>
             </v-col>
           </v-row>
-          <v-row v-if="team_results.length">
-            <v-col style="padding-bottom:20px">
-              <v-btn
-                large
-                tile
-                color="green darken-4"
-                class="white--text"
-                @click="saveAsPDF(`Tiimikilpailun tulokset`, '#team-table')"
-              >
-                <i class="material-icons left">picture_as_pdf</i>Lataa pdf
-              </v-btn>
-            </v-col>
-          </v-row>
         </v-tab-item>
 
         <!-- Suurimmat kalat -->
         <v-tab-item class="inputarea" :value="'biggest-fishes'">
-          <v-row>
-            <v-col md="8" offset-md="2" style="padding-top:50px">
-              <v-row>
-                <v-col md="4" offset-md="4">
-                  <v-select
-                    label="Valitse näytettävät tulokset"
-                    outlined
-                    @input="calculateBiggestFishes"
-                    v-model="selected_biggest_fish"
-                    :items="fish_names"
-                  />
-                </v-col>
-              </v-row>
-              <v-row v-if="biggest_fishes_results.length">
-                <v-col style="margin-top:50px" class="scroll_table">
-                  <table
-                    id="biggest-fishes-table"
-                    class="highlight centered responsive-table tablearea"
-                  >
-                    <caption
-                      v-if="results_found_fishes"
-                      class="center-align flow-text"
-                    >
-                      Suurimmat kalat ({{
-                        selected_biggest_fish
-                      }}
-                      {{
-                        results_found_fishes
-                      }})
-                    </caption>
-                    <caption v-else class="center-align flow-text">
-                      Suurimmat kalat ({{
-                        selected_biggest_fish
-                      }})
-                    </caption>
-                    <thead style="background: rgb(0, 1, 34);color:#fff;">
-                      <tr>
-                        <th v-if="selected_biggest_fish == 'Voittajat'">
-                          Kalalaji
-                        </th>
-                        <th v-else>Sijoitus</th>
-                        <th>Veneen nro</th>
-                        <th>Kapteeni</th>
-                        <th>Paino</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr
-                        v-for="(fish, index) in biggest_fishes_results"
-                        :key="index"
-                      >
-                        <th
-                          v-if="selected_biggest_fish == 'Voittajat'"
-                          class="center-align"
-                          style="border:1px solid black"
-                        >
-                          {{ fish.name }}
-                        </th>
-                        <th
-                          v-else
-                          class="center-align"
-                          style="border:1px solid black"
-                        >
-                          {{ index + 1 }}.
-                        </th>
-                        <td style="border:1px solid black">
-                          ({{ fish.boat_number }})
-                        </td>
-                        <td style="border:1px solid black">
-                          {{ fish.captain_name }}
-                        </td>
-                        <td style="border:1px solid black">
-                          {{ fish.weight }} g
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </v-col>
-              </v-row>
-              <v-row v-else>
-                <v-col v-if="!loading">
-                  <p class="flow-text">Ei tuloksia, vielä...</p>
-                </v-col>
-                <v-col v-else>
-                  <h2>Päivitetään tuloksia tietokannasta...</h2>
-                  <ProgressBarQuery />
-                </v-col>
-              </v-row>
+          <v-row style="padding-top:50px">
+            <v-col md="3" offset-md="4">
+              <v-select
+                label="Valitse näytettävät tulokset"
+                outlined
+                @input="calculateBiggestFishes"
+                v-model="selected_biggest_fish"
+                :items="fish_names"
+              />
             </v-col>
-          </v-row>
-          <v-row v-if="biggest_fishes_results.length">
-            <v-col style="margin-bottom:20px">
+            <v-col md="3" offset-md="1" v-if="biggest_fishes_results.length">
               <v-btn
                 large
                 tile
@@ -574,102 +491,95 @@
               </v-btn>
             </v-col>
           </v-row>
+          <v-row v-if="biggest_fishes_results.length">
+            <v-col class="scroll_table" md="10" offset-md="1">
+              <table
+                id="biggest-fishes-table"
+                class="highlight centered responsive-table tablearea"
+                style="margin-bottom:40px"
+              >
+                <caption
+                  v-if="results_found_fishes"
+                  class="center-align flow-text"
+                >
+                  Suurimmat kalat ({{
+                    selected_biggest_fish
+                  }}
+                  {{
+                    results_found_fishes
+                  }})
+                </caption>
+                <caption v-else class="center-align flow-text">
+                  Suurimmat kalat ({{
+                    selected_biggest_fish
+                  }})
+                </caption>
+                <thead style="background: rgb(0, 1, 34);color:#fff;">
+                  <tr>
+                    <th v-if="selected_biggest_fish == 'Voittajat'">
+                      Kalalaji
+                    </th>
+                    <th v-else>Sijoitus</th>
+                    <th>Veneen nro</th>
+                    <th>Kapteeni</th>
+                    <th>Paino</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="(fish, index) in biggest_fishes_results"
+                    :key="index"
+                  >
+                    <th
+                      v-if="selected_biggest_fish == 'Voittajat'"
+                      class="center-align"
+                      style="border:1px solid black"
+                    >
+                      {{ fish.name }}
+                    </th>
+                    <th
+                      v-else
+                      class="center-align"
+                      style="border:1px solid black"
+                    >
+                      {{ index + 1 }}.
+                    </th>
+                    <td style="border:1px solid black">
+                      ({{ fish.boat_number }})
+                    </td>
+                    <td style="border:1px solid black">
+                      {{ fish.captain_name }}
+                    </td>
+                    <td style="border:1px solid black">{{ fish.weight }} g</td>
+                  </tr>
+                </tbody>
+              </table>
+            </v-col>
+          </v-row>
+          <v-row v-else>
+            <v-col v-if="!loading">
+              <p class="flow-text">Ei tuloksia, vielä...</p>
+            </v-col>
+            <v-col v-else>
+              <h2>Päivitetään tuloksia tietokannasta...</h2>
+              <ProgressBarQuery />
+            </v-col>
+          </v-row>
         </v-tab-item>
 
         <!-- Suurimmat kalasaaliit -->
         <v-tab-item class="inputarea" :value="'biggest-fish-amounts'">
-          <v-row>
-            <v-col md="8" offset-md="2" style="padding-top:50px">
-              <v-row>
-                <v-col md="4" offset-md="4">
-                  <v-select
-                    label="Valitse näytettävät tulokset"
-                    outlined
-                    @input="calculateBiggestAmounts"
-                    v-model="selected_biggest_amount"
-                    :items="fish_names"
-                  />
-                </v-col>
-              </v-row>
-              <v-row v-if="biggest_amounts_results.length">
-                <v-col style="margin-top:50px" class="scroll_table">
-                  <table
-                    id="biggest-amounts-table"
-                    class="highlight centered responsive-table tablearea"
-                  >
-                    <caption
-                      v-if="results_found_amounts"
-                      class="center-align flow-text"
-                    >
-                      Suurimmat kalasaaliit ({{
-                        selected_biggest_amount
-                      }}
-                      {{
-                        results_found_amounts
-                      }})
-                    </caption>
-                    <caption v-else class="center-align flow-text">
-                      Suurimmat kalasaaliit ({{
-                        selected_biggest_amount
-                      }})
-                    </caption>
-                    <thead style="background: rgb(0, 1, 34);color:#fff;">
-                      <tr>
-                        <th v-if="selected_biggest_amount == 'Voittajat'">
-                          Kalalaji
-                        </th>
-                        <th v-else>Sijoitus</th>
-                        <th>Veneen nro</th>
-                        <th>Kapteeni</th>
-                        <th>Paino</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr
-                        v-for="(result, index) in biggest_amounts_results"
-                        :key="index"
-                      >
-                        <th
-                          v-if="selected_biggest_amount == 'Voittajat'"
-                          class="center-align"
-                          style="border:1px solid black"
-                        >
-                          {{ result.name }}
-                        </th>
-                        <th
-                          v-else
-                          class="center-align"
-                          style="border:1px solid black"
-                        >
-                          {{ index + 1 }}.
-                        </th>
-                        <td style="border:1px solid black">
-                          ({{ result.boat_number }})
-                        </td>
-                        <td style="border:1px solid black">
-                          {{ result.captain_name }}
-                        </td>
-                        <td style="border:1px solid black">
-                          {{ result.weight }} g
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </v-col>
-              </v-row>
-              <v-row v-else>
-                <v-col v-if="!loading" md="8" offset-md="2">
-                  <p class="flow-text">Ei tuloksia, vielä...</p>
-                </v-col>
-                <v-col v-else md="8" offset-md="2">
-                  <h2>Päivitetään tuloksia tietokannasta...</h2>
-                  <ProgressBarQuery />
-                </v-col>
-              </v-row>
+          <v-row style="padding-top:50px">
+            <v-col md="3" offset-md="4">
+              <v-select
+                label="Valitse näytettävät tulokset"
+                outlined
+                @input="calculateBiggestAmounts"
+                v-model="selected_biggest_amount"
+                :items="fish_amount_names"
+              />
             </v-col>
-          </v-row>
-          <v-row v-if="biggest_amounts_results.length">
-            <v-col md="8" offset-md="2" style="margin-bottom:20px">
+            <v-col md="3" offset-md="1" v-if="biggest_amounts_results.length">
               <v-btn
                 large
                 tile
@@ -685,6 +595,101 @@
               >
                 <i class="material-icons left">picture_as_pdf</i>Lataa pdf
               </v-btn>
+            </v-col>
+          </v-row>
+          <v-row v-if="biggest_amounts_results.length">
+            <v-col class="scroll_table" md="10" offset-md="1">
+              <table
+                id="biggest-amounts-table"
+                class="highlight centered responsive-table tablearea"
+                style="margin-bottom:40px"
+              >
+                <caption
+                  v-if="results_found_amounts"
+                  class="center-align flow-text"
+                >
+                  Suurimmat kalasaaliit ({{
+                    selected_biggest_amount
+                  }}
+                  {{
+                    results_found_amounts
+                  }})
+                </caption>
+                <caption v-else class="center-align flow-text">
+                  Suurimmat kalasaaliit ({{
+                    selected_biggest_amount
+                  }})
+                </caption>
+                <thead style="background: rgb(0, 1, 34);color:#fff;">
+                  <tr>
+                    <th v-if="selected_biggest_amount == 'Voittajat'">
+                      Kalalaji
+                    </th>
+                    <th v-else>Sijoitus</th>
+                    <th>Veneen nro</th>
+                    <th>Kapteeni</th>
+                    <th v-if="selected_biggest_amount == 'Pisteet'">
+                      Kalalaji
+                    </th>
+                    <th v-if="selected_biggest_amount == 'Pisteet'">
+                      Paino
+                    </th>
+                    <th v-if="selected_biggest_amount == 'Pisteet'">Pisteet</th>
+                    <th v-else>Paino</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="(result, index) in biggest_amounts_results"
+                    :key="index"
+                  >
+                    <th
+                      v-if="selected_biggest_amount == 'Voittajat'"
+                      class="center-align"
+                      style="border:1px solid black"
+                    >
+                      {{ result.name }}
+                    </th>
+                    <th
+                      v-else
+                      class="center-align"
+                      style="border:1px solid black"
+                    >
+                      {{ index + 1 }}.
+                    </th>
+                    <td style="border:1px solid black">
+                      ({{ result.boat_number }})
+                    </td>
+                    <td style="border:1px solid black">
+                      {{ result.captain_name }}
+                    </td>
+                    <td
+                      v-if="selected_biggest_amount == 'Pisteet'"
+                      style="border:1px solid black"
+                    >
+                      {{ result.fish_name }}
+                    </td>
+                    <td style="border:1px solid black">
+                      {{ result.weight }} g
+                    </td>
+                    <td
+                      v-if="selected_biggest_amount == 'Pisteet'"
+                      style="border:1px solid black"
+                    >
+                      {{ result.points }} p
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </v-col>
+          </v-row>
+          <v-row v-else>
+            <v-col v-if="!loading" md="8" offset-md="2">
+              <p class="flow-text">Ei tuloksia, vielä...</p>
+            </v-col>
+            <v-col v-else md="8" offset-md="2">
+              <h2>Päivitetään tuloksia tietokannasta...</h2>
+              <ProgressBarQuery />
             </v-col>
           </v-row>
         </v-tab-item>
@@ -780,6 +785,7 @@ export default {
       tab: null,
       signees: [],
       fish_names: [],
+      fish_amount_names: [],
       table_fish_names: [],
       results: [],
       normal_points: [],
@@ -845,6 +851,7 @@ export default {
     async refreshCompetition(competition_id) {
       this.loading = true;
       this.fish_names = []; // Fish names, including "Voittajat"
+      this.fish_amount_names = [];
       this.table_fish_names = []; // only fish names
       try {
         // Query competition with id
@@ -872,8 +879,11 @@ export default {
 
           let temp_fish_names = this.$store.getters.getCompetitionFishes;
           this.fish_names.push("Voittajat");
+          this.fish_amount_names.push("Voittajat");
+          this.fish_amount_names.push("Pisteet");
           temp_fish_names.forEach((fish) => {
             this.fish_names.push(fish.name);
+            this.fish_amount_names.push(fish.name);
             this.table_fish_names.push(fish.name);
           });
           this.calculateAll();
@@ -1163,17 +1173,50 @@ export default {
           (this.biggest_amounts_results = this.sortDict(fishes));
       } else {
         let fish_results = [];
-
-        if (fishes[this.selected_biggest_amount]) {
-          fish_results = fishes[this.selected_biggest_amount].sort(
-            function compare(a, b) {
-              return parseInt(b.weight) - parseInt(a.weight);
+        fishes["Pisteet"] = [];
+        // Generate Pisteet (Add all amounts together and sort)
+        if (this.selected_biggest_amount === "Pisteet") {
+          let competition_fishes = this.$store.getters.getCompetitionFishes;
+          this.table_fish_names.forEach((name) => {
+            if (fishes[name]) {
+              fishes[name].forEach((signee) => {
+                let points_multiplier = competition_fishes.find(
+                  (fish) => fish.name === name
+                ).multiplier;
+                let result = {
+                  boat_number: signee.boat_number,
+                  captain_name: signee.captain_name,
+                  fish_name: name,
+                  weight: signee.weight,
+                  points: signee.weight * points_multiplier,
+                };
+                fishes["Pisteet"].push(result);
+              });
             }
-          );
+          });
+        }
+        if (fishes[this.selected_biggest_amount]) {
+          if (this.selected_biggest_amount === "Pisteet") {
+            fish_results = fishes[this.selected_biggest_amount].sort(
+              function compare(a, b) {
+                return parseInt(b.points) - parseInt(a.points);
+              }
+            );
 
-          fish_results = fish_results.filter(
-            (result) => parseInt(result.weight) > 0
-          );
+            fish_results = fish_results.filter(
+              (result) => parseInt(result.points) > 0
+            );
+          } else {
+            fish_results = fishes[this.selected_biggest_amount].sort(
+              function compare(a, b) {
+                return parseInt(b.weight) - parseInt(a.weight);
+              }
+            );
+            fish_results = fish_results.filter(
+              (result) => parseInt(result.weight) > 0
+            );
+          }
+
           this.results_found_amounts = "";
         } else {
           this.results_found_amount = "- Ei tuloksia";
@@ -1229,6 +1272,20 @@ export default {
           values[0] = String(values[0]) + ".";
           values[values.length - 1] =
             values[values.length - 1].toLocaleString() + " p";
+        }
+        //Pisteet
+        if (type === 6) {
+          let temp_bnumber = values[0];
+          let temp_captain = values[1];
+          let temp_fish_name = values[2];
+          let temp_weight = values[3];
+          let temp_points = values[4];
+          values[0] = String(placement) + ".";
+          values[1] = "(" + String(temp_bnumber) + ")";
+          values[2] = temp_captain;
+          values[3] = temp_fish_name;
+          values[4] = temp_weight.toLocaleString() + " g";
+          values[5] = temp_points.toLocaleString() + " p";
         }
         placement++;
         arr.push(values);
@@ -1393,6 +1450,9 @@ export default {
       );
     },
     saveAllAsPDF: function() {
+      let temp_selected_biggest_fish = this.selected_biggest_fish;
+      let temp_selected_biggest_amount = this.selected_biggest_amount;
+      let temp_selected_normal = this.selected_normal;
       // Format dates for easier reding
       let temp_start_date = this.formatDate(this.competition.start_date);
       let temp_end_date = this.formatDate(this.competition.end_date);
@@ -1415,60 +1475,6 @@ export default {
       doc.line(0, 35, 400, 35);
       doc.setFontSize(18);
 
-      // "Tilastot"
-      var fishesImg = document
-        .getElementById("fishesChart")
-        .toDataURL("image/png", 1.0);
-      var signeeImg = document
-        .getElementById("signeesChart")
-        .toDataURL("image/png", 1.0);
-      doc.addImage(fishesImg, "PNG", -30, 40, 180, 90);
-      doc.addImage(signeeImg, "PNG", 70, 40, 180, 90);
-      doc.text(100, 165, "Kalalajien määritykset", { align: "center" });
-      // Table generated straight from html
-      doc.autoTable({
-        html: "#fish-weights-table",
-        styles: {
-          overflow: "linebreak",
-          cellWidth: "wrap",
-          rowPageBreak: "avoid",
-          halign: "justify",
-          fontSize: "8",
-          lineColor: "100",
-          lineWidth: ".25",
-        },
-        columnStyles: { text: { cellwidth: "auto" } },
-        theme: "striped",
-        pageBreak: "auto",
-        tableWidth: "auto",
-        startY: 170,
-        margin: { top: 20 },
-      });
-
-      doc.text(100, doc.autoTable.previous.finalY + 20, "Yleisiä tilastoja", {
-        align: "center",
-      });
-      // Table generated straight from html
-      doc.autoTable({
-        html: "#misc-table",
-        styles: {
-          overflow: "linebreak",
-          cellWidth: "wrap",
-          rowPageBreak: "avoid",
-          halign: "justify",
-          fontSize: "8",
-          lineColor: "100",
-          lineWidth: ".25",
-        },
-        columnStyles: { text: { cellwidth: "auto" } },
-        theme: "striped",
-        pageBreak: "auto",
-        tableWidth: "auto",
-        margin: { top: 20 },
-        startY: doc.autoTable.previous.finalY + 25,
-      });
-      doc.addPage();
-
       //Normaalikilpailu (Pisteet)
 
       // start_coord needed to keep track of y coordinates for tables (if there are no results -> no table drawn to pdf -> varying coordinates)
@@ -1488,7 +1494,7 @@ export default {
       ];
       // Format dictionary/json to format that autotable understands (arrays in arrays);
       let rows = this.dictToArray(this.normal_points, 1);
-      doc.text(100, 10, "Normaalikilpailun tulokset (Pisteet)", {
+      doc.text(100, 50, "Normaalikilpailun tulokset (Pisteet)", {
         align: "center",
       });
       // Table generated in code
@@ -1508,7 +1514,7 @@ export default {
         theme: "striped",
         pageBreak: "auto",
         tableWidth: "auto",
-        startY: 20,
+        startY: 55,
         margin: { top: 20 },
       });
 
@@ -1602,7 +1608,7 @@ export default {
       columns = ["Kalalaji", "Veneen nro", "Kapteeni", "Paino"];
       // Calculate data
       this.calculateBiggestFishes();
-
+      this.calculateBiggestAmounts();
       // If there are any results, add title
       if (
         this.biggest_fishes_results.length ||
@@ -1654,9 +1660,6 @@ export default {
       }
 
       //Suurimmat kalasaaliit (Voittajat)
-      // Calculate data
-      this.calculateBiggestAmounts();
-
       // If there are any amounts --> if someone has gotten any fish
       if (this.biggest_amounts_results.length) {
         rows = this.dictToArray(this.biggest_amounts_results, 4);
@@ -1685,6 +1688,55 @@ export default {
           tableWidth: "auto",
           margin: { top: 20 },
           startY: start_coord + 5,
+        });
+      }
+
+      this.selected_biggest_amount = "Pisteet";
+      this.calculateBiggestAmounts();
+      // If there are any amounts --> if someone has gotten any fish
+      if (this.biggest_amounts_results.length) {
+        doc.addPage();
+        doc.setFontSize(24);
+        doc.text(10, 10, title, { align: "left" });
+        doc.setFontSize(14);
+        doc.text(10, 20, this.competition.cup_name, { align: "left" });
+        doc.text(10, 30, time, { align: "left" });
+        doc.line(0, 35, 400, 35);
+        doc.setFontSize(18);
+        columns = [
+          "Sijoitus",
+          "Veneen nro",
+          "Kapteeni",
+          "Kalalaji",
+          "Paino",
+          "Pisteet",
+        ];
+        rows = this.dictToArray(this.biggest_amounts_results, 6);
+        doc.text(
+          100,
+          50,
+          "Suurimmat kalasaaliit" + ` (${this.selected_biggest_amount})`,
+          { align: "center" }
+        );
+        // Table generated in code
+        doc.autoTable({
+          head: [columns],
+          body: rows,
+          styles: {
+            overflow: "linebreak",
+            cellWidth: "wrap",
+            rowPageBreak: "avoid",
+            halign: "justify",
+            fontSize: "8",
+            lineColor: "100",
+            lineWidth: ".25",
+          },
+          columnStyles: { text: { cellwidth: "auto" } },
+          theme: "striped",
+          pageBreak: "auto",
+          tableWidth: "auto",
+          margin: { top: 20 },
+          startY: 55,
         });
       }
       // For each fish, generate tables for "Suurimmat Kalat (Kala)" and "Suurimmat Kalasaaliit (Kala)"
@@ -1773,11 +1825,75 @@ export default {
         }
       });
 
-      // Reset variables
-      this.selected_biggest_fish = "Voittajat";
-      this.calculateBiggestFishes();
+      doc.addPage();
+      doc.setFontSize(24);
+      doc.text(10, 10, title, { align: "left" });
+      doc.setFontSize(14);
+      doc.text(10, 20, this.competition.cup_name, { align: "left" });
+      doc.text(10, 30, time, { align: "left" });
+      doc.line(0, 35, 400, 35);
+      doc.setFontSize(18);
+      // "Tilastot"
+      var fishesImg = document
+        .getElementById("fishesChart")
+        .toDataURL("image/png", 1.0);
+      var signeeImg = document
+        .getElementById("signeesChart")
+        .toDataURL("image/png", 1.0);
+      doc.addImage(fishesImg, "PNG", -30, 40, 180, 90);
+      doc.addImage(signeeImg, "PNG", 70, 40, 180, 90);
+      doc.text(100, 165, "Kalalajien määritykset", { align: "center" });
+      // Table generated straight from html
+      doc.autoTable({
+        html: "#fish-weights-table",
+        styles: {
+          overflow: "linebreak",
+          cellWidth: "wrap",
+          rowPageBreak: "avoid",
+          halign: "justify",
+          fontSize: "8",
+          lineColor: "100",
+          lineWidth: ".25",
+        },
+        columnStyles: { text: { cellwidth: "auto" } },
+        theme: "striped",
+        pageBreak: "auto",
+        tableWidth: "auto",
+        startY: 170,
+        margin: { top: 20 },
+      });
 
+      doc.text(100, doc.autoTable.previous.finalY + 20, "Yleisiä tilastoja", {
+        align: "center",
+      });
+      // Table generated straight from html
+      doc.autoTable({
+        html: "#misc-table",
+        styles: {
+          overflow: "linebreak",
+          cellWidth: "wrap",
+          rowPageBreak: "avoid",
+          halign: "justify",
+          fontSize: "8",
+          lineColor: "100",
+          lineWidth: ".25",
+        },
+        columnStyles: { text: { cellwidth: "auto" } },
+        theme: "striped",
+        pageBreak: "auto",
+        tableWidth: "auto",
+        margin: { top: 20 },
+        startY: doc.autoTable.previous.finalY + 25,
+      });
+
+      // Reset variables
+      this.selected_biggest_fish = temp_selected_biggest_fish;
+      this.selected_biggest_amount = temp_selected_biggest_amount;
+      this.selected_normal = temp_selected_normal;
+      this.calculateBiggestFishes();
+      this.calculateBiggestAmounts();
       // Save to pdf
+
       doc.save(
         `${year}_${this.replaceAll(
           this.competition.name,

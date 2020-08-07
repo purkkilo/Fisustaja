@@ -3,7 +3,7 @@
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container>
     <Header />
-    <Timedate />
+    <Timedate style="margin-top:0" />
     <div class="container-transparent">
       <div class="section">
         <div class="col s12 center-align"><h1>Punnitus</h1></div>

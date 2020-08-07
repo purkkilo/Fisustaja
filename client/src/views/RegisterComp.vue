@@ -3,7 +3,7 @@
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <div class="container">
     <Header />
-    <Timedate />
+    <Timedate style="margin-top:0" />
     <!-- if errors, show errors -->
     <div id="errordiv" v-if="errors.length">
       <ul class="collection with-header" style="border:1px solid red;">
