@@ -642,6 +642,12 @@ export default {
       });
       // Update signees array to database/vuex
       let comp = this.$store.getters.getCompetition;
+      let normal_results = this.calculateNormalResults(comp);
+      let normal_points = normal_results.normal_points;
+      let normal_weights = normal_results.normal_weights;
+      // Get signees from vuex
+      comp.normal_points = normal_points;
+      comp.normal_weights = normal_weights;
       comp.signees = this.signees;
       this.$store.commit("refreshCompetition", comp);
       try {
@@ -892,9 +898,8 @@ export default {
       let normal_results = this.calculateNormalResults(comp);
       let normal_points = normal_results.normal_points;
       let normal_weights = normal_results.normal_weights;
-      let competition_weights = this.calculateTotalWeights();
-      let competition_total_weights = competition_weights.total_weights;
-      let fish_stats = competition_weights.fish_stats;
+      let competition_total_weights = this.calculateTotalWeights();
+
       // Get signees from vuex
       comp.signees = this.$store.getters.getCompetitionSignees;
       comp.normal_points = normal_points;
@@ -902,7 +907,6 @@ export default {
       if (comp.team_competition) {
         comp.team_results = this.calculateTeamResults();
       }
-      comp.fish_stats = fish_stats;
       comp.biggest_fishes = this.biggest_fishes;
       comp.biggest_amounts = this.biggest_amounts;
       comp.total_weights = competition_total_weights;
@@ -948,7 +952,10 @@ export default {
 
       let normal_points = [];
       let normal_weights = [];
-      this.signees = this.$store.getters.getResultSignees;
+      this.signees = this.$store.getters.getFinishedSignees;
+      this.signees = this.signees.sort(function compare(a, b) {
+        return parseInt(b.total_points) - parseInt(a.total_points);
+      });
       // For every signee, calculate their cup points and placing
       //TODO rework the structure, seems more complex than it should be
       this.signees.forEach((signee) => {
@@ -960,6 +967,7 @@ export default {
             cup_placement_points = 0;
           }
           // Formula for cup points calculations, cup_points_multiplier only scales the placement points
+          last_points = signee.total_points;
           cup_points_total =
             cup_placement_points * cup_points_multiplier +
             cup_participation_points;
@@ -989,7 +997,10 @@ export default {
           // tied_competitors makes sure that ties are taken into account
           if (counter <= 5) {
             // If there are no ties
-            if (signee.total_points !== last_points) {
+            if (
+              signee.total_points !== last_points &&
+              signee.total_points > 0
+            ) {
               cup_placement_points -= 2 * (tied_competitors + 1);
               tied_competitors = 0;
             }
@@ -1125,11 +1136,7 @@ export default {
           total_weights += parseInt(fish_weights);
         }
       });
-      let output = {
-        total_weights: total_weights,
-        fish_stats: competition_fishes,
-      };
-      return output;
+      return total_weights;
     },
     // Clear all inputs and selections
     clearInputs: function() {

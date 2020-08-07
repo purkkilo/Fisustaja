@@ -32,7 +32,7 @@
           :items="cups"
           item-text="select"
           item-value="_id"
-          :hint="`${cup.name} (${cup.year})`"
+          label="Valitse näytettävä Cup"
           outlined
           @input="pickCup"
           return-object
@@ -45,6 +45,32 @@
             <i class="material-icons left">emoji_events</i>Kilpailujen tuloksia
           </v-btn>
         </router-link>
+      </v-col>
+    </v-row>
+    <v-row v-else>
+      <v-col v-if="!loading">
+        <h2>Haetaan cuppeja...</h2>
+        <ProgressBarQuery />
+      </v-col>
+      <v-col v-else>
+        <h2>Ei cuppeja saatavilla :(</h2>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col>
+        <v-btn
+          large
+          tile
+          color="yellow"
+          @click="
+            selected_cup = null;
+            competitions = [];
+            results = [];
+          "
+          :disabled="!selected_cup"
+        >
+          <i class="material-icons left">remove_circle</i>Peruuta valinta
+        </v-btn>
       </v-col>
     </v-row>
     <v-row v-if="!loading">
@@ -90,6 +116,13 @@
           </v-col>
         </v-row>
         <v-row v-if="competitions.length">
+          <v-col md="6" offset-md="3">
+            <p class="flow-text">
+              Punaisella värillä merkatut kilpailut ovat vielä kesken!
+            </p>
+          </v-col>
+        </v-row>
+        <v-row v-if="competitions.length">
           <v-col class="scroll_table">
             <table
               id="normal-table"
@@ -97,8 +130,12 @@
             >
               <thead>
                 <tr>
-                  <th v-for="(header, index) in headers" :key="index">
-                    {{ header }}
+                  <th
+                    v-for="(header, index) in headers"
+                    :key="index"
+                    v-bind:class="{ isFinished: header.highlight }"
+                  >
+                    {{ header.title }}
                   </th>
                 </tr>
               </thead>
@@ -158,12 +195,11 @@
           </v-col>
         </v-row>
         <v-row v-else>
-          <v-col v-if="loading">
-            <h2>Ei cuppeja rekisteröitynä!</h2>
-          </v-col>
-          <v-col v-else>
-            <h2>Haetaan kilpailujen tuloksia...</h2>
-            <ProgressBarQuery />
+          <v-col>
+            <h2 v-if="selected_cup && !competitions.length">
+              Cupissa ei vielä kilpailuja!
+            </h2>
+            <h2 v-if="!selected_cup">Cuppia ei vielä valittuna!</h2>
           </v-col>
         </v-row>
       </v-col>
@@ -171,7 +207,7 @@
     <v-row v-else>
       <v-row>
         <v-col>
-          <h2>Haetaan uusimpia kilpailujen tietoja...</h2>
+          <h2>Haetaan cupin kilpailuja...</h2>
           <ProgressBarQuery />
         </v-col>
       </v-row>
@@ -225,9 +261,6 @@ export default {
       this.cups.forEach((cup) => {
         cup.select = `${cup.name} (${cup.year})`;
       });
-      this.selected_cup = this.cups[this.cups.length - 1];
-      // update from database
-      this.refreshCup(this.selected_cup);
     }
 
     // Focus on top of the page when changing pages
@@ -237,37 +270,45 @@ export default {
   methods: {
     changeHeaders: function() {
       this.headers = [];
-      this.headers.push("Sijoitus");
-      this.headers.push("Kilp. Nro");
-      this.headers.push("Kippari");
-      this.headers.push("Paikkakunta");
+      this.headers.push({ title: "Sijoitus", highlight: false });
+      this.headers.push({ title: "Kilp. Nro", highlight: false });
+      this.headers.push({ title: "Kippari", highlight: false });
+      this.headers.push({ title: "Paikkakunta", highlight: false });
       this.competitions.forEach((competition) => {
         // Dynamic headers, because competition names change
         if (this.header_selection === "Paikkakunta") {
-          this.headers.push(competition.locality);
+          this.headers.push({
+            title: competition.locality,
+            highlight: !competition.isFinished,
+          });
         } else {
-          this.headers.push(competition.name);
+          this.headers.push({
+            title: competition.name,
+            highlight: !competition.isFinished,
+          });
         }
       });
-      this.headers.push("Yhteensä");
+      this.headers.push({ title: "Yhteensä", highlight: false });
     },
     pickCup: function() {
       this.$store.commit("refreshCup", this.selected_cup);
-      this.cup = this.selected_cup;
-      this.refreshCup(this.cup);
+      this.refreshCup(this.selected_cup);
     },
     // Calculate all the cup points, and limit the number of races taken into account
     // If limit = 4, 4 races with highest points will be calculated, other races will have 5 points where the signee has participated
     calculateAll: function(competitions, limit) {
       let all_results = [];
       this.headers = [];
-      this.headers.push("Sijoitus");
-      this.headers.push("Kilp. Nro");
-      this.headers.push("Kippari");
-      this.headers.push("Paikkakunta");
+      this.headers.push({ title: "Sijoitus", highlight: false });
+      this.headers.push({ title: "Kilp. Nro", highlight: false });
+      this.headers.push({ title: "Kippari", highlight: false });
+      this.headers.push({ title: "Paikkakunta", highlight: false });
       competitions.forEach((competition) => {
         // Dynamic headers, because competition names change
-        this.headers.push(competition.locality);
+        this.headers.push({
+          title: competition.locality,
+          highlight: !competition.isFinished,
+        });
         //If there are any results in the competition
         if (competition.normal_points.length) {
           //Loop through each competition's results
@@ -305,7 +346,7 @@ export default {
       // limits the amount of competitions are taken into account in the cup
       all_results = this.limitCompetitions(all_results, limit);
 
-      this.headers.push("Yhteensä");
+      this.headers.push({ title: "Yhteensä", highlight: false });
       // Sort the array based on total cup points
       this.results = all_results.sort(function compare(a, b) {
         return (
@@ -381,9 +422,8 @@ export default {
 
       // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
       //TODO make a test for this?
-      this.cup = cup;
       // Update to vuex, Assing variables from vuex (see client/store/index.js)
-      this.$store.commit("refreshCup", this.cup);
+      this.$store.commit("refreshCup", cup);
       try {
         this.competitions = await CompetitionService.getCupCompetitions(cup.id);
         // Convert dates to moment objects
@@ -403,11 +443,11 @@ export default {
         this.selected_competitions = this.competitions.length;
         this.calculateAll(this.competitions, this.selected_competitions);
         M.toast({ html: "Tiedot ajantasalla!" });
+        this.loading = false;
       } catch (error) {
+        this.loading = false;
         console.error(error.message);
       }
-
-      this.loading = false;
     },
     //Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)
     checkLogin: function() {
@@ -457,7 +497,7 @@ export default {
       // PDF creation
       let doc = new jsPDF();
       // Title
-      const title = `${this.cup.name} (${this.cup.year})`;
+      const title = `${this.selected_cup.name} (${this.selected_cup.year})`;
 
       doc.setFontSize(24);
       doc.text(10, 10, title, { align: "left" });
@@ -493,13 +533,18 @@ export default {
 
       // Save the pdf
       doc.save(
-        `${this.cup.year}_${this.replaceAll("Cup", " ", "")}_${this.replaceAll(
-          this.capitalize_words(table_title),
+        `${this.selected_cup.year}_${this.replaceAll(
+          "Cup",
           " ",
           ""
-        )}.pdf`
+        )}_${this.replaceAll(this.capitalize_words(table_title), " ", "")}.pdf`
       );
     },
   },
 };
 </script>
+<style scoped>
+.isFinished {
+  background-color: rgb(117, 23, 0);
+}
+</style>

@@ -201,7 +201,11 @@
                       <th style="border:1px solid black;" class="center-align">
                         <b>Saalista saaneita</b>
                       </th>
-                      <td style="border:1px solid black;" class="center-align">
+                      <td
+                        style="border:1px solid black;"
+                        class="center-align"
+                        v-if="$store.getters.getPointSignees.length"
+                      >
                         <b
                           >{{
                             Math.round(
@@ -213,6 +217,13 @@
                           }}% ({{ $store.getters.getPointSignees.length }} /
                           {{ signees.length }})</b
                         >
+                      </td>
+                      <td
+                        style="border:1px solid black;"
+                        class="center-align"
+                        v-else
+                      >
+                        <b>0% (0/0)</b>
                       </td>
                     </tr>
                   </table>
@@ -716,6 +727,24 @@
               <i class="material-icons left">update</i>Päivitä tulokset
             </v-btn>
           </v-col>
+          <v-col v-if="competition.isFinished">
+            <v-btn large tile color="yellow" @click="endCompetition(false)">
+              <i class="material-icons left">not_started</i>Aseta kilpailu
+              keskeneräiseksi
+            </v-btn>
+          </v-col>
+          <v-col v-else>
+            <v-btn
+              large
+              tile
+              color="green darken-3"
+              @click="endCompetition(true)"
+              class="white--text"
+            >
+              <i class="material-icons left">emoji_events</i>Aseta kilpailu
+              päättyneeksi
+            </v-btn>
+          </v-col>
         </v-row>
         <div v-else>
           <h2>Päivitetään tuloksia tietokannasta...</h2>
@@ -839,7 +868,8 @@ export default {
           this.biggest_fishes = this.$store.getters.getBiggestFishes;
           this.biggest_amounts = this.$store.getters.getBiggestAmounts;
           this.calculated_total_weights = this.$store.getters.getCompetitionTotalWeights;
-          this.calculated_fish_weights = this.competition.fish_stats;
+          this.calculated_fish_weights = this.competition.fishes;
+
           let temp_fish_names = this.$store.getters.getCompetitionFishes;
           this.fish_names.push("Voittajat");
           temp_fish_names.forEach((fish) => {
@@ -866,7 +896,17 @@ export default {
     },
     async publishCompetition(isPublic) {
       this.competition.isPublic = isPublic;
+      this.updateToDatabase(this.competition);
+    },
+    async endCompetition(isFinished) {
+      this.competition.isFinished = isFinished;
+      this.competition.isFinished
+        ? (this.competition.state = "Päättynyt")
+        : (this.competition.state = "Kesken");
+      this.updateToDatabase(this.competition);
+    },
 
+    async updateToDatabase(competition) {
       try {
         this.$store.commit("refreshCompetition", this.competition);
         this.loading = true;

@@ -143,8 +143,11 @@
               </v-col>
             </v-row>
             <v-row v-else>
-              <v-col>
+              <v-row></v-row>
+              <v-col md="12">
                 <h2>Ei kilpailuja!</h2>
+              </v-col>
+              <v-col md="12">
                 <router-link to="/register-comp">
                   <v-btn tile color="blue lighten-1"
                     ><i class="material-icons left">add_circle_outline</i>Luo
@@ -208,6 +211,13 @@
               </v-col>
             </v-row>
             <v-row v-if="isResults">
+              <v-col md="6" offset-md="3">
+                <p class="flow-text">
+                  Punaisella värillä merkatut kilpailut ovat vielä kesken!
+                </p>
+              </v-col>
+            </v-row>
+            <v-row v-if="isResults">
               <v-col class="scroll_table">
                 <table
                   id="normal-table"
@@ -215,8 +225,12 @@
                 >
                   <thead>
                     <tr>
-                      <th v-for="(header, index) in headers" :key="index">
-                        {{ header }}
+                      <th
+                        v-for="(header, index) in headers"
+                        :key="index"
+                        v-bind:class="{ isFinished: header.highlight }"
+                      >
+                        {{ header.title }}
                       </th>
                     </tr>
                   </thead>
@@ -352,19 +366,25 @@ export default {
   methods: {
     changeHeaders: function() {
       this.headers = [];
-      this.headers.push("Sijoitus");
-      this.headers.push("Kilp. Nro");
-      this.headers.push("Kippari");
-      this.headers.push("Paikkakunta");
+      this.headers.push({ title: "Sijoitus", highlight: false });
+      this.headers.push({ title: "Kilp. Nro", highlight: false });
+      this.headers.push({ title: "Kippari", highlight: false });
+      this.headers.push({ title: "Paikkakunta", highlight: false });
       this.competitions.forEach((competition) => {
         // Dynamic headers, because competition names change
         if (this.header_selection === "Paikkakunta") {
-          this.headers.push(competition.locality);
+          this.headers.push({
+            title: competition.locality,
+            highlight: !competition.isFinished,
+          });
         } else {
-          this.headers.push(competition.name);
+          this.headers.push({
+            title: competition.name,
+            highlight: !competition.isFinished,
+          });
         }
       });
-      this.headers.push("Yhteensä");
+      this.headers.push({ title: "Yhteensä", highlight: false });
     },
     async publishCup(isPublic) {
       this.cup.isPublic = isPublic;
@@ -385,13 +405,16 @@ export default {
       let all_results = [];
       this.isResults = false;
       this.headers = [];
-      this.headers.push("Sijoitus");
-      this.headers.push("Kilp. Nro");
-      this.headers.push("Kippari");
-      this.headers.push("Paikkakunta");
+      this.headers.push({ title: "Sijoitus", highlight: false });
+      this.headers.push({ title: "Kilp. Nro", highlight: false });
+      this.headers.push({ title: "Kippari", highlight: false });
+      this.headers.push({ title: "Paikkakunta", highlight: false });
       competitions.forEach((competition) => {
         // Dynamic headers, because competition names change
-        this.headers.push(competition.locality);
+        this.headers.push({
+          title: competition.locality,
+          highlight: !competition.isFinished, // Highlight if not finished yet
+        });
         //If there are any results in the competition
         if (competition.normal_points.length) {
           //Loop through each competition's results
@@ -430,7 +453,7 @@ export default {
         // limits the amount of competitions are taken into account in the cup
         all_results = this.limitCompetitions(all_results, limit);
 
-        this.headers.push("Yhteensä");
+        this.headers.push({ title: "Yhteensä", highlight: false });
         // Sort the array based on total cup points
         this.results = all_results.sort(function compare(a, b) {
           return (
@@ -635,3 +658,8 @@ export default {
   },
 };
 </script>
+<style scoped>
+.isFinished {
+  background-color: rgb(117, 23, 0);
+}
+</style>

@@ -32,10 +32,10 @@ class CompetitionService {
         normal_weights: competition.normal_weights,
         team_results: competition.team_results,
         team_competition: competition.team_competition,
-        fish_stats: competition.fish_stats,
         biggest_fishes: competition.biggest_fishes,
         biggest_amounts: competition.biggest_amounts,
         isPublic: competition.isPublic,
+        isFinished: competition.isFinished,
       }));
     } catch (err) {
       return err;
@@ -71,10 +71,10 @@ class CompetitionService {
         normal_weights: competition.normal_weights,
         team_results: competition.team_results,
         team_competition: competition.team_competition,
-        fish_stats: competition.fish_stats,
         biggest_fishes: competition.biggest_fishes,
         biggest_amounts: competition.biggest_amounts,
         isPublic: competition.isPublic,
+        isFinished: competition.isFinished,
       }));
     } catch (err) {
       return err;
@@ -110,10 +110,10 @@ class CompetitionService {
         normal_weights: competition.normal_weights,
         team_results: competition.team_results,
         team_competition: competition.team_competition,
-        fish_stats: competition.fish_stats,
         biggest_fishes: competition.biggest_fishes,
         biggest_amounts: competition.biggest_amounts,
         isPublic: competition.isPublic,
+        isFinished: competition.isFinished,
       }));
     } catch (err) {
       return err;
@@ -149,10 +149,10 @@ class CompetitionService {
         normal_weights: competition.normal_weights,
         team_results: competition.team_results,
         team_competition: competition.team_competition,
-        fish_stats: competition.fish_stats,
         biggest_fishes: competition.biggest_fishes,
         biggest_amounts: competition.biggest_amounts,
         isPublic: competition.isPublic,
+        isFinished: competition.isFinished,
       }));
     } catch (err) {
       return err;
@@ -188,10 +188,10 @@ class CompetitionService {
         normal_points: competition.normal_points,
         normal_weights: competition.normal_weights,
         team_results: competition.team_results,
-        fish_stats: competition.fish_stats,
         biggest_fishes: competition.biggest_fishes,
         biggest_amounts: competition.biggest_amounts,
         isPublic: competition.isPublic,
+        isFinished: competition.isFinished,
       }));
     } catch (err) {
       return err;
@@ -220,11 +220,11 @@ class CompetitionService {
       normal_points: [],
       normal_weights: [],
       team_results: [],
-      fish_stats: [],
       team_competition: competition.team_competition,
       biggest_fishes: competition.biggest_fishes,
       biggest_amounts: competition.biggest_amounts,
-      isPublic: competition.isPublic,
+      isPublic: false,
+      isFinished: false,
     });
   }
 

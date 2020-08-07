@@ -249,6 +249,7 @@
                         <td
                           style="border:1px solid black;"
                           class="center-align"
+                          v-if="$store.getters.getPointSignees.length"
                         >
                           <b
                             >{{
@@ -261,6 +262,13 @@
                             }}% ({{ $store.getters.getPointSignees.length }} /
                             {{ signees.length }})</b
                           >
+                        </td>
+                        <td
+                          style="border:1px solid black;"
+                          class="center-align"
+                          v-else
+                        >
+                          <b>0% (0/0)</b>
                         </td>
                       </tr>
                     </table>
@@ -906,7 +914,7 @@ export default {
           this.biggest_fishes = this.$store.getters.getBiggestFishes;
           this.biggest_amounts = this.$store.getters.getBiggestAmounts;
           this.calculated_total_weights = this.$store.getters.getCompetitionTotalWeights;
-          this.calculated_fish_weights = this.competition.fish_stats;
+          this.calculated_fish_weights = this.competition.fishes;
           this.selected_normal = "Pisteet";
           let temp_fish_names = this.$store.getters.getCompetitionFishes;
           this.fish_names.push("Voittajat");

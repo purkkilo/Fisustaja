@@ -1186,7 +1186,6 @@ export default {
           teams: [],
           biggest_fishes: {},
           biggest_amounts: {},
-          isPublic: false,
         };
         try {
           //Submit competition to database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)

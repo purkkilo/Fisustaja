@@ -64,11 +64,11 @@ router.post("/", async (req, res) => {
     normal_points: req.body.normal_points,
     normal_weights: req.body.normal_weights,
     team_results: req.body.team_results,
-    fish_stats: req.body.fish_stats,
     team_competition: req.body.team_competition,
     biggest_fishes: req.body.biggest_fishes,
     biggest_amounts: req.body.biggest_amounts,
     isPublic: req.body.isPublic,
+    isFinished: req.body.isFinished,
     createdAt: new Date(),
   });
 

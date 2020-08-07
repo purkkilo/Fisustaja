@@ -74,6 +74,14 @@
                   </td>
                 </tr>
                 <tr>
+                  <th style="border:1px solid black;">
+                    Onko kilpailu julkinen
+                  </th>
+                  <td style="border:1px solid black;" class="center-align">
+                    {{ competition.isPublic ? "Kyllä" : "Ei" }}
+                  </td>
+                </tr>
+                <tr>
                   <th style="border:1px solid black;">Aloituspäivä</th>
                   <td style="border:1px solid black;" class="center-align">
                     {{ formatted_start_date }}
