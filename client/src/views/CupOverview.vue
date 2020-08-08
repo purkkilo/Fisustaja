@@ -21,7 +21,13 @@
         </li>
       </ul>
     </div>
-    <v-tabs v-model="tab" background-color="blue lighten-2" color="basil" grow>
+    <v-tabs
+      v-model="tab"
+      background-color="blue lighten-2"
+      color="basil"
+      grow
+      show-arrows
+    >
       <v-tabs-slider color="blue darken-4"></v-tabs-slider>
       <v-tab href="#overview">Yleisnäkymä</v-tab>
       <v-tab href="#points" :disabled="!competitions.length">Cup pisteet</v-tab>

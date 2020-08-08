@@ -6,7 +6,13 @@
     <Timedate style="margin-top:0" />
 
     <!-- Tabs -->
-    <v-tabs v-model="tab" background-color="blue lighten-2" color="basil" grow>
+    <v-tabs
+      v-model="tab"
+      background-color="blue lighten-2"
+      color="basil"
+      grow
+      show-arrows
+    >
       <v-tabs-slider color="blue darken-4"></v-tabs-slider>
       <v-tab href="#overview">Yleisnäkymä</v-tab>
       <v-tab href="#users">Käyttäjät</v-tab>

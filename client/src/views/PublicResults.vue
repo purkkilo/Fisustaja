@@ -77,6 +77,7 @@
           background-color="blue lighten-2"
           color="basil"
           grow
+          show-arrows
         >
           <v-tabs-slider color="blue darken-4"></v-tabs-slider>
           <v-tab href="#stats">Tilastoja</v-tab>
@@ -339,7 +340,11 @@
                   </v-col>
                 </v-row>
                 <v-row class="row" v-if="normal_points.length">
-                  <v-col class="scroll_table" md="12">
+                  <v-col
+                    class="scroll_table"
+                    md="12"
+                    style="touch-action: none;"
+                  >
                     <!--TODO Possibly change tables to https://vuetifyjs.com/en/components/data-tables/#data-tables ? or implement on vue-->
                     <table
                       id="normal-table"

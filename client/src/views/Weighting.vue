@@ -41,6 +41,7 @@
         background-color="blue lighten-2"
         color="basil"
         grow
+        show-arrows
       >
         <v-tabs-slider color="blue darken-4"></v-tabs-slider>
         <v-tab href="#weighting">Punnitus</v-tab>
