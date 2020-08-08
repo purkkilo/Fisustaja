@@ -10,8 +10,17 @@
             <h1>Kilpailujen tuloksia</h1>
           </v-col>
         </v-row>
+        <v-row>
+          <v-col md="3" offset-md="8">
+            <router-link to="/public-cups">
+              <v-btn large rounded color="blue" class="white--text">
+                <i class="material-icons left">emoji_events</i>Cuppien tuloksia
+              </v-btn>
+            </router-link>
+          </v-col>
+        </v-row>
         <v-row v-if="competitions.length" class="scroll_table">
-          <v-col md="6" offset-md="3">
+          <v-col md="4" offset-md="4">
             <v-autocomplete
               v-model="selected_competition"
               :items="competitions"
@@ -25,16 +34,9 @@
               single-line
             ></v-autocomplete>
           </v-col>
-          <v-col md="3">
-            <router-link to="/public-cups">
-              <v-btn large rounded color="green darken-4" class="white--text">
-                <i class="material-icons left">emoji_events</i>Cuppien tuloksia
-              </v-btn>
-            </router-link>
-          </v-col>
         </v-row>
         <v-row>
-          <v-col md="3" offset-md="4">
+          <v-col md="3" offset-md="4" style="margin-bottom:20px">
             <v-btn
               large
               tile
@@ -157,7 +159,7 @@
                   <v-col class="scroll_table">
                     <table
                       id="fish-weights-table"
-                      class="striped highlight centered responsive-table"
+                      class="striped highlight centered responsive-table table_header"
                     >
                       <thead>
                         <tr>
@@ -222,15 +224,15 @@
                   </v-col>
                 </v-row>
                 <v-row>
-                  <v-col>
+                  <v-col md="10" offset-md="1">
                     <table
                       id="misc-table"
-                      class="striped centered responsive-table highlight col s8 push-s2"
+                      class="striped centered responsive-table highlight"
                     >
                       <tr>
                         <th
                           style="border:1px solid black;"
-                          class="center-align"
+                          class="center-align blue_th"
                         >
                           <b>Cup pistekerroin</b>
                         </th>
@@ -244,7 +246,7 @@
                       <tr>
                         <th
                           style="border:1px solid black;"
-                          class="center-align"
+                          class="center-align blue_th"
                         >
                           <b>Ilmoittautuneita yhteensä</b>
                         </th>
@@ -258,7 +260,7 @@
                       <tr>
                         <th
                           style="border:1px solid black;"
-                          class="center-align"
+                          class="center-align blue_th"
                         >
                           <b>Saalista saaneita</b>
                         </th>
@@ -329,21 +331,20 @@
                     </v-btn>
                   </v-col>
                 </v-row>
+                <v-row v-if="normal_points.length">
+                  <v-col md="12">
+                    <p class="flow-text">
+                      Normaalikilpailu ({{ selected_normal }})
+                    </p>
+                  </v-col>
+                </v-row>
                 <v-row class="row" v-if="normal_points.length">
-                  <v-col class="scroll_table">
+                  <v-col class="scroll_table" md="12">
                     <!--TODO Possibly change tables to https://vuetifyjs.com/en/components/data-tables/#data-tables ? or implement on vue-->
                     <table
                       id="normal-table"
                       class="highlight centered responsive-table tablearea table_header scroll_table"
                     >
-                      <caption
-                        v-if="normal_points.length"
-                        class="center-align flow-text"
-                      >
-                        Normaalikilpailu ({{
-                          selected_normal
-                        }})
-                      </caption>
                       <thead>
                         <tr>
                           <th
@@ -546,28 +547,23 @@
               </v-col>
             </v-row>
             <v-row v-if="biggest_fishes_results.length">
+              <v-col>
+                <p v-if="results_found_fishes" class="flow-text">
+                  Suurimmat kalat ({{ selected_biggest_fish }}
+                  {{ results_found_fishes }})
+                </p>
+                <p v-else class="flow-text">
+                  Suurimmat kalat ({{ selected_biggest_fish }})
+                </p>
+              </v-col>
+            </v-row>
+            <v-row v-if="biggest_fishes_results.length">
               <v-col class="scroll_table" md="10" offset-md="1">
                 <table
                   id="biggest-fishes-table"
                   class="highlight centered responsive-table tablearea"
                   style="margin-bottom:40px"
                 >
-                  <caption
-                    v-if="results_found_fishes"
-                    class="center-align flow-text"
-                  >
-                    Suurimmat kalat ({{
-                      selected_biggest_fish
-                    }}
-                    {{
-                      results_found_fishes
-                    }})
-                  </caption>
-                  <caption v-else class="center-align flow-text">
-                    Suurimmat kalat ({{
-                      selected_biggest_fish
-                    }})
-                  </caption>
                   <thead style="background: rgb(0, 1, 34);color:#fff;">
                     <tr>
                       <th v-if="selected_biggest_fish == 'Voittajat'">
@@ -653,6 +649,18 @@
                 </v-btn>
               </v-col>
             </v-row>
+            <v-row v-if="biggest_amounts_results.length"
+              >>
+              <v-col>
+                <p v-if="results_found_amounts" class="flow-text">
+                  Suurimmat kalasaaliit ({{ selected_biggest_amount }}
+                  {{ results_found_amounts }})
+                </p>
+                <p v-else class="flow-text">
+                  Suurimmat kalasaaliit ({{ selected_biggest_amount }})
+                </p>
+              </v-col>
+            </v-row>
             <v-row v-if="biggest_amounts_results.length">
               <v-col class="scroll_table" md="10" offset-md="1">
                 <table
@@ -660,22 +668,6 @@
                   class="highlight centered responsive-table tablearea"
                   style="margin-bottom:40px"
                 >
-                  <caption
-                    v-if="results_found_amounts"
-                    class="center-align flow-text"
-                  >
-                    Suurimmat kalasaaliit ({{
-                      selected_biggest_amount
-                    }}
-                    {{
-                      results_found_amounts
-                    }})
-                  </caption>
-                  <caption v-else class="center-align flow-text">
-                    Suurimmat kalasaaliit ({{
-                      selected_biggest_amount
-                    }})
-                  </caption>
                   <thead style="background: rgb(0, 1, 34);color:#fff;">
                     <tr>
                       <th v-if="selected_biggest_amount == 'Voittajat'">

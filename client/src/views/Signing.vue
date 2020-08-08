@@ -29,14 +29,14 @@
       <!-- Navigation to other competition pages -->
       <v-row>
         <v-row>
-          <v-col order="first">
+          <v-col order="first" style="margin-top:20px">
             <router-link to="/comp-settings">
               <v-btn large rounded color="grey" class="white--text"
                 ><i class="material-icons left">tune</i>Määritykset</v-btn
               >
             </router-link>
           </v-col>
-          <v-col>
+          <v-col style="margin-top:20px">
             <router-link to="/overview">
               <v-btn large rounded color="primary"
                 ><i class="material-icons left">info</i>Kilpailun
@@ -44,7 +44,7 @@
               >
             </router-link>
           </v-col>
-          <v-col order="last">
+          <v-col order="last" style="margin-top:20px">
             <router-link to="/weighting">
               <v-btn large rounded color="blue darken-4" class="white--text"
                 ><i class="material-icons left">fitness_center</i
@@ -157,7 +157,7 @@
               <v-row v-if="!old_info" id="signing-inputs">
                 <v-col>
                   <v-row>
-                    <v-col md="3" offset-md="3" class="input-fields">
+                    <v-col md="3" offset-md="4" class="input-fields">
                       <v-text-field
                         label="Venekunnan numero"
                         v-model="boat_number"
@@ -177,16 +177,18 @@
                         :loading="loading"
                       />
                     </v-col>
+                  </v-row>
 
-                    <v-col md="2">
-                      <v-btn large color="blue" @click="searchFromCup"
+                  <v-row>
+                    <v-col md="2" offset-md="3" style="margin-top:20px;">
+                      <v-btn large block color="blue" @click="searchFromCup"
                         ><i class="material-icons left">find_replace</i>Hae
                         cupista</v-btn
                       >
                     </v-col>
 
-                    <v-col md="2">
-                      <v-btn large color="indigo" @click="searchSelected"
+                    <v-col md="2" style="margin-top:20px;">
+                      <v-btn large block color="indigo" @click="searchSelected"
                         ><i class="material-icons left">find_replace</i>Hae
                         ilmoittautuneista</v-btn
                       >
@@ -284,7 +286,7 @@
 
                     <v-row v-else style="margin:40px">
                       <v-row>
-                        <v-col md="4">
+                        <v-col md="4" style="margin-top:20px">
                           <v-btn
                             large
                             tile
@@ -295,7 +297,7 @@
                             >Poista Venekunta</v-btn
                           >
                         </v-col>
-                        <v-col md="4">
+                        <v-col md="4" style="margin-top:20px">
                           <v-btn
                             large
                             tile
@@ -306,7 +308,7 @@
                             Kentät</v-btn
                           >
                         </v-col>
-                        <v-col md="4">
+                        <v-col md="4" style="margin-top:20px">
                           <v-btn
                             large
                             tile
@@ -322,17 +324,19 @@
                     </v-row>
                   </v-row>
                   <v-row>
-                    <v-col md="12">
+                    <v-col md="6" offset-md="3">
                       <p class="flow-text" v-if="refreshing">
                         Synkronoidaan tietokannan kanssa...
                       </p>
                     </v-col>
-                    <v-col md="12">
+                  </v-row>
+                  <v-row>
+                    <v-col md="2" offset-md="5">
                       <v-btn
                         v-if="competition_id"
                         id="updatebtn"
                         large
-                        tile
+                        block
                         color="blue darken-4"
                         @click="refreshCompetition(competition_id)"
                         class="white--text"
@@ -404,7 +408,7 @@
                 </v-col>
               </v-row>
               <v-row v-if="selected_id">
-                <v-col style="margin:20px 50px;">
+                <v-col style="margin-top:20px;margin-bottom:20px;">
                   <v-btn large tile color="blue" @click="searchSelected"
                     ><i class="material-icons left">info</i>Näytä valitun
                     ilmoittautumistiedot</v-btn

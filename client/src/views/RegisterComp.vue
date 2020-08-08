@@ -113,7 +113,7 @@
                       single-line
                     ></v-select>
                   </v-col>
-                  <v-col md="3">
+                  <v-col md="3" style="margin-top:20px">
                     <router-link to="/continue">
                       <v-btn tile color="green lighten-1"
                         ><i class="material-icons left">add_circle_outline</i
@@ -123,14 +123,14 @@
                   </v-col>
                 </v-row>
                 <v-row v-else class="valign-wrapper">
-                  <v-col md="6" offset-md="2">
+                  <v-col md="6" offset-md="2" style="margin-top:20px">
                     <p class="flow-text">
                       Ei luotuja cuppeja, Luo cup ensin "Jatka Kilpailuja
                       sivulla" (Voit myös luoda cupin kilpailuille, jotka ei ole
                       missään cupissa")
                     </p>
                   </v-col>
-                  <v-col md="2">
+                  <v-col md="2" style="margin-top:20px">
                     <router-link to="/continue">
                       <v-btn tile color="blue lighten-1"
                         ><i class="material-icons left">add_circle_outline</i
@@ -342,13 +342,13 @@
                 </v-row>
               </v-col>
               <v-row v-if="basic_info_validated">
-                <v-col md="6">
+                <v-col md="6" style="margin-top:20px">
                   <v-btn large tile color="grey" @click="disableInputs(false)"
                     ><i class="material-icons left">settings</i>Muuta
                     tietoja</v-btn
                   >
                 </v-col>
-                <v-col md="6">
+                <v-col md="6" style="margin-top:20px">
                   <v-btn large tile color="green" @click="changeTab('fishes')"
                     ><i class="material-icons right">arrow_forward</i
                     >Jatka</v-btn
@@ -453,13 +453,13 @@
                     >Takaisin</v-btn
                   >
                 </v-col>
-                <v-col>
+                <v-col style="margin-top:20px">
                   <v-btn large tile color="grey" @click="disableInputs(false)"
                     ><i class="material-icons left">settings</i>Muuta
                     tietoja</v-btn
                   >
                 </v-col>
-                <v-col>
+                <v-col style="margin-top:20px">
                   <v-btn large tile color="green" @click="changeTab('points')"
                     ><i class="material-icons right">arrow_forward</i
                     >Jatka</v-btn
@@ -543,7 +543,7 @@
 
             <v-row>
               <v-row v-if="selected.length && !validated">
-                <v-col md="6">
+                <v-col md="6" style="margin-top:20px">
                   <v-btn
                     large
                     tile
@@ -553,7 +553,7 @@
                     >Takaisin</v-btn
                   >
                 </v-col>
-                <v-col md="6">
+                <v-col md="6" style="margin-top:20px">
                   <v-btn large tile color="green" @click="checkFishSpecs"
                     ><i class="material-icons left">check</i>Tarkista
                     tiedot</v-btn
@@ -561,7 +561,7 @@
                 </v-col>
               </v-row>
               <v-row v-else>
-                <v-col md="4">
+                <v-col md="4" style="margin-top:20px">
                   <v-btn
                     large
                     tile
@@ -571,13 +571,13 @@
                     >Takaisin</v-btn
                   >
                 </v-col>
-                <v-col md="4">
+                <v-col md="4" style="margin-top:20px">
                   <v-btn large tile color="grey" @click="disableInputs(false)"
                     ><i class="material-icons left">settings</i>Muuta
                     tietoja</v-btn
                   >
                 </v-col>
-                <v-col md="4">
+                <v-col md="4" style="margin-top:20px">
                   <v-btn large tile color="green" @click="changeTab('summary')"
                     ><i class="material-icons right">arrow_forward</i
                     >Jatka</v-btn
@@ -591,26 +591,30 @@
         <!-- "Yhteenveto" tab -->
         <v-tab-item class="inputarea" :value="'summary'">
           <v-container v-if="!loading">
+            <v-row>
+              <h2>
+                Perustiedot
+              </h2>
+            </v-row>
             <v-row class="basic_summary">
               <v-col>
                 <table class="striped centered responsive-table highlight">
-                  <caption class="flow-text">
-                    Perustiedot
-                  </caption>
                   <tr>
-                    <th style="border:1px solid black;">Kilpailu</th>
+                    <th style="border:1px solid black;" class="blue_th">
+                      Kilpailu
+                    </th>
                     <td style="border:1px solid black;" class="center-align">
                       {{ name }} ({{ locality }})
                     </td>
                   </tr>
                   <tr>
-                    <th style="border:1px solid black;">Cup</th>
+                    <th style="border:1px solid black;" class="blue_th">Cup</th>
                     <td style="border:1px solid black;" class="center-align">
                       {{ cup.name }}
                     </td>
                   </tr>
                   <tr>
-                    <th style="border:1px solid black;">
+                    <th style="border:1px solid black;" class="blue_th">
                       Voittajan Cup sijoittumispisteet
                     </th>
                     <td style="border:1px solid black;" class="center-align">
@@ -618,7 +622,7 @@
                     </td>
                   </tr>
                   <tr>
-                    <th style="border:1px solid black;">
+                    <th style="border:1px solid black;" class="blue_th">
                       Kilpailijoiden Cup osallistumispisteet
                     </th>
                     <td style="border:1px solid black;" class="center-align">
@@ -626,7 +630,7 @@
                     </td>
                   </tr>
                   <tr>
-                    <th style="border:1px solid black;">
+                    <th style="border:1px solid black;" class="blue_th">
                       Kilpailun Cup pistekerroin
                     </th>
                     <td style="border:1px solid black;" class="center-align">
@@ -634,7 +638,7 @@
                     </td>
                   </tr>
                   <tr>
-                    <th style="border:1px solid black;">
+                    <th style="border:1px solid black;" class="blue_th">
                       Onko Tiimikilpailua?
                     </th>
                     <td style="border:1px solid black;" class="center-align">
@@ -642,19 +646,25 @@
                     </td>
                   </tr>
                   <tr>
-                    <th style="border:1px solid black;">Aloituspäivä</th>
+                    <th style="border:1px solid black;" class="blue_th">
+                      Aloituspäivä
+                    </th>
                     <td style="border:1px solid black;" class="center-align">
                       {{ start_date }}
                     </td>
                   </tr>
                   <tr>
-                    <th style="border:1px solid black;">Lopetuspäivä</th>
+                    <th style="border:1px solid black;" class="blue_th">
+                      Lopetuspäivä
+                    </th>
                     <td style="border:1px solid black;" class="center-align">
                       {{ end_date }}
                     </td>
                   </tr>
                   <tr>
-                    <th style="border:1px solid black;">Kilpailuajankohta</th>
+                    <th style="border:1px solid black;" class="blue_th">
+                      Kilpailuajankohta
+                    </th>
                     <td style="border:1px solid black;" class="center-align">
                       {{ start_time }} - {{ end_time }}
                     </td>
@@ -662,12 +672,16 @@
                 </table>
               </v-col>
             </v-row>
+            <v-row>
+              <v-col md="12">
+                <h2>Kalojen määritykset</h2>
+              </v-col>
+            </v-row>
             <v-row class="fishes_summary">
               <v-col md="12">
-                <p class="flow-text">Kalojen määritykset</p>
-              </v-col>
-              <v-col md="12">
-                <table class="striped highlight centered responsive-table">
+                <table
+                  class="striped highlight centered responsive-table table_header"
+                >
                   <thead>
                     <tr>
                       <th>Kalalaji</th>
@@ -696,7 +710,7 @@
             </v-row>
             <v-row>
               <v-row>
-                <v-col md="5" offset-md="1">
+                <v-col md="5" offset-md="1" style="margin-top:20px">
                   <v-btn
                     large
                     tile
@@ -706,7 +720,7 @@
                     >Takaisin</v-btn
                   >
                 </v-col>
-                <v-col md="5" v-if="validated">
+                <v-col md="5" v-if="validated" style="margin-top:20px">
                   <v-btn large tile color="green" @click="submitCompetition"
                     ><i class="material-icons left">add_circle_outline</i>Luo
                     kilpailu näillä tiedoilla</v-btn

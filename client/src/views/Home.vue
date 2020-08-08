@@ -9,14 +9,14 @@
       </v-col>
     </v-row>
 
-    <v-row>
+    <v-row class="title">
       <!-- TODO Cool starting page... -->
       <v-col>
         <h4>Sovellus kalastuskilpailujen järjestämistä varten</h4>
       </v-col>
     </v-row>
     <v-row>
-      <v-col order="first">
+      <v-col order="first" style="margin-top:20px">
         <router-link to="/public-results">
           <v-btn large rounded color="blue darken-4" class="white--text"
             ><i class="material-icons left">emoji_events</i>Kilpailujen
@@ -24,7 +24,7 @@
           >
         </router-link>
       </v-col>
-      <v-col order="last">
+      <v-col order="last" style="margin-top:20px">
         <router-link to="/public-cups">
           <v-btn large rounded color="green darken-4" class="white--text">
             <i class="material-icons left">emoji_events</i>Cuppien tuloksia

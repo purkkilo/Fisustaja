@@ -10,7 +10,7 @@
       </div>
 
       <v-row>
-        <v-col md="6" offset-md="3">
+        <v-col md="6" offset-md="3" style="margin-top:20px">
           <router-link to="/overview">
             <v-btn large rounded color="primary"
               ><i class="material-icons left">info</i>Kilpailun
@@ -19,7 +19,7 @@
           </router-link>
         </v-col>
 
-        <v-col md="3">
+        <v-col md="3" style="margin-top:20px">
           <router-link to="/signing">
             <v-btn large rounded color="blue" class="white--text"
               ><i class="material-icons left">edit</i>Ilmoittautuminen</v-btn
@@ -31,26 +31,43 @@
       <v-row v-if="!loading" id="settings-info" class="inputarea">
         <v-col>
           <v-row>
+            <v-col>
+              <h3>
+                Perustiedot
+              </h3>
+            </v-col>
+          </v-row>
+          <v-row>
             <v-col md="10" offset-md="1" class="scroll_table">
               <table class="striped centered responsive-table highlight">
-                <caption class="flow-text">
-                  Perustiedot
-                </caption>
                 <tr>
-                  <th style="border:1px solid black;">Kilpailu</th>
+                  <th
+                    style="border:1px solid black;"
+                    class="center-align blue_th"
+                  >
+                    Kilpailu
+                  </th>
                   <!-- competition.name would be this.competition.name if referenced on javascript etc. -->
                   <td style="border:1px solid black;" class="center-align">
                     {{ competition.name }} ({{ competition.locality }})
                   </td>
                 </tr>
                 <tr>
-                  <th style="border:1px solid black;">Cup</th>
+                  <th
+                    style="border:1px solid black;"
+                    class="center-align blue_th"
+                  >
+                    Cup
+                  </th>
                   <td style="border:1px solid black;" class="center-align">
                     {{ competition.cup_name }}
                   </td>
                 </tr>
                 <tr>
-                  <th style="border:1px solid black;">
+                  <th
+                    style="border:1px solid black;"
+                    class="center-align blue_th"
+                  >
                     Voittajan Cup sijoittumispisteet
                   </th>
                   <td style="border:1px solid black;" class="center-align">
@@ -58,7 +75,10 @@
                   </td>
                 </tr>
                 <tr>
-                  <th style="border:1px solid black;">
+                  <th
+                    style="border:1px solid black;"
+                    class="center-align blue_th"
+                  >
                     Kilpailijoiden Cup osallistumispisteet
                   </th>
                   <td style="border:1px solid black;" class="center-align">
@@ -66,7 +86,10 @@
                   </td>
                 </tr>
                 <tr>
-                  <th style="border:1px solid black;">
+                  <th
+                    style="border:1px solid black;"
+                    class="center-align blue_th"
+                  >
                     Kilpailun pistekerroin
                   </th>
                   <td style="border:1px solid black;" class="center-align">
@@ -74,7 +97,10 @@
                   </td>
                 </tr>
                 <tr>
-                  <th style="border:1px solid black;">
+                  <th
+                    style="border:1px solid black;"
+                    class="center-align blue_th"
+                  >
                     Onko kilpailu julkinen
                   </th>
                   <td style="border:1px solid black;" class="center-align">
@@ -82,19 +108,34 @@
                   </td>
                 </tr>
                 <tr>
-                  <th style="border:1px solid black;">Aloituspäivä</th>
+                  <th
+                    style="border:1px solid black;"
+                    class="center-align blue_th"
+                  >
+                    Aloituspäivä
+                  </th>
                   <td style="border:1px solid black;" class="center-align">
                     {{ formatted_start_date }}
                   </td>
                 </tr>
                 <tr>
-                  <th style="border:1px solid black;">Lopetuspäivämäärä</th>
+                  <th
+                    style="border:1px solid black;"
+                    class="center-align blue_th"
+                  >
+                    Lopetuspäivämäärä
+                  </th>
                   <td style="border:1px solid black;" class="center-align">
                     {{ formatted_end_date }}
                   </td>
                 </tr>
                 <tr>
-                  <th style="border:1px solid black;">Kilpailuaika</th>
+                  <th
+                    style="border:1px solid black;"
+                    class="center-align blue_th"
+                  >
+                    Kilpailuaika
+                  </th>
                   <td style="border:1px solid black;" class="center-align">
                     {{ competition.start_time }} -
                     {{ competition.end_time }}
@@ -103,13 +144,16 @@
               </table>
             </v-col>
           </v-row>
-
-          <v-row class="fishes_summary">
+          <v-row style="margin-top:70px;margin-bottom:0">
             <v-col md="10" offset-md="1">
-              <p class="flow-text">Kalojen määritykset</p>
+              <h3>Kalojen määritykset</h3>
             </v-col>
+          </v-row>
+          <v-row class="fishes_summary">
             <v-col md="10" offset-md="1" class="scroll_table">
-              <table class="striped highlight centered responsive-table">
+              <table
+                class="striped highlight centered responsive-table table_header"
+              >
                 <thead>
                   <tr>
                     <th>Kalalaji</th>
@@ -135,12 +179,11 @@
             </v-col>
           </v-row>
           <v-row>
-            <v-col md="4" offset-md="4">
+            <v-col md="4" offset-md="4" style="margin-top:20px">
               <v-btn
                 block
                 color="red"
                 @click="deleteCompetition(competition._id, false)"
-                class="white--text"
                 ><i class="material-icons left">delete_forever</i>Poista
                 Kilpailu</v-btn
               >

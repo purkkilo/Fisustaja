@@ -173,16 +173,13 @@ table.highlight > tr:hover {
   border-radius: 2%;
   border: 1px solid rgb(0, 0, 61);
 }
-#app .table_header {
-  width: 100%;
-}
-#app .table_header tbody {
-  width: 100%;
-  overflow: auto;
-  max-height: 400px;
-}
 
 #app .table_header thead {
+  background: rgb(0, 1, 34);
+  color: #fff;
+}
+
+.blue_th {
   background: rgb(0, 1, 34);
   color: #fff;
 }

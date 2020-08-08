@@ -27,28 +27,28 @@
       </div>
 
       <v-row>
-        <v-col order="first">
+        <v-col order="first" style="margin-top:20px">
           <router-link to="/comp-settings">
             <v-btn large rounded color="grey" class="white--text"
               ><i class="material-icons left">tune</i>Määritykset</v-btn
             >
           </router-link>
         </v-col>
-        <v-col>
+        <v-col style="margin-top:20px">
           <router-link to="/signing">
             <v-btn large rounded color="blue" class="white--text"
               ><i class="material-icons left">edit</i>Ilmoittautuminen</v-btn
             >
           </router-link>
         </v-col>
-        <v-col>
+        <v-col style="margin-top:20px">
           <router-link to="/weighting">
             <v-btn large rounded color="blue darken-4" class="white--text"
               ><i class="material-icons left">fitness_center</i>Punnitus</v-btn
             >
           </router-link>
         </v-col>
-        <v-col order="last">
+        <v-col order="last" style="margin-top:20px">
           <router-link to="/results">
             <v-btn large rounded color="green" class="white--text"
               ><i class="material-icons left">emoji_events</i>Tulokset</v-btn
@@ -117,6 +117,7 @@
             <b>{{ competition.total_weights / 1000 }} kg</b>
           </h4>
           <v-btn
+            style="margin-top:20px"
             large
             rounded
             color="grey darken-4"

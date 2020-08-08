@@ -29,7 +29,7 @@
             <div class="divider black"></div>
             <div class="section">
               <v-row>
-                <v-col md="6">
+                <v-col md="6" style="margin-top:20px">
                   <router-link to="/register-comp">
                     <v-btn large tile color="blue lighten-1"
                       ><i class="material-icons left">add_circle_outline</i>Uusi
@@ -38,7 +38,7 @@
                   </router-link>
                 </v-col>
 
-                <v-col md="6">
+                <v-col md="6" style="margin-top:20px">
                   <router-link to="/continue">
                     <v-btn large tile color="green lighten-1"
                       ><i class="material-icons left">play_circle_filled</i

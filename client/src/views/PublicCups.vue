@@ -25,8 +25,17 @@
         <h1>Cuppien tuloksia</h1>
       </v-col>
     </v-row>
+    <v-row>
+      <v-col md="3" offset-md="8">
+        <router-link to="/public-results">
+          <v-btn large rounded color="green" class="white--text">
+            <i class="material-icons left">emoji_events</i>Kilpailujen tuloksia
+          </v-btn>
+        </router-link>
+      </v-col>
+    </v-row>
     <v-row v-if="cups.length" class="scroll_table">
-      <v-col md="6" offset-md="3">
+      <v-col md="4" offset-md="4">
         <v-autocomplete
           v-model="selected_cup"
           :items="cups"
@@ -38,13 +47,6 @@
           return-object
           single-line
         ></v-autocomplete>
-      </v-col>
-      <v-col md="3">
-        <router-link to="/public-results">
-          <v-btn large rounded color="green darken-4" class="white--text">
-            <i class="material-icons left">emoji_events</i>Kilpailujen tuloksia
-          </v-btn>
-        </router-link>
       </v-col>
     </v-row>
     <v-row v-else>
