@@ -681,16 +681,7 @@
                       <th v-else>Sijoitus</th>
                       <th>Veneen nro</th>
                       <th>Kapteeni</th>
-                      <th v-if="selected_biggest_amount == 'Pisteet'">
-                        Kalalaji
-                      </th>
-                      <th v-if="selected_biggest_amount == 'Pisteet'">
-                        Paino
-                      </th>
-                      <th v-if="selected_biggest_amount == 'Pisteet'">
-                        Pisteet
-                      </th>
-                      <th v-else>Paino</th>
+                      <th>Paino</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -718,20 +709,8 @@
                       <td style="border:1px solid black">
                         {{ result.captain_name }}
                       </td>
-                      <td
-                        v-if="selected_biggest_amount == 'Pisteet'"
-                        style="border:1px solid black"
-                      >
-                        {{ result.fish_name }}
-                      </td>
                       <td style="border:1px solid black">
                         {{ result.weight }} g
-                      </td>
-                      <td
-                        v-if="selected_biggest_amount == 'Pisteet'"
-                        style="border:1px solid black"
-                      >
-                        {{ result.points }} p
                       </td>
                     </tr>
                   </tbody>
@@ -924,7 +903,6 @@ export default {
           let temp_fish_names = this.$store.getters.getCompetitionFishes;
           this.fish_names.push("Voittajat");
           this.fish_amount_names.push("Voittajat");
-          this.fish_amount_names.push("Pisteet");
           temp_fish_names.forEach((fish) => {
             this.fish_names.push(fish.name);
             this.fish_amount_names.push(fish.name);
@@ -1201,50 +1179,15 @@ export default {
           (this.biggest_amounts_results = this.sortDict(fishes));
       } else {
         let fish_results = [];
-        fishes["Pisteet"] = [];
-        // Generate Pisteet (Add all amounts together and sort)
-        if (this.selected_biggest_amount === "Pisteet") {
-          let competition_fishes = this.$store.getters.getCompetitionFishes;
-          this.table_fish_names.forEach((name) => {
-            if (fishes[name]) {
-              fishes[name].forEach((signee) => {
-                let points_multiplier = competition_fishes.find(
-                  (fish) => fish.name === name
-                ).multiplier;
-                let result = {
-                  boat_number: signee.boat_number,
-                  captain_name: signee.captain_name,
-                  fish_name: name,
-                  weight: signee.weight,
-                  points: signee.weight * points_multiplier,
-                };
-                fishes["Pisteet"].push(result);
-              });
-            }
-          });
-        }
         if (fishes[this.selected_biggest_amount]) {
-          if (this.selected_biggest_amount === "Pisteet") {
-            fish_results = fishes[this.selected_biggest_amount].sort(
-              function compare(a, b) {
-                return parseInt(b.points) - parseInt(a.points);
-              }
-            );
-
-            fish_results = fish_results.filter(
-              (result) => parseInt(result.points) > 0
-            );
-          } else {
-            fish_results = fishes[this.selected_biggest_amount].sort(
-              function compare(a, b) {
-                return parseInt(b.weight) - parseInt(a.weight);
-              }
-            );
-            fish_results = fish_results.filter(
-              (result) => parseInt(result.weight) > 0
-            );
-          }
-
+          fish_results = fishes[this.selected_biggest_amount].sort(
+            function compare(a, b) {
+              return parseInt(b.weight) - parseInt(a.weight);
+            }
+          );
+          fish_results = fish_results.filter(
+            (result) => parseInt(result.weight) > 0
+          );
           this.results_found_amounts = "";
         } else {
           this.results_found_amount = "- Ei tuloksia";
@@ -1301,20 +1244,6 @@ export default {
           values[values.length - 1] =
             values[values.length - 1].toLocaleString() + " p";
         }
-        //Pisteet
-        if (type === 6) {
-          let temp_bnumber = values[0];
-          let temp_captain = values[1];
-          let temp_fish_name = values[2];
-          let temp_weight = values[3];
-          let temp_points = values[4];
-          values[0] = String(placement) + ".";
-          values[1] = "(" + String(temp_bnumber) + ")";
-          values[2] = temp_captain;
-          values[3] = temp_fish_name;
-          values[4] = temp_weight.toLocaleString() + " g";
-          values[5] = temp_points.toLocaleString() + " p";
-        }
         placement++;
         arr.push(values);
       });
@@ -1335,6 +1264,7 @@ export default {
     },
     // Convert the charts and the tables to pdf
     saveAsPDF: function(competition_type, table_id) {
+      console.log(this.normal_points);
       // Format dates for easier reding
       let temp_start_date = this.formatDate(this.competition.start_date);
       let temp_end_date = this.formatDate(this.competition.end_date);
@@ -1628,8 +1558,97 @@ export default {
         }
       }
 
-      doc.addPage();
+      // For each fish, generate tables for "Suurimmat Kalat (Kala)" and "Suurimmat Kalasaaliit (Kala)"
+      this.table_fish_names.forEach((name) => {
+        // Same process as above, but for every fish instead of only winners
+        this.selected_biggest_fish = name;
+        this.calculateBiggestFishes();
+        start_coord = 10;
 
+        if (this.biggest_fishes_results.length) {
+          doc.addPage();
+          doc.setFontSize(24);
+          doc.text(10, 10, title, { align: "left" });
+          doc.setFontSize(14);
+          doc.text(10, 20, this.competition.cup_name, { align: "left" });
+          doc.text(10, 30, time, { align: "left" });
+          doc.line(0, 35, 400, 35);
+          doc.setFontSize(18);
+          start_coord = 50;
+
+          columns = ["Sijoitus", "Veneen nro", "Kapteeni", "Paino"];
+          rows = this.dictToArray(this.biggest_fishes_results, 3);
+
+          doc.text(100, start_coord, "Suurimmat kalat" + ` (${name})`, {
+            align: "center",
+          });
+
+          doc.autoTable({
+            head: [columns],
+            body: rows,
+            styles: {
+              overflow: "linebreak",
+              cellWidth: "wrap",
+              rowPageBreak: "avoid",
+              halign: "justify",
+              fontSize: "8",
+              lineColor: "100",
+              lineWidth: ".25",
+            },
+            columnStyles: { text: { cellwidth: "auto" } },
+            theme: "striped",
+            pageBreak: "auto",
+            tableWidth: "auto",
+            margin: { top: 20 },
+            startY: start_coord + 5,
+          });
+        }
+      });
+
+      // Suurimmat kalasaaliit
+      this.table_fish_names.forEach((name) => {
+        this.selected_biggest_amount = name;
+        this.calculateBiggestAmounts();
+        start_coord = 10;
+
+        if (this.biggest_amounts[name].length) {
+          doc.addPage();
+          doc.setFontSize(24);
+          doc.text(10, 10, title, { align: "left" });
+          doc.setFontSize(14);
+          doc.text(10, 20, this.competition.cup_name, { align: "left" });
+          doc.text(10, 30, time, { align: "left" });
+          doc.line(0, 35, 400, 35);
+          doc.setFontSize(18);
+          start_coord = 50;
+
+          rows = this.dictToArray(this.biggest_amounts[name], 3);
+          doc.text(100, start_coord, "Suurimmat kalasaaliit" + ` (${name})`, {
+            align: "center",
+          });
+
+          doc.autoTable({
+            head: [columns],
+            body: rows,
+            styles: {
+              overflow: "linebreak",
+              cellWidth: "wrap",
+              rowPageBreak: "avoid",
+              halign: "justify",
+              fontSize: "8",
+              lineColor: "100",
+              lineWidth: ".25",
+            },
+            columnStyles: { text: { cellwidth: "auto" } },
+            theme: "striped",
+            pageBreak: "auto",
+            tableWidth: "auto",
+            startY: start_coord + 5,
+          });
+        }
+      });
+
+      doc.addPage();
       // Suurimmat Kalat  (Voittajat)
       // Select these for calculations
       this.selected_biggest_fish = this.selected_biggest_amount = "Voittajat";
@@ -1719,140 +1738,6 @@ export default {
         });
       }
 
-      this.selected_biggest_amount = "Pisteet";
-      this.calculateBiggestAmounts();
-      // If there are any amounts --> if someone has gotten any fish
-      if (this.biggest_amounts_results.length) {
-        doc.addPage();
-        doc.setFontSize(24);
-        doc.text(10, 10, title, { align: "left" });
-        doc.setFontSize(14);
-        doc.text(10, 20, this.competition.cup_name, { align: "left" });
-        doc.text(10, 30, time, { align: "left" });
-        doc.line(0, 35, 400, 35);
-        doc.setFontSize(18);
-        columns = [
-          "Sijoitus",
-          "Veneen nro",
-          "Kapteeni",
-          "Kalalaji",
-          "Paino",
-          "Pisteet",
-        ];
-        rows = this.dictToArray(this.biggest_amounts_results, 6);
-        doc.text(
-          100,
-          50,
-          "Suurimmat kalasaaliit" + ` (${this.selected_biggest_amount})`,
-          { align: "center" }
-        );
-        // Table generated in code
-        doc.autoTable({
-          head: [columns],
-          body: rows,
-          styles: {
-            overflow: "linebreak",
-            cellWidth: "wrap",
-            rowPageBreak: "avoid",
-            halign: "justify",
-            fontSize: "8",
-            lineColor: "100",
-            lineWidth: ".25",
-          },
-          columnStyles: { text: { cellwidth: "auto" } },
-          theme: "striped",
-          pageBreak: "auto",
-          tableWidth: "auto",
-          margin: { top: 20 },
-          startY: 55,
-        });
-      }
-      // For each fish, generate tables for "Suurimmat Kalat (Kala)" and "Suurimmat Kalasaaliit (Kala)"
-      this.table_fish_names.forEach((name) => {
-        // Same process as above, but for every fish instead of only winners
-        this.selected_biggest_fish = name;
-        this.calculateBiggestFishes();
-        start_coord = 10;
-
-        if (
-          this.biggest_amounts[name].length ||
-          this.biggest_fishes_results.length
-        ) {
-          doc.addPage();
-          doc.setFontSize(24);
-          doc.text(10, 10, title, { align: "left" });
-          doc.setFontSize(14);
-          doc.text(10, 20, this.competition.cup_name, { align: "left" });
-          doc.text(10, 30, time, { align: "left" });
-          doc.line(0, 35, 400, 35);
-          doc.setFontSize(18);
-          start_coord = 50;
-        }
-
-        columns = ["Sijoitus", "Veneen nro", "Kapteeni", "Paino"];
-
-        // Suurimmat kalat
-        if (this.biggest_fishes_results.length) {
-          rows = this.dictToArray(this.biggest_fishes_results, 3);
-          doc.text(100, start_coord, "Suurimmat kalat" + ` (${name})`, {
-            align: "center",
-          });
-          doc.autoTable({
-            head: [columns],
-            body: rows,
-            styles: {
-              overflow: "linebreak",
-              cellWidth: "wrap",
-              rowPageBreak: "avoid",
-              halign: "justify",
-              fontSize: "8",
-              lineColor: "100",
-              lineWidth: ".25",
-            },
-            columnStyles: { text: { cellwidth: "auto" } },
-            theme: "striped",
-            pageBreak: "auto",
-            tableWidth: "auto",
-            margin: { top: 20 },
-            startY: start_coord + 5,
-          });
-        }
-
-        // Suurimmat kalasaaliit
-        this.calculateBiggestAmounts();
-        if (this.biggest_amounts[name].length) {
-          if (!this.biggest_fishes_results.length) {
-            start_coord = 50;
-          } else {
-            start_coord = doc.autoTable.previous.finalY + 20;
-          }
-
-          rows = this.dictToArray(this.biggest_amounts[name], 3);
-          doc.text(100, start_coord, "Suurimmat kalasaaliit" + ` (${name})`, {
-            align: "center",
-          });
-
-          doc.autoTable({
-            head: [columns],
-            body: rows,
-            styles: {
-              overflow: "linebreak",
-              cellWidth: "wrap",
-              rowPageBreak: "avoid",
-              halign: "justify",
-              fontSize: "8",
-              lineColor: "100",
-              lineWidth: ".25",
-            },
-            columnStyles: { text: { cellwidth: "auto" } },
-            theme: "striped",
-            pageBreak: "auto",
-            tableWidth: "auto",
-            startY: start_coord + 5,
-          });
-        }
-      });
-
       doc.addPage();
       doc.setFontSize(24);
       doc.text(10, 10, title, { align: "left" });
@@ -1923,11 +1808,7 @@ export default {
       // Save to pdf
 
       doc.save(
-        `${year}_${this.replaceAll(
-          this.competition.name,
-          " ",
-          ""
-        )}_KaikkiTulokset.pdf`
+        `${year}_${this.replaceAll(this.competition.name, " ", "")}Tulokset.pdf`
       );
     },
   },
