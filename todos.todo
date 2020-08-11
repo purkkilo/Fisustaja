@@ -8,14 +8,13 @@ Nested:
 
 Todos:
 New:
-  ☐ Input validation! @started(20-05-26 12:06) @high @today
-  ✔ Comment all the files... @started(20-05-26 12:11) @low @done(20-07-30 19:10) @lasted(9w2d6h59m37s)
-  ☐ Update competition from database on some time interval (allows using multiple computers at the same time), at least on result.vue  @high
-  ☐ Fix clock timings and bugs
+  ☐ Input validation! (Serverside, more on clientside too) @started(20-05-26 12:06) @high @today
+  ☐ Comment all the files... @started(20-05-26 12:11) @low
   ☐ Add demo accounts
+  ☐ Add automatic competition generation
+  ☐ Transform tables to vuetify data-tables
   ☐ Vuetify can also be used for unit testing, add testing
-  ☐ Add intro.js?
-  ☐ Add qr code possibility to signing/weighting
+  ☐ Add qr code possibility to signing/weighting (rfid)
   ☐ Add possibility to get weights from usb
   
 Done:
@@ -39,7 +38,8 @@ Done:
   ✔ Remove biggest fishes and amounts if points are reset @done(20-07-02 07:44)
   ✔ Style with Vuetify (https://vuetifyjs.com/en/components/api-explorer/) @done(20-07-30 19:05)
   ✔ Add competitions to cups @done(20-07-30 19:05)
-  
+  ✔ Update competition from database on some time interval (allows using multiple computers at the same time), at least on result.vue  @high @done(20-08-12 02:13)
+
 Cancelled:
   ✘ Press Alt+C to mark a todo as cancelled
   

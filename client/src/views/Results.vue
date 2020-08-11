@@ -10,7 +10,16 @@
           <h1>Tulokset</h1>
         </div>
       </div>
-
+      <v-row>
+        <v-col md="4" offset-md="4" class="inputarea">
+          <v-switch
+            v-model="updateSwitch"
+            class="black--text"
+            color="orange darken-3"
+            label="Tulosten automaattinen päivitys 60s välein"
+          ></v-switch>
+        </v-col>
+      </v-row>
       <v-row>
         <v-col order="first" style="margin-top:20px">
           <router-link to="/weighting">
@@ -38,18 +47,97 @@
           "
           style="margin-top:20px"
         >
-          <v-btn
-            large
-            tile
-            color="green darken-4"
-            class="white--text"
-            @click="saveAllAsPDF"
-            :loading="loading"
-            :disabled="!biggest_amounts_results.length || !competition"
-          >
-            <i class="material-icons left">picture_as_pdf</i>Lataa kaikki
-            tulokset
-          </v-btn>
+          <v-dialog v-model="dialog" scrollable max-width="300px">
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                color="green darken-4"
+                dark
+                v-bind="attrs"
+                v-on="on"
+                large
+                tile
+                class="white--text"
+                :loading="loading"
+                :disabled="!biggest_amounts_results.length || !competition"
+              >
+                <i class="material-icons left">picture_as_pdf</i>Lataa kaikki
+                tulokset
+              </v-btn>
+            </template>
+            <v-card>
+              <v-card-title>Valitse mitä lataus sisältää</v-card-title>
+              <v-divider></v-divider>
+              <v-card-text style="height: 300px;width:100%;">
+                <v-checkbox
+                  v-model="selected_print"
+                  label="Tilastoja"
+                  :disabled="!biggest_amounts_results.length"
+                  color="indigo darken-3"
+                  value="stats"
+                ></v-checkbox>
+                <v-checkbox
+                  v-model="selected_print"
+                  :disabled="!biggest_amounts_results.length"
+                  label="Normaalikilpailun tulokset"
+                  color="indigo darken-3"
+                  value="normal"
+                ></v-checkbox>
+                <v-checkbox
+                  v-if="isTeamCompetition"
+                  :disabled="!team_results.length"
+                  v-model="selected_print"
+                  label="Tiimikilpailun tulokset"
+                  color="indigo darken-3"
+                  value="team"
+                ></v-checkbox>
+                <v-checkbox
+                  v-model="selected_print"
+                  :disabled="!biggest_fishes_results.length"
+                  label="Suurimmat yksittäiset kalat"
+                  color="indigo darken-3"
+                  value="biggest_fishes"
+                ></v-checkbox>
+                <v-checkbox
+                  v-model="selected_print"
+                  :disabled="!biggest_amounts_results.length"
+                  label="Suurimmat kalasaaliit"
+                  color="indigo darken-3"
+                  value="biggest_amounts"
+                ></v-checkbox>
+                <v-checkbox
+                  v-model="selected_print"
+                  :disabled="
+                    !biggest_amounts_results.length &&
+                      !biggest_amounts_results.length
+                  "
+                  label="Suurimmat yksittäiset kalat / kalasaaliit (Voittajat)"
+                  color="indigo darken-3"
+                  value="biggest_winners"
+                ></v-checkbox>
+              </v-card-text>
+              <v-divider></v-divider>
+              <v-card-actions>
+                <v-col>
+                  <v-btn
+                    outlined
+                    color="red darken-4"
+                    text
+                    @click="dialog = false"
+                    >Sulje</v-btn
+                  >
+                </v-col>
+                <v-col>
+                  <v-btn
+                    outlined
+                    color="green darken-4"
+                    text
+                    @click="choosePrints"
+                    >Lataa</v-btn
+                  >
+                </v-col>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
         </v-col>
       </v-row>
 
@@ -733,10 +821,10 @@
             </v-btn>
           </v-col>
         </v-row>
-        <div v-else>
+        <v-row v-else>
           <h2>Päivitetään tuloksia tietokannasta...</h2>
           <ProgressBarQuery />
-        </div>
+        </v-row>
       </div>
     </div>
   </v-container>
@@ -802,7 +890,25 @@ export default {
         "Cup osal. pisteet",
         "Yht.",
       ],
+      selected_print: [],
+      dialog: false,
+      updateSwitch: false,
     };
+  },
+  watch: {
+    updateSwitch(newValue) {
+      //called whenever switch1 changes
+      if (newValue) {
+        const competition = JSON.parse(localStorage.getItem("competition"));
+        const competition_id = competition["id"];
+        this.timer_refresh = setInterval(
+          () => this.refreshCompetition(competition_id),
+          this.interval
+        );
+      } else {
+        clearInterval(this.timer_refresh);
+      }
+    },
   },
   mounted() {
     //Init materialize elements
@@ -814,10 +920,6 @@ export default {
       const competition_id = competition["id"];
       //Update competition every minute
       this.refreshCompetition(competition_id);
-      this.timer_refresh = setInterval(
-        () => this.refreshCompetition(competition_id),
-        this.interval
-      );
     }
 
     // Focus on top of the page when changing pages
@@ -829,6 +931,10 @@ export default {
     clearInterval(this.timer_refresh);
   },
   methods: {
+    choosePrints: function() {
+      this.dialog = false;
+      this.saveAllAsPDF();
+    },
     // Fetch competition from database, and update all the arrays
     async refreshCompetition(competition_id) {
       this.loading = true;
@@ -1395,6 +1501,7 @@ export default {
         )}.pdf`
       );
     },
+    // Saves all the chosen tables to pdf
     saveAllAsPDF: function() {
       let temp_selected_biggest_fish = this.selected_biggest_fish;
       let temp_selected_biggest_amount = this.selected_biggest_amount;
@@ -1421,87 +1528,91 @@ export default {
       doc.line(0, 35, 400, 35);
       doc.setFontSize(18);
 
-      //Normaalikilpailu (Pisteet)
-
       // start_coord needed to keep track of y coordinates for tables (if there are no results -> no table drawn to pdf -> varying coordinates)
       let start_coord;
+      let rows;
+      let columns;
+      //Normaalikilpailu (Pisteet), saved to pdf if it's inclued in this.selected_print array
+      if (this.selected_print.includes("normal")) {
+        // Other tables are generated in code so no need to wait for rendering to html
+        columns = [
+          "Sijoitus",
+          "Nro.",
+          "Kapteeni",
+          "Varakapteeni",
+          "Paikkakunta",
+          "Tulos",
+          "Sij. pisteet",
+          "Osal. pisteet",
+          "Yht.",
+        ];
+        // Format dictionary/json to format that autotable understands (arrays in arrays);
+        rows = this.dictToArray(this.normal_points, 1);
+        doc.text(100, 50, "Normaalikilpailun tulokset (Pisteet)", {
+          align: "center",
+        });
+        // Table generated in code
+        doc.autoTable({
+          head: [columns],
+          body: rows,
+          styles: {
+            overflow: "linebreak",
+            cellWidth: "wrap",
+            rowPageBreak: "avoid",
+            halign: "justify",
+            fontSize: "8",
+            lineColor: "100",
+            lineWidth: ".25",
+          },
+          columnStyles: { text: { cellwidth: "auto" } },
+          theme: "striped",
+          pageBreak: "auto",
+          tableWidth: "auto",
+          startY: 55,
+          margin: { top: 20 },
+        });
 
-      // Other tables are generated in code so no need to wait for rendering to html
-      let columns = [
-        "Sijoitus",
-        "Nro.",
-        "Kapteeni",
-        "Varakapteeni",
-        "Paikkakunta",
-        "Tulos",
-        "Sij. pisteet",
-        "Osal. pisteet",
-        "Yht.",
-      ];
-      // Format dictionary/json to format that autotable understands (arrays in arrays);
-      let rows = this.dictToArray(this.normal_points, 1);
-      doc.text(100, 50, "Normaalikilpailun tulokset (Pisteet)", {
-        align: "center",
-      });
-      // Table generated in code
-      doc.autoTable({
-        head: [columns],
-        body: rows,
-        styles: {
-          overflow: "linebreak",
-          cellWidth: "wrap",
-          rowPageBreak: "avoid",
-          halign: "justify",
-          fontSize: "8",
-          lineColor: "100",
-          lineWidth: ".25",
-        },
-        columnStyles: { text: { cellwidth: "auto" } },
-        theme: "striped",
-        pageBreak: "auto",
-        tableWidth: "auto",
-        startY: 55,
-        margin: { top: 20 },
-      });
-
-      //Normaalikilpailu (Kalat)
-      doc.addPage();
-
-      columns = ["Sijoitus", "Nro.", "Kapteeni"];
-      // Get fish names for columns
-      this.table_fish_names.forEach((name) => {
-        columns.push(name);
-      });
-      columns.push("Tulos");
-
-      rows = this.dictToArray(this.normal_weights, 2);
-      doc.text(100, 10, "Normaalikilpailun tulokset (Kalat)", {
-        align: "center",
-      });
-      // Table generated in code
-      doc.autoTable({
-        head: [columns],
-        body: rows,
-        styles: {
-          overflow: "linebreak",
-          cellWidth: "wrap",
-          rowPageBreak: "avoid",
-          halign: "justify",
-          fontSize: "8",
-          lineColor: "100",
-          lineWidth: ".25",
-        },
-        columnStyles: { text: { cellwidth: "auto" } },
-        theme: "striped",
-        pageBreak: "auto",
-        tableWidth: "auto",
-        margin: { top: 20 },
-        startY: 20,
-      });
-
-      // Tiimikilpailu, drawn to pdf if it exists
-      if (this.isTeamCompetition) {
+        //Normaalikilpailu (Kalat)
         doc.addPage();
+        columns = ["Sijoitus", "Nro.", "Kapteeni"];
+        // Get fish names for columns
+        this.table_fish_names.forEach((name) => {
+          columns.push(name);
+        });
+        columns.push("Tulos");
+
+        rows = this.dictToArray(this.normal_weights, 2);
+        doc.text(100, 10, "Normaalikilpailun tulokset (Kalat)", {
+          align: "center",
+        });
+        // Table generated in code
+        doc.autoTable({
+          head: [columns],
+          body: rows,
+          styles: {
+            overflow: "linebreak",
+            cellWidth: "wrap",
+            rowPageBreak: "avoid",
+            halign: "justify",
+            fontSize: "8",
+            lineColor: "100",
+            lineWidth: ".25",
+          },
+          columnStyles: { text: { cellwidth: "auto" } },
+          theme: "striped",
+          pageBreak: "auto",
+          tableWidth: "auto",
+          margin: { top: 20 },
+          startY: 20,
+        });
+      }
+
+      // Tiimikilpailu, drawn to pdf if it exists and , if it's inclued in this.selected_print array
+      if (this.isTeamCompetition && this.selected_print.includes("team")) {
+        // If there is "Normaalikilpailun tulokset" selected also, start from new page
+        if (this.selected_print.includes("normal")) {
+          doc.addPage();
+        }
         doc.setFontSize(24);
         doc.text(10, 10, title, { align: "left" });
         doc.setFontSize(14);
@@ -1513,7 +1624,7 @@ export default {
         // Add results, if there are any
         if (this.team_results.length) {
           // Other tables are generated in code so no need to wait for rendering to html
-          let columns = [
+          columns = [
             "Sijoitus",
             "Tiimi",
             "Jäsen 1",
@@ -1522,7 +1633,7 @@ export default {
             "Pisteet",
           ];
           // Format dictionary/json to format that autotable understands (arrays in arrays);
-          let rows = this.dictToArray(this.normal_points, 1);
+          rows = this.dictToArray(this.normal_points, 1);
           //TODO generate table in code instead of html, like the others
           doc.autoTable({
             head: [columns],
@@ -1546,15 +1657,149 @@ export default {
         }
       }
 
-      // For each fish, generate tables for "Suurimmat Kalat (Kala)" and "Suurimmat Kalasaaliit (Kala)"
-      this.table_fish_names.forEach((name) => {
-        // Same process as above, but for every fish instead of only winners
-        this.selected_biggest_fish = name;
-        this.calculateBiggestFishes();
-        start_coord = 10;
-
-        if (this.biggest_fishes_results.length) {
+      //"Suurimmat kalat" to pdf if it's inclued in this.selected_print array
+      if (this.selected_print.includes("biggest_fishes")) {
+        // If there is content before, start from new page
+        if (
+          this.selected_print.includes("normal") ||
+          this.selected_print.includes("team")
+        ) {
           doc.addPage();
+        }
+        let counter = 0;
+        // For each fish, generate tables for "Suurimmat Kalat (Kala)" and "Suurimmat Kalasaaliit (Kala)"
+        this.table_fish_names.forEach((name) => {
+          // Same process as above, but for every fish instead of only winners
+          this.selected_biggest_fish = name;
+          this.calculateBiggestFishes();
+          start_coord = 10;
+
+          if (this.biggest_fishes_results.length) {
+            // So it doesn't add unnecessary page on the first loop
+            if (counter > 0) {
+              doc.addPage();
+            }
+            doc.setFontSize(24);
+            doc.text(10, 10, title, { align: "left" });
+            doc.setFontSize(14);
+            doc.text(10, 20, this.competition.cup_name, { align: "left" });
+            doc.text(10, 30, time, { align: "left" });
+            doc.line(0, 35, 400, 35);
+            doc.setFontSize(18);
+            start_coord = 50;
+
+            columns = ["Sijoitus", "Veneen nro", "Kapteeni", "Paino"];
+            rows = this.dictToArray(this.biggest_fishes_results, 3);
+
+            doc.text(100, start_coord, "Suurimmat kalat" + ` (${name})`, {
+              align: "center",
+            });
+
+            doc.autoTable({
+              head: [columns],
+              body: rows,
+              styles: {
+                overflow: "linebreak",
+                cellWidth: "wrap",
+                rowPageBreak: "avoid",
+                halign: "justify",
+                fontSize: "8",
+                lineColor: "100",
+                lineWidth: ".25",
+              },
+              columnStyles: { text: { cellwidth: "auto" } },
+              theme: "striped",
+              pageBreak: "auto",
+              tableWidth: "auto",
+              margin: { top: 20 },
+              startY: start_coord + 5,
+            });
+            counter++;
+          }
+        });
+      }
+
+      // Suurimmat kalasaaliit to pdf if it's inclued in this.selected_print array
+      if (this.selected_print.includes("biggest_amounts")) {
+        // If there is content before, start from new page
+        if (
+          this.selected_print.includes("normal") ||
+          this.selected_print.includes("team") ||
+          this.selected_print.includes("biggest_fishes")
+        ) {
+          doc.addPage();
+        }
+        let counter = 0;
+        this.table_fish_names.forEach((name) => {
+          this.selected_biggest_amount = name;
+          this.calculateBiggestAmounts();
+          start_coord = 10;
+
+          if (this.biggest_amounts[name].length) {
+            // So it doesn't add unnecessary page on the first loop
+            if (counter > 0) {
+              doc.addPage();
+            }
+            doc.setFontSize(24);
+            doc.text(10, 10, title, { align: "left" });
+            doc.setFontSize(14);
+            doc.text(10, 20, this.competition.cup_name, { align: "left" });
+            doc.text(10, 30, time, { align: "left" });
+            doc.line(0, 35, 400, 35);
+            doc.setFontSize(18);
+            start_coord = 50;
+
+            rows = this.dictToArray(this.biggest_amounts[name], 3);
+            doc.text(100, start_coord, "Suurimmat kalasaaliit" + ` (${name})`, {
+              align: "center",
+            });
+
+            doc.autoTable({
+              head: [columns],
+              body: rows,
+              styles: {
+                overflow: "linebreak",
+                cellWidth: "wrap",
+                rowPageBreak: "avoid",
+                halign: "justify",
+                fontSize: "8",
+                lineColor: "100",
+                lineWidth: ".25",
+              },
+              columnStyles: { text: { cellwidth: "auto" } },
+              theme: "striped",
+              pageBreak: "auto",
+              tableWidth: "auto",
+              startY: start_coord + 5,
+            });
+            counter++;
+          }
+        });
+      }
+
+      // "Suurimmat Kalat (Voittajat) / Suurimmat kalasaaliit (Voittajat)"" to pdf if it's inclued in this.selected_print array
+      if (this.selected_print.includes("biggest_winners")) {
+        // If there is content before, start from new page
+        if (
+          this.selected_print.includes("normal") ||
+          this.selected_print.includes("team") ||
+          this.selected_print.includes("biggest_fishes") ||
+          this.selected_print.includes("biggest_amounts")
+        ) {
+          doc.addPage();
+        }
+        // Suurimmat Kalat  (Voittajat)
+        // Select these for calculations
+        this.selected_biggest_fish = this.selected_biggest_amount = "Voittajat";
+        columns = ["Kalalaji", "Veneen nro", "Kapteeni", "Paino"];
+        // Calculate data
+        this.calculateBiggestFishes();
+        this.calculateBiggestAmounts();
+        // If there are any results, add title
+        if (
+          this.biggest_fishes_results.length ||
+          this.biggest_amounts_results.length
+        ) {
           doc.setFontSize(24);
           doc.text(10, 10, title, { align: "left" });
           doc.setFontSize(14);
@@ -1562,15 +1807,55 @@ export default {
           doc.text(10, 30, time, { align: "left" });
           doc.line(0, 35, 400, 35);
           doc.setFontSize(18);
-          start_coord = 50;
+        }
 
-          columns = ["Sijoitus", "Veneen nro", "Kapteeni", "Paino"];
-          rows = this.dictToArray(this.biggest_fishes_results, 3);
-
-          doc.text(100, start_coord, "Suurimmat kalat" + ` (${name})`, {
-            align: "center",
+        // If there are biggest fishes
+        if (this.biggest_fishes_results.length) {
+          rows = this.dictToArray(this.biggest_fishes_results, 4);
+          doc.text(
+            100,
+            50,
+            "Suurimmat kalat" + ` (${this.selected_biggest_fish})`,
+            { align: "center" }
+          );
+          // Table generated in code
+          doc.autoTable({
+            head: [columns],
+            body: rows,
+            styles: {
+              overflow: "linebreak",
+              cellWidth: "wrap",
+              rowPageBreak: "avoid",
+              halign: "justify",
+              fontSize: "8",
+              lineColor: "100",
+              lineWidth: ".25",
+            },
+            columnStyles: { text: { cellwidth: "auto" } },
+            theme: "striped",
+            pageBreak: "auto",
+            tableWidth: "auto",
+            margin: { top: 20 },
+            startY: 55,
           });
+          // Keep track of y coordinate
+          start_coord = doc.autoTable.previous.finalY + 25;
+        } else {
+          // If no biggest fishes, biggest amounts table starts from 50 instead
+          start_coord = 50;
+        }
 
+        //Suurimmat kalasaaliit (Voittajat)
+        // If there are any amounts --> if someone has gotten any fish
+        if (this.biggest_amounts_results.length) {
+          rows = this.dictToArray(this.biggest_amounts_results, 4);
+          doc.text(
+            100,
+            start_coord,
+            "Suurimmat kalasaaliit" + ` (${this.selected_biggest_fish})`,
+            { align: "center" }
+          );
+          // Table generated in code
           doc.autoTable({
             head: [columns],
             body: rows,
@@ -1591,64 +1876,19 @@ export default {
             startY: start_coord + 5,
           });
         }
-      });
-
-      // Suurimmat kalasaaliit
-      this.table_fish_names.forEach((name) => {
-        this.selected_biggest_amount = name;
-        this.calculateBiggestAmounts();
-        start_coord = 10;
-
-        if (this.biggest_amounts[name].length) {
+      }
+      // "Tilastoja" to pdf if it's inclued in this.selected_print array
+      if (this.selected_print.includes("stats")) {
+        // If there is content before, start from new page
+        if (
+          this.selected_print.includes("normal") ||
+          this.selected_print.includes("team") ||
+          this.selected_print.includes("biggest_fishes") ||
+          this.selected_print.includes("biggest_amounts") ||
+          this.selected_print.includes("biggest_winners")
+        ) {
           doc.addPage();
-          doc.setFontSize(24);
-          doc.text(10, 10, title, { align: "left" });
-          doc.setFontSize(14);
-          doc.text(10, 20, this.competition.cup_name, { align: "left" });
-          doc.text(10, 30, time, { align: "left" });
-          doc.line(0, 35, 400, 35);
-          doc.setFontSize(18);
-          start_coord = 50;
-
-          rows = this.dictToArray(this.biggest_amounts[name], 3);
-          doc.text(100, start_coord, "Suurimmat kalasaaliit" + ` (${name})`, {
-            align: "center",
-          });
-
-          doc.autoTable({
-            head: [columns],
-            body: rows,
-            styles: {
-              overflow: "linebreak",
-              cellWidth: "wrap",
-              rowPageBreak: "avoid",
-              halign: "justify",
-              fontSize: "8",
-              lineColor: "100",
-              lineWidth: ".25",
-            },
-            columnStyles: { text: { cellwidth: "auto" } },
-            theme: "striped",
-            pageBreak: "auto",
-            tableWidth: "auto",
-            startY: start_coord + 5,
-          });
         }
-      });
-
-      doc.addPage();
-      // Suurimmat Kalat  (Voittajat)
-      // Select these for calculations
-      this.selected_biggest_fish = this.selected_biggest_amount = "Voittajat";
-      columns = ["Kalalaji", "Veneen nro", "Kapteeni", "Paino"];
-      // Calculate data
-      this.calculateBiggestFishes();
-      this.calculateBiggestAmounts();
-      // If there are any results, add title
-      if (
-        this.biggest_fishes_results.length ||
-        this.biggest_amounts_results.length
-      ) {
         doc.setFontSize(24);
         doc.text(10, 10, title, { align: "left" });
         doc.setFontSize(14);
@@ -1656,21 +1896,42 @@ export default {
         doc.text(10, 30, time, { align: "left" });
         doc.line(0, 35, 400, 35);
         doc.setFontSize(18);
-      }
-
-      // If there are biggest fishes
-      if (this.biggest_fishes_results.length) {
-        rows = this.dictToArray(this.biggest_fishes_results, 4);
-        doc.text(
-          100,
-          50,
-          "Suurimmat kalat" + ` (${this.selected_biggest_fish})`,
-          { align: "center" }
-        );
-        // Table generated in code
+        // "Tilastot"
+        var fishesImg = document
+          .getElementById("fishesChart")
+          .toDataURL("image/png", 1.0);
+        var signeeImg = document
+          .getElementById("signeesChart")
+          .toDataURL("image/png", 1.0);
+        doc.addImage(fishesImg, "PNG", -30, 40, 180, 90);
+        doc.addImage(signeeImg, "PNG", 70, 40, 180, 90);
+        doc.text(100, 165, "Kalalajien määritykset", { align: "center" });
+        // Table generated straight from html
         doc.autoTable({
-          head: [columns],
-          body: rows,
+          html: "#fish-weights-table",
+          styles: {
+            overflow: "linebreak",
+            cellWidth: "wrap",
+            rowPageBreak: "avoid",
+            halign: "justify",
+            fontSize: "8",
+            lineColor: "100",
+            lineWidth: ".25",
+          },
+          columnStyles: { text: { cellwidth: "auto" } },
+          theme: "striped",
+          pageBreak: "auto",
+          tableWidth: "auto",
+          startY: 170,
+          margin: { top: 20 },
+        });
+
+        doc.text(100, doc.autoTable.previous.finalY + 20, "Yleisiä tilastoja", {
+          align: "center",
+        });
+        // Table generated straight from html
+        doc.autoTable({
+          html: "#misc-table",
           styles: {
             overflow: "linebreak",
             cellWidth: "wrap",
@@ -1685,107 +1946,9 @@ export default {
           pageBreak: "auto",
           tableWidth: "auto",
           margin: { top: 20 },
-          startY: 55,
-        });
-        // Keep track of y coordinate
-        start_coord = doc.autoTable.previous.finalY + 25;
-      } else {
-        // If no biggest fishes, biggest amounts table starts from 50 instead
-        start_coord = 50;
-      }
-
-      //Suurimmat kalasaaliit (Voittajat)
-      // If there are any amounts --> if someone has gotten any fish
-      if (this.biggest_amounts_results.length) {
-        rows = this.dictToArray(this.biggest_amounts_results, 4);
-        doc.text(
-          100,
-          start_coord,
-          "Suurimmat kalasaaliit" + ` (${this.selected_biggest_fish})`,
-          { align: "center" }
-        );
-        // Table generated in code
-        doc.autoTable({
-          head: [columns],
-          body: rows,
-          styles: {
-            overflow: "linebreak",
-            cellWidth: "wrap",
-            rowPageBreak: "avoid",
-            halign: "justify",
-            fontSize: "8",
-            lineColor: "100",
-            lineWidth: ".25",
-          },
-          columnStyles: { text: { cellwidth: "auto" } },
-          theme: "striped",
-          pageBreak: "auto",
-          tableWidth: "auto",
-          margin: { top: 20 },
-          startY: start_coord + 5,
+          startY: doc.autoTable.previous.finalY + 25,
         });
       }
-
-      doc.addPage();
-      doc.setFontSize(24);
-      doc.text(10, 10, title, { align: "left" });
-      doc.setFontSize(14);
-      doc.text(10, 20, this.competition.cup_name, { align: "left" });
-      doc.text(10, 30, time, { align: "left" });
-      doc.line(0, 35, 400, 35);
-      doc.setFontSize(18);
-      // "Tilastot"
-      var fishesImg = document
-        .getElementById("fishesChart")
-        .toDataURL("image/png", 1.0);
-      var signeeImg = document
-        .getElementById("signeesChart")
-        .toDataURL("image/png", 1.0);
-      doc.addImage(fishesImg, "PNG", -30, 40, 180, 90);
-      doc.addImage(signeeImg, "PNG", 70, 40, 180, 90);
-      doc.text(100, 165, "Kalalajien määritykset", { align: "center" });
-      // Table generated straight from html
-      doc.autoTable({
-        html: "#fish-weights-table",
-        styles: {
-          overflow: "linebreak",
-          cellWidth: "wrap",
-          rowPageBreak: "avoid",
-          halign: "justify",
-          fontSize: "8",
-          lineColor: "100",
-          lineWidth: ".25",
-        },
-        columnStyles: { text: { cellwidth: "auto" } },
-        theme: "striped",
-        pageBreak: "auto",
-        tableWidth: "auto",
-        startY: 170,
-        margin: { top: 20 },
-      });
-
-      doc.text(100, doc.autoTable.previous.finalY + 20, "Yleisiä tilastoja", {
-        align: "center",
-      });
-      // Table generated straight from html
-      doc.autoTable({
-        html: "#misc-table",
-        styles: {
-          overflow: "linebreak",
-          cellWidth: "wrap",
-          rowPageBreak: "avoid",
-          halign: "justify",
-          fontSize: "8",
-          lineColor: "100",
-          lineWidth: ".25",
-        },
-        columnStyles: { text: { cellwidth: "auto" } },
-        theme: "striped",
-        pageBreak: "auto",
-        tableWidth: "auto",
-        margin: { top: 20 },
-        startY: doc.autoTable.previous.finalY + 25,
-      });
 
       // Reset variables
       this.selected_biggest_fish = temp_selected_biggest_fish;
@@ -1793,8 +1956,8 @@ export default {
       this.selected_normal = temp_selected_normal;
       this.calculateBiggestFishes();
       this.calculateBiggestAmounts();
-      // Save to pdf
 
+      // Save to pdf
       doc.save(
         `${year}_${this.replaceAll(this.competition.name, " ", "")}Tulokset.pdf`
       );
