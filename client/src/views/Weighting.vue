@@ -322,60 +322,48 @@
         <v-tab-item class="inputarea" :value="'situation'">
           <v-row>
             <v-col>
-              <v-row style="margin-top:20px">
-                <v-col md="8" offset-md="2">
-                  <p class="flow-text">Tilannekatsaus</p>
-                </v-col>
-              </v-row>
-
               <v-row>
-                <v-col md="8" offset-md="2" class="scroll_table">
-                  <table
-                    id="situation-table"
-                    class="highlight centered responsive-table table_header tablearea"
-                    v-if="result_signees.length"
-                  >
-                    <thead>
-                      <tr>
-                        <th>Sijoitus</th>
-                        <th>Numero</th>
-                        <th>Kapteeni</th>
-                        <th>Pisteet</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr
-                        @click="selectRow(signee.id, signee.boat_number)"
-                        :class="{ selected: selected_id == signee.id }"
-                        v-for="(signee, index) in result_signees"
-                        :key="index"
-                      >
-                        <th
-                          v-if="signee.total_points > 0"
-                          class="center-align"
-                          style="border:1px solid black"
+                <v-col md="8" offset-md="2" style="margin-top:20px;">
+                  <v-card :dark="updateSwitch">
+                    <v-card-title>
+                      <p class="flow-text">Tilannekatsaus</p>
+                      <v-spacer></v-spacer>
+                      <v-switch
+                        v-model="updateSwitch"
+                        class="black--text"
+                        color="indigo darken-3"
+                        append-icon="mdi-weather-night"
+                        prepend-icon="mdi-weather-sunny"
+                      ></v-switch>
+                      <v-spacer></v-spacer>
+                      <v-text-field
+                        v-model="search"
+                        append-icon="mdi-magnify"
+                        label="Hae kilpailijaa"
+                        single-line
+                        hide-details
+                      ></v-text-field>
+                    </v-card-title>
+                    <v-data-table
+                      @click:row="rowClick"
+                      :headers="headers"
+                      :items="result_signees"
+                      :search="search"
+                    >
+                      <template v-slot:item.placement="{ item }">
+                        <v-chip
+                          class="black--text"
+                          :color="getColor(item.placement)"
+                          >{{ item.placement }}.</v-chip
                         >
-                          {{ index + 1 }}.
-                        </th>
-                        <th
-                          v-else
-                          class="center-align"
-                          style="border:1px solid black"
+                      </template>
+                      <template v-slot:item.total_points="{ item }">
+                        <v-chip :color="getColorPoints(item.total_points)"
+                          >{{ item.total_points.toLocaleString() }} p</v-chip
                         >
-                          -
-                        </th>
-                        <td style="border:1px solid black">
-                          ({{ signee.boat_number }})
-                        </td>
-                        <td style="border:1px solid black">
-                          {{ signee.captain_name }}
-                        </td>
-                        <td style="border:1px solid black">
-                          {{ signee.total_points.toLocaleString() }} p
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                      </template>
+                    </v-data-table>
+                  </v-card>
                 </v-col>
               </v-row>
               <v-row v-if="selected_id && result_signees.length">
@@ -550,6 +538,14 @@ export default {
       biggest_amounts: {},
       signees: [],
       result_signees: [],
+      headers: [
+        { text: "Sijoitus", value: "placement" },
+        { text: "Kilp. Numero", value: "boat_number" },
+        { text: "Kippari", value: "captain_name" },
+        { text: "Pisteet", value: "total_points" },
+      ],
+      search: "",
+      updateSwitch: true,
       still_on_water: [],
       number_rules: [
         (value) => !isNaN(value || "") || "Ei ole numero!",
@@ -607,6 +603,11 @@ export default {
           this.$store.commit("refreshCompetition", competitions[0]);
           this.competition_fishes = this.$store.getters.getCompetitionFishes;
           this.signees = this.$store.getters.getCompetitionSignees;
+          let placement = 1;
+          this.signees.forEach((signee) => {
+            signee.placement = placement;
+            placement++;
+          });
           this.result_signees = this.$store.getters.getResultSignees;
           this.still_on_water = this.$store.getters.getStillOnWaterSignees;
         } else {
@@ -684,15 +685,31 @@ export default {
     searchBoatNumber: function(boat_number) {
       return this.$store.getters.getSigneeByBoatNumber(parseInt(boat_number));
     },
+    getColor(placement) {
+      if (placement > 30) return "red";
+      if (placement > 20) return "orange";
+      else if (placement > 5) return "yellow";
+      else return "green";
+    },
+    getColorPoints(points) {
+      if (points > 0) return "indigo";
+      else return "grey";
+    },
     // Select row from table, if selected --> unselect
     // selected_id bound to selected css class (on App.vue)
-    selectRow: function(id, boat_number) {
-      if (id == this.selected_id) {
+    rowClick: function(item, row) {
+      if (item.id == this.selected_id) {
         this.selected_id = null;
         this.selected_boat_number = null;
+        row.select(false);
       } else {
-        this.selected_id = id;
-        this.selected_boat_number = boat_number;
+        if (this.selected_row) {
+          this.selected_row.select(false);
+        }
+        this.selected_id = item.id;
+        this.selected_boat_number = item.boat_number;
+        row.select(true);
+        this.selected_row = row;
       }
     },
     // Set input weights for each fish for the signee

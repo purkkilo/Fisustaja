@@ -370,42 +370,35 @@
                 </v-col>
               </v-row>
               <v-row>
-                <v-col md="10" offset-md="1" class="scroll_table">
-                  <table
-                    id="signees-table"
-                    class="highlight centered responsive-table table_header tablearea"
-                    v-if="signees.length"
-                  >
-                    <thead>
-                      <tr>
-                        <th>Nro.</th>
-                        <th>Kapteeni</th>
-                        <th>Varakapteeni</th>
-                        <th>Seura/Paikkakunta</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr
-                        @click="selectRow(signee.id)"
-                        :class="{ selected: selected_id == signee.id }"
-                        v-for="(signee, index) in signees"
-                        :key="index"
-                      >
-                        <th class="center-align" style="border:1px solid black">
-                          {{ signee.boat_number }}
-                        </th>
-                        <td style="border:1px solid black">
-                          {{ signee.captain_name }}
-                        </td>
-                        <td style="border:1px solid black">
-                          {{ signee.temp_captain_name }}
-                        </td>
-                        <td style="border:1px solid black">
-                          {{ signee.locality }}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                <v-col md="10" offset-md="1">
+                  <v-card :dark="updateSwitch">
+                    <v-card-title>
+                      <p class="flow-text">Ilmoittautuneet</p>
+                      <v-spacer></v-spacer>
+                      <v-switch
+                        v-model="updateSwitch"
+                        class="black--text"
+                        color="indigo darken-3"
+                        append-icon="mdi-weather-night"
+                        prepend-icon="mdi-weather-sunny"
+                      ></v-switch>
+                      <v-spacer></v-spacer>
+                      <v-text-field
+                        v-model="search"
+                        append-icon="mdi-magnify"
+                        label="Hae ilmoittautunutta"
+                        single-line
+                        hide-details
+                      ></v-text-field>
+                    </v-card-title>
+                    <v-data-table
+                      @click:row="rowClick"
+                      :headers="headers"
+                      :items="signees"
+                      :search="search"
+                    >
+                    </v-data-table>
+                  </v-card>
                 </v-col>
               </v-row>
               <v-row v-if="selected_id">
@@ -460,6 +453,7 @@ export default {
       locality: null,
       team: null,
       selected_id: null,
+      selected_row: null,
       id: 1,
       new_signee: null,
       notification: null,
@@ -469,6 +463,14 @@ export default {
       competition_id: null,
       old_info: null,
       signees: [],
+      headers: [
+        { text: "Kilp. Numero", value: "boat_number" },
+        { text: "Kippari", value: "captain_name" },
+        { text: "Varakippari", value: "temp_captain_name" },
+        { text: "Seura/Paikkakunta", value: "locality" },
+      ],
+      search: "",
+      updateSwitch: true,
       cup: [],
       teams: [],
       maxlength: 40,
@@ -762,11 +764,17 @@ export default {
     },
     // Select row from table, if selected --> unselect
     // selected_id bound to selected css class (on App.vue)
-    selectRow: function(id) {
-      if (id == this.selected_id) {
+    rowClick: function(item, row) {
+      if (item.id == this.selected_id) {
         this.selected_id = null;
+        row.select(false);
       } else {
-        this.selected_id = id;
+        if (this.selected_row) {
+          this.selected_row.select(false);
+        }
+        this.selected_id = item.id;
+        row.select(true);
+        this.selected_row = row;
       }
     },
     // Fetch signee from vuex based on boat number

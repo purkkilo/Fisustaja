@@ -45,49 +45,44 @@
           <v-row>
             <v-col>
               <div v-if="competitions.length" class="scroll_table">
-                <table
-                  border="1"
-                  id="competitions-table"
-                  class="centered responsive-table tablearea highlight"
-                >
-                  <thead class="title">
-                    <tr>
-                      <th>Kilpailun Päivämäärä</th>
-                      <th>Nimi</th>
-                      <th>Cup</th>
-                      <th>Pistekerroin</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="(competition, index) in competitions"
-                      v-bind:item="competition"
-                      v-bind:index="index"
-                      v-bind:key="competition._id"
-                    >
-                      <th class="center-align" scope="row">
-                        {{
-                          `${competition.start_date.date()}.${competition.start_date.month() +
-                            1}.${competition.start_date.year()} - ${competition.end_date.date()}.${competition.end_date.month() +
-                            1}.${competition.end_date.year()}`
-                        }}
-                      </th>
-                      <td>{{ competition.name }}</td>
-                      <td>{{ competition.cup_name }}</td>
-                      <td>x {{ competition.cup_points_multiplier }}</td>
-                      <td>
-                        <v-btn
-                          tile
-                          color="primary"
-                          @click="pickCompetition(competition)"
-                          ><i class="material-icons left">check</i
-                          >Valitse</v-btn
-                        >
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                <v-card :dark="updateSwitch">
+                  <v-card-title>
+                    <p class="flow-text">Kilpailut</p>
+                    <v-spacer></v-spacer>
+                    <v-switch
+                      v-model="updateSwitch"
+                      class="black--text"
+                      color="indigo darken-3"
+                      append-icon="mdi-weather-night"
+                      prepend-icon="mdi-weather-sunny"
+                    ></v-switch>
+                    <v-spacer></v-spacer>
+                    <v-text-field
+                      v-model="search_comp"
+                      append-icon="mdi-magnify"
+                      label="Hae kilpailua"
+                      single-line
+                      hide-details
+                    ></v-text-field>
+                  </v-card-title>
+                  <v-data-table
+                    id="normal-table"
+                    :headers="headers"
+                    :items="competitions"
+                    :search="search_comp"
+                  >
+                    <template v-slot:item.start_date="{ item }">
+                      <v-chip>{{
+                        item.start_date.format("DD.MM.YYYY")
+                      }}</v-chip>
+                    </template>
+                    <template v-slot:item.choose="{ item }">
+                      <v-btn color="primary" @click="pickCompetition(item)"
+                        ><i class="material-icons left">check</i>Valitse</v-btn
+                      >
+                    </template>
+                  </v-data-table>
+                </v-card>
               </div>
               <div v-else>
                 <v-col v-if="!loading">
@@ -200,36 +195,42 @@
           <v-row>
             <v-col>
               <div v-if="cups.length" class="scroll_table">
-                <table
-                  border="1"
-                  id="competitions-table"
-                  class="centered responsive-table tablearea highlight"
-                >
-                  <thead class="title">
-                    <tr>
-                      <th>Nimi</th>
-                      <th>Vuosi</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="(cup, index) in cups"
-                      v-bind:item="cup"
-                      v-bind:index="index"
-                      v-bind:key="cup._id"
-                    >
-                      <td>{{ cup.name }}</td>
-                      <td>{{ cup.year }}</td>
-                      <td>
-                        <v-btn tile color="primary" @click="pickCup(cup)"
-                          ><i class="material-icons left">check</i
-                          >Valitse</v-btn
-                        >
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                <v-card :dark="updateSwitch">
+                  <v-card-title>
+                    <p class="flow-text">Cupit</p>
+                    <v-spacer></v-spacer>
+                    <v-switch
+                      v-model="updateSwitch"
+                      class="black--text"
+                      color="indigo darken-3"
+                      append-icon="mdi-weather-night"
+                      prepend-icon="mdi-weather-sunny"
+                    ></v-switch>
+                    <v-spacer></v-spacer>
+                    <v-text-field
+                      v-model="search_cup"
+                      append-icon="mdi-magnify"
+                      label="Hae cuppia"
+                      single-line
+                      hide-details
+                    ></v-text-field>
+                  </v-card-title>
+                  <v-data-table
+                    id="normal-table"
+                    :headers="headers_cup"
+                    :items="cups"
+                    :search="search_cup"
+                  >
+                    <template v-slot:item.name="{ item }">
+                      <v-chip>{{ item.name }}</v-chip>
+                    </template>
+                    <template v-slot:item.choose="{ item }">
+                      <v-btn color="primary" @click="pickCup(item)"
+                        ><i class="material-icons left">check</i>Valitse</v-btn
+                      >
+                    </template>
+                  </v-data-table>
+                </v-card>
               </div>
               <v-row v-else>
                 <v-col v-if="!loading">
@@ -270,6 +271,18 @@ export default {
     return {
       tab: null,
       competitions: [],
+      headers: [
+        { text: "Kilpailun Päivämäärä", value: "start_date" },
+        { text: "Nimi", value: "name" },
+        { text: "Cup", value: "cup_name" },
+        { text: "Pistekerroin", value: "cup_points_multiplier" },
+        { text: "", value: "choose", sortable: false },
+      ],
+      headers_cup: [
+        { text: "Nimi", value: "name" },
+        { text: "Vuosi", value: "year" },
+        { text: "", value: "choose", sortable: false },
+      ],
       error: "",
       competition_input: null,
       loading: false,
@@ -278,6 +291,9 @@ export default {
       year: null,
       menu: false,
       errors: [],
+      search_comp: "",
+      search_cup: "",
+      updateSwitch: true,
     };
   },
   watch: {

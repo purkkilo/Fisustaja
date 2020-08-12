@@ -127,8 +127,8 @@
                   v-model="updateSwitch"
                   class="black--text"
                   color="indigo darken-3"
-                  append-icon="mdi-weather-sunny"
-                  prepend-icon="mdi-weather-night"
+                  append-icon="mdi-weather-night"
+                  prepend-icon="mdi-weather-sunny"
                 ></v-switch>
                 <v-spacer></v-spacer>
                 <v-text-field
@@ -255,66 +255,6 @@ export default {
     location.href = "#app";
   },
   methods: {
-    getColor(placement) {
-      if (placement > 30) return "red";
-      if (placement > 20) return "orange";
-      else if (placement > 5) return "yellow";
-      else return "green";
-    },
-    replaceAllChars: function(text, obj) {
-      return [...text]
-        .map((each) => {
-          for (const o in obj) {
-            each == o ? (each = obj[o]) : o;
-          }
-          return each;
-        })
-        .join("");
-    },
-    changeHeaders: function() {
-      this.headers = [];
-      this.headers.push({
-        text: "Sijoitus",
-        highlight: false,
-        value: "placement",
-      });
-      this.headers.push({
-        text: "Kilp. Nro",
-        highlight: false,
-        value: "boat_number",
-      });
-      this.headers.push({
-        text: "Kippari",
-        highlight: false,
-        value: "captain_name",
-      });
-      this.headers.push({
-        text: "Paikkakunta",
-        highlight: false,
-        value: "locality",
-      });
-      this.competitions.forEach((competition) => {
-        // Dynamic headers, because competition names change
-        if (this.header_selection === "Paikkakunta") {
-          this.headers.push({
-            text: competition.locality,
-            highlight: !competition.isFinished,
-            value: `cup_results[${competition.key_name}]`,
-          });
-        } else {
-          this.headers.push({
-            text: competition.name,
-            highlight: !competition.isFinished,
-            value: `cup_results[${competition.key_name}]`,
-          });
-        }
-      });
-      this.headers.push({
-        text: "Yhteensä",
-        highlight: false,
-        value: "final_cup_points",
-      });
-    },
     pickCup: function() {
       this.$store.commit("refreshCup", this.selected_cup);
       this.refreshCup(this.selected_cup);
@@ -494,6 +434,66 @@ export default {
         this.$store.state.is_admin = false;
       }
     },
+    getColor(placement) {
+      if (placement > 30) return "red";
+      if (placement > 20) return "orange";
+      else if (placement > 5) return "yellow";
+      else return "green";
+    },
+    replaceAllChars: function(text, obj) {
+      return [...text]
+        .map((each) => {
+          for (const o in obj) {
+            each == o ? (each = obj[o]) : o;
+          }
+          return each;
+        })
+        .join("");
+    },
+    changeHeaders: function() {
+      this.headers = [];
+      this.headers.push({
+        text: "Sijoitus",
+        highlight: false,
+        value: "placement",
+      });
+      this.headers.push({
+        text: "Kilp. Nro",
+        highlight: false,
+        value: "boat_number",
+      });
+      this.headers.push({
+        text: "Kippari",
+        highlight: false,
+        value: "captain_name",
+      });
+      this.headers.push({
+        text: "Paikkakunta",
+        highlight: false,
+        value: "locality",
+      });
+      this.competitions.forEach((competition) => {
+        // Dynamic headers, because competition names change
+        if (this.header_selection === "Paikkakunta") {
+          this.headers.push({
+            text: competition.locality,
+            highlight: !competition.isFinished,
+            value: `cup_results[${competition.key_name}]`,
+          });
+        } else {
+          this.headers.push({
+            text: competition.name,
+            highlight: !competition.isFinished,
+            value: `cup_results[${competition.key_name}]`,
+          });
+        }
+      });
+      this.headers.push({
+        text: "Yhteensä",
+        highlight: false,
+        value: "final_cup_points",
+      });
+    },
     pickCompetition: function(competition) {
       // Pick competition for the app to use
       //NOTE Store competition to vuex, redundant?
@@ -542,7 +542,6 @@ export default {
         values[counter] = cup_results["Total"];
         arr.push(values);
       });
-      console.log(arr);
       return arr;
     },
     // Convert the charts and the tables to pdf
