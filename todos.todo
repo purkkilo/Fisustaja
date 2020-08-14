@@ -17,6 +17,11 @@ New:
   ☐ Add qr code possibility to signing/weighting (rfid)
   ☐ Add possibility to get weights from usb
   ☐ Add print signees to cup overview
+  ☐ Add plus icon next to weighting inputs, when clicked user can input more weights that are added to existing sum on the input
+  ☐ Add copying of signees from other competitions (handy in case where there are already signees on the competition, but for some reason you'd need to create the competition again)
+  ☐ Add support for changing fishnames and other competition variables form compsettings.vue
+  ☐ Move darkmode switch from each table to header or somewhere handy, update it to vuex or user's datatable
+  ☐ Test 1.5x cup_multiplier competition! @high
   
 Done:
   ✔ Create signees database collection @started(20-05-26 11:19) @today @done(20-05-27 19:34) @lasted(1d8h15m1s)
