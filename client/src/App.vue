@@ -12,9 +12,7 @@
       <router-view></router-view>
     </v-main>
 
-    <v-footer app>
-      <Footer />
-    </v-footer>
+    <Footer />
   </v-app>
 </template>
 
@@ -92,8 +90,7 @@ export default {
   min-height: 100vh; /* will cover the 100% of viewport */
   overflow: hidden;
   display: block;
-  position: relative;
-  padding-bottom: 180px; /* height of your footer */
+  position: relative; /* height of your footer */
   width: 100%;
 }
 body {

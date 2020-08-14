@@ -145,12 +145,14 @@
                 :items="results"
                 :search="search"
               >
-                <template v-slot:item.placement="{ item }">
-                  <v-chip class="black--text" :color="getColor(item.placement)"
+                <template v-slot:[`item.placement`]="{ item }">
+                  <v-chip
+                    :outlined="updateSwitch"
+                    :color="getColor(item.placement)"
                     >{{ item.placement }}.</v-chip
                   >
                 </template>
-                <template v-slot:item.final_cup_points="{ item }">
+                <template v-slot:[`item.final_cup_points`]="{ item }">
                   <v-chip color="indigo darken-3 white--text">{{
                     item.final_cup_points
                   }}</v-chip>

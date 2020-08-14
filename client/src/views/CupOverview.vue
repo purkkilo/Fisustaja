@@ -74,12 +74,12 @@
                         :items="competitions"
                         :search="search_comp"
                       >
-                        <template v-slot:item.start_date="{ item }">
+                        <template v-slot:[`item.start_date`]="{ item }">
                           <v-chip>{{
                             item.start_date.format("DD.MM.YYYY")
                           }}</v-chip>
                         </template>
-                        <template v-slot:item.choose="{ item }">
+                        <template v-slot:[`item.choose`]="{ item }">
                           <v-btn color="primary" @click="pickCompetition(item)"
                             ><i class="material-icons left">check</i
                             >Valitse</v-btn
@@ -239,14 +239,14 @@
                     :items="results"
                     :search="search"
                   >
-                    <template v-slot:item.placement="{ item }">
+                    <template v-slot:[`item.placement`]="{ item }">
                       <v-chip
-                        class="black--text"
+                        :outlined="updateSwitch"
                         :color="getColor(item.placement)"
                         >{{ item.placement }}.</v-chip
                       >
                     </template>
-                    <template v-slot:item.final_cup_points="{ item }">
+                    <template v-slot:[`item.final_cup_points`]="{ item }">
                       <v-chip color="indigo darken-3 white--text">{{
                         item.final_cup_points
                       }}</v-chip>

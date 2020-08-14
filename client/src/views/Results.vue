@@ -13,7 +13,7 @@
       <v-row>
         <v-col md="4" offset-md="4" class="inputarea">
           <v-switch
-            v-model="updateSwitch"
+            v-model="intervalSwitch"
             class="black--text"
             color="orange darken-3"
             label="Tulosten automaattinen päivitys 60s välein"
@@ -288,10 +288,7 @@
                     class="striped centered responsive-table highlight"
                   >
                     <tr>
-                      <th
-                        style="border:1px solid black;"
-                        class="center-align blue_th"
-                      >
+                      <th style="border:1px solid black;" class="center-align">
                         <b>Cup pistekerroin</b>
                       </th>
                       <td style="border:1px solid black;" class="center-align">
@@ -299,10 +296,7 @@
                       </td>
                     </tr>
                     <tr>
-                      <th
-                        style="border:1px solid black;"
-                        class="center-align blue_th"
-                      >
+                      <th style="border:1px solid black;" class="center-align">
                         <b>Ilmoittautuneita yhteensä</b>
                       </th>
                       <td style="border:1px solid black;" class="center-align">
@@ -310,10 +304,7 @@
                       </td>
                     </tr>
                     <tr>
-                      <th
-                        style="border:1px solid black;"
-                        class="center-align blue_th"
-                      >
+                      <th style="border:1px solid black;" class="center-align">
                         <b>Saalista saaneita</b>
                       </th>
                       <td
@@ -366,7 +357,14 @@
                     v-model="selected_normal"
                   />
                 </v-col>
-                <v-col v-if="normal_points.length" md="3" offset-md="1">
+                <v-col
+                  v-if="
+                    normal_points.length ||
+                      (signees.length && selected_normal === 'Ilmoittautuneet')
+                  "
+                  md="3"
+                  offset-md="1"
+                >
                   <v-btn
                     large
                     tile
@@ -383,88 +381,67 @@
                   </v-btn>
                 </v-col>
               </v-row>
-              <v-row v-if="normal_points.length">
+              <v-row
+                class="row"
+                v-if="
+                  normal_points.length ||
+                    (signees.length && selected_normal === 'Ilmoittautuneet')
+                "
+              >
                 <v-col md="12">
-                  <p v-if="normal_points.length" class="flow-text">
-                    Normaalikilpailu ({{ selected_normal }})
-                  </p>
-                </v-col>
-              </v-row>
-              <v-row class="row" v-if="normal_points.length">
-                <v-col class="scroll_table" md="12">
-                  <!--TODO Possibly change tables to https://vuetifyjs.com/en/components/data-tables/#data-tables ? or implement on vue-->
-                  <table
-                    id="normal-table"
-                    class="highlight centered responsive-table tablearea table_header scroll_table"
-                  >
-                    <thead>
-                      <tr>
-                        <th
-                          v-for="(header, index) in normal_headers"
-                          :key="index"
+                  <v-card :dark="updateSwitch">
+                    <v-card-title>
+                      <p class="flow-text">
+                        Normaalikilpailu ({{ selected_normal }})
+                      </p>
+                      <v-spacer></v-spacer>
+                      <v-switch
+                        v-model="updateSwitch"
+                        class="black--text"
+                        color="indigo darken-3"
+                        append-icon="mdi-weather-night"
+                        prepend-icon="mdi-weather-sunny"
+                      ></v-switch>
+                      <v-spacer></v-spacer>
+                      <v-text-field
+                        v-model="search"
+                        append-icon="mdi-magnify"
+                        label="Hae kilpailijaa"
+                        single-line
+                        hide-details
+                      ></v-text-field>
+                    </v-card-title>
+                    <v-data-table
+                      :headers="headers"
+                      :items="results"
+                      :search="search"
+                    >
+                      <template v-slot:[`item.placement`]="{ item }">
+                        <v-chip
+                          :outlined="updateSwitch"
+                          :color="getColor(item.placement)"
+                          >{{ item.placement }}.</v-chip
                         >
-                          {{ header }}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody v-if="selected_normal == 'Pisteet'">
-                      <tr v-for="(signee, index) in normal_points" :key="index">
-                        <th class="center-align" style="border:1px solid black">
-                          {{ signee.placement }}.
-                        </th>
-                        <td style="border:1px solid black">
-                          ({{ signee.boat_number }})
-                        </td>
-                        <td style="border:1px solid black">
-                          {{ signee.captain_name }}
-                        </td>
-                        <td style="border:1px solid black">
-                          {{ signee.temp_captain_name }}
-                        </td>
-                        <td style="border:1px solid black">
-                          {{ signee.locality }}
-                        </td>
-                        <td style="border:1px solid black">
-                          {{ signee.total_points.toLocaleString() }} p
-                        </td>
-                        <td style="border:1px solid black">
-                          {{ signee.cup_placement_points }}
-                        </td>
-                        <td style="border:1px solid black">
-                          {{ signee.cup_participation_points }}
-                        </td>
-                        <td style="border:1px solid black">
-                          {{ signee.cup_points_total }}
-                        </td>
-                      </tr>
-                    </tbody>
-                    <tbody v-else>
-                      <tr
-                        v-for="(signee, index) in normal_weights"
-                        :key="index"
+                      </template>
+                      <template
+                        v-if="selected_normal === 'Ilmoittautuneet'"
+                        v-slot:[`item.boat_number`]="{ item }"
                       >
-                        <th class="center-align" style="border:1px solid black">
-                          {{ signee.placement }}.
-                        </th>
-                        <td style="border:1px solid black">
-                          ({{ signee.boat_number }})
-                        </td>
-                        <td style="border:1px solid black">
-                          {{ signee.captain_name }}
-                        </td>
-                        <td
-                          v-for="(name, index) in table_fish_names"
-                          :key="index"
-                          style="border:1px solid black"
+                        <v-chip>{{ item.boat_number }}</v-chip>
+                      </template>
+                      <template v-slot:[`item.total_points`]="{ item }">
+                        <v-chip
+                          >{{ item.total_points.toLocaleString() }} p</v-chip
                         >
-                          {{ signee[name].toLocaleString() }} g
-                        </td>
-                        <td style="border:1px solid black">
-                          {{ signee.total_points.toLocaleString() }} p
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                      </template>
+                      <template v-slot:[`item.cup_points_total`]="{ item }">
+                        <v-chip
+                          :color="getColorPoints(item.cup_points_total)"
+                          >{{ item.cup_points_total }}</v-chip
+                        >
+                      </template>
+                    </v-data-table>
+                  </v-card>
                 </v-col>
               </v-row>
               <v-row v-else>
@@ -505,49 +482,44 @@
               offset-md="1"
               style="padding-bottom:20px"
               v-if="team_results.length"
-              class="scroll_table"
             >
-              <table
-                id="team-table"
-                class="highlight centered responsive-table tablearea"
-              >
-                <caption
-                  v-if="team_results.length"
-                  class="center-align flow-text"
+              <v-card :dark="updateSwitch">
+                <v-card-title>
+                  <p class="flow-text">Tiimikilpailu</p>
+                  <v-spacer></v-spacer>
+                  <v-switch
+                    v-model="updateSwitch"
+                    class="black--text"
+                    color="indigo darken-3"
+                    append-icon="mdi-weather-night"
+                    prepend-icon="mdi-weather-sunny"
+                  ></v-switch>
+                  <v-spacer></v-spacer>
+                  <v-text-field
+                    v-model="search_team"
+                    append-icon="mdi-magnify"
+                    label="Hae kilpailijaa"
+                    single-line
+                    hide-details
+                  ></v-text-field>
+                </v-card-title>
+                <v-data-table
+                  :headers="team_headers"
+                  :items="team_results"
+                  :search="search_team"
                 >
-                  Tiimikilpailu
-                </caption>
-                <thead style="background: rgb(0, 1, 34);color:#fff;">
-                  <tr>
-                    <th>Sijoitus</th>
-                    <th>Tiimi</th>
-                    <th>Jäsen 1</th>
-                    <th>Jäsen 2</th>
-                    <th>Jäsen 3</th>
-                    <th>Pisteet</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(team, index) in team_results" :key="index">
-                    <th class="center-align" style="border:1px solid black">
-                      {{ index + 1 }}.
-                    </th>
-                    <td style="border:1px solid black">{{ team.name }}</td>
-                    <td style="border:1px solid black">
-                      {{ team.captain_name_1 }}
-                    </td>
-                    <td style="border:1px solid black">
-                      {{ team.captain_name_2 }}
-                    </td>
-                    <td style="border:1px solid black">
-                      {{ team.captain_name_3 }}
-                    </td>
-                    <td style="border:1px solid black">
-                      {{ team.points.toLocaleString() }} p
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                  <template v-slot:[`item.placement`]="{ item }">
+                    <v-chip
+                      :outlined="updateSwitch"
+                      :color="getColor(item.placement)"
+                      >{{ item.placement }}.</v-chip
+                    >
+                  </template>
+                  <template v-slot:[`item.points`]="{ item }">
+                    <v-chip>{{ item.points.toLocaleString() }} p</v-chip>
+                  </template>
+                </v-data-table>
+              </v-card>
             </v-col>
             <v-col v-else>
               <v-col v-if="!loading"> </v-col>
@@ -590,63 +562,53 @@
             </v-col>
           </v-row>
           <v-row v-if="biggest_fishes_results.length">
-            <v-col>
-              <p v-if="results_found_fishes" class="flow-text">
-                Suurimmat kalat ({{ selected_biggest_fish }}
-                {{ results_found_fishes }})
-              </p>
-              <p v-else class="flow-text">
-                Suurimmat kalat ({{ selected_biggest_fish }})
-              </p>
-            </v-col>
-          </v-row>
-          <v-row v-if="biggest_fishes_results.length">
-            <v-col class="scroll_table" md="10" offset-md="1">
-              <table
-                id="biggest-fishes-table"
-                class="highlight centered responsive-table tablearea"
-                style="margin-bottom:40px"
-              >
-                <thead style="background: rgb(0, 1, 34);color:#fff;">
-                  <tr>
-                    <th v-if="selected_biggest_fish == 'Voittajat'">
-                      Kalalaji
-                    </th>
-                    <th v-else>Sijoitus</th>
-                    <th>Veneen nro</th>
-                    <th>Kapteeni</th>
-                    <th>Paino</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="(fish, index) in biggest_fishes_results"
-                    :key="index"
-                  >
-                    <th
-                      v-if="selected_biggest_fish == 'Voittajat'"
-                      class="center-align"
-                      style="border:1px solid black"
+            <v-col md="10" offset-md="1" style="margin-bottom:40px">
+              <v-card :dark="updateSwitch">
+                <v-card-title>
+                  <p v-if="results_found_fishes" class="flow-text">
+                    Suurimmat kalat ({{ selected_biggest_fish }}
+                    {{ results_found_fishes }})
+                  </p>
+                  <p v-else class="flow-text">
+                    Suurimmat kalat ({{ selected_biggest_fish }})
+                  </p>
+                  <v-spacer></v-spacer>
+                  <v-switch
+                    v-model="updateSwitch"
+                    class="black--text"
+                    color="indigo darken-3"
+                    append-icon="mdi-weather-night"
+                    prepend-icon="mdi-weather-sunny"
+                  ></v-switch>
+                  <v-spacer></v-spacer>
+                  <v-text-field
+                    v-model="search_fishes"
+                    append-icon="mdi-magnify"
+                    label="Hae kilpailijaa"
+                    single-line
+                    hide-details
+                  ></v-text-field>
+                </v-card-title>
+                <v-data-table
+                  :headers="biggest_fishes_headers"
+                  :items="biggest_fishes_results"
+                  :search="search_fishes"
+                >
+                  <template v-slot:[`item.placement`]="{ item }">
+                    <v-chip
+                      :outlined="updateSwitch"
+                      :color="getColor(item.placement)"
+                      >{{ item.placement }}.</v-chip
                     >
-                      {{ fish.name }}
-                    </th>
-                    <th
-                      v-else
-                      class="center-align"
-                      style="border:1px solid black"
-                    >
-                      {{ index + 1 }}.
-                    </th>
-                    <td style="border:1px solid black">
-                      ({{ fish.boat_number }})
-                    </td>
-                    <td style="border:1px solid black">
-                      {{ fish.captain_name }}
-                    </td>
-                    <td style="border:1px solid black">{{ fish.weight }} g</td>
-                  </tr>
-                </tbody>
-              </table>
+                  </template>
+                  <template v-slot:[`item.name`]="{ item }">
+                    <v-chip>{{ item.name }}</v-chip>
+                  </template>
+                  <template v-slot:[`item.weight`]="{ item }">
+                    <v-chip>{{ item.weight.toLocaleString() }} g</v-chip>
+                  </template>
+                </v-data-table>
+              </v-card>
             </v-col>
           </v-row>
           <v-row v-else>
@@ -690,67 +652,54 @@
               </v-btn>
             </v-col>
           </v-row>
-          <v-row v-if="biggest_amounts_results.length"
-            >>
-            <v-col>
-              <p v-if="results_found_amounts" class="flow-text">
-                Suurimmat kalasaaliit ({{ selected_biggest_amount }}
-                {{ results_found_amounts }})
-              </p>
-              <p v-else class="flow-text">
-                Suurimmat kalasaaliit ({{ selected_biggest_amount }})
-              </p>
-            </v-col>
-          </v-row>
           <v-row v-if="biggest_amounts_results.length">
-            <v-col class="scroll_table" md="10" offset-md="1">
-              <table
-                id="biggest-amounts-table"
-                class="highlight centered responsive-table tablearea"
-                style="margin-bottom:40px"
-              >
-                <thead style="background: rgb(0, 1, 34);color:#fff;">
-                  <tr>
-                    <th v-if="selected_biggest_amount == 'Voittajat'">
-                      Kalalaji
-                    </th>
-                    <th v-else>Sijoitus</th>
-                    <th>Veneen nro</th>
-                    <th>Kapteeni</th>
-                    <th>Paino</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="(result, index) in biggest_amounts_results"
-                    :key="index"
-                  >
-                    <th
-                      v-if="selected_biggest_amount == 'Voittajat'"
-                      class="center-align"
-                      style="border:1px solid black"
+            <v-col md="10" offset-md="1" style="margin-bottom:40px">
+              <v-card :dark="updateSwitch">
+                <v-card-title>
+                  <p v-if="results_found_amounts" class="flow-text">
+                    Suurimmat kalasaaliit ({{ selected_biggest_amount }}
+                    {{ results_found_amounts }})
+                  </p>
+                  <p v-else class="flow-text">
+                    Suurimmat kalasaaliit ({{ selected_biggest_amount }})
+                  </p>
+                  <v-spacer></v-spacer>
+                  <v-switch
+                    v-model="updateSwitch"
+                    class="black--text"
+                    color="indigo darken-3"
+                    append-icon="mdi-weather-night"
+                    prepend-icon="mdi-weather-sunny"
+                  ></v-switch>
+                  <v-spacer></v-spacer>
+                  <v-text-field
+                    v-model="search_amounts"
+                    append-icon="mdi-magnify"
+                    label="Hae kilpailijaa"
+                    single-line
+                    hide-details
+                  ></v-text-field>
+                </v-card-title>
+                <v-data-table
+                  :headers="biggest_amounts_headers"
+                  :items="biggest_amounts_results"
+                  :search="search_amounts"
+                >
+                  <template v-slot:[`item.placement`]="{ item }">
+                    <v-chip
+                      :outlined="updateSwitch"
+                      :color="getColor(item.placement)"
+                      >{{ item.placement }}.</v-chip
                     >
-                      {{ result.name }}
-                    </th>
-                    <th
-                      v-else
-                      class="center-align"
-                      style="border:1px solid black"
-                    >
-                      {{ index + 1 }}.
-                    </th>
-                    <td style="border:1px solid black">
-                      ({{ result.boat_number }})
-                    </td>
-                    <td style="border:1px solid black">
-                      {{ result.captain_name }}
-                    </td>
-                    <td style="border:1px solid black">
-                      {{ result.weight }} g
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                  </template>
+                  <template v-slot:[`item.name`]="{ item }">
+                    <v-chip>{{ item.name }}</v-chip>
+                  </template>
+                  <template v-slot:[`item.weight`]="{ item }">
+                    <v-chip>{{ item.weight.toLocaleString() }} g</v-chip>
+                  </template>
+                </v-data-table>
+              </v-card>
             </v-col>
           </v-row>
           <v-row v-else>
@@ -878,25 +827,54 @@ export default {
       signees_chart: null,
       timer_refresh: null,
       interval: 60000,
-      normal_options: ["Pisteet", "Kalat"],
+      normal_options: ["Pisteet", "Kalat", "Ilmoittautuneet"],
+      headers: [],
+      biggest_fishes_headers: [],
+      biggest_amounts_headers: [],
       normal_headers: [
-        "Sijoitus",
-        "Nro.",
-        "Kapteeni",
-        "Varakapteeni",
-        "Paikkakunta",
-        "Tulos",
-        "Cup sij. pisteet",
-        "Cup osal. pisteet",
-        "Yht.",
+        { text: "Sijoitus", value: "placement" },
+        { text: "Kilp. numero", value: "boat_number" },
+        { text: "Kippari", value: "captain_name" },
+        { text: "Varakippari", value: "temp_captain_name" },
+        { text: "Paikkakunta", value: "locality" },
+        { text: "Tulos", value: "total_points" },
+        { text: "Cup sij. pisteet", value: "cup_placement_points" },
+        { text: "Cup osal. pisteet", value: "cup_participation_points" },
+        { text: "Yht.", value: "cup_points_total" },
       ],
+      signee_headers: [],
+      team_headers: [
+        { text: "Sijoitus", value: "placement" },
+        { text: "Tiimi", value: "name" },
+        { text: "Jäsen 1", value: "captain_name_1" },
+        { text: "Jäsen 2", value: "captain_name_2" },
+        { text: "Jäsen 3", value: "captain_name_3" },
+        { text: "Pisteet", value: "points" },
+      ],
+      winner_headers: [
+        { text: "Kalalaji", value: "name" },
+        { text: "Kilp. numero", value: "boat_number" },
+        { text: "Kippari", value: "captain_name" },
+        { text: "Paino", value: "weight" },
+      ],
+      biggest_headers: [
+        { text: "Sijoitus", value: "placement" },
+        { text: "Kilp. numero", value: "boat_number" },
+        { text: "Kippari", value: "captain_name" },
+        { text: "Paino", value: "weight" },
+      ],
+      search: "",
+      search_team: "",
+      search_fishes: "",
+      search_amounts: "",
       selected_print: [],
       dialog: false,
-      updateSwitch: false,
+      updateSwitch: true,
+      intervalSwitch: false,
     };
   },
   watch: {
-    updateSwitch(newValue) {
+    intervalSwitch(newValue) {
       //called whenever switch1 changes
       if (newValue) {
         const competition = JSON.parse(localStorage.getItem("competition"));
@@ -931,6 +909,16 @@ export default {
     clearInterval(this.timer_refresh);
   },
   methods: {
+    getColor(placement) {
+      if (placement > 30) return "red";
+      if (placement > 20) return "orange";
+      else if (placement > 5) return "yellow";
+      else return "green";
+    },
+    getColorPoints(points) {
+      if (points > 5) return "indigo lighten-2";
+      else return "red";
+    },
     choosePrints: function() {
       this.dialog = false;
       this.saveAllAsPDF();
@@ -941,6 +929,14 @@ export default {
       this.fish_names = []; // Fish names, including "Voittajat"
       this.fish_amount_names = [];
       this.table_fish_names = []; // only fish names
+      this.signee_headers = [
+        { text: "Kilp. numero", value: "boat_number" },
+        { text: "Kippari", value: "captain_name" },
+        { text: "Varakippari", value: "temp_captain_name" },
+        { text: "Paikkakunta", value: "locality" },
+        { text: "Lähtöpaikka", value: "starting_place" },
+      ];
+      let placement = 1;
       try {
         // Query competition with id
         let competitions = await CompetitionService.getCompetition(
@@ -958,7 +954,12 @@ export default {
           this.normal_points = this.competition.normal_points;
           this.normal_weights = this.competition.normal_weights;
           if (this.isTeamCompetition) {
+            this.signee_headers.push({ text: "Tiimi", value: "team" });
             this.team_results = this.competition.team_results;
+            this.team_results.forEach((team) => {
+              team.placement = placement;
+              placement++;
+            });
           }
           this.biggest_fishes = this.$store.getters.getBiggestFishes;
           this.biggest_amounts = this.$store.getters.getBiggestAmounts;
@@ -979,6 +980,16 @@ export default {
             this.signees_chart.destroy();
           }
           this.$nextTick(() => this.drawCharts());
+
+          if (this.normal_points.length) {
+            this.results = this.normal_points;
+            this.headers = this.normal_headers;
+          } else {
+            this.results = this.$store.getters.getSignees;
+            this.headers = this.signee_headers;
+            this.selected_normal = "Ilmoittautuneet";
+          }
+
           M.toast({ html: "Tiedot ajantasalla!" });
         } else {
           this.signees = [];
@@ -1157,32 +1168,32 @@ export default {
 
     // Switch table headers and columns based on this.selected_normal value (v-select)
     switchNormalResults: function() {
-      // Prevent v-selectt having no value, would show error
+      // Prevent v-select having no value, would show error
       if (!this.selected_normal) {
         this.selected_normal = "Pisteet";
       }
       // If "Pisteet" selected in v-select, update headers and this.results (table data)
       if (this.selected_normal === "Pisteet") {
-        this.normal_headers = [
-          "Sijoitus",
-          "Nro.",
-          "Kapteeni",
-          "Varakapteeni",
-          "Paikkakunta",
-          "Tulos",
-          "Cup sij. pisteet",
-          "Cup osal. pisteet",
-          "Yht.",
-        ];
+        this.headers = this.normal_headers;
+        this.results = this.normal_points;
       }
       // If "Kalat" selected in v-select, update headers and this.results (table data)
-      else {
-        this.normal_headers = ["Sijoitus", "Nro.", "Kapteeni"];
+      if (this.selected_normal === "Kalat") {
+        (this.headers = [
+          { text: "Sijoitus", value: "placement" },
+          { text: "Kilp. numero", value: "boat_number" },
+          { text: "Kippari", value: "captain_name" },
+        ]),
+          (this.results = this.normal_weights);
         // Get fish names and add them to headers
         this.table_fish_names.forEach((name) => {
-          this.normal_headers.push(name);
+          this.headers.push({ text: name, value: name });
         });
-        this.normal_headers.push("Tulos");
+        this.headers.push({ text: "Tulos", value: "total_points" });
+      }
+      if (this.selected_normal === "Ilmoittautuneet") {
+        this.headers = this.signee_headers;
+        this.results = this.$store.getters.getSignees;
       }
     },
     // Sorts the dictionary based on weights
@@ -1221,6 +1232,7 @@ export default {
     // Calculate "Suurimmat Kalat"
     calculateBiggestFishes: function() {
       let fishes = this.biggest_fishes;
+      let placement = 1;
       this.results_found_fishes = null;
 
       // Check v-select value, don't allow it to go null because it shows error
@@ -1228,9 +1240,11 @@ export default {
         this.selected_biggest_fish = "Voittajat";
       }
       if (this.selected_biggest_fish === "Voittajat") {
+        this.biggest_fishes_headers = this.winner_headers;
         this.biggest_fishes,
           (this.biggest_fishes_results = this.sortDict(fishes));
       } else {
+        this.biggest_fishes_headers = this.biggest_headers;
         // If v-select (this.selected_biggest_fish) not "Voittajat", get fish related results and sort them
         // based on the v-select fish name
         let fish_results = [];
@@ -1245,20 +1259,27 @@ export default {
           this.results_found_fishes = "- Ei tuloksia";
         }
         this.biggest_fishes_results = fish_results;
+        this.biggest_fishes_results.forEach((result) => {
+          result.placement = placement;
+          placement++;
+        });
       }
     },
     // Calculate "Suurimmat kalasaaliit", works exactly like the calculateBiggestFishes
     //TODO make these 2 to one function
     calculateBiggestAmounts: function() {
       let fishes = this.biggest_amounts;
+      let placement = 1;
       this.results_found_amount = "";
       if (!this.selected_biggest_amount) {
         this.selected_biggest_amount = "Voittajat";
       }
       if (this.selected_biggest_amount === "Voittajat") {
+        this.biggest_amounts_headers = this.winner_headers;
         this.biggest_amounts,
           (this.biggest_amounts_results = this.sortDict(fishes));
       } else {
+        this.biggest_amounts_headers = this.biggest_headers;
         let fish_results = [];
         if (fishes[this.selected_biggest_amount]) {
           fish_results = fishes[this.selected_biggest_amount].sort(
@@ -1275,6 +1296,10 @@ export default {
         }
 
         this.biggest_amounts_results = fish_results;
+        this.biggest_amounts_results.forEach((result) => {
+          result.placement = placement;
+          placement++;
+        });
       }
     },
     // For naming the pdf, replace certain characters
@@ -1299,7 +1324,11 @@ export default {
           values[0] = String(values[0]) + ".";
           values[1] = "(" + String(values[1]) + ")";
           for (let i of range(3, values.length - 2)) {
-            values[i] = values[i].toLocaleString() + " g";
+            if (parseInt(values[i]) > 0) {
+              values[i] = values[i].toLocaleString() + " g";
+            } else {
+              values[i] = "-";
+            }
           }
           values[values.length - 1] =
             values[values.length - 1].toLocaleString() + " p";
@@ -1321,23 +1350,33 @@ export default {
         }
         //Tiimikilpailu
         if (type === 5) {
-          values[0] = String(values[0]) + ".";
-          values[values.length - 1] =
-            values[values.length - 1].toLocaleString() + " p";
+          let place = values[5];
+          let team = values[0];
+          let captain_1 = values[1];
+          let captain_2 = values[2];
+          let captain_3 = values[3];
+          let points = values[4];
+          values[0] = String(place) + ".";
+          values[1] = team;
+          values[2] = captain_1;
+          values[3] = captain_2;
+          values[4] = captain_3;
+          values[5] = points.toLocaleString() + " p";
         }
-        //Pisteet
+        //Normaalikilpailu, Ilmoittautuneet
         if (type === 6) {
-          let temp_bnumber = values[0];
-          let temp_captain = values[1];
-          let temp_fish_name = values[2];
-          let temp_weight = values[3];
-          let temp_points = values[4];
-          values[0] = String(placement) + ".";
-          values[1] = "(" + String(temp_bnumber) + ")";
+          let b_number = values[1];
+          let captain = values[3];
+          let temp_captain = values[4];
+          let startin_place = values[2];
+          let locality = values[5];
+          let team = values[6];
+          values[0] = "(" + String(b_number) + ")";
+          values[1] = captain;
           values[2] = temp_captain;
-          values[3] = temp_fish_name;
-          values[4] = temp_weight.toLocaleString() + " g";
-          values[5] = temp_points.toLocaleString() + " p";
+          values[3] = startin_place;
+          values[4] = locality;
+          values[5] = team;
         }
         placement++;
         arr.push(values);
@@ -1362,7 +1401,9 @@ export default {
       // Format dates for easier reding
       let temp_start_date = this.formatDate(this.competition.start_date);
       let temp_end_date = this.formatDate(this.competition.end_date);
-
+      let rows;
+      let columns;
+      let pdf_competition_type;
       // PDF creation
       let doc = new jsPDF();
       // Title
@@ -1380,10 +1421,94 @@ export default {
       doc.line(0, 35, 400, 35);
       doc.setFontSize(20);
 
+      if (table_id === "#normal-table") {
+        pdf_competition_type = `Normaalikilpailu${this.selected_normal}`;
+        // Other tables are generated in code so no need to wait for rendering to html
+        if (this.selected_normal === "Pisteet") {
+          columns = [
+            "Sijoitus",
+            "Nro.",
+            "Kippari",
+            "Varakippari",
+            "Paikkakunta",
+            "Tulos",
+            "Sij. pisteet",
+            "Osal. pisteet",
+            "Yht.",
+          ];
+          // Format dictionary/json to format that autotable understands (arrays in arrays);
+          rows = this.dictToArray(this.normal_points, 1);
+        }
+        if (this.selected_normal === "Kalat") {
+          columns = ["Sijoitus", "Nro.", "Kippari"];
+          // Get fish names for columns
+          this.table_fish_names.forEach((name) => {
+            columns.push(name);
+          });
+          columns.push("Tulos");
+          // Format dictionary/json to format that autotable understands (arrays in arrays);
+          rows = this.dictToArray(this.normal_weights, 2);
+        }
+        if (this.selected_normal === "Ilmoittautuneet") {
+          columns = [
+            "Kilp. numero",
+            "Kippari",
+            "Varakippari",
+            "Paikkakunta",
+            "Lähtöpaikka",
+          ];
+          if (this.isTeamCompetition) {
+            columns.push("Tiimi");
+          }
+          // Format dictionary/json to format that autotable understands (arrays in arrays);
+          rows = this.dictToArray(this.$store.getters.getSignees, 6);
+        }
+      }
+
+      if (table_id === "#team-table") {
+        pdf_competition_type = `Tiimikilpailu`;
+        // Other tables are generated in code so no need to wait for rendering to html
+        columns = [
+          "Sijoitus",
+          "Tiimi",
+          "Jäsen 1",
+          "Jäsen 2",
+          "Jäsen 3",
+          "Pisteet",
+        ];
+        // Format dictionary/json to format that autotable understands (arrays in arrays);
+        rows = this.dictToArray(this.team_results, 5);
+      }
+
+      if (table_id === "#biggest-fishes-table") {
+        pdf_competition_type = `SuurimmatKalat${this.selected_biggest_fish}`;
+
+        if (this.selected_biggest_fish === "Voittajat") {
+          columns = ["Kalalaji", "Veneen nro", "Kippari", "Paino"];
+          rows = this.dictToArray(this.biggest_fishes_results, 4);
+        } else {
+          columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino"];
+          rows = this.dictToArray(this.biggest_fishes_results, 3);
+        }
+      }
+
+      if (table_id === "#biggest-amounts-table") {
+        pdf_competition_type = `SuurimmatSaaliit${this.selected_biggest_amount}`;
+
+        if (this.selected_biggest_amount === "Voittajat") {
+          columns = ["Kalalaji", "Veneen nro", "Kippari", "Paino"];
+          rows = this.dictToArray(this.biggest_amounts_results, 4);
+        } else {
+          columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino"];
+          rows = this.dictToArray(this.biggest_amounts_results, 3);
+        }
+      }
+
       // Table, based on given table_id, and table title based on competition_type
       doc.text(100, 50, competition_type, { align: "center" });
       doc.autoTable({
-        html: table_id,
+        head: [columns],
+        body: rows,
         styles: {
           overflow: "linebreak",
           cellWidth: "wrap",
@@ -1407,11 +1532,7 @@ export default {
           this.competition.name,
           " ",
           ""
-        )}_${this.replaceAll(
-          this.capitalize_words(competition_type),
-          " ",
-          ""
-        )}.pdf`
+        )}_${pdf_competition_type}.pdf`
       );
     },
     saveStatsAsPDF: function(competition_type) {
@@ -1538,8 +1659,8 @@ export default {
         columns = [
           "Sijoitus",
           "Nro.",
-          "Kapteeni",
-          "Varakapteeni",
+          "Kippari",
+          "Varakippari",
           "Paikkakunta",
           "Tulos",
           "Sij. pisteet",
@@ -1574,7 +1695,7 @@ export default {
 
         //Normaalikilpailu (Kalat)
         doc.addPage();
-        columns = ["Sijoitus", "Nro.", "Kapteeni"];
+        columns = ["Sijoitus", "Nro.", "Kippari"];
         // Get fish names for columns
         this.table_fish_names.forEach((name) => {
           columns.push(name);
@@ -1633,7 +1754,7 @@ export default {
             "Pisteet",
           ];
           // Format dictionary/json to format that autotable understands (arrays in arrays);
-          rows = this.dictToArray(this.normal_points, 1);
+          rows = this.dictToArray(this.team_results, 5);
           //TODO generate table in code instead of html, like the others
           doc.autoTable({
             head: [columns],
@@ -1688,7 +1809,7 @@ export default {
             doc.setFontSize(18);
             start_coord = 50;
 
-            columns = ["Sijoitus", "Veneen nro", "Kapteeni", "Paino"];
+            columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino"];
             rows = this.dictToArray(this.biggest_fishes_results, 3);
 
             doc.text(100, start_coord, "Suurimmat kalat" + ` (${name})`, {
@@ -1791,7 +1912,7 @@ export default {
         // Suurimmat Kalat  (Voittajat)
         // Select these for calculations
         this.selected_biggest_fish = this.selected_biggest_amount = "Voittajat";
-        columns = ["Kalalaji", "Veneen nro", "Kapteeni", "Paino"];
+        columns = ["Kalalaji", "Veneen nro", "Kippari", "Paino"];
         // Calculate data
         this.calculateBiggestFishes();
         this.calculateBiggestAmounts();

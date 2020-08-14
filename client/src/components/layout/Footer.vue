@@ -31,5 +31,4 @@ export default {
   methods: {},
 };
 </script>
-//FIXME not idea solution to for the footer (bottom:-50px)!
 <style scoped></style>

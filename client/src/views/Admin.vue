@@ -194,65 +194,58 @@
             </v-row>
             <!-- if there are competitions in database-->
             <v-row v-if="competitions.length">
-              <v-col md="10" offset-md="1" class="scroll_table">
-                <table
-                  border="1"
-                  id="competitions"
-                  class="centered responsive-table tablearea highlight "
-                >
-                  <thead class="title">
-                    <tr>
-                      <th>Kilpailun Päivämäärä</th>
-                      <th>Nimi</th>
-                      <th>Käyttäjän id</th>
-                      <th>Cup</th>
-                      <th>Tila</th>
-                      <th></th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <!-- For every competition in this.competitions array -->
-                    <tr
-                      v-for="(competition, index) in competitions"
-                      v-bind:item="competition"
-                      v-bind:index="index"
-                      v-bind:key="competition._id"
-                    >
-                      <th style class="center-align" scope="row">
-                        {{
-                          `${competition.start_date.date()}.${competition.start_date.month() +
-                            1}.${competition.start_date.year()} - ${competition.end_date.date()}.${competition.end_date.month() +
-                            1}.${competition.end_date.year()}`
-                        }}
-                      </th>
-                      <td style>{{ competition.name }}</td>
-                      <td style>{{ competition.user_id }}</td>
-                      <td style>{{ competition.cup_name }}</td>
-                      <td style>{{ competition.state }}</td>
-                      <td>
-                        <v-btn
-                          tile
-                          color="primary"
-                          @click="pickCompetition(competition)"
-                          :loading="loading_competitions"
-                          ><i class="material-icons left">check</i
-                          >Valitse</v-btn
-                        >
-                      </td>
-                      <td>
-                        <v-btn
-                          tile
-                          color="red"
-                          @click="deleteCompetition(competition._id, false)"
-                          :loading="loading_competitions"
-                          ><i class="material-icons left">delete_forever</i
-                          >Poista</v-btn
-                        >
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+              <v-col md="10" offset-md="1">
+                <v-card :dark="updateSwitch">
+                  <v-card-title>
+                    <p class="flow-text">Kilpailut</p>
+                    <v-spacer></v-spacer>
+                    <v-switch
+                      v-model="updateSwitch"
+                      class="black--text"
+                      color="indigo darken-3"
+                      append-icon="mdi-weather-night"
+                      prepend-icon="mdi-weather-sunny"
+                    ></v-switch>
+                    <v-spacer></v-spacer>
+                    <v-text-field
+                      v-model="search_comp"
+                      append-icon="mdi-magnify"
+                      label="Hae kilpailua"
+                      single-line
+                      hide-details
+                    ></v-text-field>
+                  </v-card-title>
+                  <v-data-table
+                    id="normal-table"
+                    :headers="headers"
+                    :items="competitions"
+                    :search="search_comp"
+                    :loading="loading_competitions"
+                  >
+                    <template v-slot:[`item.start_date`]="{ item }">
+                      <v-chip>{{
+                        item.start_date.format("DD.MM.YYYY")
+                      }}</v-chip>
+                    </template>
+                    <template v-slot:[`item.choose`]="{ item }">
+                      <v-btn
+                        color="primary"
+                        @click="pickCompetition(item)"
+                        :loading="loading_competitions"
+                        ><i class="material-icons left">check</i>Valitse</v-btn
+                      >
+                    </template>
+                    <template v-slot:[`item.delete`]="{ item }">
+                      <v-btn
+                        color="red"
+                        @click="deleteCompetition(item._id, false)"
+                        :loading="loading_competitions"
+                        ><i class="material-icons left">delete_forever</i
+                        >Poista</v-btn
+                      >
+                    </template>
+                  </v-data-table>
+                </v-card>
               </v-col>
             </v-row>
             <!-- this.competitions.length === 0 === false -->
@@ -299,7 +292,7 @@
                   <li v-for="(feedback, index) in feedback" :key="index">
                     <v-card
                       class="mx-auto"
-                      dark
+                      :dark="updateSwitch"
                       min-width="200px"
                       max-width="850px"
                       style="margin-bottom:30px;margin-top:30px"
@@ -312,7 +305,7 @@
                         </v-col>
                       </v-card-title>
                       <v-card-text
-                        class="headline font-weight-bold white--text"
+                        class="headline font-weight-bold"
                         style="word-break: break-all;"
                       >
                         {{ feedback.message }}
@@ -493,6 +486,17 @@ export default {
         (value) => !isNaN(value || "") || "Ei ole numero!",
         (value) => (value || "") >= 0 || "Numeron pitää olla positiivinen!",
       ],
+      headers: [
+        { text: "Kilpailun Päivämäärä", value: "start_date" },
+        { text: "Nimi", value: "name" },
+        { text: "Käyttäjän id", value: "user_id" },
+        { text: "Cup", value: "cup_name" },
+        { text: "Pistekerroin", value: "cup_points_multiplier" },
+        { text: "", value: "choose", sortable: false },
+        { text: "", value: "delete", sortable: false },
+      ],
+      search_comp: "",
+      updateSwitch: true,
     };
   },
   components: {

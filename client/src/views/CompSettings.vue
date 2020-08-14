@@ -41,10 +41,7 @@
             <v-col md="10" offset-md="1" class="scroll_table">
               <table class="striped centered responsive-table highlight">
                 <tr>
-                  <th
-                    style="border:1px solid black;"
-                    class="center-align blue_th"
-                  >
+                  <th style="border:1px solid black;" class="center-align">
                     Kilpailu
                   </th>
                   <!-- competition.name would be this.competition.name if referenced on javascript etc. -->
@@ -53,10 +50,7 @@
                   </td>
                 </tr>
                 <tr>
-                  <th
-                    style="border:1px solid black;"
-                    class="center-align blue_th"
-                  >
+                  <th style="border:1px solid black;" class="center-align">
                     Cup
                   </th>
                   <td style="border:1px solid black;" class="center-align">
@@ -64,10 +58,7 @@
                   </td>
                 </tr>
                 <tr>
-                  <th
-                    style="border:1px solid black;"
-                    class="center-align blue_th"
-                  >
+                  <th style="border:1px solid black;" class="center-align">
                     Voittajan Cup sijoittumispisteet
                   </th>
                   <td style="border:1px solid black;" class="center-align">
@@ -75,10 +66,7 @@
                   </td>
                 </tr>
                 <tr>
-                  <th
-                    style="border:1px solid black;"
-                    class="center-align blue_th"
-                  >
+                  <th style="border:1px solid black;" class="center-align">
                     Kilpailijoiden Cup osallistumispisteet
                   </th>
                   <td style="border:1px solid black;" class="center-align">
@@ -86,10 +74,7 @@
                   </td>
                 </tr>
                 <tr>
-                  <th
-                    style="border:1px solid black;"
-                    class="center-align blue_th"
-                  >
+                  <th style="border:1px solid black;" class="center-align">
                     Kilpailun pistekerroin
                   </th>
                   <td style="border:1px solid black;" class="center-align">
@@ -97,10 +82,7 @@
                   </td>
                 </tr>
                 <tr>
-                  <th
-                    style="border:1px solid black;"
-                    class="center-align blue_th"
-                  >
+                  <th style="border:1px solid black;" class="center-align">
                     Onko kilpailu julkinen
                   </th>
                   <td style="border:1px solid black;" class="center-align">
@@ -108,10 +90,7 @@
                   </td>
                 </tr>
                 <tr>
-                  <th
-                    style="border:1px solid black;"
-                    class="center-align blue_th"
-                  >
+                  <th style="border:1px solid black;" class="center-align">
                     Aloituspäivä
                   </th>
                   <td style="border:1px solid black;" class="center-align">
@@ -119,10 +98,7 @@
                   </td>
                 </tr>
                 <tr>
-                  <th
-                    style="border:1px solid black;"
-                    class="center-align blue_th"
-                  >
+                  <th style="border:1px solid black;" class="center-align">
                     Lopetuspäivämäärä
                   </th>
                   <td style="border:1px solid black;" class="center-align">
@@ -130,10 +106,7 @@
                   </td>
                 </tr>
                 <tr>
-                  <th
-                    style="border:1px solid black;"
-                    class="center-align blue_th"
-                  >
+                  <th style="border:1px solid black;" class="center-align">
                     Kilpailuaika
                   </th>
                   <td style="border:1px solid black;" class="center-align">

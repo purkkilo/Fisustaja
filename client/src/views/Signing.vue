@@ -91,10 +91,10 @@
                 <v-col md="8" offset-md="2">
                   <h3>Numeron ({{ old_info.boat_number }}.) Vanhat tiedot</h3>
                   <p class="flow-text">
-                    <b>Kapteeni:</b> {{ old_info.captain_name }}
+                    <b>Kippari:</b> {{ old_info.captain_name }}
                   </p>
                   <p class="flow-text">
-                    <b>Varakapteeni:</b> {{ old_info.temp_captain_name }}
+                    <b>Varakippari:</b> {{ old_info.temp_captain_name }}
                   </p>
                   <p class="flow-text">
                     <b>Seura/Paikkakunta:</b> {{ old_info.locality }}
@@ -113,9 +113,9 @@
 
                 <v-col md="8" offset-md="2">
                   <h3>Numeron ({{ boat_number }}.) Uudet tiedot</h3>
-                  <p class="flow-text"><b>Kapteeni:</b> {{ captain_name }}</p>
+                  <p class="flow-text"><b>Kippari:</b> {{ captain_name }}</p>
                   <p class="flow-text">
-                    <b>Varakapteeni:</b> {{ temp_captain_name }}
+                    <b>Varakippari:</b> {{ temp_captain_name }}
                   </p>
                   <p class="flow-text">
                     <b>Seura/Paikkakunta:</b> {{ locality }}
@@ -199,7 +199,7 @@
                   <v-row>
                     <v-col md="5" offset-md="3" class="input-fields">
                       <v-text-field
-                        label="Kapteeni"
+                        label="Kippari"
                         v-model="captain_name"
                         :maxlength="maxlength"
                         :loading="loading"
@@ -211,7 +211,7 @@
                   <v-row>
                     <v-col md="5" offset-md="3" class="input-fields">
                       <v-text-field
-                        label="Varakapteeni"
+                        label="Varakippari"
                         v-model="temp_captain_name"
                         :maxlength="maxlength"
                         :loading="loading"
@@ -909,7 +909,7 @@ export default {
             this.loading = false;
             this.clearInputs();
             M.toast({
-              html: `Poistettu (Nro: ${found_signee.boat_number}, Kapteeni: ${found_signee.captain_name}) Tiedot!`,
+              html: `Poistettu (Nro: ${found_signee.boat_number}, Kippari: ${found_signee.captain_name}) Tiedot!`,
             });
             location.href = "#";
             location.href = "#signing";
@@ -932,7 +932,7 @@ export default {
       }
 
       if (!this.captain_name) {
-        this.showError("Kapteenin nimi puuttuu!");
+        this.showError("Kipparin nimi puuttuu!");
       } else {
         this.captain_name = this.capitalize_words(this.captain_name);
       }
@@ -994,7 +994,7 @@ export default {
                 this.$store.commit("setTeams", this.teams);
               }
               M.toast({
-                html: `Päivitetty venekunnan (Nro: ${this.new_signee.boat_number}, Kapteeni: ${this.new_signee.captain_name}) Tiedot!`,
+                html: `Päivitetty venekunnan (Nro: ${this.new_signee.boat_number}, Kippari: ${this.new_signee.captain_name}) Tiedot!`,
               });
               this.clearInputs();
               location.href = "#";
@@ -1060,7 +1060,7 @@ export default {
             }
 
             M.toast({
-              html: `Venekunta ilmoitettu kisaan! (Nro: ${this.new_signee.boat_number}, Kapteeni: ${this.new_signee.captain_name})`,
+              html: `Venekunta ilmoitettu kisaan! (Nro: ${this.new_signee.boat_number}, Kippari: ${this.new_signee.captain_name})`,
             });
             this.clearInputs();
             location.href = "#";

@@ -95,7 +95,17 @@
                       </v-col>
                     </v-col>
                   </v-row>
-
+                  <v-row v-if="!competition_boat">
+                    <v-col>
+                      <v-alert v-if="loading" type="info"> </v-alert>
+                      <v-alert v-if="!searched" type="warning">
+                        Venekuntaa ei valittuna
+                      </v-alert>
+                      <v-alert v-else type="error">
+                        Numerolla ei löytynyt venekuntaa tietokannasta!
+                      </v-alert>
+                    </v-col>
+                  </v-row>
                   <v-row v-if="competition_boat">
                     <v-col md="8" offset-md="2">
                       <v-row class="title">
@@ -106,10 +116,10 @@
                           <p class="flow-text">Venekunnan numero</p>
                         </v-col>
                         <v-col md="4">
-                          <p class="flow-text">Kapteeni</p>
+                          <p class="flow-text">Kippari</p>
                         </v-col>
                         <v-col md="4">
-                          <p class="flow-text">Varakapteeni</p>
+                          <p class="flow-text">Varakippari</p>
                         </v-col>
                         <v-col md="4" class="input-fields">
                           <p class="flow-text">
@@ -197,24 +207,16 @@
                               </v-col>
                             </v-row>
                           </li>
-                          <li
-                            v-for="(fish, index) in $store.getters
-                              .getCompetitionFishes"
-                            :key="fish.name"
-                          >
+                          <li v-for="(input, index) in inputs" :key="index">
                             <v-row>
                               <v-col md="6">
                                 <span class="flow-text">{{ index + 1 }}. </span
-                                ><span
-                                  class="flow-text"
-                                  :id="'fish_' + (index + 1) + '_name'"
-                                  >{{ fish.name }}</span
-                                >
+                                ><span class="flow-text">{{ input.name }}</span>
                               </v-col>
                               <v-col md="6" class="input-fields">
                                 <v-text-field
                                   label="Paino grammoina"
-                                  :id="'fish_' + (index + 1) + '_weight'"
+                                  v-model="input.value"
                                   type="number"
                                   @paste.prevent
                                   @keypress="isNumber($event)"
@@ -288,17 +290,6 @@
                       </v-col>
                     </v-col>
                   </v-row>
-                  <v-row v-else>
-                    <v-col>
-                      <v-alert v-if="loading" type="info"> </v-alert>
-                      <v-alert v-if="!searched" type="warning">
-                        Venekuntaa ei valittuna
-                      </v-alert>
-                      <v-alert v-else type="error">
-                        Numerolla ei löytynyt venekuntaa tietokannasta!
-                      </v-alert>
-                    </v-col>
-                  </v-row>
                 </v-col>
               </v-row>
               <v-row v-else>
@@ -350,14 +341,14 @@
                       :items="result_signees"
                       :search="search"
                     >
-                      <template v-slot:item.placement="{ item }">
+                      <template v-slot:[`item.placement`]="{ item }">
                         <v-chip
-                          class="black--text"
+                          :outlined="updateSwitch"
                           :color="getColor(item.placement)"
                           >{{ item.placement }}.</v-chip
                         >
                       </template>
-                      <template v-slot:item.total_points="{ item }">
+                      <template v-slot:[`item.total_points`]="{ item }">
                         <v-chip :color="getColorPoints(item.total_points)"
                           >{{ item.total_points.toLocaleString() }} p</v-chip
                         >
@@ -406,54 +397,55 @@
                   class="input-fields"
                   style="margin-top:100px;"
                 >
-                  <p v-if="still_on_water.length" class="flow-text">
-                    Venekunnat, jotka ovat vielä vesillä
-                  </p>
-                  <p v-else-if="!signees.length" class="flow-text red--text">
+                  <p v-if="!signees.length" class="flow-text red--text">
                     Kilpailussa ei vielä ilmoittautuneita!
                   </p>
-                  <p v-else class="flow-text green--text">
+                  <p
+                    v-if="!still_on_water.length"
+                    class="flow-text green--text"
+                  >
                     Kaikki venekunnat palanneet maaliin!
                   </p>
                 </v-col>
               </v-row>
-              <v-row>
-                <v-col md="8" offset-md="2" class="scroll_table">
-                  <table
-                    id="on-water-table"
-                    class="highlight centered responsive-table table_header tablearea"
-                    v-if="still_on_water.length"
-                  >
-                    <thead>
-                      <tr>
-                        <th>Nro.</th>
-                        <th>Kapteeni</th>
-                        <th>Varakapteeni</th>
-                        <th>Lähtöpaikka</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr
-                        @click="selectRow(signee.id, signee.boat_number)"
-                        :class="{ selected: selected_id == signee.id }"
-                        v-for="(signee, index) in still_on_water"
-                        :key="index"
-                      >
-                        <th class="center-align" style="border:1px solid black">
-                          ({{ signee.boat_number }})
-                        </th>
-                        <td style="border:1px solid black">
-                          {{ signee.captain_name }}
-                        </td>
-                        <td style="border:1px solid black">
-                          {{ signee.temp_captain_name }}
-                        </td>
-                        <td style="border:1px solid black">
-                          {{ signee.starting_place }}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+              <v-row v-if="still_on_water.length">
+                <v-col md="8" offset-md="2">
+                  <v-card :dark="updateSwitch">
+                    <v-card-title>
+                      <p class="flow-text">
+                        Venekunnat, jotka ovat vielä vesillä
+                      </p>
+                      <v-spacer></v-spacer>
+                      <v-switch
+                        v-model="updateSwitch"
+                        class="black--text"
+                        color="indigo darken-3"
+                        append-icon="mdi-weather-night"
+                        prepend-icon="mdi-weather-sunny"
+                      ></v-switch>
+                      <v-spacer></v-spacer>
+                      <v-text-field
+                        v-model="search_on_water"
+                        append-icon="mdi-magnify"
+                        label="Hae kilpailijaa"
+                        single-line
+                        hide-details
+                      ></v-text-field>
+                      ></v-card-title
+                    >
+
+                    <v-data-table
+                      @click:row="rowClick"
+                      :headers="headers_on_water"
+                      :items="still_on_water"
+                      :search="search_on_water"
+                      :loading="loading"
+                    >
+                      <template v-slot:[`item.boat_number`]="{ item }">
+                        <v-chip>{{ item.boat_number }}.</v-chip>
+                      </template>
+                    </v-data-table>
+                  </v-card>
                 </v-col>
               </v-row>
               <v-row v-if="selected_id && still_on_water.length">
@@ -544,6 +536,13 @@ export default {
         { text: "Kippari", value: "captain_name" },
         { text: "Pisteet", value: "total_points" },
       ],
+      headers_on_water: [
+        { text: "Kilp. Numero", value: "boat_number" },
+        { text: "Kippari", value: "captain_name" },
+        { text: "Varakippari", value: "temp_captain_name" },
+        { text: "Lähtöpaikka", value: "starting_place" },
+      ],
+      search_on_water: "",
       search: "",
       updateSwitch: true,
       still_on_water: [],
@@ -553,6 +552,7 @@ export default {
       ],
       timer_refresh: null,
       interval: 60000,
+      inputs: [],
     };
   },
   computed: {
@@ -610,6 +610,9 @@ export default {
           });
           this.result_signees = this.$store.getters.getResultSignees;
           this.still_on_water = this.$store.getters.getStillOnWaterSignees;
+          this.competition_fishes.forEach((fish) => {
+            this.inputs.push({ name: fish.name, value: 0 });
+          });
         } else {
           console.log("No competition found on database...");
         }
@@ -714,33 +717,27 @@ export default {
     },
     // Set input weights for each fish for the signee
     setInputWeights: function() {
-      let competition_fishes = this.$store.getters.getCompetitionFishes;
       // Loop trhough all the competition fishes
-      for (let i = 1; i < competition_fishes.length + 1; i++) {
-        this.$nextTick(() => this.setInput(i));
-      }
-    },
-    setInput: function(i) {
-      let fish_name = document.getElementById(`fish_${i}_name`).innerHTML;
-      // find the fish weights based on the fish_name, from signees weights array
-
-      let fish_weights = this.competition_boat.weights.find(
-        (fish) => fish.name === fish_name
-      ).weights;
-      // Assign the value to input
-      document.getElementById(`fish_${i}_weight`).value = fish_weights;
+      this.inputs.forEach((input) => {
+        let fish_name = input.name;
+        // find the fish weights based on the fish_name, from signees weights array
+        let fish_weights = this.competition_boat.weights.find(
+          (fish) => fish.name === fish_name
+        ).weights;
+        // Assign the value to input
+        input.value = fish_weights;
+      });
     },
     // Search signee from database when selected from table
     searchSelected: function() {
       // Change tab to "Punnitus" and fetch
       this.tab = "weighting";
-      let temp_boat_number = this.selected_boat_number;
-      this.selected_id = null;
-      this.selected_boat_number = null;
-      this.fetchFromDatabase(temp_boat_number);
+      this.fetchFromDatabase(this.selected_boat_number);
     },
 
     fetchFromDatabase: function(boat_number) {
+      this.selected_id = null;
+      this.selected_boat_number = null;
       // If boat_number_input is empty, boat_number = -1
       // If boat_number selected on input
       if (boat_number !== -1) {
@@ -829,8 +826,8 @@ export default {
       if (reset) {
         this.competition_boat.returned = false;
         // For every fish, reset weights/points and add them to array
-        for (let i = 1; i < competition_fishes.length + 1; i++) {
-          fish_name = document.getElementById(`fish_${i}_name`).innerHTML;
+        this.inputs.forEach((input) => {
+          fish_name = input.name;
           fish_weights.push({
             name: fish_name,
             weights: fish_weight,
@@ -870,17 +867,15 @@ export default {
               }
             }
           }
-        }
+        });
       }
       // Don't reset points, add new values
       else {
         this.competition_boat.returned = true;
         // For every fish, get values from inputs
-        for (let i = 1; i < competition_fishes.length + 1; i++) {
-          fish_name = document.getElementById(`fish_${i}_name`).innerHTML;
-          fish_weight = parseInt(
-            document.getElementById(`fish_${i}_weight`).value
-          );
+        this.inputs.forEach((input) => {
+          fish_name = input.name;
+          fish_weight = parseInt(input.value ? input.value : 0); // If input empty, replace with 0
           // Get points multiplier for this certain fish for points calculation
           let points_multiplier = competition_fishes.find(
             (fish) => fish.name === fish_name
@@ -903,7 +898,7 @@ export default {
           this.biggest_amounts = this.$store.getters.getBiggestAmounts;
           total_weights += fish_weight;
           total_points += fish_points;
-        }
+        });
       }
 
       this.competition_boat.weights = fish_weights;
@@ -1159,13 +1154,9 @@ export default {
     // Clear all inputs and selections
     clearInputs: function() {
       M.toast({ html: "Pyyhitään inputit ja valinnat..." });
-      for (
-        let i = 1;
-        i < this.$store.getters.getCompetitionFishes.length + 1;
-        i++
-      ) {
-        document.getElementById(`fish_${i}_weight`).value = 0;
-      }
+      this.inputs.forEach((input) => {
+        input.value = 0;
+      });
       this.competition_boat = null;
       this.boat_number_input = null;
       this.selected_fish = null;
