@@ -1123,6 +1123,9 @@ export default {
         let normal_results = this.calculateNormalResults(this.competition);
         this.competition.normal_points = normal_results.normal_points;
         this.competition.normal_weights = normal_results.normal_weights;
+        if (this.competition.team_competition) {
+          this.competition.team_results = this.calculateTeamResults();
+        }
         this.updateCompetition(this.competition);
         this.basic_info_validated = true;
       }
@@ -1190,13 +1193,13 @@ export default {
 
       let normal_points = [];
       let normal_weights = [];
-      this.signees = this.$store.getters.getFinishedSignees;
-      this.signees = this.signees.sort(function compare(a, b) {
+      let signees = this.$store.getters.getFinishedSignees;
+      signees = signees.sort(function compare(a, b) {
         return parseInt(b.total_points) - parseInt(a.total_points);
       });
       // For every signee, calculate their cup points and placing
       //TODO rework the structure, seems more complex than it should be
-      this.signees.forEach((signee) => {
+      signees.forEach((signee) => {
         cup_points_total = 0;
         // First competitor
         if (!normal_points.length) {
@@ -1311,10 +1314,11 @@ export default {
       return output;
     },
     calculateTeamResults: function() {
+      let signees = this.competition.signees;
       var team_names = [];
       let team_results = [];
       // Get all the team names
-      this.signees.forEach((signee) => {
+      signees.forEach((signee) => {
         if (signee.team !== "-" && signee.team !== null) {
           team_names.push(signee.team);
         }
@@ -1324,7 +1328,7 @@ export default {
 
       // Get all the members of each team and add up their points
       team_names.forEach((team_name) => {
-        let team = this.signees.filter((signee) => signee.team == team_name);
+        let team = signees.filter((signee) => signee.team == team_name);
         let team_points = 0;
         let members = [];
 

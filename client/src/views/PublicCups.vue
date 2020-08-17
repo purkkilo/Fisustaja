@@ -313,8 +313,16 @@ export default {
         );
       });
       let placement = 1;
+      let last_points = -1;
+      let last_placement = -1;
       this.results.forEach((signee) => {
-        signee.placement = placement;
+        if (last_points === signee.cup_results["Total"]) {
+          signee.placement = last_placement;
+        } else {
+          signee.placement = placement;
+          last_points = signee.cup_results["Total"];
+          last_placement = signee.placement;
+        }
         signee.final_cup_points = signee.cup_results["Total"];
         placement++;
       });

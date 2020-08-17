@@ -105,6 +105,15 @@
                     >
                   </router-link>
                 </v-col>
+                <v-col>
+                  <v-btn
+                    @click="saveAsPDF(`Ilmoittautuneet`)"
+                    color="green darken-4"
+                    class="white--text"
+                    ><i class="material-icons left">picture_as_pdf</i>Lataa
+                    lista kilpailijoista</v-btn
+                  >
+                </v-col>
                 <v-col v-if="cup.isPublic">
                   <v-btn
                     large
@@ -189,7 +198,7 @@
                   tile
                   color="green darken-4"
                   class="white--text"
-                  @click="saveAsPDF(`Cupin Kokonaistulokset`, '#normal-table')"
+                  @click="saveAsPDF(`Cupin Kokonaistulokset`)"
                 >
                   <i class="material-icons left">picture_as_pdf</i>Lataa pdf
                 </v-btn>
@@ -409,8 +418,16 @@ export default {
         this.changeHeaders();
 
         let placement = 1;
+        let last_points = -1;
+        let last_placement = -1;
         this.results.forEach((signee) => {
-          signee.placement = placement;
+          if (last_points === signee.cup_results["Total"]) {
+            signee.placement = last_placement;
+          } else {
+            signee.placement = placement;
+            last_points = signee.cup_results["Total"];
+            last_placement = signee.placement;
+          }
           signee.final_cup_points = signee.cup_results["Total"];
           placement++;
         });
@@ -625,27 +642,55 @@ export default {
         return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
       });
     },
-    dictToArray: function(dict) {
+    dictToArray: function(dict, type) {
       const temp_arr = Object.entries(dict);
       const arr = [];
-
+      let boat_number = 1;
+      let missing_numbers = false;
       temp_arr.forEach((element) => {
         let values = Object.values(element[1]);
-        let cup_results = values[9];
-        values[0] = String(values[0]) + ".";
-        values[1] = "(" + String(values[1]) + ")";
-        values[3] = values[4];
-        let counter = 4;
-        this.competitions.forEach((competition) => {
-          if (cup_results[competition.key_name]) {
-            values[counter] = cup_results[competition.key_name];
+        if (type === 1) {
+          values[0] = String(values[0]) + ".";
+          let cup_results = values[9];
+          values[1] = "(" + String(values[1]) + ")";
+          values[3] = values[4];
+          let counter = 4;
+          this.competitions.forEach((competition) => {
+            if (cup_results[competition.key_name]) {
+              values[counter] = cup_results[competition.key_name];
+            } else {
+              values[counter] = "-";
+            }
+            counter++;
+          });
+          values[counter] = cup_results["Total"];
+        }
+        if (type === 2) {
+          if (values[0] > boat_number) {
+            // values[0] is bigger than the next boat_number should be, so there is a gap
+            missing_numbers = true;
+            for (let i of range(boat_number, values[0])) {
+              // When the i reaches the value boat_number should be, add the next real row
+              if (i === values[0]) {
+                values[0] = "(" + String(values[0]) + ")";
+                missing_numbers = false;
+                // Else just push empty rows until then
+              } else {
+                boat_number++;
+                arr.push(["(" + String(i) + ")", "", "", ""]);
+              }
+            }
           } else {
-            values[counter] = "-";
+            values[0] = "(" + String(values[0]) + ")";
           }
-          counter++;
-        });
-        values[counter] = cup_results["Total"];
-        arr.push(values);
+        }
+
+        // If there are gaps in boat_numbers --> 1, 2, 4, 5, 7, etc.
+        if (!missing_numbers) {
+          boat_number++;
+          arr.push(values);
+        }
+        console.log(boat_number);
       });
       return arr;
     },
@@ -654,32 +699,55 @@ export default {
       // Format dates for easier reding
       // PDF creation
       let doc = new jsPDF();
+
       // Title
       const title = `${this.cup.name} (${this.cup.year})`;
+      let sub_title;
+      let columns = [];
+      let rows;
+      let startY;
       const last_competition = this.competitions[this.competitions.length - 1];
       const start_date = moment(last_competition.start_date);
       const formatted_date = `${start_date.date()}.${start_date.month() +
         1}.${start_date.year()}`;
-      const sub_title = `Tilanne ${formatted_date}, ${last_competition.name} (${last_competition.locality}) jälkeen`;
       doc.setFontSize(24);
       doc.text(10, 10, title, { align: "left" });
       doc.line(0, 15, 400, 15);
       doc.setFontSize(14);
-
       // Table, based on given table_id, and table title based on competition_type
-      doc.text(100, 25, sub_title, { align: "center" });
-      doc.text(
-        100,
-        35,
-        table_title +
-          ` (${this.selected_competitions}/${this.competitions.length} parasta kilpailua otettu huomioon)`,
-        { align: "center" }
-      );
-      let columns = [];
-      this.headers.forEach((header) => {
-        columns.push(header.text);
-      });
-      let rows = this.dictToArray(this.results);
+      if (table_title === "Cupin Kokonaistulokset") {
+        sub_title = `Tilanne ${formatted_date}, ${last_competition.name} (${last_competition.locality}) jälkeen`;
+        doc.text(100, 25, sub_title, { align: "center" });
+        doc.text(
+          100,
+          35,
+          table_title +
+            ` (${this.selected_competitions}/${this.competitions.length} parasta kilpailua otettu huomioon)`,
+          { align: "center" }
+        );
+        this.headers.forEach((header) => {
+          columns.push(header.text);
+        });
+        rows = this.dictToArray(this.results, 1);
+        startY = 45;
+      } else {
+        sub_title = `Cupin kilpailijat ${formatted_date}, ${last_competition.name} (${last_competition.locality}) jälkeen`;
+        doc.text(100, 25, sub_title, { align: "center" });
+        doc.setFontSize(8);
+        doc.text(
+          100,
+          30,
+          "*Tyhjät rivit = numerolla ei vielä cupissa käytyjä kilpailuja",
+          { align: "center" }
+        );
+        columns = ["Kilp. numero", "Kippari", "Varakippari", "Paikkakunta"];
+        this.cup.signees = this.cup.signees.sort(
+          (a, b) => a.boat_number - b.boat_number
+        );
+        rows = this.dictToArray(this.cup.signees, 2);
+        startY = 32;
+      }
+
       doc.autoTable({
         head: [columns],
         body: rows,
@@ -696,11 +764,12 @@ export default {
         theme: "striped",
         pageBreak: "auto",
         tableWidth: "auto",
-        startY: 40,
+        startY: startY,
         margin: { top: 20 },
       });
 
       // Save the pdf
+
       doc.save(
         `${this.cup.year}_${this.replaceAll("Cup", " ", "")}_${this.replaceAll(
           this.capitalize_words(table_title),
@@ -711,6 +780,12 @@ export default {
     },
   },
 };
+
+function* range(start, end) {
+  yield start;
+  if (start === end) return;
+  yield* range(start + 1, end);
+}
 </script>
 <style scoped>
 .isFinished {

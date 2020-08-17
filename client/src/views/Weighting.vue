@@ -437,7 +437,7 @@
                     <v-data-table
                       @click:row="rowClick"
                       :headers="headers"
-                      :items="result_signees"
+                      :items="sortedCompetition"
                       :search="search"
                     >
                       <template v-slot:[`item.placement`]="{ item }">
@@ -659,6 +659,25 @@ export default {
     sortedArray() {
       return [...this.signees].sort((a, b) => a.boat_number - b.boat_number);
     },
+    sortedCompetition() {
+      let signees = [...this.signees].sort(
+        (a, b) => b.total_points - a.total_points
+      );
+      let placement = 1;
+      let last_points = -1;
+      let last_placement = -1;
+      signees.forEach((signee) => {
+        if (last_points === signee.total_points) {
+          signee.placement = last_placement;
+        } else {
+          signee.placement = placement;
+          last_points = signee.total_points;
+          last_placement = signee.placement;
+        }
+        placement++;
+      });
+      return signees;
+    },
   },
   created() {
     if (localStorage.getItem("competition") != null) {
@@ -714,8 +733,16 @@ export default {
           this.competition_fishes = this.$store.getters.getCompetitionFishes;
           this.signees = this.$store.getters.getCompetitionSignees;
           let placement = 1;
+          let last_points = -1;
+          let last_placement = -1;
           this.signees.forEach((signee) => {
-            signee.placement = placement;
+            if (last_points === signee.total_points) {
+              signee.placement = last_placement;
+            } else {
+              signee.placement = placement;
+              last_points = signee.total_points;
+              last_placement = signee.placement;
+            }
             placement++;
           });
           this.result_signees = this.$store.getters.getResultSignees;

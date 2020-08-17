@@ -12,16 +12,23 @@ New:
   ☐ Comment all the files... @started(20-05-26 12:11) @low
   ☐ Add demo accounts
   ☐ Add automatic competition generation
-  ☐ Transform tables to vuetify data-tables
-  ☐ Vuetify can also be used for unit testing, add testing
+  ☐ Add tests! Vuetify can also be used for unit testing, add testing
   ☐ Add qr code possibility to signing/weighting (rfid)
   ☐ Add possibility to get weights from usb
-  ☐ Add print signees to cup overview
-  ☐ Add plus icon next to weighting inputs, when clicked user can input more weights that are added to existing sum on the input
   ☐ Move darkmode switch from each table to header or somewhere handy, update it to vuex or user's datatable
   ☐ Test 1.5x cup_multiplier competition! @high
-  ☐ Add "hidden" high resolution canvases for the charts, so they are always rendered and used in printing to pdf
-  ☐ Handle timeout response on all Service.js calls on .vue files (Request failed with status code 408 -> Timeout -> Bad internet or api problem);
+  ☐ consider changing library for making charts, since chart.js need canvas to be printed to pdf, can't be generated in code
+  ☐ Fix these:
+    asset size limit: The following asset(s) exceed the recommended size limit (244 KiB).
+    This can impact web performance.
+    Assets:
+      img/background_waterdrop.485b71e7.png (1.03 MiB)
+      img/clienticon_new.8f8ed215.png (343 KiB)
+      js/about.95549057.js (1.29 MiB)
+      css/chunk-vendors.99629c7c.css (430 KiB)
+      js/chunk-vendors.de92ac78.js (520 KiB
+  ☐ Also Fix warning from entrypoint app being too large
+
 Done:
   ✔ Create signees database collection @started(20-05-26 11:19) @today @done(20-05-27 19:34) @lasted(1d8h15m1s)
   ✔ Add fish weights/points to signee properties @started(20-05-26 11:22) @today @done(20-05-28 15:33) @lasted(2d4h11m17s)
@@ -45,6 +52,10 @@ Done:
   ✔ Add competitions to cups @done(20-07-30 19:05)
   ✔ Update competition from database on some time interval (allows using multiple computers at the same time), at least on result.vue  @high @done(20-08-12 02:13)
   ✔ Add support for changing fishnames and other competition variables from compsettings.vue @done(20-08-17 05:47)
+  ✔ Add print signees to cup overview @done(20-08-18 00:08)
+  ✔ Transform tables to vuetify data-tables @done(20-08-18 00:08)
+  ✔ Add plus icon next to weighting inputs, when clicked user can input more weights that are added to existing sum on the input @done(20-08-18 00:08)
+  ✔ Handle timeout response on all Service.js calls on .vue files (Request failed with status code 408 -> Timeout -> Bad internet or api problem); @done(20-08-18 00:09)
 Cancelled:
   ✘ Press Alt+C to mark a todo as cancelled
   

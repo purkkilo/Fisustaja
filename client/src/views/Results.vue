@@ -174,6 +174,7 @@
                 color="green darken-4"
                 class="white--text"
                 @click="saveStatsAsPDF(`Tilastoja`)"
+                :loading="loading"
                 :disabled="!biggest_amounts_results.length"
                 style="margin-bottom:20px"
                 ><i class="material-icons left">picture_as_pdf</i>Lataa
@@ -351,7 +352,6 @@
             </v-col>
           </v-row>
         </v-tab-item>
-
         <!-- Normaalikilpailu -->
         <v-tab-item class="inputarea" :value="'normal-competition'">
           <v-row>
@@ -383,6 +383,7 @@
                     tile
                     color="green darken-4"
                     class="white--text"
+                    :loading="loading"
                     @click="
                       saveAsPDF(
                         `Normaalikilpailun tulokset (${selected_normal})`,
@@ -483,6 +484,7 @@
                 tile
                 color="green darken-4"
                 class="white--text"
+                :loading="loading"
                 @click="saveAsPDF(`Tiimikilpailun tulokset`, '#team-table')"
               >
                 <i class="material-icons left">picture_as_pdf</i>Lataa pdf
@@ -563,6 +565,7 @@
                 tile
                 color="green darken-4"
                 class="white--text"
+                :loading="loading"
                 @click="
                   saveAsPDF(
                     `Suurimmat kalat (${selected_biggest_fish})`,
@@ -653,6 +656,7 @@
                 tile
                 color="green darken-4"
                 class="white--text"
+                :loading="loading"
                 @click="
                   saveAsPDF(
                     `Suurimmat kalat (${selected_biggest_amount})`,
@@ -934,7 +938,7 @@ export default {
     },
     choosePrints: function() {
       this.dialog = false;
-      this.saveAllAsPDF();
+      this.saveAllAsPDF(this.tab);
     },
     // Fetch competition from database, and update all the arrays
     async refreshCompetition(competition_id) {
@@ -969,8 +973,15 @@ export default {
           if (this.isTeamCompetition) {
             this.signee_headers.push({ text: "Tiimi", value: "team" });
             this.team_results = this.competition.team_results;
+            let last_points = -1;
+            let last_placement = -1;
             this.team_results.forEach((team) => {
-              team.placement = placement;
+              if (last_points === team.points) {
+                team.placement = last_placement;
+              } else {
+                team.placement = last_placement = placement;
+                last_points = team.points;
+              }
               placement++;
             });
           }
@@ -992,7 +1003,7 @@ export default {
             this.fishes_chart.destroy();
             this.signees_chart.destroy();
           }
-          this.$nextTick(() => this.drawCharts());
+          this.$nextTick(() => this.drawCharts(this.tab));
 
           if (this.normal_points.length) {
             this.results = this.normal_points;
@@ -1041,7 +1052,8 @@ export default {
       this.loading = false;
     },
     // Parse data, define charts, draw them
-    drawCharts: function() {
+    drawCharts: function(tab) {
+      let current_tab = tab;
       let temp_weights = [];
       let colors = [];
 
@@ -1144,16 +1156,32 @@ export default {
       };
       /* eslint-disable no-unused-vars */
       // Draw the charts to canvas
-      var fishes_ctx = document.getElementById("fishesChart").getContext("2d");
-      let fishes_chart = new Chart(fishes_ctx, fishes_chart_data);
-      var signees_ctx = document
-        .getElementById("signeesChart")
-        .getContext("2d");
-      let signees_chart = new Chart(signees_ctx, signee_chart_data);
-      /* eslint-disable no-unused-vars */
+      let charts_drawn = true;
+      // If canvases not found, change tab and draw them, then change tab back
+      try {
+        var fishes_ctx = document
+          .getElementById("fishesChart")
+          .getContext("2d");
+        var signees_ctx = document
+          .getElementById("signeesChart")
+          .getContext("2d");
+      } catch (error) {
+        this.tab = "stats";
+        charts_drawn = false;
+        setTimeout(() => this.drawCharts(current_tab), 1000);
+      }
 
-      this.fishes_chart = fishes_chart;
-      this.signees_chart = signees_chart;
+      /* eslint-disable no-unused-vars */
+      if (charts_drawn) {
+        this.fishes_chart = new Chart(fishes_ctx, fishes_chart_data);
+        this.signees_chart = new Chart(signees_ctx, signee_chart_data);
+        this.tab = current_tab;
+        M.toast({
+          html: "Kaaviot piirretty!",
+        });
+      } else {
+        M.toast({ html: "Piirretään kaaviot..." });
+      }
     },
     //Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)
     checkLogin: function() {
@@ -1271,9 +1299,16 @@ export default {
         } else {
           this.results_found_fishes = "- Ei tuloksia";
         }
+        let last_weight = -1;
+        let last_placement = -1;
         this.biggest_fishes_results = fish_results;
         this.biggest_fishes_results.forEach((result) => {
-          result.placement = placement;
+          if (last_weight === result.weight) {
+            result.placement = last_placement;
+          } else {
+            result.placement = last_placement = placement;
+            last_weight = result.weight;
+          }
           placement++;
         });
       }
@@ -1307,10 +1342,16 @@ export default {
         } else {
           this.results_found_amount = "- Ei tuloksia";
         }
-
+        let last_weight = -1;
+        let last_placement = -1;
         this.biggest_amounts_results = fish_results;
         this.biggest_amounts_results.forEach((result) => {
-          result.placement = placement;
+          if (last_weight === result.weight) {
+            result.placement = last_placement;
+          } else {
+            result.placement = last_placement = placement;
+            last_weight = result.weight;
+          }
           placement++;
         });
       }
@@ -1323,7 +1364,6 @@ export default {
     dictToArray: function(dict, type) {
       const temp_arr = Object.entries(dict);
       const arr = [];
-      let placement = 1;
       temp_arr.forEach((element) => {
         let values = Object.values(element[1]);
         // Normaalikilpailu, pisteet
@@ -1348,10 +1388,11 @@ export default {
         }
         // Suurimmat kalat, suurimmat kalasaaliit
         if (type === 3) {
+          let temp_placement = values[3];
           let temp_bnumber = values[0];
           let temp_captain = values[1];
           let temp_points = values[2].toLocaleString() + " g";
-          values[0] = String(placement) + ".";
+          values[0] = String(temp_placement) + ".";
           values[1] = "(" + String(temp_bnumber) + ")";
           values[2] = temp_captain;
           values[3] = temp_points;
@@ -1391,7 +1432,6 @@ export default {
           values[4] = locality;
           values[5] = team;
         }
-        placement++;
         arr.push(values);
       });
       return arr;
@@ -1540,6 +1580,7 @@ export default {
       });
 
       // Save the pdf
+
       doc.save(
         `${moment(this.competition.start_date).year()}_${this.replaceAll(
           this.competition.name,
@@ -1571,7 +1612,7 @@ export default {
       doc.setFontSize(18);
 
       // "Tilastot"
-      // Resize charts to be better looking on a pfd
+      // Resize charts to be better looking on a pdf
       this.fishes_chart.canvas.parentNode.style.height = "500px";
       this.fishes_chart.canvas.parentNode.style.width = "1000px";
       this.fishes_chart.resize();
@@ -1630,6 +1671,7 @@ export default {
         startY: doc.autoTable.previous.finalY + 25,
       });
 
+      // Set charts to be responsive again
       this.fishes_chart.canvas.parentNode.style.height = "30vh";
       this.fishes_chart.canvas.parentNode.style.width = "60vw";
       this.fishes_chart.resize();
@@ -1651,7 +1693,9 @@ export default {
       );
     },
     // Saves all the chosen tables to pdf
-    saveAllAsPDF: function() {
+    saveAllAsPDF: function(tab) {
+      let current_tab = tab;
+      let charts_loaded = true;
       let temp_selected_biggest_fish = this.selected_biggest_fish;
       let temp_selected_biggest_amount = this.selected_biggest_amount;
       let temp_selected_normal = this.selected_normal;
@@ -1659,7 +1703,6 @@ export default {
       let temp_start_date = this.formatDate(this.competition.start_date);
       let temp_end_date = this.formatDate(this.competition.end_date);
       let year = moment(this.competition.start_date).year();
-
       let doc = new jsPDF();
 
       // Title
@@ -2046,7 +2089,7 @@ export default {
         doc.line(0, 35, 400, 35);
         doc.setFontSize(18);
         // "Tilastot"
-        // Resize charts to be better looking on a pfd
+        // Resize charts to be better looking on a pdf
         this.fishes_chart.canvas.parentNode.style.height = "500px";
         this.fishes_chart.canvas.parentNode.style.width = "1000px";
         this.fishes_chart.resize();
@@ -2054,15 +2097,23 @@ export default {
         this.signees_chart.canvas.parentNode.style.height = "500px";
         this.signees_chart.canvas.parentNode.style.width = "1000px";
         this.signees_chart.resize();
-
         var fishesImg = document
           .getElementById("fishesChart")
           .toDataURL("image/png", 1.0);
         var signeeImg = document
           .getElementById("signeesChart")
           .toDataURL("image/png", 1.0);
-        doc.addImage(fishesImg, "PNG", -30, 40, 180, 90);
-        doc.addImage(signeeImg, "PNG", 70, 40, 180, 90);
+
+        try {
+          doc.addImage(fishesImg, "PNG", -30, 40, 180, 90);
+          doc.addImage(signeeImg, "PNG", 70, 40, 180, 90);
+        } catch (err) {
+          charts_loaded = false;
+          this.tab = "stats";
+          // Try again after 1 sec
+          setTimeout(() => this.saveAllAsPDF(current_tab), 1000);
+        }
+
         doc.text(100, 165, "Kalalajien määritykset", { align: "center" });
         // Table generated straight from html
         doc.autoTable({
@@ -2123,9 +2174,18 @@ export default {
       this.calculateBiggestAmounts();
 
       // Save to pdf
-      doc.save(
-        `${year}_${this.replaceAll(this.competition.name, " ", "")}Tulokset.pdf`
-      );
+      if (charts_loaded) {
+        this.tab = current_tab;
+        doc.save(
+          `${year}_${this.replaceAll(
+            this.competition.name,
+            " ",
+            ""
+          )}Tulokset.pdf`
+        );
+      } else {
+        M.toast({ html: "Kaaviot ei ruudulla, yritetään uudelleen..." });
+      }
     },
   },
 };
