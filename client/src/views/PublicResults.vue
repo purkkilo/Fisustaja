@@ -203,20 +203,24 @@
                 >
               </v-col>
             </v-row>
-            <v-row>
-              <v-row>
-                <v-col md="12">
+            <v-row v-if="competition">
+              <v-row style="min-height:400px;">
+                <v-col
+                  md="6"
+                  class="d-flex align-content-start"
+                  style="margin-bottom:50px;"
+                >
                   <div
                     class="chart-container"
-                    style="position: relative;height:100%,width:100%;"
+                    style="position: relative; height:30vh; width:60vw"
                   >
                     <canvas id="fishesChart"></canvas>
                   </div>
                 </v-col>
-                <v-col md="12">
+                <v-col md="6" class="d-flex align-content-start">
                   <div
                     class="chart-container"
-                    style="position: relative;height:100%,width:100%;"
+                    style="position: relative; height:30vh; width:60vw"
                   >
                     <canvas id="signeesChart"></canvas>
                   </div>
@@ -1572,6 +1576,14 @@ export default {
       doc.setFontSize(18);
 
       // "Tilastot"
+      // Resize charts to be better looking on a pfd
+      this.fishes_chart.canvas.parentNode.style.height = "500px";
+      this.fishes_chart.canvas.parentNode.style.width = "1000px";
+      this.fishes_chart.resize();
+
+      this.signees_chart.canvas.parentNode.style.height = "500px";
+      this.signees_chart.canvas.parentNode.style.width = "1000px";
+      this.signees_chart.resize();
       var fishesImg = document
         .getElementById("fishesChart")
         .toDataURL("image/png", 1.0);
@@ -1622,6 +1634,14 @@ export default {
         margin: { top: 20 },
         startY: doc.autoTable.previous.finalY + 25,
       });
+
+      // Set charts to be responsive again
+      this.fishes_chart.canvas.parentNode.style.height = "30vh";
+      this.fishes_chart.canvas.parentNode.style.width = "60vw";
+      this.fishes_chart.resize();
+      this.signees_chart.canvas.parentNode.style.height = "30vh";
+      this.signees_chart.canvas.parentNode.style.width = "60vw";
+      this.signees_chart.resize();
 
       // Save to pdf
       doc.save(
@@ -2031,6 +2051,14 @@ export default {
         doc.line(0, 35, 400, 35);
         doc.setFontSize(18);
         // "Tilastot"
+        // Resize charts to be better looking on a pfd
+        this.fishes_chart.canvas.parentNode.style.height = "500px";
+        this.fishes_chart.canvas.parentNode.style.width = "1000px";
+        this.fishes_chart.resize();
+
+        this.signees_chart.canvas.parentNode.style.height = "500px";
+        this.signees_chart.canvas.parentNode.style.width = "1000px";
+        this.signees_chart.resize();
         var fishesImg = document
           .getElementById("fishesChart")
           .toDataURL("image/png", 1.0);
@@ -2082,6 +2110,13 @@ export default {
           margin: { top: 20 },
           startY: doc.autoTable.previous.finalY + 25,
         });
+        // Set charts to be responsive again
+        this.fishes_chart.canvas.parentNode.style.height = "30vh";
+        this.fishes_chart.canvas.parentNode.style.width = "60vw";
+        this.fishes_chart.resize();
+        this.signees_chart.canvas.parentNode.style.height = "30vh";
+        this.signees_chart.canvas.parentNode.style.width = "60vw";
+        this.signees_chart.resize();
       }
 
       // Reset variables

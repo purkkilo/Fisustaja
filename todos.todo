@@ -18,11 +18,10 @@ New:
   ☐ Add possibility to get weights from usb
   ☐ Add print signees to cup overview
   ☐ Add plus icon next to weighting inputs, when clicked user can input more weights that are added to existing sum on the input
-  ☐ Add copying of signees from other competitions (handy in case where there are already signees on the competition, but for some reason you'd need to create the competition again)
-  ☐ Add support for changing fishnames and other competition variables form compsettings.vue
   ☐ Move darkmode switch from each table to header or somewhere handy, update it to vuex or user's datatable
   ☐ Test 1.5x cup_multiplier competition! @high
-  
+  ☐ Add "hidden" high resolution canvases for the charts, so they are always rendered and used in printing to pdf
+  ☐ Handle timeout response on all Service.js calls on .vue files (Request failed with status code 408 -> Timeout -> Bad internet or api problem);
 Done:
   ✔ Create signees database collection @started(20-05-26 11:19) @today @done(20-05-27 19:34) @lasted(1d8h15m1s)
   ✔ Add fish weights/points to signee properties @started(20-05-26 11:22) @today @done(20-05-28 15:33) @lasted(2d4h11m17s)
@@ -45,7 +44,7 @@ Done:
   ✔ Style with Vuetify (https://vuetifyjs.com/en/components/api-explorer/) @done(20-07-30 19:05)
   ✔ Add competitions to cups @done(20-07-30 19:05)
   ✔ Update competition from database on some time interval (allows using multiple computers at the same time), at least on result.vue  @high @done(20-08-12 02:13)
-
+  ✔ Add support for changing fishnames and other competition variables from compsettings.vue @done(20-08-17 05:47)
 Cancelled:
   ✘ Press Alt+C to mark a todo as cancelled
   

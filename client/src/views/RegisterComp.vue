@@ -525,11 +525,9 @@
                           :id="'fish_' + (index + 1) + '_minsize'"
                           maxlength="4"
                           value="0"
-                          type="number"
                           @paste.prevent
                           :counter="4"
-                          @keypress="isNumber($event, true)"
-                          :rules="number_rules"
+                          :rules="rules"
                           :disabled="fish_specs_validated"
                         />
                       </v-col>
@@ -601,7 +599,7 @@
               <v-col>
                 <table class="striped centered responsive-table highlight">
                   <tr>
-                    <th style="border:1px solid black;" class="blue_th">
+                    <th style="border:1px solid black;">
                       Kilpailu
                     </th>
                     <td style="border:1px solid black;" class="center-align">
@@ -609,13 +607,13 @@
                     </td>
                   </tr>
                   <tr>
-                    <th style="border:1px solid black;" class="blue_th">Cup</th>
+                    <th style="border:1px solid black;">Cup</th>
                     <td style="border:1px solid black;" class="center-align">
                       {{ cup.name }}
                     </td>
                   </tr>
                   <tr>
-                    <th style="border:1px solid black;" class="blue_th">
+                    <th style="border:1px solid black;">
                       Voittajan Cup sijoittumispisteet
                     </th>
                     <td style="border:1px solid black;" class="center-align">
@@ -623,7 +621,7 @@
                     </td>
                   </tr>
                   <tr>
-                    <th style="border:1px solid black;" class="blue_th">
+                    <th style="border:1px solid black;">
                       Kilpailijoiden Cup osallistumispisteet
                     </th>
                     <td style="border:1px solid black;" class="center-align">
@@ -631,7 +629,7 @@
                     </td>
                   </tr>
                   <tr>
-                    <th style="border:1px solid black;" class="blue_th">
+                    <th style="border:1px solid black;">
                       Kilpailun Cup pistekerroin
                     </th>
                     <td style="border:1px solid black;" class="center-align">
@@ -639,7 +637,7 @@
                     </td>
                   </tr>
                   <tr>
-                    <th style="border:1px solid black;" class="blue_th">
+                    <th style="border:1px solid black;">
                       Onko Tiimikilpailua?
                     </th>
                     <td style="border:1px solid black;" class="center-align">
@@ -647,7 +645,7 @@
                     </td>
                   </tr>
                   <tr>
-                    <th style="border:1px solid black;" class="blue_th">
+                    <th style="border:1px solid black;">
                       Aloituspäivä
                     </th>
                     <td style="border:1px solid black;" class="center-align">
@@ -655,7 +653,7 @@
                     </td>
                   </tr>
                   <tr>
-                    <th style="border:1px solid black;" class="blue_th">
+                    <th style="border:1px solid black;">
                       Lopetuspäivä
                     </th>
                     <td style="border:1px solid black;" class="center-align">
@@ -663,7 +661,7 @@
                     </td>
                   </tr>
                   <tr>
-                    <th style="border:1px solid black;" class="blue_th">
+                    <th style="border:1px solid black;">
                       Kilpailuajankohta
                     </th>
                     <td style="border:1px solid black;" class="center-align">

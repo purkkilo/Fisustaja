@@ -34,9 +34,17 @@
     </v-tabs>
     <v-tabs-items v-model="tab" style="background: rgba(0,0,0,0.4);">
       <v-tab-item :value="'overview'">
-        <v-row class="container-transparent">
-          <v-row v-if="!loading">
-            <v-row class="section">
+        <div class="container-transparent">
+          <div v-if="loading">
+            <v-row>
+              <v-col>
+                <h2>Valmistellaan Cuppia...</h2>
+                <ProgressBarQuery />
+              </v-col>
+            </v-row>
+          </div>
+          <div v-else>
+            <v-row>
               <v-col v-if="cup">
                 <h1>{{ cup.name }}, {{ cup.year }}</h1>
               </v-col>
@@ -44,129 +52,105 @@
                 <p class="flow-text">Ei kuppia valittuna</p>
               </v-col>
             </v-row>
-            <v-row v-if="competitions.length">
-              <v-col>
-                <v-row v-if="competitions.length" class="scroll_table">
-                  <v-col md="10" offset-md="1">
-                    <v-card :dark="updateSwitch">
-                      <v-card-title>
-                        <p class="flow-text">Kilpailut</p>
-                        <v-spacer></v-spacer>
-                        <v-switch
-                          v-model="updateSwitch"
-                          class="black--text"
-                          color="indigo darken-3"
-                          append-icon="mdi-weather-night"
-                          prepend-icon="mdi-weather-sunny"
-                        ></v-switch>
-                        <v-spacer></v-spacer>
-                        <v-text-field
-                          v-model="search_comp"
-                          append-icon="mdi-magnify"
-                          label="Hae kilpailua"
-                          single-line
-                          hide-details
-                        ></v-text-field>
-                      </v-card-title>
-                      <v-data-table
-                        id="normal-table"
-                        :headers="headers_comp"
-                        :items="competitions"
-                        :search="search_comp"
-                      >
-                        <template v-slot:[`item.start_date`]="{ item }">
-                          <v-chip>{{
-                            item.start_date.format("DD.MM.YYYY")
-                          }}</v-chip>
-                        </template>
-                        <template v-slot:[`item.choose`]="{ item }">
-                          <v-btn color="primary" @click="pickCompetition(item)"
-                            ><i class="material-icons left">check</i
-                            >Valitse</v-btn
-                          >
-                        </template>
-                      </v-data-table>
-                    </v-card>
-                  </v-col>
-                </v-row>
-                <v-row v-if="competitions.length">
-                  <v-col>
-                    <router-link to="/register-comp">
-                      <v-btn tile color="blue lighten-1"
-                        ><i class="material-icons left">add_circle_outline</i
-                        >Luo kilpailu!</v-btn
-                      >
-                    </router-link>
-                  </v-col>
-                  <v-col v-if="cup.isPublic">
-                    <v-btn
-                      large
-                      tile
-                      color="grey darken-4"
-                      @click="publishCup(false)"
-                      :loading="publishing"
-                      class="white--text"
+            <div v-if="competitions.length">
+              <v-row v-if="competitions.length">
+                <v-col md="10" offset-md="1">
+                  <v-card :dark="updateSwitch">
+                    <v-card-title>
+                      <p class="flow-text">Kilpailut</p>
+                      <v-spacer></v-spacer>
+                      <v-switch
+                        v-model="updateSwitch"
+                        class="black--text"
+                        color="indigo darken-3"
+                        append-icon="mdi-weather-night"
+                        prepend-icon="mdi-weather-sunny"
+                      ></v-switch>
+                      <v-spacer></v-spacer>
+                      <v-text-field
+                        v-model="search_comp"
+                        append-icon="mdi-magnify"
+                        label="Hae kilpailua"
+                        single-line
+                        hide-details
+                      ></v-text-field>
+                    </v-card-title>
+                    <v-data-table
+                      id="normal-table"
+                      :headers="headers_comp"
+                      :items="competitions"
+                      :search="search_comp"
                     >
-                      <i class="material-icons left">unpublished</i>Aseta cup
-                      salaiseksi
-                    </v-btn>
-                  </v-col>
-                  <v-col v-else>
-                    <v-btn
-                      large
-                      tile
-                      color="green darken-4"
-                      @click="publishCup(true)"
-                      :loading="publishing"
-                      class="white--text"
+                      <template v-slot:[`item.start_date`]="{ item }">
+                        <v-chip>{{
+                          item.start_date.format("DD.MM.YYYY")
+                        }}</v-chip>
+                      </template>
+                      <template v-slot:[`item.choose`]="{ item }">
+                        <v-btn color="primary" @click="pickCompetition(item)"
+                          ><i class="material-icons left">check</i
+                          >Valitse</v-btn
+                        >
+                      </template>
+                    </v-data-table>
+                  </v-card>
+                </v-col>
+              </v-row>
+              <v-row v-if="competitions.length">
+                <v-col>
+                  <router-link to="/register-comp">
+                    <v-btn tile color="blue lighten-1"
+                      ><i class="material-icons left">add_circle_outline</i>Luo
+                      kilpailu!</v-btn
                     >
-                      <i class="material-icons left">published_with_changes</i
-                      >Aseta cup julkiseksi
-                    </v-btn>
-                  </v-col>
-                </v-row>
-                <v-row v-else>
-                  <v-col v-if="!loading">
-                    <h2>Ei kilpailuja!</h2>
-                    <router-link to="/register-comp">
-                      <v-btn tile color="blue lighten-1"
-                        ><i class="material-icons left">add_circle_outline</i
-                        >Luo kilpailu!</v-btn
-                      >
-                    </router-link>
-                  </v-col>
-                  <h2 v-else-if="error" class="error">{{ error }}</h2>
-                  <v-col v-else>
-                    <h2>Ladataan kilpailuja...</h2>
-                    <ProgressBarQuery />
-                  </v-col>
-                </v-row>
-              </v-col>
-            </v-row>
-            <v-row v-else>
-              <v-row></v-row>
-              <v-col md="12">
-                <h2>Ei kilpailuja!</h2>
-              </v-col>
-              <v-col md="12">
-                <router-link to="/register-comp">
-                  <v-btn tile color="blue lighten-1"
-                    ><i class="material-icons left">add_circle_outline</i>Luo
-                    kilpailu!</v-btn
+                  </router-link>
+                </v-col>
+                <v-col v-if="cup.isPublic">
+                  <v-btn
+                    large
+                    tile
+                    color="grey darken-4"
+                    @click="publishCup(false)"
+                    :loading="publishing"
+                    class="white--text"
                   >
-                </router-link>
-              </v-col>
-            </v-row>
-          </v-row>
-          <v-row v-else>
-            <v-row>
-              <v-col>
-                <h2>Valmistellaan Cuppia...</h2>
-                <ProgressBarQuery />
-              </v-col>
-            </v-row>
-          </v-row>
-        </v-row>
+                    <i class="material-icons left">unpublished</i>Aseta cup
+                    salaiseksi
+                  </v-btn>
+                </v-col>
+                <v-col v-else>
+                  <v-btn
+                    large
+                    tile
+                    color="green darken-4"
+                    @click="publishCup(true)"
+                    :loading="publishing"
+                    class="white--text"
+                  >
+                    <i class="material-icons left">published_with_changes</i
+                    >Aseta cup julkiseksi
+                  </v-btn>
+                </v-col>
+              </v-row>
+              <v-row v-else>
+                <v-col v-if="!loading">
+                  <h2>Ei kilpailuja!</h2>
+                  <router-link to="/register-comp">
+                    <v-btn tile color="blue lighten-1"
+                      ><i class="material-icons left">add_circle_outline</i>Luo
+                      kilpailu!</v-btn
+                    >
+                  </router-link>
+                </v-col>
+                <h2 v-if="error" class="error">{{ error }}</h2>
+                <v-col v-else>
+                  <h2>Ladataan kilpailuja...</h2>
+                  <ProgressBarQuery />
+                </v-col>
+              </v-row>
+            </div>
+          </div>
+        </div>
       </v-tab-item>
       <v-tab-item :value="'points'">
         <v-row class="container-transparent">

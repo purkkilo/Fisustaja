@@ -213,7 +213,7 @@
                                 <span class="flow-text">{{ index + 1 }}. </span
                                 ><span class="flow-text">{{ input.name }}</span>
                               </v-col>
-                              <v-col md="6" class="input-fields">
+                              <v-col md="4" class="input-fields">
                                 <v-text-field
                                   label="Paino grammoina"
                                   v-model="input.value"
@@ -226,6 +226,105 @@
                                   :rules="number_rules"
                                   :loading="loading_fish"
                                 />
+                              </v-col>
+                              <v-col md="2">
+                                <v-dialog
+                                  v-model="input.dialog"
+                                  persistent
+                                  max-width="600px"
+                                >
+                                  <template v-slot:activator="{ on, attrs }">
+                                    <v-btn
+                                      color="primary"
+                                      dark
+                                      v-bind="attrs"
+                                      v-on="on"
+                                      ><i class="material-icons left">add</i
+                                      >Plussaa</v-btn
+                                    >
+                                  </template>
+                                  <v-card>
+                                    <v-card-title>
+                                      <span class="headline"
+                                        >Yhteenlaske summat</span
+                                      >
+                                    </v-card-title>
+                                    <v-card-text>
+                                      <v-row>
+                                        <v-col md="6" offset-md="3">
+                                          <v-text-field
+                                            label="Alkuperäinen arvo"
+                                            :value="input.value"
+                                            disabled
+                                          ></v-text-field>
+                                        </v-col>
+                                      </v-row>
+                                      <v-row>
+                                        <v-col md="6 " offset-md="3">
+                                          <v-text-field
+                                            v-model="input.addition"
+                                            label="Lisättävä arvo"
+                                            type="number"
+                                            @paste.prevent
+                                            @keypress="isNumber($event)"
+                                            step="50"
+                                            min="0"
+                                            single-line
+                                            outlined
+                                          ></v-text-field>
+                                        </v-col>
+                                      </v-row>
+                                      <v-row>
+                                        <v-col
+                                          md="6"
+                                          offset-md="3"
+                                          class="title"
+                                        >
+                                          <v-text-field
+                                            :value="
+                                              parseInt(input.value) +
+                                                parseInt(
+                                                  input.addition
+                                                    ? input.addition
+                                                    : 0
+                                                )
+                                            "
+                                            label="Summa"
+                                            disabled
+                                          ></v-text-field>
+                                        </v-col>
+                                      </v-row>
+                                    </v-card-text>
+                                    <v-card-actions>
+                                      <v-spacer></v-spacer>
+                                      <v-btn
+                                        outlined
+                                        color="red darken-1"
+                                        @click="
+                                          input.addition = null;
+                                          input.dialog = false;
+                                        "
+                                        >Peruuta</v-btn
+                                      >
+                                      <v-btn
+                                        outlined
+                                        color="green darken-1"
+                                        @click="
+                                          input.value =
+                                            parseInt(input.value) +
+                                            parseInt(
+                                              input.addition
+                                                ? input.addition
+                                                : 0
+                                            );
+                                          input.dialog = false;
+                                          input.addition = 0;
+                                        "
+                                        >Tallenna</v-btn
+                                      >
+                                    </v-card-actions>
+                                  </v-card>
+                                </v-dialog>
                               </v-col>
                             </v-row>
                             <v-row>
@@ -561,14 +660,7 @@ export default {
       return [...this.signees].sort((a, b) => a.boat_number - b.boat_number);
     },
   },
-  mounted() {
-    this.checkLogin();
-    //Init materialize elements
-    M.AutoInit();
-    /* eslint-disable no-unused-vars */
-    var collabs = document.querySelectorAll(".collapsible");
-    var instances2 = M.Collapsible.init(collabs, options_picker);
-    /* eslint-enable no-unused-vars */
+  created() {
     if (localStorage.getItem("competition") != null) {
       const competition = JSON.parse(localStorage.getItem("competition"));
       this.competition_id = competition["id"];
@@ -581,7 +673,21 @@ export default {
       );
       */
     }
-
+  },
+  mounted() {
+    this.checkLogin();
+    //Init materialize elements
+    M.AutoInit();
+    /* eslint-disable no-unused-vars */
+    var collabs = document.querySelectorAll(".collapsible");
+    var instances2 = M.Collapsible.init(collabs, options_picker);
+    /* eslint-enable no-unused-vars */
+    if (!this.competition_id) {
+      const competition = JSON.parse(localStorage.getItem("competition"));
+      this.competition_id = competition["id"];
+      this.loading_site = true;
+      this.refreshCompetition(this.competition_id);
+    }
     // Focus on top of the page when changing pages
     location.href = "#";
     location.href = "#app";
@@ -600,7 +706,11 @@ export default {
         );
         if (competitions.length) {
           // Update to vuex, Assing variables and arrays from vuex (see client/store/index.js)
-          this.$store.commit("refreshCompetition", competitions[0]);
+          let comp = competitions[0];
+          let normal_results = this.calculateNormalResults(comp);
+          comp.normal_points = normal_results.normal_points;
+          comp.normal_weights = normal_results.normal_weights;
+          this.$store.commit("refreshCompetition", comp);
           this.competition_fishes = this.$store.getters.getCompetitionFishes;
           this.signees = this.$store.getters.getCompetitionSignees;
           let placement = 1;
@@ -611,13 +721,18 @@ export default {
           this.result_signees = this.$store.getters.getResultSignees;
           this.still_on_water = this.$store.getters.getStillOnWaterSignees;
           this.competition_fishes.forEach((fish) => {
-            this.inputs.push({ name: fish.name, value: 0 });
+            this.inputs.push({
+              name: fish.name,
+              value: 0,
+              dialog: false,
+              addition: null,
+            });
           });
         } else {
           console.log("No competition found on database...");
         }
       } catch (err) {
-        console.log(err.message);
+        console.log(err);
       }
       this.loading_site = false;
       this.refreshing = false;
@@ -965,7 +1080,9 @@ export default {
 
       let normal_points = [];
       let normal_weights = [];
-      this.signees = this.$store.getters.getFinishedSignees;
+      this.signees = competition.signees.filter(
+        (signee) => signee.returned == true
+      );
       this.signees = this.signees.sort(function compare(a, b) {
         return parseInt(b.total_points) - parseInt(a.total_points);
       });

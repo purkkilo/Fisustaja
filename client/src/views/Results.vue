@@ -166,7 +166,7 @@
         <!-- Tilastoja -->
         <v-tab-item class="inputarea" :value="'stats'">
           <!-- Save as pdf button, is disabled if there are no results -->
-          <v-row style="padding-top:50px">
+          <v-row style="padding-top:50px" v-if="competition">
             <v-col md="3" offset-md="8">
               <v-btn
                 large
@@ -181,20 +181,24 @@
               >
             </v-col>
           </v-row>
-          <v-row style="padding-bottom:50px">
-            <v-row>
-              <v-col md="12">
+          <v-row style="padding-bottom:50px" v-if="competition">
+            <v-row style="min-height:400px;">
+              <v-col
+                md="6"
+                class="d-flex align-content-start"
+                style="margin-bottom:50px;"
+              >
                 <div
                   class="chart-container"
-                  style="position: relative;height:100%,width:100%;"
+                  style="position: relative; height:30vh; width:60vw"
                 >
                   <canvas id="fishesChart"></canvas>
                 </div>
               </v-col>
-              <v-col md="12">
+              <v-col md="6" class="d-flex align-content-start">
                 <div
                   class="chart-container"
-                  style="position: relative;height:100%,width:100%;"
+                  style="position: relative; height:30vh; width:60vw"
                 >
                   <canvas id="signeesChart"></canvas>
                 </div>
@@ -335,6 +339,15 @@
                   </table>
                 </v-col>
               </v-row>
+            </v-col>
+          </v-row>
+          <v-row v-else>
+            <v-col v-if="loading">
+              <h2>Päivitetään tuloksia tietokannasta...</h2>
+              <ProgressBarQuery />
+            </v-col>
+            <v-col v-else>
+              <h2>Ei saatavilla kilpailun tietoja... (Connection timed out)</h2>
             </v-col>
           </v-row>
         </v-tab-item>
@@ -1558,6 +1571,14 @@ export default {
       doc.setFontSize(18);
 
       // "Tilastot"
+      // Resize charts to be better looking on a pfd
+      this.fishes_chart.canvas.parentNode.style.height = "500px";
+      this.fishes_chart.canvas.parentNode.style.width = "1000px";
+      this.fishes_chart.resize();
+
+      this.signees_chart.canvas.parentNode.style.height = "500px";
+      this.signees_chart.canvas.parentNode.style.width = "1000px";
+      this.signees_chart.resize();
       var fishesImg = document
         .getElementById("fishesChart")
         .toDataURL("image/png", 1.0);
@@ -1608,6 +1629,13 @@ export default {
         margin: { top: 20 },
         startY: doc.autoTable.previous.finalY + 25,
       });
+
+      this.fishes_chart.canvas.parentNode.style.height = "30vh";
+      this.fishes_chart.canvas.parentNode.style.width = "60vw";
+      this.fishes_chart.resize();
+      this.signees_chart.canvas.parentNode.style.height = "30vh";
+      this.signees_chart.canvas.parentNode.style.width = "60vw";
+      this.signees_chart.resize();
 
       // Save to pdf
       doc.save(
@@ -2018,6 +2046,15 @@ export default {
         doc.line(0, 35, 400, 35);
         doc.setFontSize(18);
         // "Tilastot"
+        // Resize charts to be better looking on a pfd
+        this.fishes_chart.canvas.parentNode.style.height = "500px";
+        this.fishes_chart.canvas.parentNode.style.width = "1000px";
+        this.fishes_chart.resize();
+
+        this.signees_chart.canvas.parentNode.style.height = "500px";
+        this.signees_chart.canvas.parentNode.style.width = "1000px";
+        this.signees_chart.resize();
+
         var fishesImg = document
           .getElementById("fishesChart")
           .toDataURL("image/png", 1.0);
@@ -2069,6 +2106,13 @@ export default {
           margin: { top: 20 },
           startY: doc.autoTable.previous.finalY + 25,
         });
+        // Set charts to be responsive again
+        this.fishes_chart.canvas.parentNode.style.height = "30vh";
+        this.fishes_chart.canvas.parentNode.style.width = "60vw";
+        this.fishes_chart.resize();
+        this.signees_chart.canvas.parentNode.style.height = "30vh";
+        this.signees_chart.canvas.parentNode.style.width = "60vw";
+        this.signees_chart.resize();
       }
 
       // Reset variables
