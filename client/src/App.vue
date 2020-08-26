@@ -19,11 +19,12 @@
 <script>
 "use strict";
 import UserService from "./UserService";
+import Footer from "./components/layout/Footer";
 
 export default {
   name: "App",
   components: {
-    Footer: () => import("./components/layout/Footer"),
+    Footer,
   },
   mounted() {
     try {

@@ -204,6 +204,16 @@
                 </v-btn>
               </v-col>
             </v-row>
+            <v-row v-if="results.length && not_finished_count > 0">
+              <v-col>
+                <p class="flow-text">
+                  *Punaisella merkityt kilpailut ovat vielä kesken! ({{
+                    not_finished_count
+                  }}
+                  kilpailu)
+                </p>
+              </v-col>
+            </v-row>
             <v-row v-if="isResults">
               <v-col>
                 <v-card :dark="updateSwitch">
@@ -232,6 +242,21 @@
                     :items="results"
                     :search="search"
                   >
+                    <template
+                      v-for="(h, index) in headers"
+                      v-slot:[`header.${h.value}`]="{ header }"
+                    >
+                      <v-chip
+                        v-if="header.highlight"
+                        :key="index"
+                        :outlined="updateSwitch"
+                        :color="getCompetitionFinishedColor(header.isFinished)"
+                        >{{ header.text }}</v-chip
+                      >
+                      <v-chip v-else :key="index" :outlined="updateSwitch">{{
+                        header.text
+                      }}</v-chip>
+                    </template>
                     <template v-slot:[`item.placement`]="{ item }">
                       <v-chip
                         :outlined="updateSwitch"
@@ -327,6 +352,7 @@ export default {
       search: "",
       search_comp: "",
       updateSwitch: true,
+      not_finished_count: 0,
     };
   },
   created() {},
@@ -515,11 +541,8 @@ export default {
               this.select_numbers.push(counter);
               competition.start_date = moment(competition.start_date);
               competition.end_date = moment(competition.end_date);
-              competition.key_name = this.replaceAllChars(competition.name, {
-                ä: "a",
-                ö: "o",
-                "-": "",
-              });
+              // Index for competition
+              competition.key_name = counter;
               counter++;
             });
             this.competitions.sort(function compare(a, b) {
@@ -576,6 +599,10 @@ export default {
       else if (placement > 5) return "yellow";
       else return "green";
     },
+    getCompetitionFinishedColor(isFinished) {
+      if (isFinished) return "red";
+      else return "primary";
+    },
     replaceAllChars: function(text, obj) {
       return [...text]
         .map((each) => {
@@ -591,41 +618,55 @@ export default {
       this.headers.push({
         text: "Sijoitus",
         highlight: false,
+        align: "center",
         value: "placement",
       });
       this.headers.push({
         text: "Kilp. Nro",
+        align: "center",
         highlight: false,
         value: "boat_number",
       });
       this.headers.push({
         text: "Kippari",
+        align: "center",
         highlight: false,
         value: "captain_name",
       });
       this.headers.push({
         text: "Paikkakunta",
+        align: "center",
         highlight: false,
         value: "locality",
       });
+      this.not_finished_count = 0;
       this.competitions.forEach((competition) => {
+        // Keep track if there are unfinished competitions
+        if (!competition.isFinished) {
+          this.not_finished_count++;
+        }
         // Dynamic headers, because competition names change
         if (this.header_selection === "Paikkakunta") {
           this.headers.push({
             text: competition.locality,
-            highlight: !competition.isFinished,
+            align: "center",
+            highlight: true,
+            isFinished: !competition.isFinished,
             value: `cup_results[${competition.key_name}]`,
           });
         } else {
           this.headers.push({
             text: competition.name,
-            highlight: !competition.isFinished,
+            align: "center",
+            highlight: true,
+            isFinished: !competition.isFinished,
             value: `cup_results[${competition.key_name}]`,
           });
         }
       });
       this.headers.push({
         text: "Yhteensä",
+        align: "center",
         highlight: false,
         value: "final_cup_points",
       });
@@ -687,7 +728,6 @@ export default {
           boat_number++;
           arr.push(values);
         }
-        console.log(boat_number);
       });
       return arr;
     },
@@ -695,7 +735,12 @@ export default {
     saveAsPDF: function(table_title) {
       // Format dates for easier reding
       // PDF creation
-      let doc = new jsPDF();
+      let doc;
+      if (this.competitions.length > 4) {
+        doc = new jsPDF("landscape");
+      } else {
+        doc = new jsPDF();
+      }
 
       // Title
       const title = `${this.cup.name} (${this.cup.year})`;
@@ -750,14 +795,13 @@ export default {
         body: rows,
         styles: {
           overflow: "linebreak",
-          cellWidth: "wrap",
-          rowPageBreak: "avoid",
           halign: "justify",
           fontSize: "8",
           lineColor: "100",
           lineWidth: ".25",
         },
         columnStyles: { text: { cellwidth: "auto" } },
+        headStyles: { text: { cellwidth: "wrap" } },
         theme: "striped",
         pageBreak: "auto",
         tableWidth: "auto",
@@ -784,8 +828,3 @@ function* range(start, end) {
   yield* range(start + 1, end);
 }
 </script>
-<style scoped>
-.isFinished {
-  background-color: rgb(117, 23, 0);
-}
-</style>

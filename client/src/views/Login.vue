@@ -77,6 +77,8 @@
 "use strict";
 import M from "materialize-css";
 import UserService from "../UserService";
+import MainHeader from "../components/layout/MainHeader";
+import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 
 export default {
   data() {
@@ -88,8 +90,8 @@ export default {
     };
   },
   components: {
-    ProgressBarQuery: () => import("../components/layout/ProgressBarQuery"),
-    MainHeader: () => import("../components/layout/MainHeader"),
+    MainHeader,
+    ProgressBarQuery,
   },
   mounted() {
     var input = document.getElementById("password");

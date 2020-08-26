@@ -58,12 +58,14 @@
 <script>
 "use strict";
 import moment from "moment";
+import Timedate from "../components/layout/Timedate";
+import Header from "../components/layout/Header";
 
 export default {
   name: "Home",
   components: {
-    Timedate: () => import("../components/layout/Timedate"),
-    Header: () => import("../components/layout/Header"),
+    Timedate,
+    Header,
   },
   data() {
     return {

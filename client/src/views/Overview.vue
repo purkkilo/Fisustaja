@@ -138,13 +138,16 @@
 "use strict";
 import CompetitionService from "../CompetitionService";
 import moment from "moment";
+import Timedate from "../components/layout/Timedate";
+import Header from "../components/layout/Header";
+import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 
 export default {
   name: "Overview",
   components: {
-    Timedate: () => import("../components/layout/Timedate"),
-    ProgressBarQuery: () => import("../components/layout/ProgressBarQuery"),
-    Header: () => import("../components/layout/Header"),
+    Timedate,
+    ProgressBarQuery,
+    Header,
   },
   data() {
     return {

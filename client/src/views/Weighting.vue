@@ -595,13 +595,16 @@ import M from "materialize-css";
 import { options_picker } from "../i18n";
 import CompetitionService from "../CompetitionService";
 import "vue-select/dist/vue-select.css";
+import Timedate from "../components/layout/Timedate";
+import Header from "../components/layout/Header";
+import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 
 export default {
   name: "Weighting",
   components: {
-    Timedate: () => import("../components/layout/Timedate"),
-    ProgressBarQuery: () => import("../components/layout/ProgressBarQuery"),
-    Header: () => import("../components/layout/Header"),
+    Timedate,
+    Header,
+    ProgressBarQuery,
   },
   data() {
     return {

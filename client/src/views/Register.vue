@@ -144,6 +144,8 @@
 "use strict";
 import M from "materialize-css";
 import UserService from "../UserService";
+import MainHeader from "../components/layout/MainHeader";
+import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 
 export default {
   props: ["nextUrl"],
@@ -159,8 +161,8 @@ export default {
     };
   },
   components: {
-    ProgressBarQuery: () => import("../components/layout/ProgressBarQuery"),
-    MainHeader: () => import("../components/layout/MainHeader"),
+    MainHeader,
+    ProgressBarQuery,
   },
   mounted() {
     // Press button by enter key when focusing password_confirmation input

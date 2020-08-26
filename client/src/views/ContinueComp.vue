@@ -257,6 +257,9 @@
 </template>
 
 <script>
+import Timedate from "../components/layout/Timedate";
+import Header from "../components/layout/Header";
+import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import CompetitionService from "../CompetitionService";
 import CupService from "../CupService";
 import M from "materialize-css";
@@ -299,9 +302,9 @@ export default {
     },
   },
   components: {
-    Timedate: () => import("../components/layout/Timedate"),
-    ProgressBarQuery: () => import("../components/layout/ProgressBarQuery"),
-    Header: () => import("../components/layout/Header"),
+    Timedate,
+    ProgressBarQuery,
+    Header,
   },
   async created() {
     this.loading = true;

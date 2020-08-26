@@ -602,16 +602,19 @@
 <script>
 "use strict";
 import M from "materialize-css";
+import Timedate from "../components/layout/Timedate";
+import Header from "../components/layout/Header";
 import moment from "moment";
 import CompetitionService from "../CompetitionService";
 import CupService from "../CupService";
+import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 
 export default {
   name: "CompSettings",
   components: {
-    Timedate: () => import("../components/layout/Timedate"),
-    ProgressBarQuery: () => import("../components/layout/ProgressBarQuery"),
-    Header: () => import("../components/layout/Header"),
+    Timedate,
+    ProgressBarQuery,
+    Header,
   },
   data() {
     return {

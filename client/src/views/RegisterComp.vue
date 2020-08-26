@@ -591,9 +591,11 @@
         <v-tab-item class="inputarea" :value="'summary'">
           <v-container v-if="!loading">
             <v-row>
-              <h2>
-                Perustiedot
-              </h2>
+              <v-col>
+                <h2>
+                  Perustiedot
+                </h2>
+              </v-col>
             </v-row>
             <v-row class="basic_summary">
               <v-col>
@@ -745,13 +747,16 @@ import { options_picker } from "../i18n";
 import CompetitionService from "../CompetitionService";
 import CupService from "../CupService";
 import moment from "moment";
+import ProgressBarQuery from "../components/layout/ProgressBarQuery";
+import Timedate from "../components/layout/Timedate";
+import Header from "../components/layout/Header";
 
 export default {
   name: "RegisterComp",
   components: {
-    Timedate: () => import("../components/layout/Timedate"),
-    ProgressBarQuery: () => import("../components/layout/ProgressBarQuery"),
-    Header: () => import("../components/layout/Header"),
+    ProgressBarQuery,
+    Header,
+    Timedate,
   },
   data() {
     return {

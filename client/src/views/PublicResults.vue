@@ -804,19 +804,20 @@
 </template>
 <script>
 "use strict";
+import MainHeader from "../components/layout/MainHeader";
 import M from "materialize-css";
 import moment from "moment";
 import CompetitionService from "../CompetitionService";
+import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import Chart from "chart.js";
 import "chartjs-plugin-labels";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
 
 export default {
   name: "PublicResults",
   components: {
-    ProgressBarQuery: () => import("../components/layout/ProgressBarQuery"),
-    MainHeader: () => import("../components/layout/MainHeader"),
+    ProgressBarQuery,
+    MainHeader,
   },
   data() {
     return {

@@ -71,12 +71,14 @@
 import M from "materialize-css";
 import { options_picker } from "../i18n";
 import FeedbackService from "../FeedbackService";
+import Timedate from "../components/layout/Timedate";
+import Header from "../components/layout/Header";
 
 export default {
   name: "Feedback",
   components: {
-    Timedate: () => import("../components/layout/Timedate"),
-    Header: () => import("../components/layout/Header"),
+    Timedate,
+    Header,
   },
   data() {
     return {
