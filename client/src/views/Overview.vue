@@ -61,23 +61,23 @@
       <div class="section inputarea">
         <!-- TODO make it pretty... Everyting else is better than this-->
         <div class="col s12">
-          <h4>
+          <p class="flow-text">
             <b>{{ competition.name }}</b>
-          </h4>
-          <h4>
+          </p>
+          <p class="flow-text">
             Päivämäärä: {{ formatted_start_date }} - {{ formatted_end_date }}
-          </h4>
-          <h4>
+          </p>
+          <p class="flow-text">
             Kilpailuaika:
             <b>{{ competition.start_time }} - {{ competition.end_time }}</b>
-          </h4>
-          <h4>
+          </p>
+          <p class="flow-text">
             Tila: <b>{{ competition.state }}</b>
-          </h4>
-          <h4>
+          </p>
+          <p class="flow-text">
             Ilmoittautuneita: <b>{{ competition.signees.length }} kpl</b>
-          </h4>
-          <h4 v-if="competition.signees.length">
+          </p>
+          <p v-if="competition.signees.length" class="flow-text">
             Vielä vesillä:
             <b
               >{{
@@ -95,9 +95,9 @@
                 $store.getters.getFinishedSignees.length
             }}
             / {{ competition.signees.length }})
-          </h4>
-          <h4 v-else>Ketään ei vielä vesillä!</h4>
-          <h4 v-if="competition.signees.length">
+          </p>
+          <p v-else class="flow-text">Ketään ei vielä vesillä!</p>
+          <p v-if="competition.signees.length" class="flow-text">
             Saalista saanut:
             <b
               >{{
@@ -111,20 +111,11 @@
             >
             ({{ $store.getters.getPointSignees.length }} /
             {{ competition.signees.length }})
-          </h4>
-          <h4>
+          </p>
+          <p class="flow-text">
             Kalaa saatu yhteensä:
             <b>{{ competition.total_weights / 1000 }} kg</b>
-          </h4>
-          <v-btn
-            style="margin-top:20px"
-            large
-            rounded
-            color="grey darken-4"
-            class="white--text"
-            @click="pickCup(competition.cup_id)"
-            ><i class="material-icons left">tune</i>Cupin näkymään</v-btn
-          >
+          </p>
         </div>
       </div>
     </div>
@@ -187,12 +178,6 @@ export default {
     }
   },
   methods: {
-    pickCup: function(cup_id) {
-      // Set cup._id to localstorage for database queries
-      localStorage.setItem("cup", cup_id);
-      // redirect to /cup-overview
-      this.$router.push({ path: "/cup-overview" });
-    },
     // fetch/update competition from database
     async refreshCompetition(competition_id) {
       this.loading = true;
@@ -209,6 +194,7 @@ export default {
           this.competition = competitions[0];
           // Update to vuex, Assing variables from vuex (see client/store/index.js)
           this.$store.commit("refreshCompetition", competitions[0]);
+          localStorage.setItem("cup", this.competition.cup_id);
           let start_date = moment(this.competition.start_date);
           let end_date = moment(this.competition.end_date);
           this.formatted_start_date = `${start_date.date()}.${start_date.month() +

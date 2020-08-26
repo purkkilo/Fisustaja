@@ -1,7 +1,7 @@
 <template>
   <!-- /cup-overview -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <v-container class="container">
+  <v-container>
     <Header />
     <Timedate style="margin-top:0" />
     <div id="errordiv" v-if="errors.length">
@@ -409,8 +409,9 @@ export default {
               // Get the signee, and add competitions results to array, under the competition.name key
               let found_signee = all_results[index];
               found_signee.points_compare.push(signee.cup_points_total); // For comparing
-              found_signee.cup_results[competition.key_name] =
-                signee.cup_points_total;
+              found_signee.cup_results[
+                competition.key_name
+              ] = `${signee.cup_points_total}p (${signee.placement}.)`;
               // For tracking total points
               all_results.splice(index, 1, found_signee);
             }
@@ -421,8 +422,9 @@ export default {
               // Array for comparing points with limit
               signee.points_compare = [];
               signee.points_compare.push(signee.cup_points_total); // For comparing
-              signee.cup_results[competition.key_name] =
-                signee.cup_points_total;
+              signee.cup_results[
+                competition.key_name
+              ] = `${signee.cup_points_total}p (${signee.placement}.)`;
               all_results.push(signee);
             }
           });
@@ -493,8 +495,9 @@ export default {
               ) {
                 // If there are more than 1 competitions as the limit, reset one of them
                 if (counter === 1) {
-                  signee.cup_results["Total"] +=
-                    signee.cup_results[competition.key_name];
+                  signee.cup_results["Total"] += parseInt(
+                    signee.cup_results[competition.key_name].split("p")[0]
+                  );
                 }
                 // Else give full points
                 else {
@@ -507,9 +510,14 @@ export default {
                 counter++;
               } else {
                 // Points are greater than the limit points, give full points
-                signee.cup_results["Total"] +=
-                  signee.cup_results[competition.key_name];
+                signee.cup_results["Total"] += parseInt(
+                  signee.cup_results[competition.key_name].split("p")[0]
+                );
               }
+            }
+            // No points from that competition
+            else {
+              signee.cup_results[competition.key_name] = "-";
             }
           });
         }
@@ -759,9 +767,9 @@ export default {
       // Table, based on given table_id, and table title based on competition_type
       if (table_title === "Cupin Kokonaistulokset") {
         sub_title = `Tilanne ${formatted_date}, ${last_competition.name} (${last_competition.locality}) jälkeen`;
-        doc.text(100, 25, sub_title, { align: "center" });
+        doc.text(88, 25, sub_title, { align: "center" });
         doc.text(
-          100,
+          80,
           35,
           table_title +
             ` (${this.selected_competitions}/${this.competitions.length} parasta kilpailua otettu huomioon)`,

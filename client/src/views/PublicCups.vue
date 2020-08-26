@@ -390,8 +390,9 @@ export default {
               ) {
                 // If there are more than 1 competitions as the limit, reset one of them
                 if (counter === 1) {
-                  signee.cup_results["Total"] +=
-                    signee.cup_results[competition.key_name];
+                  signee.cup_results["Total"] += parseInt(
+                    signee.cup_results[competition.key_name].split("p")[0]
+                  );
                 }
                 // Else give full points
                 else {
@@ -404,9 +405,14 @@ export default {
                 counter++;
               } else {
                 // Points are greater than the limit points, give full points
-                signee.cup_results["Total"] +=
-                  signee.cup_results[competition.key_name];
+                signee.cup_results["Total"] += parseInt(
+                  signee.cup_results[competition.key_name].split("p")[0]
+                );
               }
+            }
+            // No points from that competition
+            else {
+              signee.cup_results[competition.key_name] = "-";
             }
           });
         }
@@ -599,12 +605,8 @@ export default {
     saveAsPDF: function(table_title) {
       // Format dates for easier reding
       // PDF creation
-      let doc;
-      if (this.competitions.length > 4) {
-        doc = new jsPDF("landscape");
-      } else {
-        doc = new jsPDF();
-      }
+      let doc = new jsPDF("landscape");
+
       // Title
       const title = `${this.selected_cup.name} (${this.selected_cup.year})`;
       const last_competition = this.competitions[this.competitions.length - 1];
@@ -618,9 +620,9 @@ export default {
       doc.setFontSize(14);
 
       // Table, based on given table_id, and table title based on competition_type
-      doc.text(100, 25, sub_title, { align: "center" });
+      doc.text(88, 25, sub_title, { align: "center" });
       doc.text(
-        100,
+        80,
         35,
         table_title +
           ` (${this.selected_competitions}/${this.competitions.length} parasta kilpailua otettu huomioon)`,

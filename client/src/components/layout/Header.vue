@@ -20,35 +20,38 @@
               ><i class="material-icons">menu</i></a
             >
             <ul class="right hide-on-med-and-down" v-if="isUserLoggedIn">
-              <li v-bind:class="isDashboardPage">
-                <router-link to="/dashboard"
-                  ><a class="white-text"
-                    ><i class="material-icons left">home</i>Dashboardiin</a
-                  ></router-link
-                >
-              </li>
               <li v-if="isCompetitionSet" v-bind:class="isOverviewPage">
                 <router-link to="/overview"
                   ><a class="white-text"
                     ><i class="material-icons left">directions_boat</i
-                    >Yleisnäkymä</a
+                    >Kilpailuun</a
                   ></router-link
                 >
               </li>
-              <li v-if="isAdmin" v-bind:class="isAdminPage">
-                <router-link to="/admin"
+              <li v-if="isCompetitionSet" v-bind:class="isCupPage">
+                <router-link to="/cup-overview"
                   ><a class="white-text"
-                    ><i class="material-icons left">admin_panel_settings</i
-                    >Admin</a
+                    ><i class="material-icons left">tune</i>Cuppiin</a
                   ></router-link
                 >
               </li>
-              <li v-bind:class="isFeedbackPage">
-                <router-link to="/feedback"
-                  ><a class="white-text"
-                    ><i class="material-icons left">feedback</i>Palaute</a
-                  ></router-link
-                >
+              <li style="margin-right:20px;margin-left:20px">
+                <v-menu offset-y>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn color="primary" dark v-bind="attrs" v-on="on">
+                      Lisää sivuja
+                    </v-btn>
+                  </template>
+                  <v-list>
+                    <v-list-item
+                      v-for="(item, index) in items"
+                      :key="index"
+                      @click="changePage(item.route)"
+                    >
+                      <v-list-item-title>{{ item.title }}</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
               </li>
               <li>
                 <v-btn large rounded color="red" @click="logout"
@@ -88,8 +91,19 @@
           v-bind:class="isOverviewPage"
         >
           <router-link to="/overview"
-            ><a
-              ><i class="material-icons left">directions_boat</i>Yleisnäkymä</a
+            ><a class="white-text"
+              ><i class="material-icons left">directions_boat</i>Kilpailuun</a
+            ></router-link
+          >
+        </li>
+        <li
+          v-if="isCompetitionSet"
+          v-bind:class="isCupPage"
+          style="margin-top:20px"
+        >
+          <router-link to="/cup-overview"
+            ><a class="white-text"
+              ><i class="material-icons left">tune</i>Cuppiin</a
             ></router-link
           >
         </li>
@@ -97,13 +111,6 @@
           <router-link to="/admin"
             ><a class="white-text"
               ><i class="material-icons left">admin_panel_settings</i>Admin</a
-            ></router-link
-          >
-        </li>
-        <li style="margin-top:20px" v-bind:class="isFeedbackPage">
-          <router-link to="/feedback"
-            ><a class="white-text"
-              ><i class="material-icons left">feedback</i>Palaute</a
             ></router-link
           >
         </li>
@@ -126,6 +133,11 @@ export default {
   data() {
     return {
       user: null,
+      items: [
+        { title: "Dashboardiin", route: "/dashboard" },
+        { title: "Admin", route: "/admin" },
+        { title: "Palaute", route: "/feedback" },
+      ],
     };
   },
   mounted() {
@@ -151,6 +163,11 @@ export default {
     isOverviewPage() {
       return {
         active: this.$route.name === "Overview",
+      };
+    },
+    isCupPage() {
+      return {
+        active: this.$route.name === "CupOverview",
       };
     },
     isUser() {
@@ -184,6 +201,13 @@ export default {
       this.$store.commit("refreshCompetition", null);
       this.user = null;
       M.toast({ html: "Kirjattu ulos onnistuneesti!" });
+    },
+    changePage: function(route) {
+      if (this.$router.currentRoute.path !== route) {
+        this.$router.push(route);
+      } else {
+        M.toast({ html: "Olet jo tällä sivulla!" });
+      }
     },
   },
 };
