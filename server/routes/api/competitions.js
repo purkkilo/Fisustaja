@@ -153,7 +153,7 @@ async function loadCompetitionsCollection() {
 
     return client.db("fisustaja").collection("competitions");
   } catch (err) {
-    console.log(err.message);
+    console.log(err);
   }
 }
 
