@@ -18,13 +18,12 @@
 
 <script>
 "use strict";
-import Footer from "./components/layout/Footer";
 import UserService from "./UserService";
 
 export default {
   name: "App",
   components: {
-    Footer,
+    Footer: () => import("./components/layout/Footer"),
   },
   mounted() {
     try {
@@ -96,7 +95,7 @@ export default {
 body {
   display: flex;
   flex-direction: column;
-  background-image: url("./assets/background_waterdrop.png");
+  background: url("https://i.imgur.com/uLrR7M1.png");
   background-repeat: no-repeat;
   background-attachment: fixed;
   background-size: cover;

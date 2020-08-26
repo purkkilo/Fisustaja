@@ -57,15 +57,13 @@
 
 <script>
 "use strict";
-import Timedate from "../components/layout/Timedate";
-import Header from "../components/layout/Header";
 import moment from "moment";
 
 export default {
   name: "Home",
   components: {
-    Timedate,
-    Header,
+    Timedate: () => import("../components/layout/Timedate"),
+    Header: () => import("../components/layout/Header"),
   },
   data() {
     return {
@@ -123,12 +121,5 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
-}
-
-body {
-  background-image: url("../assets/background_waterdrop.png");
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  background-size: cover;
 }
 </style>

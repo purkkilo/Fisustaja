@@ -37,12 +37,11 @@
 
 <script>
 "use strict";
-import MainHeader from "../components/layout/MainHeader";
 
 export default {
   name: "Home",
   components: {
-    MainHeader,
+    MainHeader: () => import("../components/layout/MainHeader"),
   },
   data() {
     return {};

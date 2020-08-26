@@ -289,9 +289,6 @@
 <script>
 "use strict";
 import M from "materialize-css";
-import Timedate from "../components/layout/Timedate";
-import Header from "../components/layout/Header";
-import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import CupService from "../CupService";
 import CompetitionService from "../CompetitionService";
 import moment from "moment";
@@ -301,9 +298,9 @@ import "jspdf-autotable";
 export default {
   name: "CupOverview",
   components: {
-    Timedate,
-    Header,
-    ProgressBarQuery,
+    Timedate: () => import("../components/layout/Timedate"),
+    ProgressBarQuery: () => import("../components/layout/ProgressBarQuery"),
+    Header: () => import("../components/layout/Header"),
   },
   data() {
     return {

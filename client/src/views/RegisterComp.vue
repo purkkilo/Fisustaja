@@ -741,9 +741,6 @@
 <script>
 "use strict";
 import M from "materialize-css";
-import ProgressBarQuery from "../components/layout/ProgressBarQuery";
-import Timedate from "../components/layout/Timedate";
-import Header from "../components/layout/Header";
 import { options_picker } from "../i18n";
 import CompetitionService from "../CompetitionService";
 import CupService from "../CupService";
@@ -752,9 +749,9 @@ import moment from "moment";
 export default {
   name: "RegisterComp",
   components: {
-    ProgressBarQuery,
-    Header,
-    Timedate,
+    Timedate: () => import("../components/layout/Timedate"),
+    ProgressBarQuery: () => import("../components/layout/ProgressBarQuery"),
+    Header: () => import("../components/layout/Header"),
   },
   data() {
     return {

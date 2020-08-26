@@ -462,9 +462,6 @@ import FeedbackService from "../FeedbackService";
 import CompetitionService from "../CompetitionService";
 import UserService from "../UserService";
 import CupService from "../CupService";
-import ProgressBarQuery from "../components/layout/ProgressBarQuery";
-import Timedate from "../components/layout/Timedate";
-import Header from "../components/layout/Header";
 import moment from "moment";
 
 export default {
@@ -500,9 +497,9 @@ export default {
     };
   },
   components: {
-    Timedate,
-    ProgressBarQuery,
-    Header,
+    Timedate: () => import("../components/layout/Timedate"),
+    ProgressBarQuery: () => import("../components/layout/ProgressBarQuery"),
+    Header: () => import("../components/layout/Header"),
   },
   // Called everytime page is opened
   async mounted() {

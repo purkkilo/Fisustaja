@@ -797,23 +797,20 @@
 </template>
 <script>
 "use strict";
-import Timedate from "../components/layout/Timedate";
-import Header from "../components/layout/Header";
 import M from "materialize-css";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import moment from "moment";
 import CompetitionService from "../CompetitionService";
-import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import Chart from "chart.js";
 import "chartjs-plugin-labels";
 
 export default {
   name: "Results",
   components: {
-    Timedate,
-    Header,
-    ProgressBarQuery,
+    Timedate: () => import("../components/layout/Timedate"),
+    ProgressBarQuery: () => import("../components/layout/ProgressBarQuery"),
+    Header: () => import("../components/layout/Header"),
   },
   data() {
     return {

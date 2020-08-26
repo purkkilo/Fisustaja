@@ -204,8 +204,6 @@
 <script>
 "use strict";
 import M from "materialize-css";
-import MainHeader from "../components/layout/MainHeader";
-import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import CupService from "../CupService";
 import CompetitionService from "../CompetitionService";
 import moment from "moment";
@@ -215,8 +213,8 @@ import "jspdf-autotable";
 export default {
   name: "PublicCups",
   components: {
-    MainHeader,
-    ProgressBarQuery,
+    ProgressBarQuery: () => import("../components/layout/ProgressBarQuery"),
+    MainHeader: () => import("../components/layout/MainHeader"),
   },
   data() {
     return {

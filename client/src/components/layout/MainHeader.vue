@@ -6,7 +6,7 @@
           <div class="nav-wrapper blue lighten-2">
             <router-link to="/"
               ><img
-                src="../../assets/clienticon_new.png"
+                src="https://i.imgur.com/2WcI49A.png"
                 alt=""
                 class="circle responsive-img left"
                 style="height:55px;width:55px;margin:5px 10px;"

@@ -428,9 +428,6 @@
 </template>
 <script>
 "use strict";
-import Timedate from "../components/layout/Timedate";
-import Header from "../components/layout/Header";
-import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import M from "materialize-css";
 import CompetitionService from "../CompetitionService";
 import CupService from "../CupService";
@@ -438,9 +435,9 @@ import CupService from "../CupService";
 export default {
   name: "Signing",
   components: {
-    Timedate,
-    Header,
-    ProgressBarQuery,
+    Timedate: () => import("../components/layout/Timedate"),
+    ProgressBarQuery: () => import("../components/layout/ProgressBarQuery"),
+    Header: () => import("../components/layout/Header"),
   },
   data() {
     return {
