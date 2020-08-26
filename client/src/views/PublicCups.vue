@@ -112,6 +112,7 @@
               color="green darken-4"
               class="white--text"
               @click="saveAsPDF(`Cupin Kokonaistulokset`)"
+              :loading="loading"
             >
               <i class="material-icons left">picture_as_pdf</i>Lataa pdf
             </v-btn>
@@ -123,7 +124,7 @@
               *Punaisella merkityt kilpailut ovat vielä kesken! ({{
                 not_finished_count
               }}
-              kilpailu)
+              kpl)
             </p>
           </v-col>
         </v-row>
@@ -178,9 +179,9 @@
                   >
                 </template>
                 <template v-slot:[`item.final_cup_points`]="{ item }">
-                  <v-chip color="indigo darken-3 white--text">{{
-                    item.final_cup_points
-                  }}</v-chip>
+                  <v-chip color="indigo darken-3 white--text"
+                    >{{ item.final_cup_points }}p</v-chip
+                  >
                 </template>
               </v-data-table>
             </v-card>
@@ -391,7 +392,7 @@ export default {
                 // If there are more than 1 competitions as the limit, reset one of them
                 if (counter === 1) {
                   signee.cup_results["Total"] += parseInt(
-                    signee.cup_results[competition.key_name].split("p")[0]
+                    signee.cup_results[competition.key_name]
                   );
                 }
                 // Else give full points
@@ -406,7 +407,7 @@ export default {
               } else {
                 // Points are greater than the limit points, give full points
                 signee.cup_results["Total"] += parseInt(
-                  signee.cup_results[competition.key_name].split("p")[0]
+                  signee.cup_results[competition.key_name]
                 );
               }
             }
@@ -453,7 +454,7 @@ export default {
         this.loading = false;
       } catch (error) {
         this.loading = false;
-        console.error(error.message);
+        console.error(error);
       }
     },
     //Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)

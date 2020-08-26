@@ -199,6 +199,7 @@
                   color="green darken-4"
                   class="white--text"
                   @click="saveAsPDF(`Cupin Kokonaistulokset`)"
+                  :loading="loading"
                 >
                   <i class="material-icons left">picture_as_pdf</i>Lataa pdf
                 </v-btn>
@@ -210,7 +211,7 @@
                   *Punaisella merkityt kilpailut ovat vielä kesken! ({{
                     not_finished_count
                   }}
-                  kilpailu)
+                  kpl)
                 </p>
               </v-col>
             </v-row>
@@ -241,6 +242,7 @@
                     :headers="headers"
                     :items="results"
                     :search="search"
+                    :loading="loading"
                   >
                     <template
                       v-for="(h, index) in headers"
@@ -265,9 +267,9 @@
                       >
                     </template>
                     <template v-slot:[`item.final_cup_points`]="{ item }">
-                      <v-chip color="indigo darken-3 white--text">{{
-                        item.final_cup_points
-                      }}</v-chip>
+                      <v-chip color="indigo darken-3 white--text"
+                        >{{ item.final_cup_points }}p</v-chip
+                      >
                     </template>
                   </v-data-table>
                 </v-card>
@@ -409,9 +411,8 @@ export default {
               // Get the signee, and add competitions results to array, under the competition.name key
               let found_signee = all_results[index];
               found_signee.points_compare.push(signee.cup_points_total); // For comparing
-              found_signee.cup_results[
-                competition.key_name
-              ] = `${signee.cup_points_total}p (${signee.placement}.)`;
+              found_signee.cup_results[competition.key_name] =
+                signee.cup_points_total;
               // For tracking total points
               all_results.splice(index, 1, found_signee);
             }
@@ -422,9 +423,8 @@ export default {
               // Array for comparing points with limit
               signee.points_compare = [];
               signee.points_compare.push(signee.cup_points_total); // For comparing
-              signee.cup_results[
-                competition.key_name
-              ] = `${signee.cup_points_total}p (${signee.placement}.)`;
+              signee.cup_results[competition.key_name] =
+                signee.cup_points_total;
               all_results.push(signee);
             }
           });
@@ -496,7 +496,7 @@ export default {
                 // If there are more than 1 competitions as the limit, reset one of them
                 if (counter === 1) {
                   signee.cup_results["Total"] += parseInt(
-                    signee.cup_results[competition.key_name].split("p")[0]
+                    signee.cup_results[competition.key_name]
                   );
                 }
                 // Else give full points
@@ -511,7 +511,7 @@ export default {
               } else {
                 // Points are greater than the limit points, give full points
                 signee.cup_results["Total"] += parseInt(
-                  signee.cup_results[competition.key_name].split("p")[0]
+                  signee.cup_results[competition.key_name]
                 );
               }
             }

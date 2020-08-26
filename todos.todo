@@ -18,16 +18,8 @@ New:
   ☐ Move darkmode switch from each table to header or somewhere handy, update it to vuex or user's datatable
   ☐ Test 1.5x cup_multiplier competition! @high
   ☐ consider changing library for making charts, since chart.js need canvas to be printed to pdf, can't be generated in code
-  ☐ Fix these:
-    asset size limit: The following asset(s) exceed the recommended size limit (244 KiB).
-    This can impact web performance.
-    Assets:
-      img/background_waterdrop.485b71e7.png (1.03 MiB)
-      img/clienticon_new.8f8ed215.png (343 KiB)
-      js/about.95549057.js (1.29 MiB)
-      css/chunk-vendors.99629c7c.css (430 KiB)
-      js/chunk-vendors.de92ac78.js (520 KiB
-  ☐ Also Fix warning from entrypoint app being too large
+  ☐ Also Fix warning from entrypoint app being too large (optimize somehow)
+  ☐ Finalize database migration from mlab to mongodb atlas
 
 Done:
   ✔ Create signees database collection @started(20-05-26 11:19) @today @done(20-05-27 19:34) @lasted(1d8h15m1s)
