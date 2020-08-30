@@ -194,7 +194,10 @@
                       }}.)</span
                     >
                     <!-- Highlight pointsthat matter -->
-                    <v-chip v-else
+                    <v-chip
+                      :outlined="updateSwitch"
+                      :color="getColor(item.cup_results[c].placement)"
+                      v-else
                       >{{ item.cup_results[c].points }}p ({{
                         item.cup_results[c].placement
                       }}.)</v-chip
@@ -558,13 +561,30 @@ export default {
         }
         // Dynamic headers, because competition names change
         if (this.header_selection === "Paikkakunta") {
-          this.headers.push({
-            text: competition.locality,
-            align: "center",
-            highlight: true,
-            isFinished: !competition.isFinished,
-            value: `cup_results[${competition.key_name}].points`,
+          // Check if there are competitions with same locality, if so, add identifier
+          let found_headers = this.headers.filter((header) => {
+            return competition.locality === header.text;
           });
+          if (found_headers.length) {
+            let new_header_text = ` ${
+              competition.locality
+            } #${found_headers.length + 1}`;
+            this.headers.push({
+              text: new_header_text,
+              align: "center",
+              highlight: true,
+              isFinished: !competition.isFinished,
+              value: `cup_results[${competition.key_name}].points`,
+            });
+          } else {
+            this.headers.push({
+              text: competition.locality,
+              align: "center",
+              highlight: true,
+              isFinished: !competition.isFinished,
+              value: `cup_results[${competition.key_name}].points`,
+            });
+          }
         } else {
           this.headers.push({
             text: competition.name,
@@ -648,18 +668,18 @@ export default {
         1}.${start_date.year()}`;
       const sub_title = `Tilanne ${formatted_date}, ${last_competition.name} (${last_competition.locality}) jälkeen`;
       doc.setFontSize(24);
-      doc.text(10, 10, title, { align: "left" });
+      doc.text(13, 10, title, { align: "left" });
       doc.line(0, 15, 400, 15);
       doc.setFontSize(14);
 
       // Table, based on given table_id, and table title based on competition_type
-      doc.text(88, 25, sub_title, { align: "center" });
+      doc.text(13, 25, sub_title, { align: "left" });
       doc.text(
-        80,
+        13,
         35,
         table_title +
           ` (${this.selected_competitions}/${this.competitions.length} parasta kilpailua otettu huomioon)`,
-        { align: "center" }
+        { align: "left" }
       );
       let columns = [];
       this.headers.forEach((header) => {
