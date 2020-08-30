@@ -621,17 +621,9 @@ export default {
         let counter = 4;
         this.competitions.forEach((competition) => {
           if (cup_results[competition.key_name]) {
-            if (
-              cup_results[competition.key_name].points ===
-              this.competitions[competition.key_name - 1]
-                .cup_participation_points
-            ) {
-              values[counter] = `${cup_results[competition.key_name].points}p`;
-            } else {
-              values[counter] = `${
-                cup_results[competition.key_name].points
-              }p (${cup_results[competition.key_name].placement}.)`;
-            }
+            values[counter] = `${cup_results[competition.key_name].points}p (${
+              cup_results[competition.key_name].placement
+            }.)`;
           } else {
             values[counter] = "-";
           }
