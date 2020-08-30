@@ -9,9 +9,12 @@
     <v-tabs
       v-model="tab"
       background-color="blue lighten-2"
-      color="basil"
+      color="blue darken-4"
       grow
       show-arrows
+      next-icon="mdi-arrow-right-bold-box-outline"
+      prev-icon="mdi-arrow-left-bold-box-outline"
+      center-active
     >
       <v-tabs-slider color="blue darken-4"></v-tabs-slider>
       <v-tab href="#overview">Yleisnäkymä</v-tab>
@@ -21,7 +24,7 @@
       <v-tab href="#generate">Kilpailun generointi</v-tab>
     </v-tabs>
     <v-tabs-items v-model="tab" style="background: rgba(0,0,0,0.4);">
-      <v-tab-item :value="'overview'">
+      <v-tab-item :value="'overview'" class="inputarea">
         <v-row>
           <v-col>
             <v-row>
@@ -94,7 +97,7 @@
           </v-col>
         </v-row>
       </v-tab-item>
-      <v-tab-item :value="'users'">
+      <v-tab-item :value="'users'" class="inputarea">
         <v-row>
           <v-col>
             <v-row>
@@ -108,50 +111,194 @@
             <v-row>
               <v-col>
                 <h1>Käyttäjät</h1>
+                <br />
+                <p class="flow-text">*Klikkaa nimeä saadaksesi lisätietoa</p>
               </v-col>
             </v-row>
             <v-row v-if="users.length">
-              <v-col>
-                <ul id="fish_weights">
-                  <!-- Vue loop -->
-                  <!-- similar to js foreach loop -->
-                  <li v-for="(user, index) in users" :key="index">
-                    <!-- For every user in this.users array -->
-                    <v-row>
-                      <v-col class="card-panel blue lighten-5 z-depth-1">
-                        <p v-if="user.is_admin" class="flow-text">
-                          #{{ index + 1 }}. {{ user.name }} (Admin)<i
-                            class="material-icons"
-                            >admin_panel_settings</i
+              <v-col
+                md="6"
+                offset-md="3"
+                v-bind:class="{
+                  'grey darken-4': updateSwitch,
+                }"
+              >
+                <v-data-iterator
+                  :items="users"
+                  :search="search"
+                  hide-default-footer
+                  class="scroll_table"
+                >
+                  <template v-slot:header>
+                    <v-toolbar class="mb-1" :dark="updateSwitch">
+                      <v-text-field
+                        v-model="search"
+                        clearable
+                        flat
+                        solo-inverted
+                        hide-details
+                        prepend-inner-icon="search"
+                        label="Etsi"
+                      ></v-text-field>
+                      <v-spacer></v-spacer>
+                      <v-switch
+                        v-model="updateSwitch"
+                        class="black--text"
+                        color="indigo darken-3"
+                        append-icon="mdi-weather-night"
+                        prepend-icon="mdi-weather-sunny"
+                      ></v-switch>
+                    </v-toolbar>
+                  </template>
+                  <template v-slot:default="props">
+                    <v-col
+                      v-for="(user, index) in props.items"
+                      :key="index"
+                      style="margin-top:20px"
+                    >
+                      <!-- For every user in this.users array -->
+                      <v-menu
+                        v-model="user.menu"
+                        bottom
+                        right
+                        transition="scale-transition"
+                        origin="top left"
+                        :close-on-click="false"
+                      >
+                        <template v-slot:activator="{ on }">
+                          <v-chip
+                            :dark="updateSwitch"
+                            :outlined="updateSwitch"
+                            large
+                            v-on="on"
+                            :color="user.is_admin ? 'yellow darken-2' : 'green'"
                           >
-                        </p>
-                        <p v-else class="flow-text">
-                          #{{ index + 1 }}. {{ user.name }} (Käyttäjä)<i
-                            class="material-icons"
-                            >account_circle</i
-                          >
-                        </p>
-
-                        <div class="row valign-wrapper">
-                          <div class="col s12">
-                            <p
-                              class="black-text flow-text "
-                              style="word-break: break-all;"
-                            >
-                              Sähköposti: {{ user.email }}
-                            </p>
-                            <p
-                              class="black-text flow-text "
-                              style="word-break: break-all;"
-                            >
-                              Tili luotu: {{ user.createdAt }}
-                            </p>
-                          </div>
-                        </div>
-                      </v-col>
-                    </v-row>
-                  </li>
-                </ul>
+                            <v-avatar left>
+                              <i v-if="user.is_admin" class="material-icons"
+                                >admin_panel_settings</i
+                              >
+                              <i v-else class="material-icons"
+                                >account_circle</i
+                              >
+                            </v-avatar>
+                            {{ user.name }}
+                          </v-chip>
+                        </template>
+                        <v-card width="300">
+                          <v-list dark>
+                            <v-list-item>
+                              <v-list-item-avatar>
+                                <i v-if="user.is_admin" class="material-icons"
+                                  >admin_panel_settings</i
+                                >
+                                <i v-else class="material-icons"
+                                  >account_circle</i
+                                >
+                              </v-list-item-avatar>
+                              <v-list-item-content>
+                                <v-list-item-title>{{
+                                  user.name
+                                }}</v-list-item-title>
+                                <v-list-item-subtitle>{{
+                                  user.email
+                                }}</v-list-item-subtitle>
+                              </v-list-item-content>
+                              <v-list-item-action>
+                                <v-btn icon @click="user.menu = false">
+                                  <v-icon>mdi-close-circle</v-icon>
+                                </v-btn>
+                              </v-list-item-action>
+                            </v-list-item>
+                          </v-list>
+                          <v-list>
+                            <v-tooltip right>
+                              <template v-slot:activator="{ on, attrs }">
+                                <v-list-item
+                                  v-bind="attrs"
+                                  v-on="on"
+                                  @click="copyToClipboard(user._id, user)"
+                                >
+                                  <v-list-item-action>
+                                    <v-icon
+                                      >mdi-badge-account-horizontal</v-icon
+                                    >
+                                  </v-list-item-action>
+                                  <v-list-item-content>
+                                    <v-list-item-title>{{
+                                      user._id
+                                    }}</v-list-item-title>
+                                    <v-list-item-subtitle
+                                      >Id</v-list-item-subtitle
+                                    >
+                                  </v-list-item-content>
+                                </v-list-item>
+                              </template>
+                              <span>Kopioi</span>
+                            </v-tooltip>
+                            <v-tooltip right>
+                              <template v-slot:activator="{ on, attrs }">
+                                <v-list-item
+                                  v-bind="attrs"
+                                  v-on="on"
+                                  @click="copyToClipboard(user.createdAt, user)"
+                                >
+                                  <v-list-item-action>
+                                    <v-icon>mdi-calendar-check</v-icon>
+                                  </v-list-item-action>
+                                  <v-list-item-content>
+                                    <v-list-item-title>{{
+                                      user.createdAt
+                                    }}</v-list-item-title>
+                                    <v-list-item-subtitle
+                                      >Tili luotu</v-list-item-subtitle
+                                    >
+                                  </v-list-item-content>
+                                </v-list-item>
+                              </template>
+                              <span>Kopioi</span>
+                            </v-tooltip>
+                            <v-list-item v-if="user.is_admin" @click="() => {}">
+                              <v-list-item-action>
+                                <v-icon>mdi-briefcase</v-icon>
+                              </v-list-item-action>
+                              <v-list-item-content>
+                                <v-list-item-title>Admin</v-list-item-title>
+                                <v-list-item-subtitle
+                                  >Rooli</v-list-item-subtitle
+                                >
+                              </v-list-item-content>
+                            </v-list-item>
+                            <v-list-item v-else @click="() => {}">
+                              <v-list-item-action>
+                                <v-icon>mdi-briefcase</v-icon>
+                              </v-list-item-action>
+                              <v-list-item-content>
+                                <v-list-item-title>Käyttäjä</v-list-item-title>
+                                <v-list-item-subtitle
+                                  >Rooli</v-list-item-subtitle
+                                >
+                              </v-list-item-content>
+                            </v-list-item>
+                            <v-list-item @click="() => {}">
+                              <v-list-item-content>
+                                <v-btn
+                                  color="blue"
+                                  @click="
+                                    copyToClipboard(JSON.stringify(user), user)
+                                  "
+                                >
+                                  <v-icon>mdi-copy-content</v-icon>
+                                  Kopio koko objekti
+                                </v-btn>
+                              </v-list-item-content>
+                            </v-list-item>
+                          </v-list>
+                        </v-card>
+                      </v-menu>
+                      <v-divider style="margin-top:10px"></v-divider>
+                    </v-col>
+                  </template>
+                </v-data-iterator>
               </v-col>
             </v-row>
             <!-- users.length === 0 === false-->
@@ -176,7 +323,7 @@
           </v-col>
         </v-row>
       </v-tab-item>
-      <v-tab-item :value="'competitions'">
+      <v-tab-item :value="'competitions'" class="inputarea">
         <v-row>
           <v-col>
             <v-row>
@@ -268,7 +415,7 @@
           </v-col>
         </v-row>
       </v-tab-item>
-      <v-tab-item :value="'feedback'">
+      <v-tab-item :value="'feedback'" class="inputarea">
         <v-row>
           <v-col>
             <v-row>
@@ -349,7 +496,7 @@
           </v-col>
         </v-row>
       </v-tab-item>
-      <v-tab-item :value="'generate'">
+      <v-tab-item :value="'generate'" class="inputarea">
         <v-row>
           <v-col>
             <v-row>
@@ -380,6 +527,7 @@
                   outlined
                   return-object
                   single-line
+                  :loading="loading_cups"
                 ></v-select>
               </v-col>
               <v-col md="3">
@@ -477,6 +625,7 @@ export default {
       loading: false,
       loading_users: false,
       loading_competitions: false,
+      loading_cups: false,
       theme: { isDark: true },
       cup: {},
       signees_amount: 30,
@@ -497,6 +646,7 @@ export default {
       ],
       search_comp: "",
       updateSwitch: true,
+      search: "",
     };
   },
   components: {
@@ -521,6 +671,9 @@ export default {
       this.feedback = await FeedbackService.getFeedback();
       this.loading = false;
       this.users = await UserService.getUsers();
+      this.users.forEach((user) => {
+        user.menu = false;
+      });
       this.loading_users = false;
       this.competitions = await CompetitionService.getAllCompetitions();
       this.competitions.forEach((competition) => {
@@ -554,167 +707,51 @@ export default {
     /* 
             Kilpailun generointi:
 
-            Kilpailun luonti:
-                - checkBasicInformation: function() | RegisterComp.vue, 719
-                - CompetitionService.js | static insertCompetition(competition) 
+            //Generate signee data on loop to signees array
+            //Generate fish weights and points to every signee to every signee on signees array
+            //When signees array complete, Add competition to database: await CompetitionService.insertCompetition(competition);
+    */
+    fallbackCopyToClipboard: function(text) {
+      var textArea = document.createElement("textarea");
+      textArea.value = text;
+      // Avoid scrolling to bottom
+      textArea.style.top = "0";
+      textArea.style.left = "0";
+      textArea.style.position = "fixed";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        var successful = document.execCommand("copy");
+        var msg = successful ? "successful" : "unsuccessful";
+        console.log("Fallback: text to copy: " + msg);
+      } catch (err) {
+        console.error("Fallback: unable to copy:", err);
+      }
 
-            Mahdollisesti samalla loopilla:
-                - Kilpailijoiden luonti: validateInfo: function() | Signing.vue, 661
-                - Kilpailijalle pisteet: async saveToDatabase(reset) | Weighting.vue, 652
-
-            Kilpailu olio tietokannassa, kilpailijat ja painot lisättynä
-
-            {
-                "user_id": "5f24045d2ee89c595c075149",
-                "cup_id": "5f2404882ee89c595c07514a",
-                "name": "Kerimäki-uistelu 2020",
-                "cup_name": "Savo-Karjala CUP",
-                "cup_placement_points": 30,
-                "cup_participation_points": 5,
-                "cup_points_multiplier": 1,
-                "start_date": "2020-07-11T06:00:00.000Z",
-                "end_date": "2020-07-11T13:00:00.000Z",
-                "start_time": "09:00",
-                "end_time": "16:00",
-                "total_weights": 190830,
-                "fishes": [
-                    {
-                        "name": "Ahven",
-                        "multiplier": 3,
-                        "minsize": "30",
-                        "weights": 9400,
-                        "color": "#8d2d20"
-                    },
-                    {
-                        "name": "Hauki",
-                        "multiplier": 1,
-                        "minsize": "50",
-                        "weights": 172290,
-                        "color": "#53b84b"
-                    },
-                    {
-                        "name": "Kuha",
-                        "multiplier": 3,
-                        "minsize": "50",
-                        "weights": 0,
-                        "color": "#3f618f"
-                    },
-                    {
-                        "name": "Lohi",
-                        "multiplier": 25,
-                        "minsize": "61",
-                        "weights": 0,
-                        "color": "#8c16e9"
-                    },
-                    {
-                        "name": "Taimen",
-                        "multiplier": 25,
-                        "minsize": "51",
-                        "weights": 9140,
-                        "color": "#4aeda0"
-                    }
-                ],
-                "state": "Punnitus",
-                "createdAt": "2020-07-10T23:52:33.944Z",
-                "signees":
-                [
-                    {
-                        "id": 1,
-                        "boat_number": 1,
-                        "starting_place": "-",
-                        "captain_name": "Veetu Varis",
-                        "temp_captain_name": "Tuomas Halko",
-                        "locality": "Imatra",
-                        "team": "-",
-                        "total_points": 16080,
-                        "total_weights": 14820,
-                        "returned": true,
-                        "weights": [
-                            {
-                                "name": "Ahven",
-                                "weights": 630,
-                                "points": 1890
-                            },
-                            {
-                                "name": "Hauki",
-                                "weights": 14190,
-                                "points": 14190
-                            },
-                            {
-                                "name": "Kuha",
-                                "weights": 0,
-                                "points": 0
-                            },
-                            {
-                                "name": "Lohi",
-                                "weights": 0,
-                                "points": 0
-                            },
-                            {
-                                "name": "Taimen",
-                                "weights": 0,
-                                "points": 0
-                            }
-                        ]
-                    },
-                ],
-                "results": [],
-                "teams": [],
-                "team_competition": false,
-                "biggest_fishes": {},
-                "biggest_amounts": {
-                    "Taimen": [
-                        {
-                            "boat_number": 14,
-                            "captain_name": "Jarmo Nuopponen",
-                            "weight": 5530
-                        },
-                        {
-                            "boat_number": 33,
-                            "captain_name": "Joona Partanen",
-                            "weight": 1840
-                        },
-                        {
-                            "boat_number": 20,
-                            "captain_name": "Jere Kosonen",
-                            "weight": 1770
-                        }
-                    ]}
-            }
-
-                //Generate competition data
-                    const competition = {
-                        cup_id: cup_id,
-                        user_id: user_id,
-                        name: this.basic_info.name,
-                        cup_name: this.basic_info.cup_name,
-                        cup_placement_points: this.basic_info.cup_placement_points,
-                        cup_participation_points: this.basic_info.cup_participation_points,
-                        cup_points_multiplier: this.basic_info.cup_points_multiplier,
-                        team_competition: this.basic_info.team_competition,
-                        start_date: this.basic_info.start_date,
-                        end_date: this.basic_info.end_date,
-                        duration: this.basic_info.duration,
-                        start_time: this.basic_info.start_time,
-                        end_time: this.basic_info.end_time,
-                        fishes: this.completed_fish_specs,
-                        state: "Rekisteröity",
-                        total_weights: 0,
-                        signees: [],
-                        results: [],
-                        teams: [],
-                        biggest_fishes: {},
-                        biggest_amounts: {}
-                    };
-
-                //Generate signee data on loop to signees array
-                //Generate fish weights and points to every signee to every signee on signees array
-                //When signees array complete, Add competition to database: await CompetitionService.insertCompetition(competition);
-*/
+      document.body.removeChild(textArea);
+    },
+    copyToClipboard: function(text, user) {
+      // If clipboard not there, create create input and copy it from there using doxument.execCommand("copy");
+      if (!navigator.clipboard) {
+        this.fallbackCopyToClipboard(text);
+        return;
+      }
+      navigator.clipboard.writeText(text).then(
+        function() {
+          M.toast({ html: `"${text}" kopioitu leikepöydälle` });
+        },
+        function(err) {
+          console.error("Async: Could not copy text: ", err);
+          M.toast({ html: `Kopiointi ei onnistunut jostain syystä...` });
+        }
+      );
+      user.menu = false;
+    },
     async getCups() {
       const user = JSON.parse(localStorage.getItem("user"));
       const user_id = user["id"];
-      this.loading = true;
+      this.loading_cups = true;
       // Get Cups
       try {
         this.cups = await CupService.getCups(user_id);
@@ -730,7 +767,7 @@ export default {
       } catch (err) {
         this.error = err.message;
       }
-      this.loading = false;
+      this.loading_cups = false;
     },
     //Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)
     checkLogin: function() {

@@ -145,9 +145,12 @@
       <v-tabs
         v-model="tab"
         background-color="blue lighten-2"
-        color="basil"
+        color="blue darken-4"
         grow
         show-arrows
+        next-icon="mdi-arrow-right-bold-box-outline"
+        prev-icon="mdi-arrow-left-bold-box-outline"
+        center-active
       >
         <v-tabs-slider color="blue darken-4"></v-tabs-slider>
         <v-tab href="#stats">Tilastoja</v-tab>
@@ -429,6 +432,7 @@
                       :headers="headers"
                       :items="results"
                       :search="search"
+                      :loading="loading"
                     >
                       <template v-slot:[`item.placement`]="{ item }">
                         <v-chip
@@ -522,6 +526,7 @@
                   :headers="team_headers"
                   :items="team_results"
                   :search="search_team"
+                  :loading="loading"
                 >
                   <template v-slot:[`item.placement`]="{ item }">
                     <v-chip
@@ -609,6 +614,7 @@
                   :headers="biggest_fishes_headers"
                   :items="biggest_fishes_results"
                   :search="search_fishes"
+                  :loading="loading"
                 >
                   <template v-slot:[`item.placement`]="{ item }">
                     <v-chip
@@ -701,6 +707,7 @@
                   :headers="biggest_amounts_headers"
                   :items="biggest_amounts_results"
                   :search="search_amounts"
+                  :loading="loading"
                 >
                   <template v-slot:[`item.placement`]="{ item }">
                     <v-chip

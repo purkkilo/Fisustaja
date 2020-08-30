@@ -24,9 +24,12 @@
     <v-tabs
       v-model="tab"
       background-color="blue lighten-2"
-      color="basil"
+      color="blue darken-4"
       grow
       show-arrows
+      next-icon="mdi-arrow-right-bold-box-outline"
+      prev-icon="mdi-arrow-left-bold-box-outline"
+      center-active
     >
       <v-tabs-slider color="blue darken-4"></v-tabs-slider>
       <v-tab href="#overview">Yleisnäkymä</v-tab>
@@ -266,6 +269,30 @@
                         >{{ item.placement }}.</v-chip
                       >
                     </template>
+                    <template
+                      v-for="(c, index) in competitions.length"
+                      v-slot:[`item.cup_results[${c}].points`]="{ item }"
+                    >
+                      <div v-if="item.cup_results[c]" v-bind:key="c">
+                        <span
+                          v-if="
+                            item.cup_results[c].points ===
+                              competitions[index].cup_participation_points
+                          "
+                          >{{ item.cup_results[c].points }}p ({{
+                            item.cup_results[c].placement
+                          }}.)</span
+                        >
+                        <v-chip v-else
+                          >{{ item.cup_results[c].points }}p ({{
+                            item.cup_results[c].placement
+                          }}.)</v-chip
+                        >
+                      </div>
+                      <span v-else v-bind:key="c">
+                        -
+                      </span>
+                    </template>
                     <template v-slot:[`item.final_cup_points`]="{ item }">
                       <v-chip color="indigo darken-3 white--text"
                         >{{ item.final_cup_points }}p</v-chip
@@ -411,8 +438,10 @@ export default {
               // Get the signee, and add competitions results to array, under the competition.name key
               let found_signee = all_results[index];
               found_signee.points_compare.push(signee.cup_points_total); // For comparing
-              found_signee.cup_results[competition.key_name] =
-                signee.cup_points_total;
+              found_signee.cup_results[competition.key_name] = {
+                points: signee.cup_points_total,
+                placement: signee.placement,
+              };
               // For tracking total points
               all_results.splice(index, 1, found_signee);
             }
@@ -423,8 +452,10 @@ export default {
               // Array for comparing points with limit
               signee.points_compare = [];
               signee.points_compare.push(signee.cup_points_total); // For comparing
-              signee.cup_results[competition.key_name] =
-                signee.cup_points_total;
+              signee.cup_results[competition.key_name] = {
+                points: signee.cup_points_total,
+                placement: signee.placement,
+              };
               all_results.push(signee);
             }
           });
@@ -479,30 +510,30 @@ export default {
             if (signee.cup_results[competition.key_name]) {
               // If signee's points are less than the limit points from the array
               if (
-                signee.cup_results[competition.key_name] <
+                signee.cup_results[competition.key_name].points <
                 signee.points_compare[limit]
               ) {
                 // Give signee only participation points
-                signee.cup_results[competition.key_name] =
+                signee.cup_results[competition.key_name].points =
                   competition.cup_participation_points;
                 signee.cup_results["Total"] +=
                   competition.cup_participation_points;
               }
               // If the competition points are same as the limit
               if (
-                signee.cup_results[competition.key_name] ===
+                signee.cup_results[competition.key_name].points ===
                 signee.points_compare[limit]
               ) {
                 // If there are more than 1 competitions as the limit, reset one of them
                 if (counter === 1) {
                   signee.cup_results["Total"] += parseInt(
-                    signee.cup_results[competition.key_name]
+                    signee.cup_results[competition.key_name].points
                   );
                 }
                 // Else give full points
                 else {
                   // Points are greater than the limit points, give full points
-                  signee.cup_results[competition.key_name] =
+                  signee.cup_results[competition.key_name].points =
                     competition.cup_participation_points;
                   signee.cup_results["Total"] +=
                     competition.cup_participation_points;
@@ -511,13 +542,9 @@ export default {
               } else {
                 // Points are greater than the limit points, give full points
                 signee.cup_results["Total"] += parseInt(
-                  signee.cup_results[competition.key_name]
+                  signee.cup_results[competition.key_name].points
                 );
               }
-            }
-            // No points from that competition
-            else {
-              signee.cup_results[competition.key_name] = "-";
             }
           });
         }
@@ -660,7 +687,7 @@ export default {
             align: "center",
             highlight: true,
             isFinished: !competition.isFinished,
-            value: `cup_results[${competition.key_name}]`,
+            value: `cup_results[${competition.key_name}].points`,
           });
         } else {
           this.headers.push({
@@ -668,7 +695,7 @@ export default {
             align: "center",
             highlight: true,
             isFinished: !competition.isFinished,
-            value: `cup_results[${competition.key_name}]`,
+            value: `cup_results[${competition.key_name}].points`,
           });
         }
       });
@@ -703,13 +730,25 @@ export default {
           let counter = 4;
           this.competitions.forEach((competition) => {
             if (cup_results[competition.key_name]) {
-              values[counter] = cup_results[competition.key_name];
+              if (
+                cup_results[competition.key_name].points ===
+                this.competitions[competition.key_name - 1]
+                  .cup_participation_points
+              ) {
+                values[counter] = `${
+                  cup_results[competition.key_name].points
+                }p`;
+              } else {
+                values[counter] = `${
+                  cup_results[competition.key_name].points
+                }p (${cup_results[competition.key_name].placement}.)`;
+              }
             } else {
               values[counter] = "-";
             }
             counter++;
           });
-          values[counter] = cup_results["Total"];
+          values[counter] = `${cup_results["Total"]}p`;
         }
         if (type === 2) {
           if (values[0] > boat_number) {

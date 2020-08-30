@@ -114,6 +114,13 @@
             ></router-link
           >
         </li>
+        <li style="margin-top:20px" v-bind:class="isFeedbackPage">
+          <router-link to="/feedback"
+            ><a class="white-text"
+              ><i class="material-icons left">feedback</i>Palaute</a
+            ></router-link
+          >
+        </li>
         <li style="margin-top:20px">
           <v-btn large rounded color="red" @click="logout"
             ><i class="material-icons left">power_settings_new</i>Kirjaudu

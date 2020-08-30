@@ -55,13 +55,15 @@
         </v-row>
       </v-row>
       <!-- Tabs -->
-
       <v-tabs
         v-model="tab"
         background-color="blue lighten-2"
-        color="basil"
+        color="blue darken-4"
         grow
         show-arrows
+        next-icon="mdi-arrow-right-bold-box-outline"
+        prev-icon="mdi-arrow-left-bold-box-outline"
+        center-active
       >
         <v-tabs-slider color="blue darken-4"></v-tabs-slider>
         <v-tab href="#signing">Ilmoittautuminen</v-tab>
