@@ -104,6 +104,23 @@ router.post("/register-admin", async (req, res) => {
   }
 });
 
+// Update users preferences
+router.put("/:id", async (req, res) => {
+  const users = await loadUsersCollection();
+
+  if (users) {
+    const newvalues = req.body;
+    await users.updateOne(
+      { _id: new mongodb.ObjectID(req.params.id) },
+      newvalues
+    );
+    res.status(204).send();
+  } else {
+    // Connection timed out
+    res.status(408).send();
+  }
+});
+
 // Login ROUTES
 router.post("/login", async (req, res) => {
   const users = await loadUsersCollection();

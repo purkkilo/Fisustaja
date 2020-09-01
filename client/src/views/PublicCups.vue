@@ -1,7 +1,10 @@
 <template>
   <!-- /cup-overview -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <v-container class="container-transparent">
+  <v-container
+    style="margin-top:70px;margin-bottom:5px"
+    class="container-transparent"
+  >
     <MainHeader />
     <v-row id="errordiv" v-if="errors.length">
       <ul class="collection with-header" style="border:1px solid red;">
@@ -21,7 +24,7 @@
       </ul>
     </v-row>
     <v-row class="section">
-      <v-col>
+      <v-col md="6" offset-md="3">
         <h1>Cuppien tuloksia</h1>
       </v-col>
     </v-row>
@@ -130,17 +133,9 @@
         </v-row>
         <v-row v-if="competitions.length">
           <v-col>
-            <v-card :dark="updateSwitch">
+            <v-card :dark="$store.getters.getTheme">
               <v-card-title>
                 <p class="flow-text">Cupin kokonaispisteet</p>
-                <v-spacer></v-spacer>
-                <v-switch
-                  v-model="updateSwitch"
-                  class="black--text"
-                  color="indigo darken-3"
-                  append-icon="mdi-weather-night"
-                  prepend-icon="mdi-weather-sunny"
-                ></v-switch>
                 <v-spacer></v-spacer>
                 <v-text-field
                   v-model="search"
@@ -163,17 +158,17 @@
                   <v-chip
                     v-if="header.highlight"
                     :key="index"
-                    :outlined="updateSwitch"
+                    :outlined="$store.getters.getTheme"
                     :color="getCompetitionFinishedColor(header.isFinished)"
                     >{{ header.text }}</v-chip
                   >
-                  <v-chip v-else :key="index" :outlined="updateSwitch">{{
+                  <v-chip v-else :key="index" :outlined="$store.getters.getTheme">{{
                     header.text
                   }}</v-chip>
                 </template>
                 <template v-slot:[`item.placement`]="{ item }">
                   <v-chip
-                    :outlined="updateSwitch"
+                    :outlined="$store.getters.getTheme"
                     :color="getColor(item.placement)"
                     >{{ item.placement }}.</v-chip
                   >
@@ -195,7 +190,7 @@
                     >
                     <!-- Highlight pointsthat matter -->
                     <v-chip
-                      :outlined="updateSwitch"
+                      :outlined="$store.getters.getTheme"
                       :color="getColor(item.cup_results[c].placement)"
                       v-else
                       >{{ item.cup_results[c].points }}p ({{
@@ -290,15 +285,12 @@ export default {
       selected_cup: null,
       tab: null,
       search: "",
-      updateSwitch: true,
       not_finished_count: 0,
     };
   },
-  created() {},
   async mounted() {
     //Check if user is logged in has admin status, update header
     this.checkLogin();
-
     let cups = await CupService.getAllCups();
     if (cups.length) {
       this.cups = cups.filter((cup) => {

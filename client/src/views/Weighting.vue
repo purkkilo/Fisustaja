@@ -417,17 +417,9 @@
             <v-col>
               <v-row>
                 <v-col md="8" offset-md="2" style="margin-top:20px;">
-                  <v-card :dark="updateSwitch">
+                  <v-card :dark="$store.getters.getTheme">
                     <v-card-title>
                       <p class="flow-text">Tilannekatsaus</p>
-                      <v-spacer></v-spacer>
-                      <v-switch
-                        v-model="updateSwitch"
-                        class="black--text"
-                        color="indigo darken-3"
-                        append-icon="mdi-weather-night"
-                        prepend-icon="mdi-weather-sunny"
-                      ></v-switch>
                       <v-spacer></v-spacer>
                       <v-text-field
                         v-model="search"
@@ -445,7 +437,7 @@
                     >
                       <template v-slot:[`item.placement`]="{ item }">
                         <v-chip
-                          :outlined="updateSwitch"
+                          :outlined="$store.getters.getTheme"
                           :color="getColor(item.placement)"
                           >{{ item.placement }}.</v-chip
                         >
@@ -512,19 +504,11 @@
               </v-row>
               <v-row v-if="still_on_water.length">
                 <v-col md="8" offset-md="2">
-                  <v-card :dark="updateSwitch">
+                  <v-card :dark="$store.getters.getTheme">
                     <v-card-title>
                       <p class="flow-text">
                         Venekunnat, jotka ovat vielä vesillä
                       </p>
-                      <v-spacer></v-spacer>
-                      <v-switch
-                        v-model="updateSwitch"
-                        class="black--text"
-                        color="indigo darken-3"
-                        append-icon="mdi-weather-night"
-                        prepend-icon="mdi-weather-sunny"
-                      ></v-switch>
                       <v-spacer></v-spacer>
                       <v-text-field
                         v-model="search_on_water"
@@ -646,7 +630,6 @@ export default {
       ],
       search_on_water: "",
       search: "",
-      updateSwitch: true,
       still_on_water: [],
       number_rules: [
         (value) => !isNaN(value || "") || "Ei ole numero!",
@@ -773,6 +756,9 @@ export default {
       if (localStorage.getItem("jwt") != null) {
         this.$store.state.logged_in = true;
         let user = JSON.parse(localStorage.getItem("user"));
+        // Set preferences to vuex
+        this.$store.state.isDark = user.preferences.isDark;
+        this.$store.state.lang = user.preferences.lang;
         // Check if user is admin
         //TODO safer way to check this than use localstorage?
         user.is_admin == true

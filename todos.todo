@@ -15,11 +15,12 @@ New:
   ☐ Add tests! Vuetify can also be used for unit testing, add testing
   ☐ Add qr code possibility to signing/weighting (rfid)
   ☐ Add possibility to get weights from usb
-  ☐ Move darkmode switch from each table to header or somewhere handy, update it to vuex or user's datatable (also add profile page?)
   ☐ Test 1.5x cup_multiplier competition! @high
   ☐ consider changing library for making charts, since chart.js need canvas to be printed to pdf, can't be generated in code
   ☐ Also Fix warning from entrypoint app being too large (optimize somehow)
-
+  ☐ Implement competition updating like updating user preferences (check: Header.vue, Userservice.js, users.js)
+  ☐ Re-implement login/logout/session using https://chrismroberts.com/2019/01/03/authentication-and-protected-routes-in-vuejs/#Protected-Routes
+  ☐ Profile page?
 Done:
   ✔ Create signees database collection @started(20-05-26 11:19) @today @done(20-05-27 19:34) @lasted(1d8h15m1s)
   ✔ Add fish weights/points to signee properties @started(20-05-26 11:22) @today @done(20-05-28 15:33) @lasted(2d4h11m17s)
@@ -47,6 +48,7 @@ Done:
   ✔ Transform tables to vuetify data-tables @done(20-08-18 00:08)
   ✔ Add plus icon next to weighting inputs, when clicked user can input more weights that are added to existing sum on the input @done(20-08-18 00:08)
   ✔ Handle timeout response on all Service.js calls on .vue files (Request failed with status code 408 -> Timeout -> Bad internet or api problem); @done(20-08-18 00:09)
+  ✔ Move darkmode switch from each table to header or somewhere handy, update it to vuex or user's datatable @done(20-09-01 05:21)
 Cancelled:
   ✘ Press Alt+C to mark a todo as cancelled
   

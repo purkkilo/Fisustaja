@@ -373,17 +373,9 @@
               </v-row>
               <v-row>
                 <v-col md="10" offset-md="1">
-                  <v-card :dark="updateSwitch">
+                  <v-card :dark="$store.getters.getTheme">
                     <v-card-title>
                       <p class="flow-text">Ilmoittautuneet</p>
-                      <v-spacer></v-spacer>
-                      <v-switch
-                        v-model="updateSwitch"
-                        class="black--text"
-                        color="indigo darken-3"
-                        append-icon="mdi-weather-night"
-                        prepend-icon="mdi-weather-sunny"
-                      ></v-switch>
                       <v-spacer></v-spacer>
                       <v-text-field
                         v-model="search"
@@ -472,7 +464,6 @@ export default {
         { text: "Seura/Paikkakunta", value: "locality" },
       ],
       search: "",
-      updateSwitch: true,
       cup: [],
       teams: [],
       maxlength: 40,
@@ -564,6 +555,9 @@ export default {
       if (localStorage.getItem("jwt") != null) {
         this.$store.state.logged_in = true;
         let user = JSON.parse(localStorage.getItem("user"));
+        // Set preferences to vuex
+        this.$store.state.isDark = user.preferences.isDark;
+        this.$store.state.lang = user.preferences.lang;
         // Check if user is admin
         //TODO safer way to check this than use localstorage?
         user.is_admin == true

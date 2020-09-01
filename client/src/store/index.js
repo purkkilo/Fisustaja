@@ -11,9 +11,14 @@ export default new Vuex.Store({
     results: null,
     logged_in: false,
     is_admin: false,
+    isDark: false,
+    lang: "fi",
   },
   // Get data from vuex
   getters: {
+    getTheme: (state) => {
+      return state.isDark;
+    },
     getSigneesCount: (state) => {
       return state.competition.signees.length;
     },

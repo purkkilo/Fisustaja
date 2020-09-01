@@ -406,19 +406,11 @@
                 "
               >
                 <v-col md="12">
-                  <v-card :dark="updateSwitch">
+                  <v-card :dark="$store.getters.getTheme">
                     <v-card-title>
                       <p class="flow-text">
                         Normaalikilpailu ({{ selected_normal }})
                       </p>
-                      <v-spacer></v-spacer>
-                      <v-switch
-                        v-model="updateSwitch"
-                        class="black--text"
-                        color="indigo darken-3"
-                        append-icon="mdi-weather-night"
-                        prepend-icon="mdi-weather-sunny"
-                      ></v-switch>
                       <v-spacer></v-spacer>
                       <v-text-field
                         v-model="search"
@@ -436,7 +428,7 @@
                     >
                       <template v-slot:[`item.placement`]="{ item }">
                         <v-chip
-                          :outlined="updateSwitch"
+                          :outlined="$store.getters.getTheme"
                           :color="getColor(item.placement)"
                           >{{ item.placement }}.</v-chip
                         >
@@ -502,12 +494,12 @@
               style="padding-bottom:20px"
               v-if="team_results.length"
             >
-              <v-card :dark="updateSwitch">
+              <v-card :dark="$store.getters.getTheme">
                 <v-card-title>
                   <p class="flow-text">Tiimikilpailu</p>
                   <v-spacer></v-spacer>
                   <v-switch
-                    v-model="updateSwitch"
+                    v-model="$store.getters.getTheme"
                     class="black--text"
                     color="indigo darken-3"
                     append-icon="mdi-weather-night"
@@ -530,7 +522,7 @@
                 >
                   <template v-slot:[`item.placement`]="{ item }">
                     <v-chip
-                      :outlined="updateSwitch"
+                      :outlined="$store.getters.getTheme"
                       :color="getColor(item.placement)"
                       >{{ item.placement }}.</v-chip
                     >
@@ -584,7 +576,7 @@
           </v-row>
           <v-row v-if="biggest_fishes_results.length">
             <v-col md="10" offset-md="1" style="margin-bottom:40px">
-              <v-card :dark="updateSwitch">
+              <v-card :dark="$store.getters.getTheme">
                 <v-card-title>
                   <p v-if="results_found_fishes" class="flow-text">
                     Suurimmat kalat ({{ selected_biggest_fish }}
@@ -593,14 +585,6 @@
                   <p v-else class="flow-text">
                     Suurimmat kalat ({{ selected_biggest_fish }})
                   </p>
-                  <v-spacer></v-spacer>
-                  <v-switch
-                    v-model="updateSwitch"
-                    class="black--text"
-                    color="indigo darken-3"
-                    append-icon="mdi-weather-night"
-                    prepend-icon="mdi-weather-sunny"
-                  ></v-switch>
                   <v-spacer></v-spacer>
                   <v-text-field
                     v-model="search_fishes"
@@ -618,7 +602,7 @@
                 >
                   <template v-slot:[`item.placement`]="{ item }">
                     <v-chip
-                      :outlined="updateSwitch"
+                      :outlined="$store.getters.getTheme"
                       :color="getColor(item.placement)"
                       >{{ item.placement }}.</v-chip
                     >
@@ -677,7 +661,7 @@
           </v-row>
           <v-row v-if="biggest_amounts_results.length">
             <v-col md="10" offset-md="1" style="margin-bottom:40px">
-              <v-card :dark="updateSwitch">
+              <v-card :dark="$store.getters.getTheme">
                 <v-card-title>
                   <p v-if="results_found_amounts" class="flow-text">
                     Suurimmat kalasaaliit ({{ selected_biggest_amount }}
@@ -688,7 +672,7 @@
                   </p>
                   <v-spacer></v-spacer>
                   <v-switch
-                    v-model="updateSwitch"
+                    v-model="$store.getters.getTheme"
                     class="black--text"
                     color="indigo darken-3"
                     append-icon="mdi-weather-night"
@@ -711,7 +695,7 @@
                 >
                   <template v-slot:[`item.placement`]="{ item }">
                     <v-chip
-                      :outlined="updateSwitch"
+                      :outlined="$store.getters.getTheme"
                       :color="getColor(item.placement)"
                       >{{ item.placement }}.</v-chip
                     >
@@ -893,7 +877,6 @@ export default {
       search_amounts: "",
       selected_print: [],
       dialog: false,
-      updateSwitch: true,
       intervalSwitch: false,
     };
   },
@@ -1196,6 +1179,8 @@ export default {
       if (localStorage.getItem("jwt") != null) {
         this.$store.state.logged_in = true;
         let user = JSON.parse(localStorage.getItem("user"));
+        this.$store.state.isDark = user.preferences.isDark;
+        this.$store.state.lang = user.preferences.lang;
         // Check if user is admin
         //TODO safer way to check this than use localstorage?
         user.is_admin == true

@@ -147,8 +147,12 @@ export default {
                   email: response.data.user.email,
                   is_admin: response.data.user.is_admin,
                   createdAt: response.data.user.createdAt,
+                  preferences: response.data.user.preferences,
                 })
               );
+              // Set preferences to vuex
+              this.$store.state.isDark = response.data.user.preferences.isDark;
+              this.$store.state.lang = response.data.user.preferences.lang;
               localStorage.setItem("jwt", response.data.token);
               this.$store.state.logged_in = true;
               if (localStorage.getItem("jwt") != null) {

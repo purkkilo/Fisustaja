@@ -3,7 +3,13 @@
     <header class="header">
       <div class="navbar-fixed">
         <nav>
-          <div class="nav-wrapper blue lighten-2">
+          <div
+            class="nav-wrapper"
+            v-bind:class="{
+              'grey darken-4': isDark,
+              'blue lighten-2': !isDark,
+            }"
+          >
             <router-link to="/"
               ><img
                 src="https://i.imgur.com/2WcI49A.png"
@@ -16,10 +22,16 @@
                 >Fisustaja</a
               ></router-link
             >
-            <a href="#" data-target="slide-out" class="sidenav-trigger right"
+            <a @click.stop="openDrawer" class="sidenav-trigger right"
               ><i class="material-icons">menu</i></a
             >
             <ul class="right hide-on-med-and-down" v-if="isUserLoggedIn">
+              <li v-if="uploading">
+                <v-progress-circular
+                  indeterminate
+                  color="primary"
+                ></v-progress-circular>
+              </li>
               <li v-if="isCompetitionSet" v-bind:class="isOverviewPage">
                 <router-link to="/overview"
                   ><a class="white-text"
@@ -36,19 +48,32 @@
                 >
               </li>
               <li style="margin-right:20px;margin-left:20px">
-                <v-menu offset-y>
+                <v-menu offset-y rounded="b-xl">
                   <template v-slot:activator="{ on, attrs }">
                     <v-btn color="primary" dark v-bind="attrs" v-on="on">
-                      Lisää sivuja
+                      Lisää
                     </v-btn>
                   </template>
-                  <v-list>
+                  <v-list :dark="isDark">
                     <v-list-item
                       v-for="(item, index) in items"
                       :key="index"
                       @click="changePage(item.route)"
                     >
-                      <v-list-item-title>{{ item.title }}</v-list-item-title>
+                      <v-list-item-title
+                        ><i class="material-icons left">{{ item.icon }}</i
+                        >{{ item.title }}</v-list-item-title
+                      >
+                    </v-list-item>
+                    <v-list-item>
+                      <v-list-item-action>
+                        <v-switch
+                          v-model="isDark"
+                          :loading="uploading"
+                          color="purple"
+                        ></v-switch>
+                      </v-list-item-action>
+                      <v-list-item-title>Tumma teema</v-list-item-title>
                     </v-list-item>
                   </v-list>
                 </v-menu>
@@ -64,109 +89,126 @@
         </nav>
       </div>
     </header>
-    <ul id="slide-out" class="sidenav background grey darken-4">
-      <div v-if="isUserLoggedIn">
-        <li v-if="isUser">
-          <div class="user-view">
-            <div class="background blue darken-4">
-              <img src="" />
-            </div>
-            <span class="white-text name"
-              ><i class="material-icons left">account_circle</i></span
+
+    <v-navigation-drawer
+      v-model="drawer"
+      absolute
+      :dark="isDark"
+      temporary
+      :src="
+        isDark
+          ? 'https://cdn.vuetifyjs.com/images/backgrounds/vbanner.jpg'
+          : 'https://cdn.vuetifyjs.com/images/backgrounds/bg-2.jpg'
+      "
+    >
+      <v-list dense nav class="py-0">
+        <v-list-item two-line>
+          <v-list-item-avatar>
+            <i class="material-icons left">account_circle</i>
+          </v-list-item-avatar>
+
+          <v-list-item-content>
+            <v-list-item-title>{{ isUser.name }}</v-list-item-title>
+            <v-list-item-subtitle>{{ isUser.email }}</v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-divider></v-divider>
+
+        <v-list-item v-if="isCompetitionSet" @click="changePage('/overview')">
+          <v-list-item-icon>
+            <v-icon>directions_boat</v-icon>
+          </v-list-item-icon>
+
+          <v-list-item-content>
+            <v-list-item-title>Kilpailuun</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-list-item
+          v-if="isCompetitionSet"
+          @click="changePage('/cup-overview')"
+        >
+          <v-list-item-icon>
+            <v-icon>tune</v-icon>
+          </v-list-item-icon>
+
+          <v-list-item-content>
+            <v-list-item-title>Cuppiin</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-list-item
+          v-for="item in items"
+          :key="item.title"
+          link
+          @click="changePage(item.route)"
+        >
+          <v-list-item-icon>
+            <v-icon>{{ item.icon }}</v-icon>
+          </v-list-item-icon>
+
+          <v-list-item-content>
+            <v-list-item-title>{{ item.title }}</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-action>
+            <v-switch
+              v-model="isDark"
+              :loading="uploading"
+              color="purple"
+            ></v-switch>
+          </v-list-item-action>
+          <v-list-item-title>Tumma teema</v-list-item-title>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-content>
+            <v-btn large rounded color="red" @click="logout"
+              ><i class="material-icons left">power_settings_new</i>Kirjaudu
+              ulos</v-btn
             >
-            <span class="white-text name">{{ isUser.name }}</span>
-            <span class="white-text email">{{ isUser.email }}</span>
-          </div>
-        </li>
-        <li v-bind:class="isDashboardPage" style="margin-top:20px">
-          <router-link to="/dashboard"
-            ><a class="white-text"
-              ><i class="material-icons left">home</i>Dashboardiin</a
-            ></router-link
-          >
-        </li>
-        <li
-          style="margin-top:20px"
-          v-if="isCompetitionSet"
-          v-bind:class="isOverviewPage"
-        >
-          <router-link to="/overview"
-            ><a class="white-text"
-              ><i class="material-icons left">directions_boat</i>Kilpailuun</a
-            ></router-link
-          >
-        </li>
-        <li
-          v-if="isCompetitionSet"
-          v-bind:class="isCupPage"
-          style="margin-top:20px"
-        >
-          <router-link to="/cup-overview"
-            ><a class="white-text"
-              ><i class="material-icons left">tune</i>Cuppiin</a
-            ></router-link
-          >
-        </li>
-        <li style="margin-top:20px" v-if="isAdmin" v-bind:class="isAdminPage">
-          <router-link to="/admin"
-            ><a class="white-text"
-              ><i class="material-icons left">admin_panel_settings</i>Admin</a
-            ></router-link
-          >
-        </li>
-        <li style="margin-top:20px" v-bind:class="isFeedbackPage">
-          <router-link to="/feedback"
-            ><a class="white-text"
-              ><i class="material-icons left">feedback</i>Palaute</a
-            ></router-link
-          >
-        </li>
-        <li style="margin-top:20px">
-          <v-btn large rounded color="red" @click="logout"
-            ><i class="material-icons left">power_settings_new</i>Kirjaudu
-            ulos</v-btn
-          >
-        </li>
-      </div>
-    </ul>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+    </v-navigation-drawer>
   </div>
 </template>
 
 <script>
 import M from "materialize-css";
+import UserService from "../../UserService";
 
 export default {
   name: "Header",
   data() {
     return {
       user: null,
-      items: [
-        { title: "Dashboardiin", route: "/dashboard" },
-        { title: "Admin", route: "/admin" },
-        { title: "Palaute", route: "/feedback" },
-      ],
+      items: [],
+      isDark: JSON.parse(localStorage.getItem("user"))["preferences"].isDark,
+      drawer: null,
+      uploading: false,
     };
   },
   mounted() {
     //Init materialize elements
     M.AutoInit();
+    const user = JSON.parse(localStorage.getItem("user"));
+    const isAdmin = user["is_admin"];
+    if (isAdmin) {
+      this.items = [
+        { title: "Dashboardiin", route: "/dashboard", icon: "dashboard" },
+        { title: "Palaute", route: "/feedback", icon: "feedback" },
+        { title: "Admin", route: "/admin", icon: "admin_panel_settings" },
+      ];
+    } else {
+      this.items = [
+        { title: "Dashboardiin", route: "/dashboard", icon: "dashboard" },
+        { title: "Palaute", route: "/feedback", icon: "feedback" },
+      ];
+    }
   },
   computed: {
-    isDashboardPage() {
-      return {
-        active: this.$route.name === "dashboard",
-      };
-    },
-    isFeedbackPage() {
-      return {
-        active: this.$route.name === "Feedback",
-      };
-    },
-    isAdminPage() {
-      return {
-        active: this.$route.name === "admin",
-      };
-    },
     isOverviewPage() {
       return {
         active: this.$route.name === "Overview",
@@ -198,7 +240,49 @@ export default {
       }
     },
   },
+  watch: {
+    isDark(newValue) {
+      //called whenever isDark switch changes
+      this.$store.state.isDark = newValue;
+      // Update values to database, NOTE no support for language yet but added here already to support it in the future
+      this.updateUser(newValue, "fi");
+    },
+  },
   methods: {
+    openDrawer: function() {
+      location.href = "#";
+      this.drawer = !this.drawer;
+    },
+    changePage: function(route) {
+      if (this.$router.currentRoute.path !== route) {
+        this.$router.push(route);
+        this.drawer = !this.drawer;
+      } else {
+        M.toast({ html: "Olet jo tällä sivulla!" });
+      }
+    },
+    async updateUser(isDark, lang) {
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (user) {
+        try {
+          this.uploading = true;
+          const user_id = user["id"];
+          user.preferences = { isDark: isDark, lang: lang };
+          localStorage.setItem("user", JSON.stringify(user));
+          const newvalues = {
+            $set: { preferences: { isDark: isDark, lang: lang } },
+          };
+          await UserService.updateUser(user_id, newvalues);
+        } catch (err) {
+          console.error(err.message);
+        }
+        this.uploading = false;
+      } else {
+        console.error(
+          "Can't update user preferences: No user in localstorage!"
+        );
+      }
+    },
     logout: function() {
       localStorage.removeItem("user");
       localStorage.removeItem("jwt");
@@ -208,13 +292,6 @@ export default {
       this.$store.commit("refreshCompetition", null);
       this.user = null;
       M.toast({ html: "Kirjattu ulos onnistuneesti!" });
-    },
-    changePage: function(route) {
-      if (this.$router.currentRoute.path !== route) {
-        this.$router.push(route);
-      } else {
-        M.toast({ html: "Olet jo tällä sivulla!" });
-      }
     },
   },
 };

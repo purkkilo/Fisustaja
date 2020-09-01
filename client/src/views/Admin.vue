@@ -120,7 +120,7 @@
                 md="6"
                 offset-md="3"
                 v-bind:class="{
-                  'grey darken-4': updateSwitch,
+                  'grey darken-4': $store.getters.getTheme,
                 }"
               >
                 <v-data-iterator
@@ -130,7 +130,7 @@
                   class="scroll_table"
                 >
                   <template v-slot:header>
-                    <v-toolbar class="mb-1" :dark="updateSwitch">
+                    <v-toolbar class="mb-1" :dark="$store.getters.getTheme">
                       <v-text-field
                         v-model="search"
                         clearable
@@ -140,14 +140,6 @@
                         prepend-inner-icon="search"
                         label="Etsi"
                       ></v-text-field>
-                      <v-spacer></v-spacer>
-                      <v-switch
-                        v-model="updateSwitch"
-                        class="black--text"
-                        color="indigo darken-3"
-                        append-icon="mdi-weather-night"
-                        prepend-icon="mdi-weather-sunny"
-                      ></v-switch>
                     </v-toolbar>
                   </template>
                   <template v-slot:default="props">
@@ -167,8 +159,8 @@
                       >
                         <template v-slot:activator="{ on }">
                           <v-chip
-                            :dark="updateSwitch"
-                            :outlined="updateSwitch"
+                            :dark="$store.getters.getTheme"
+                            :outlined="$store.getters.getTheme"
                             large
                             v-on="on"
                             :color="user.is_admin ? 'yellow darken-2' : 'green'"
@@ -305,7 +297,9 @@
             <v-row v-else-if="loading_users">
               <v-col md="10" offset-md="1">
                 <v-sheet
-                  :color="`grey ${theme.isDark ? 'darken-2' : 'lighten-4'}`"
+                  :color="
+                    `grey ${$store.getters.getTheme ? 'darken-2' : 'lighten-4'}`
+                  "
                   class="px-3 pt-3 pb-3"
                 >
                   <v-skeleton-loader
@@ -342,17 +336,9 @@
             <!-- if there are competitions in database-->
             <v-row v-if="competitions.length">
               <v-col md="10" offset-md="1">
-                <v-card :dark="updateSwitch">
+                <v-card :dark="$store.getters.getTheme">
                   <v-card-title>
                     <p class="flow-text">Kilpailut</p>
-                    <v-spacer></v-spacer>
-                    <v-switch
-                      v-model="updateSwitch"
-                      class="black--text"
-                      color="indigo darken-3"
-                      append-icon="mdi-weather-night"
-                      prepend-icon="mdi-weather-sunny"
-                    ></v-switch>
                     <v-spacer></v-spacer>
                     <v-text-field
                       v-model="search_comp"
@@ -399,7 +385,9 @@
             <v-row v-else>
               <v-col v-if="loading_competitions" md="10" offset-md="1">
                 <v-sheet
-                  :color="`grey ${theme.isDark ? 'darken-2' : 'lighten-4'}`"
+                  :color="
+                    `grey ${$store.getters.getTheme ? 'darken-2' : 'lighten-4'}`
+                  "
                   class="px-3 pt-3 pb-3"
                 >
                   <v-skeleton-loader
@@ -439,7 +427,7 @@
                   <li v-for="(feedback, index) in feedback" :key="index">
                     <v-card
                       class="mx-auto"
-                      :dark="updateSwitch"
+                      :dark="$store.getters.getTheme"
                       min-width="200px"
                       max-width="850px"
                       style="margin-bottom:30px;margin-top:30px"
@@ -480,7 +468,9 @@
             <v-row v-else>
               <v-col v-if="loading" md="10" offset-md="1">
                 <v-sheet
-                  :color="`grey ${theme.isDark ? 'darken-2' : 'lighten-4'}`"
+                  :color="
+                    `grey ${$store.getters.getTheme ? 'darken-2' : 'lighten-4'}`
+                  "
                   class="px-3 pt-3 pb-3"
                 >
                   <v-skeleton-loader
@@ -626,7 +616,6 @@ export default {
       loading_users: false,
       loading_competitions: false,
       loading_cups: false,
-      theme: { isDark: true },
       cup: {},
       signees_amount: 30,
       team_competition: "Ei",
@@ -645,7 +634,6 @@ export default {
         { text: "", value: "delete", sortable: false },
       ],
       search_comp: "",
-      updateSwitch: true,
       search: "",
     };
   },
@@ -658,7 +646,6 @@ export default {
   async mounted() {
     //Init materialize elements
     M.AutoInit();
-    //FIXME clocks doesn't appear on refreshing the tab
     //Check if user is logged in has admin status, update header
     this.checkLogin();
     // Focus on top of the page
@@ -750,24 +737,28 @@ export default {
     },
     async getCups() {
       const user = JSON.parse(localStorage.getItem("user"));
-      const user_id = user["id"];
-      this.loading_cups = true;
-      // Get Cups
-      try {
-        this.cups = await CupService.getCups(user_id);
-        if (this.cups.length) {
-          this.cups.sort(function compare(a, b) {
-            return a.name - b.name;
-          });
-          this.cups.forEach((cup) => {
-            cup.select = `${cup.name} (${cup.year})`;
-          });
-          this.cup = this.cups[this.cups.length - 1];
+      if (user) {
+        const user_id = user["id"];
+        this.loading_cups = true;
+        // Get Cups
+        try {
+          this.cups = await CupService.getCups(user_id);
+          if (this.cups.length) {
+            this.cups.sort(function compare(a, b) {
+              return a.name - b.name;
+            });
+            this.cups.forEach((cup) => {
+              cup.select = `${cup.name} (${cup.year})`;
+            });
+            this.cup = this.cups[this.cups.length - 1];
+          }
+        } catch (err) {
+          this.error = err.message;
         }
-      } catch (err) {
-        this.error = err.message;
+        this.loading_cups = false;
+      } else {
+        console.error("No user found in localstorage!");
       }
-      this.loading_cups = false;
     },
     //Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)
     checkLogin: function() {
@@ -775,6 +766,9 @@ export default {
       if (localStorage.getItem("jwt") != null) {
         this.$store.state.logged_in = true;
         let user = JSON.parse(localStorage.getItem("user"));
+        // Set preferences to vuex
+        this.$store.state.isDark = user.preferences.isDark;
+        this.$store.state.lang = user.preferences.lang;
         // Check if user is admin
         //TODO safer way to check this than use localstorage?
         user.is_admin == true

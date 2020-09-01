@@ -1,15 +1,15 @@
 <template>
   <!-- Starting page, / -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <v-container style="margin-top:50px">
+  <v-container style="margin-top:70px;" class="container-transparent">
     <MainHeader />
     <v-row class="section">
-      <v-col>
+      <v-col md="6" offset-md="3">
         <h1>Fisustaja</h1>
       </v-col>
     </v-row>
 
-    <v-row class="title">
+    <v-row>
       <!-- TODO Cool starting page... -->
       <v-col>
         <h4>Sovellus kalastuskilpailujen järjestämistä varten</h4>
@@ -45,7 +45,20 @@ export default {
     MainHeader,
   },
   data() {
-    return {};
+    return {
+      updateSwitch: this.$store.getters.getTheme,
+    };
+  },
+  watch: {
+    updateSwitch(newValue) {
+      //called whenever isDark switch changes
+      this.$store.state.isDark = newValue;
+    },
+  },
+  computed: {
+    getTheme() {
+      return this.$store.getters.getTheme;
+    },
   },
   mounted() {
     // Check if user is logged in has admin status, update header

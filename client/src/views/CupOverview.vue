@@ -58,17 +58,9 @@
             <div v-if="competitions.length">
               <v-row v-if="competitions.length">
                 <v-col md="10" offset-md="1">
-                  <v-card :dark="updateSwitch">
+                  <v-card :dark="$store.getters.getTheme">
                     <v-card-title>
                       <p class="flow-text">Kilpailut</p>
-                      <v-spacer></v-spacer>
-                      <v-switch
-                        v-model="updateSwitch"
-                        class="black--text"
-                        color="indigo darken-3"
-                        append-icon="mdi-weather-night"
-                        prepend-icon="mdi-weather-sunny"
-                      ></v-switch>
                       <v-spacer></v-spacer>
                       <v-text-field
                         v-model="search_comp"
@@ -220,17 +212,9 @@
             </v-row>
             <v-row v-if="isResults">
               <v-col>
-                <v-card :dark="updateSwitch">
+                <v-card :dark="$store.getters.getTheme">
                   <v-card-title>
                     <p class="flow-text">Cupin kokonaispisteet</p>
-                    <v-spacer></v-spacer>
-                    <v-switch
-                      v-model="updateSwitch"
-                      class="black--text"
-                      color="indigo darken-3"
-                      append-icon="mdi-weather-night"
-                      prepend-icon="mdi-weather-sunny"
-                    ></v-switch>
                     <v-spacer></v-spacer>
                     <v-text-field
                       v-model="search"
@@ -254,17 +238,20 @@
                       <v-chip
                         v-if="header.highlight"
                         :key="index"
-                        :outlined="updateSwitch"
+                        :outlined="$store.getters.getTheme"
                         :color="getCompetitionFinishedColor(header.isFinished)"
                         >{{ header.text }}</v-chip
                       >
-                      <v-chip v-else :key="index" :outlined="updateSwitch">{{
-                        header.text
-                      }}</v-chip>
+                      <v-chip
+                        v-else
+                        :key="index"
+                        :outlined="$store.getters.getTheme"
+                        >{{ header.text }}</v-chip
+                      >
                     </template>
                     <template v-slot:[`item.placement`]="{ item }">
                       <v-chip
-                        :outlined="updateSwitch"
+                        :outlined="$store.getters.getTheme"
                         :color="getColor(item.placement)"
                         >{{ item.placement }}.</v-chip
                       >
@@ -285,7 +272,7 @@
                         >
                         <v-chip
                           v-else
-                          :outlined="updateSwitch"
+                          :outlined="$store.getters.getTheme"
                           :color="getColor(item.cup_results[c].placement)"
                           >{{ item.cup_results[c].points }}p ({{
                             item.cup_results[c].placement
@@ -383,7 +370,6 @@ export default {
       tab: null,
       search: "",
       search_comp: "",
-      updateSwitch: true,
       not_finished_count: 0,
     };
   },
@@ -391,7 +377,6 @@ export default {
   mounted() {
     //Check if user is logged in has admin status, update header
     this.checkLogin();
-
     // IF competition on localstorage
     if (localStorage.getItem("cup") != null) {
       // update from database
@@ -604,6 +589,8 @@ export default {
       if (localStorage.getItem("jwt") != null) {
         this.$store.state.logged_in = true;
         let user = JSON.parse(localStorage.getItem("user"));
+        this.$store.state.isDark = user.preferences.isDark;
+        this.$store.state.lang = user.preferences.lang;
         // Check if user is admin
         //TODO safer way to check this than use localstorage?
         user.is_admin == true

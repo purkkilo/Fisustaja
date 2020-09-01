@@ -48,17 +48,9 @@
           <v-row>
             <v-col>
               <div v-if="competitions.length" class="scroll_table">
-                <v-card :dark="updateSwitch">
+                <v-card :dark="$store.getters.getTheme">
                   <v-card-title>
                     <p class="flow-text">Kilpailut</p>
-                    <v-spacer></v-spacer>
-                    <v-switch
-                      v-model="updateSwitch"
-                      class="black--text"
-                      color="indigo darken-3"
-                      append-icon="mdi-weather-night"
-                      prepend-icon="mdi-weather-sunny"
-                    ></v-switch>
                     <v-spacer></v-spacer>
                     <v-text-field
                       v-model="search_comp"
@@ -198,17 +190,9 @@
           <v-row>
             <v-col>
               <div v-if="cups.length" class="scroll_table">
-                <v-card :dark="updateSwitch">
+                <v-card :dark="$store.getters.getTheme">
                   <v-card-title>
                     <p class="flow-text">Cupit</p>
-                    <v-spacer></v-spacer>
-                    <v-switch
-                      v-model="updateSwitch"
-                      class="black--text"
-                      color="indigo darken-3"
-                      append-icon="mdi-weather-night"
-                      prepend-icon="mdi-weather-sunny"
-                    ></v-switch>
                     <v-spacer></v-spacer>
                     <v-text-field
                       v-model="search_cup"
@@ -296,7 +280,6 @@ export default {
       errors: [],
       search_comp: "",
       search_cup: "",
-      updateSwitch: true,
     };
   },
   watch: {
@@ -343,7 +326,6 @@ export default {
   mounted() {
     M.AutoInit();
     this.checkLogin();
-
     // Focus on top of the page when changing pages
     location.href = "#";
     location.href = "#app";
@@ -362,6 +344,9 @@ export default {
       if (localStorage.getItem("jwt") != null) {
         this.$store.state.logged_in = true;
         let user = JSON.parse(localStorage.getItem("user"));
+        // Set preferences to vuex
+        this.$store.state.isDark = user.preferences.isDark;
+        this.$store.state.lang = user.preferences.lang;
         // Check if user is admin
         //TODO safer way to check this than use localstorage?
         user.is_admin == true

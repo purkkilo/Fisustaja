@@ -1,5 +1,13 @@
 <template>
-  <v-footer app color="primary lighten-1" paddless absolute>
+  <v-footer
+    app
+    paddless
+    absolute
+    v-bind:class="{
+      'grey darken-4': $store.getters.getTheme,
+      'primary lighten-1': !$store.getters.getTheme,
+    }"
+  >
     <v-row justify="center">
       <v-btn
         v-for="link in links"
@@ -11,7 +19,14 @@
       >
         {{ link }}
       </v-btn>
-      <v-col class="primary lighten-2 py-4 text-center white--text" cols="12">
+      <v-col
+        class="py-4 text-center white--text"
+        cols="12"
+        v-bind:class="{
+          'grey darken-1': $store.getters.getTheme,
+          'primary lighten-2': !$store.getters.getTheme,
+        }"
+      >
         {{ new Date().getFullYear() }} — <strong>Jori Kosonen</strong>
       </v-col>
     </v-row>
