@@ -260,7 +260,23 @@
                 </v-col>
               </v-row>
 
-              <v-row v-if="cup.name">
+              <v-row v-if="loading_cups">
+                <v-col>
+                  <h2>Haetaan cuppeja...</h2>
+                  <ProgressBarQuery />
+                </v-col>
+              </v-row>
+              <v-row v-if="!cups">
+                <v-col>
+                  <h2>Cuppeja ei löytynyt...</h2>
+                </v-col>
+              </v-row>
+              <v-row v-if="!competition.cup_name">
+                <v-col>
+                  <h2>Kilpailusta ei löytynyt cuppia...</h2>
+                </v-col>
+              </v-row>
+              <v-row v-else>
                 <v-col md="3">
                   <p class="center-align flow-text black--text">
                     Valitse Cup
@@ -278,12 +294,6 @@
                     return-object
                     single-line
                   ></v-select>
-                </v-col>
-              </v-row>
-              <v-row v-else>
-                <v-col>
-                  <h2>Haetaan cuppeja...</h2>
-                  <ProgressBarQuery />
                 </v-col>
               </v-row>
               <v-row v-if="competition">
@@ -654,6 +664,34 @@ export default {
         (value) => (value || "") >= 0 || "Numeron pitää olla positiivinen!",
       ],
       max_input: 40,
+      placement_points_array: [
+        { points: 35, placement: 1 },
+        { points: 33, placement: 2 },
+        { points: 31, placement: 3 },
+        { points: 29, placement: 4 },
+        { points: 27, placement: 5 },
+        { points: 25, placement: 6 },
+        { points: 24, placement: 7 },
+        { points: 23, placement: 8 },
+        { points: 22, placement: 9 },
+        { points: 21, placement: 10 },
+        { points: 20, placement: 11 },
+        { points: 19, placement: 12 },
+        { points: 18, placement: 13 },
+        { points: 17, placement: 14 },
+        { points: 16, placement: 15 },
+        { points: 15, placement: 16 },
+        { points: 14, placement: 17 },
+        { points: 13, placement: 18 },
+        { points: 12, placement: 19 },
+        { points: 11, placement: 20 },
+        { points: 10, placement: 21 },
+        { points: 9, placement: 22 },
+        { points: 8, placement: 23 },
+        { points: 7, placement: 24 },
+        { points: 6, placement: 25 },
+        { points: 5, placement: 26 },
+      ],
     };
   },
   created() {
@@ -663,7 +701,6 @@ export default {
       const competition = JSON.parse(localStorage.getItem("competition"));
       const competition_id = competition["id"];
       this.refreshCompetition(competition_id);
-      this.getCups();
     } else {
       console.log("No competition in localstorage!");
     }
@@ -676,9 +713,6 @@ export default {
       const competition = JSON.parse(localStorage.getItem("competition"));
       const competition_id = competition["id"];
       this.refreshCompetition(competition_id);
-    }
-    if (!this.cups.length) {
-      this.getCups();
     }
   },
   methods: {
@@ -714,11 +748,13 @@ export default {
             cup.select = `${cup.name} (${cup.year})`;
           });
           let temp_cup = this.cups.find((cup) => {
-            return this.competition.cup_name === cup.name;
+            return this.competition.cup_id === cup._id;
           });
-          temp_cup
-            ? (this.cup = temp_cup)
-            : console.log("No cup found on competition!");
+          if (temp_cup) {
+            this.cup = temp_cup;
+          } else {
+            console.log("No cup found on competition!");
+          }
         }
       } catch (err) {
         this.error = err.message;
@@ -749,6 +785,9 @@ export default {
           this.formatted_end_date = `${temp_end_date.date()}.${temp_end_date.month() +
             1}.${temp_end_date.year()}`;
           this.setOriginalValues();
+          if (!this.cups.length) {
+            this.getCups();
+          }
         } else {
           console.log("No competition found on database...");
         }
@@ -1005,9 +1044,31 @@ export default {
         this.competition.cup_participation_points = Number(
           this.cup_participation_points
         );
-        this.competition.cup_points_multiplier = Number(
-          this.cup_points_multiplier
-        );
+
+        let temp_placement_points = [];
+        // IF the multiplier has been changed, and is different from 1, calculate new points, else just use template array
+        if (
+          this.competition.cup_points_multiplier !==
+            this.cup_points_multiplier &&
+          this.cup_points_multiplier !== 1.0
+        ) {
+          let temp_placement = 1;
+          this.placement_points_array.forEach((placement_point) => {
+            temp_placement_points.push({
+              placement: temp_placement,
+              points:
+                (placement_point.points -
+                  this.competition.cup_participation_points) *
+                  this.cup_points_multiplier +
+                this.competition.cup_participation_points,
+            });
+            temp_placement++;
+          });
+        } else {
+          temp_placement_points = [...this.placement_points_array];
+        }
+        this.competition.cup_points_multiplier = this.cup_points_multiplier;
+        this.competition.cup_placement_points_array = temp_placement_points;
         this.competition.team_competition =
           this.team_competition === "Ei" ? false : true;
         this.competition.start_date = start_date;

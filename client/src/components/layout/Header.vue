@@ -195,6 +195,7 @@ export default {
     M.AutoInit();
     const user = JSON.parse(localStorage.getItem("user"));
     const isAdmin = user["is_admin"];
+    this.$store.state.isDark = user["preferences"].isDark;
     if (isAdmin) {
       this.items = [
         { title: "Dashboardiin", route: "/dashboard", icon: "dashboard" },

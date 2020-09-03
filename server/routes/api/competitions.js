@@ -78,6 +78,7 @@ router.post("/", async (req, res) => {
       locality: req.body.locality,
       cup_name: req.body.cup_name,
       cup_placement_points: req.body.cup_placement_points,
+      cup_placement_points_array: req.body.cup_placement_points_array,
       cup_participation_points: req.body.cup_participation_points,
       cup_points_multiplier: req.body.cup_points_multiplier,
       start_date: req.body.start_date,

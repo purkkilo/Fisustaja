@@ -1104,6 +1104,7 @@ export default {
       });
       // For every signee, calculate their cup points and placing
       //TODO rework the structure, seems more complex than it should be
+      // Placements and points now saved in every competition to cup_placement_points_array, based on placement fetch from there?
       this.signees.forEach((signee) => {
         cup_points_total = 0;
         // First competitor

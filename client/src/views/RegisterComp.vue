@@ -799,6 +799,34 @@ export default {
         (value) => !isNaN(value || "") || "Ei ole numero!",
         (value) => (value || "") >= 0 || "Numeron pitää olla positiivinen!",
       ],
+      placement_points_array: [
+        { points: 35, placement: 1 },
+        { points: 33, placement: 2 },
+        { points: 31, placement: 3 },
+        { points: 29, placement: 4 },
+        { points: 27, placement: 5 },
+        { points: 25, placement: 6 },
+        { points: 24, placement: 7 },
+        { points: 23, placement: 8 },
+        { points: 22, placement: 9 },
+        { points: 21, placement: 10 },
+        { points: 20, placement: 11 },
+        { points: 19, placement: 12 },
+        { points: 18, placement: 13 },
+        { points: 17, placement: 14 },
+        { points: 16, placement: 15 },
+        { points: 15, placement: 16 },
+        { points: 14, placement: 17 },
+        { points: 13, placement: 18 },
+        { points: 12, placement: 19 },
+        { points: 11, placement: 20 },
+        { points: 10, placement: 21 },
+        { points: 9, placement: 22 },
+        { points: 8, placement: 23 },
+        { points: 7, placement: 24 },
+        { points: 6, placement: 25 },
+        { points: 5, placement: 26 },
+      ],
     };
   },
   // Runs everytime this page loads
@@ -999,6 +1027,23 @@ export default {
           "DD.MM.YYYY HH:mm"
         );
 
+        let temp_placement_points = [];
+        if (this.cup_points_multiplier !== 1) {
+          let temp_placement = 1;
+          this.placement_points_array.forEach((placement_point) => {
+            temp_placement_points.push({
+              placement: temp_placement,
+              points:
+                (placement_point.points - this.cup_participation_points) *
+                  this.cup_points_multiplier +
+                this.cup_participation_points,
+            });
+            temp_placement++;
+          });
+        } else {
+          temp_placement_points = [...this.placement_points_array];
+        }
+
         // Competition object, basic info
         this.basic_info = {
           name: this.name,
@@ -1006,6 +1051,7 @@ export default {
           cup_name: this.cup.name,
           cup_placement_points: Number(this.cup_placement_points),
           cup_participation_points: Number(this.cup_participation_points),
+          cup_placement_points_array: temp_placement_points,
           cup_points_multiplier: Number(this.cup_points_multiplier),
           team_competition: this.team_competition === "Ei" ? false : true,
           start_date: start_date,
@@ -1188,6 +1234,8 @@ export default {
           locality: this.basic_info.locality,
           cup_name: this.basic_info.cup_name,
           cup_placement_points: this.basic_info.cup_placement_points,
+          cup_placement_points_array: this.basic_info
+            .cup_placement_points_array,
           cup_participation_points: this.basic_info.cup_participation_points,
           cup_points_multiplier: this.basic_info.cup_points_multiplier,
           team_competition: this.basic_info.team_competition,

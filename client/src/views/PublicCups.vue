@@ -162,9 +162,12 @@
                     :color="getCompetitionFinishedColor(header.isFinished)"
                     >{{ header.text }}</v-chip
                   >
-                  <v-chip v-else :key="index" :outlined="$store.getters.getTheme">{{
-                    header.text
-                  }}</v-chip>
+                  <v-chip
+                    v-else
+                    :key="index"
+                    :outlined="$store.getters.getTheme"
+                    >{{ header.text }}</v-chip
+                  >
                 </template>
                 <template v-slot:[`item.placement`]="{ item }">
                   <v-chip
@@ -403,6 +406,17 @@ export default {
             // If signee has points for this competition
             if (signee.cup_results[competition.key_name]) {
               // If signee's points are less than the limit points from the array
+              // check which placement the points would have from array, and pair it with points, the signee.placement isn't accurate anymore if competitions are limited
+              signee.cup_results[
+                competition.key_name
+              ].placement = competition.cup_placement_points_array.find(
+                (placement_point) => {
+                  return (
+                    placement_point.points ===
+                    signee.cup_results[competition.key_name].points
+                  );
+                }
+              ).placement;
               if (
                 signee.cup_results[competition.key_name].points <
                 signee.points_compare[limit]
@@ -423,12 +437,15 @@ export default {
                   signee.cup_results["Total"] += parseInt(
                     signee.cup_results[competition.key_name].points
                   );
+
+                  // Give signee only participation points
                 }
                 // Else give full points
                 else {
                   // Points are greater than the limit points, give full points
                   signee.cup_results[competition.key_name].points =
                     competition.cup_participation_points;
+
                   signee.cup_results["Total"] +=
                     competition.cup_participation_points;
                 }

@@ -75,6 +75,7 @@
                       :headers="headers_comp"
                       :items="competitions"
                       :search="search_comp"
+                      :loading="loading || limiting"
                     >
                       <template v-slot:[`item.start_date`]="{ item }">
                         <v-chip>{{
@@ -409,6 +410,7 @@ export default {
     calculateAll: function(competitions, limit) {
       let all_results = [];
       this.isResults = false;
+      this.limiting = true;
       competitions.forEach((competition) => {
         // Dynamic headers, because competition names change
         //If there are any results in the competition
@@ -475,6 +477,7 @@ export default {
           signee.final_cup_points = signee.cup_results["Total"];
           placement++;
         });
+        this.limiting = false;
       }
     },
     limitCompetitions: function(results, limit) {
@@ -497,6 +500,17 @@ export default {
             // If signee has points for this competition
             if (signee.cup_results[competition.key_name]) {
               // If signee's points are less than the limit points from the array
+              // check which placement the points would have from array, and pair it with points, the signee.placement isn't accurate anymore if competitions are limited
+              signee.cup_results[
+                competition.key_name
+              ].placement = competition.cup_placement_points_array.find(
+                (placement_point) => {
+                  return (
+                    placement_point.points ===
+                    signee.cup_results[competition.key_name].points
+                  );
+                }
+              ).placement;
               if (
                 signee.cup_results[competition.key_name].points <
                 signee.points_compare[limit]
@@ -517,12 +531,15 @@ export default {
                   signee.cup_results["Total"] += parseInt(
                     signee.cup_results[competition.key_name].points
                   );
+
+                  // Give signee only participation points
                 }
                 // Else give full points
                 else {
                   // Points are greater than the limit points, give full points
                   signee.cup_results[competition.key_name].points =
                     competition.cup_participation_points;
+
                   signee.cup_results["Total"] +=
                     competition.cup_participation_points;
                 }
@@ -575,7 +592,7 @@ export default {
             this.calculateAll(this.competitions, this.selected_competitions);
             M.toast({ html: "Tiedot ajantasalla!" });
           } catch (error) {
-            console.error(error.message);
+            console.error(error);
           }
         }
       } catch (err) {
