@@ -3,7 +3,13 @@
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <div class="container">
     <MainHeader />
-    <div class="container-transparent" style="margin-top:100px">
+    <div
+      v-bind:class="{
+        'container-transparent': !$store.getters.getTheme,
+        'container-transparent-dark': $store.getters.getTheme,
+      }"
+      style="margin-top:100px"
+    >
       <v-container>
         <div id="errordiv" v-if="errors.length">
           <ul class="collection with-header" style="border:1px solid red;">
@@ -24,13 +30,20 @@
         </div>
         <v-row>
           <v-col>
-            <h4>Register</h4>
+            <h4
+              v-bind:class="{
+                'white--text': $store.getters.getTheme,
+              }"
+            >
+              Register
+            </h4>
           </v-col>
         </v-row>
         <form>
           <v-row>
             <v-col md="8" offset-md="2" class="input-fields">
               <v-text-field
+                :dark="$store.getters.getTheme"
                 label="Käyttäjänimi"
                 id="name"
                 @paste.prevent
@@ -46,6 +59,7 @@
           <v-row>
             <v-col md="8" offset-md="2" class="input-fields">
               <v-text-field
+                :dark="$store.getters.getTheme"
                 label="Sähköpostiosoite"
                 id="email"
                 @paste.prevent
@@ -61,6 +75,7 @@
           <v-row>
             <v-col md="8" offset-md="2" class="input-fields">
               <v-text-field
+                :dark="$store.getters.getTheme"
                 label="Salasana"
                 id="password"
                 @paste.prevent
@@ -76,6 +91,7 @@
           <v-row>
             <v-col md="8" offset-md="2" class="input-fields">
               <v-text-field
+                :dark="$store.getters.getTheme"
                 label="Salasanan vahvistus"
                 id="password_confirmation"
                 @paste.prevent
@@ -91,7 +107,11 @@
           <!-- If user has typed at least one letter to password and password confirmation and both are the same-->
           <v-row v-if="password && password === password_confirmation">
             <v-col>
-              <span class="flow-text"
+              <span
+                class="flow-text"
+                v-bind:class="{
+                  'white--text': $store.getters.getTheme,
+                }"
                 >Salasanat täsmäävät!
                 <i class="material-icons green-text">done_outline</i></span
               >
@@ -109,7 +129,13 @@
           </v-row>
           <v-row>
             <v-col md="8" offset-md="2" class="input-fields">
-              <span class="col s6 flow-text">Admin?</span>
+              <span
+                class="col s6 flow-text"
+                v-bind:class="{
+                  'white--text': $store.getters.getTheme,
+                }"
+                >Admin?</span
+              >
               <v-radio-group v-model="is_admin" row>
                 <v-radio label="Kyllä" value="Yes"></v-radio>
                 <v-radio label="Ei" value="No"></v-radio>

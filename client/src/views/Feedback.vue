@@ -4,7 +4,12 @@
   <v-container>
     <Header />
     <Timedate style="margin-top:0" />
-    <v-row class="container-transparent">
+    <v-row
+      v-bind:class="{
+        'container-transparent': !$store.getters.getTheme,
+        'container-transparent-dark': $store.getters.getTheme,
+      }"
+    >
       <v-col>
         <v-row v-if="error">
           {{ error }}
@@ -26,6 +31,8 @@
           <v-row>
             <v-col class="d-flex" md="4" offset-md="4">
               <v-select
+                :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
+                :dark="$store.getters.getTheme"
                 item-color="blue"
                 v-model="type"
                 :items="type_options"
@@ -36,8 +43,16 @@
           </v-row>
 
           <v-row>
-            <v-col md="8" offset-md="2" class="grey lighten-2">
+            <v-col
+              md="8"
+              offset-md="2"
+              v-bind:class="{
+                inputarea: !$store.getters.getTheme,
+                'inputarea-dark': $store.getters.getTheme,
+              }"
+            >
               <v-textarea
+                :dark="$store.getters.getTheme"
                 v-model="message"
                 name="input-7-1"
                 filled

@@ -23,7 +23,12 @@
       </ul>
     </div>
 
-    <div class="container-transparent">
+    <div
+      v-bind:class="{
+        'container-transparent': !$store.getters.getTheme,
+        'container-transparent-dark': $store.getters.getTheme,
+      }"
+    >
       <div class="section">
         <div class="col s12 center-align"><h1>Kilpailun luonti</h1></div>
       </div>
@@ -54,11 +59,22 @@
 
       <v-tabs-items v-model="tab" style="background: rgba(1,1,1,0.4);">
         <!-- "Perustiedot" tab -->
-        <v-tab-item class="inputarea" :value="'basic-info'">
+        <v-tab-item
+          v-bind:class="{
+            inputarea: !$store.getters.getTheme,
+            'inputarea-dark': $store.getters.getTheme,
+          }"
+          :value="'basic-info'"
+        >
           <v-container v-if="!loading">
             <v-row>
               <v-col>
-                <p class="center-align flow-text black--text">
+                <p
+                  class="center-align flow-text"
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
                   Kilpailun perustiedot
                 </p>
                 <p
@@ -75,6 +91,7 @@
                 <v-row v-if="cup.name">
                   <v-col md="6" offset-md="3" class="input-fields">
                     <v-text-field
+                      :dark="$store.getters.getTheme"
                       label="Kilpailun nimi"
                       v-model="name"
                       :maxlength="max_input"
@@ -88,6 +105,7 @@
                 <v-row v-if="cup.name">
                   <v-col md="6" offset-md="3" class="input-fields">
                     <v-text-field
+                      :dark="$store.getters.getTheme"
                       label="Paikkakunta"
                       v-model="locality"
                       :maxlength="max_input"
@@ -100,12 +118,19 @@
 
                 <v-row v-if="cup.name">
                   <v-col md="3">
-                    <p class="center-align flow-text black--text">
+                    <p
+                      class="center-align flow-text"
+                      v-bind:class="{
+                        'white--text': $store.getters.getTheme,
+                      }"
+                    >
                       Valitse Cup
                     </p>
                   </v-col>
                   <v-col class="d-flex" md="6">
                     <v-select
+                      :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
+                      :dark="$store.getters.getTheme"
                       v-model="cup"
                       :items="cups"
                       item-text="select"
@@ -128,7 +153,12 @@
                 </v-row>
                 <v-row v-else class="valign-wrapper">
                   <v-col md="6" offset-md="2" style="margin-top:20px">
-                    <p class="flow-text">
+                    <p
+                      class="flow-text"
+                      v-bind:class="{
+                        'white--text': $store.getters.getTheme,
+                      }"
+                    >
                       Ei luotuja cuppeja, Luo cup ensin "Jatka Kilpailuja
                       sivulla" (Voit myös luoda cupin kilpailuille, jotka ei ole
                       missään cupissa")
@@ -146,6 +176,7 @@
                 <v-row v-if="cup.name">
                   <v-col md="6" offset-md="3" class="input-fields">
                     <v-text-field
+                      :dark="$store.getters.getTheme"
                       label="Kilpailun voittajan cup sijoittumispisteet"
                       v-model="cup_placement_points"
                       append-outer-icon="add"
@@ -173,6 +204,7 @@
                 <v-row v-if="cup.name">
                   <v-col md="6" offset-md="3" class="input-fields">
                     <v-text-field
+                      :dark="$store.getters.getTheme"
                       label="Kilpailun cup osallistumispisteet"
                       v-model="cup_participation_points"
                       append-outer-icon="add"
@@ -200,6 +232,7 @@
                 <v-row v-if="cup.name">
                   <v-col md="6" offset-md="3" class="input-fields">
                     <v-text-field
+                      :dark="$store.getters.getTheme"
                       label="Cup pistekerroin"
                       v-model="cup_points_multiplier"
                       append-outer-icon="add"
@@ -227,7 +260,11 @@
                 <v-row v-if="cup.name">
                   <v-col md="6" offset-md="3" class="input-fields">
                     <v-col>
-                      <span class="flow-text black-text"
+                      <span
+                        class="flow-text"
+                        v-bind:class="{
+                          'white--text': $store.getters.getTheme,
+                        }"
                         >Onko Tiimikilpailua?</span
                       >
                     </v-col>
@@ -247,12 +284,17 @@
                 <v-row v-if="cup.name">
                   <v-col cols="12" md="5">
                     <v-row align="center">
-                      <span class="flow-text black-text col s6"
+                      <span
+                        class="flow-text col s6"
+                        v-bind:class="{
+                          'white--text': $store.getters.getTheme,
+                        }"
                         >Kilpailun Aloituspäivä</span
                       >
                     </v-row>
                     <v-row align="center">
                       <v-date-picker
+                        :dark="$store.getters.getTheme"
                         style="height:480px"
                         v-model="start_date"
                         full-width
@@ -270,12 +312,17 @@
                     style="margin-bottom:50px"
                   >
                     <v-row align="center">
-                      <span class="flow-text black-text col s6"
+                      <span
+                        class="flow-text col s6"
+                        v-bind:class="{
+                          'white--text': $store.getters.getTheme,
+                        }"
                         >Kilpailun Lopetuspäivä</span
                       >
                     </v-row>
                     <v-row>
                       <v-date-picker
+                        :dark="$store.getters.getTheme"
                         style="height:480px"
                         v-model="end_date"
                         full-width
@@ -292,7 +339,11 @@
                   <v-col cols="12" md="5">
                     <v-row align="center">
                       <v-col>
-                        <span class="flow-text black-text"
+                        <span
+                          class="flow-text"
+                          v-bind:class="{
+                            'white--text': $store.getters.getTheme,
+                          }"
                           >Kilpailun alkamismisaika</span
                         >
                       </v-col>
@@ -300,6 +351,7 @@
                     <v-row align="center">
                       <v-col>
                         <v-time-picker
+                          :dark="$store.getters.getTheme"
                           v-model="start_time"
                           format="24hr"
                           full-width
@@ -313,7 +365,11 @@
                   <v-col cols="12" md="5" offset-md="1">
                     <v-row align="center">
                       <v-col md="12" offset-md="2">
-                        <span class="flow-text black-text"
+                        <span
+                          class="flow-text"
+                          v-bind:class="{
+                            'white--text': $store.getters.getTheme,
+                          }"
                           >Kilpailun loppumisaika</span
                         >
                       </v-col>
@@ -321,6 +377,7 @@
                     <v-row align="center">
                       <v-col md="12" offset-md="2">
                         <v-time-picker
+                          :dark="$store.getters.getTheme"
                           v-model="end_time"
                           format="24hr"
                           full-width
@@ -364,7 +421,13 @@
           <v-container v-else>
             <v-row>
               <v-col>
-                <h2>Valmistellaan kilpailun luontia...</h2>
+                <h2
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Valmistellaan kilpailun luontia...
+                </h2>
                 <ProgressBarQuery />
               </v-col>
             </v-row>
@@ -372,7 +435,13 @@
         </v-tab-item>
 
         <!-- "Kilpailun kalalajit" tab -->
-        <v-tab-item class="inputarea" :value="'fishes'">
+        <v-tab-item
+          v-bind:class="{
+            inputarea: !$store.getters.getTheme,
+            'inputarea-dark': $store.getters.getTheme,
+          }"
+          :value="'fishes'"
+        >
           <v-container>
             <v-row>
               <v-col>
@@ -389,10 +458,18 @@
               <v-col>
                 <v-row>
                   <v-col>
-                    <h3>
+                    <h3
+                      v-bind:class="{
+                        'white--text': $store.getters.getTheme,
+                      }"
+                    >
                       Kalalajien valinta
                     </h3>
-                    <p>
+                    <p
+                      v-bind:class="{
+                        'white--text': $store.getters.getTheme,
+                      }"
+                    >
                       (Yli 40 merkkiä pitkät nimet lyhennetään 40 merkkiin)
                     </p>
                   </v-col>
@@ -400,6 +477,8 @@
                 <v-row>
                   <v-col md="10" offset-md="1">
                     <v-combobox
+                      :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
+                      :dark="$store.getters.getTheme"
                       v-model="selected"
                       :items="options"
                       label="Valitse kalalaji, tai luo oma kirjoittamalla"
@@ -475,11 +554,22 @@
         </v-tab-item>
 
         <!-- "Pistekertoimet ja alamitat" tab -->
-        <v-tab-item class="inputarea" :value="'points'">
+        <v-tab-item
+          v-bind:class="{
+            inputarea: !$store.getters.getTheme,
+            'inputarea-dark': $store.getters.getTheme,
+          }"
+          :value="'points'"
+        >
           <v-container>
             <v-row>
               <v-col>
-                <p class="flow-text center-align">
+                <p
+                  class="flow-text center-align"
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
                   Syötä kaloille pistekertoimet ja alamitat
                 </p>
                 <p
@@ -493,7 +583,7 @@
             </v-row>
             <v-row>
               <v-col class="specs" id="select_specs">
-                <ul id="fish_specs" v-if="selected.length">
+                <ul v-if="selected.length">
                   <li
                     class="row"
                     id="fish_spec"
@@ -504,12 +594,16 @@
                       <v-col>
                         <span
                           class="flow-text"
+                          v-bind:class="{
+                            'white--text': $store.getters.getTheme,
+                          }"
                           :id="'fish_' + (index + 1) + '_name'"
                           >{{ index + 1 }}. {{ fish }}</span
                         >
                       </v-col>
                       <v-col class="input-fields">
                         <v-text-field
+                          :dark="$store.getters.getTheme"
                           label="Pistekerroin"
                           :id="'fish_' + (index + 1) + '_multiplier'"
                           maxlength="4"
@@ -524,12 +618,13 @@
                       </v-col>
                       <v-col class="input-fields">
                         <v-text-field
+                          :dark="$store.getters.getTheme"
                           label="Alamitta"
                           :id="'fish_' + (index + 1) + '_minsize'"
-                          maxlength="4"
+                          :maxlength="40"
                           value="0"
                           @paste.prevent
-                          :counter="4"
+                          :counter="40"
                           :rules="rules"
                           :disabled="fish_specs_validated"
                         />
@@ -591,18 +686,33 @@
         </v-tab-item>
 
         <!-- "Yhteenveto" tab -->
-        <v-tab-item class="inputarea" :value="'summary'">
+        <v-tab-item
+          v-bind:class="{
+            inputarea: !$store.getters.getTheme,
+            'inputarea-dark': $store.getters.getTheme,
+          }"
+          :value="'summary'"
+        >
           <v-container v-if="!loading">
             <v-row>
               <v-col>
-                <h2>
+                <h2
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
                   Perustiedot
                 </h2>
               </v-col>
             </v-row>
             <v-row class="basic_summary">
               <v-col>
-                <table class="striped centered responsive-table highlight">
+                <table
+                  class="centered responsive-table highlight"
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
                   <tr>
                     <th style="border:1px solid black;">
                       Kilpailu
@@ -678,13 +788,22 @@
             </v-row>
             <v-row>
               <v-col md="12">
-                <h2>Kalojen määritykset</h2>
+                <h2
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Kalojen määritykset
+                </h2>
               </v-col>
             </v-row>
             <v-row class="fishes_summary">
               <v-col md="12">
                 <table
-                  class="striped highlight centered responsive-table table_header"
+                  class="highlight centered responsive-table table_header"
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
                 >
                   <thead>
                     <tr>
@@ -734,7 +853,13 @@
             </v-row>
           </v-container>
           <v-container v-else>
-            <h2>Tallennetaan kilpailua tietokantaan...</h2>
+            <h2
+              v-bind:class="{
+                'white--text': $store.getters.getTheme,
+              }"
+            >
+              Tallennetaan kilpailua tietokantaan...
+            </h2>
             <ProgressBarQuery />
           </v-container>
         </v-tab-item>

@@ -1,18 +1,51 @@
 <template>
-  <v-row class="valign-wrapper time">
+  <v-row
+    class="valign-wrapper"
+    v-bind:class="{
+      time: !$store.getters.getTheme,
+      'time-dark': $store.getters.getTheme,
+    }"
+  >
     <v-col md="3">
-      <h4 id="date">{{ date }}</h4>
+      <h4
+        id="date"
+        v-bind:class="{
+          'white--text': $store.getters.getTheme,
+        }"
+      >
+        {{ date }}
+      </h4>
     </v-col>
     <v-col md="6">
-      <p id="comp-state" class="flow-text" v-if="competitionChosen">
+      <p
+        id="comp-state"
+        class="flow-text"
+        v-if="competitionChosen"
+        v-bind:class="{
+          'white--text': $store.getters.getTheme,
+        }"
+      >
         {{ competition_state }}
       </p>
-      <h4 id="comp-left" v-if="competitionChosen">
+      <h4
+        id="comp-left"
+        v-if="competitionChosen"
+        v-bind:class="{
+          'white--text': $store.getters.getTheme,
+        }"
+      >
         {{ timer_string }}
       </h4>
     </v-col>
     <v-col md="3">
-      <h4 id="clock">{{ clock }}</h4>
+      <h4
+        id="clock"
+        v-bind:class="{
+          'white--text': $store.getters.getTheme,
+        }"
+      >
+        {{ clock }}
+      </h4>
     </v-col>
   </v-row>
 </template>

@@ -37,8 +37,14 @@
       <v-tab href="#create">Luo Cup</v-tab>
       <v-tab href="#cups">Cupit</v-tab>
     </v-tabs>
-    <v-tabs-items v-model="tab" style="background: rgba(0,0,0,0.4);">
-      <v-tab-item :value="'competitions'">
+    <v-tabs-items v-model="tab" style="background: rgba(0,0,0,0.6);">
+      <v-tab-item
+        :value="'competitions'"
+        v-bind:class="{
+          'container-transparent': !$store.getters.getTheme,
+          'container-transparent-dark': $store.getters.getTheme,
+        }"
+      >
         <v-container>
           <v-row>
             <v-col>
@@ -53,6 +59,7 @@
                     <p class="flow-text">Kilpailut</p>
                     <v-spacer></v-spacer>
                     <v-text-field
+                      :dark="$store.getters.getTheme"
                       v-model="search_comp"
                       append-icon="mdi-magnify"
                       label="Hae kilpailua"
@@ -83,7 +90,13 @@
                 <v-col v-if="!loading">
                   <v-row>
                     <v-col v-if="cups.length">
-                      <h2>Ei kilpailuja!</h2>
+                      <h2
+                        v-bind:class="{
+                          'white--text': $store.getters.getTheme,
+                        }"
+                      >
+                        Ei kilpailuja!
+                      </h2>
                       <router-link to="/register-comp">
                         <v-btn tile color="blue lighten-1"
                           ><i class="material-icons left">add_circle_outline</i
@@ -92,8 +105,20 @@
                       </router-link>
                     </v-col>
                     <v-col v-else>
-                      <h2>Ei kilpailuja!</h2>
-                      <h2>Luo Cup ensin</h2>
+                      <h2
+                        v-bind:class="{
+                          'white--text': $store.getters.getTheme,
+                        }"
+                      >
+                        Ei kilpailuja!
+                      </h2>
+                      <h2
+                        v-bind:class="{
+                          'white--text': $store.getters.getTheme,
+                        }"
+                      >
+                        Luo Cup ensin
+                      </h2>
                       <v-btn tile color="blue lighten-1" @click="tab = 'create'"
                         ><i class="material-icons left">add_circle_outline</i
                         >Luo Cup!</v-btn
@@ -105,7 +130,13 @@
                   <h2 class="error">{{ error }}</h2>
                 </v-col>
                 <v-col v-else>
-                  <h2>Ladataan kilpailuja...</h2>
+                  <h2
+                    v-bind:class="{
+                      'white--text': $store.getters.getTheme,
+                    }"
+                  >
+                    Ladataan kilpailuja...
+                  </h2>
                   <ProgressBarQuery />
                 </v-col>
               </div>
@@ -121,7 +152,13 @@
           </v-row>
         </v-container>
       </v-tab-item>
-      <v-tab-item :value="'create'">
+      <v-tab-item
+        :value="'create'"
+        v-bind:class="{
+          'container-transparent': !$store.getters.getTheme,
+          'container-transparent-dark': $store.getters.getTheme,
+        }"
+      >
         <v-container>
           <v-row>
             <v-col>
@@ -131,6 +168,7 @@
           <v-row>
             <v-col md="8" offset-md="2" class="input-fields">
               <v-text-field
+                :dark="$store.getters.getTheme"
                 label="Cupin nimi"
                 v-model="name"
                 :maxlength="40"
@@ -152,6 +190,7 @@
               >
                 <template v-slot:activator="{ on, attrs }">
                   <v-text-field
+                    :dark="$store.getters.getTheme"
                     v-model="year"
                     label="Vuosi"
                     prepend-icon="event"
@@ -180,7 +219,13 @@
           </v-row>
         </v-container>
       </v-tab-item>
-      <v-tab-item :value="'cups'">
+      <v-tab-item
+        :value="'cups'"
+        v-bind:class="{
+          'container-transparent': !$store.getters.getTheme,
+          'container-transparent-dark': $store.getters.getTheme,
+        }"
+      >
         <v-container>
           <v-row>
             <v-col>

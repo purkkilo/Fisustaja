@@ -24,7 +24,13 @@
       <v-tab href="#generate">Kilpailun generointi</v-tab>
     </v-tabs>
     <v-tabs-items v-model="tab" style="background: rgba(0,0,0,0.4);">
-      <v-tab-item :value="'overview'" class="inputarea">
+      <v-tab-item
+        :value="'overview'"
+        v-bind:class="{
+          inputarea: !$store.getters.getTheme,
+          'inputarea-dark': $store.getters.getTheme,
+        }"
+      >
         <v-row>
           <v-col>
             <v-row>
@@ -54,7 +60,13 @@
             </v-row>
             <v-row v-else>
               <v-col md="6" offset-md="3">
-                <h3>Ladataan palautteita...</h3>
+                <h3
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Ladataan palautteita...
+                </h3>
                 <ProgressBarQuery />
               </v-col>
             </v-row>
@@ -72,7 +84,13 @@
             </v-row>
             <v-row v-else>
               <v-col md="6" offset-md="3">
-                <h3>Ladataan käyttäjiä...</h3>
+                <h3
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Ladataan käyttäjiä...
+                </h3>
                 <ProgressBarQuery />
               </v-col>
             </v-row>
@@ -90,14 +108,26 @@
             </v-row>
             <v-row v-else>
               <v-col md="6" offset-md="3">
-                <h3>Ladataan kilpailuja...</h3>
+                <h3
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Ladataan kilpailuja...
+                </h3>
                 <ProgressBarQuery />
               </v-col>
             </v-row>
           </v-col>
         </v-row>
       </v-tab-item>
-      <v-tab-item :value="'users'" class="inputarea">
+      <v-tab-item
+        :value="'users'"
+        v-bind:class="{
+          inputarea: !$store.getters.getTheme,
+          'inputarea-dark': $store.getters.getTheme,
+        }"
+      >
         <v-row>
           <v-col>
             <v-row>
@@ -112,7 +142,14 @@
               <v-col>
                 <h1>Käyttäjät</h1>
                 <br />
-                <p class="flow-text">*Klikkaa nimeä saadaksesi lisätietoa</p>
+                <p
+                  class="flow-text"
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  *Klikkaa nimeä saadaksesi lisätietoa
+                </p>
               </v-col>
             </v-row>
             <v-row v-if="users.length">
@@ -311,13 +348,25 @@
             </v-row>
             <v-row v-else>
               <v-col>
-                <h2>Ei käyttäjiä!</h2>
+                <h2
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Ei käyttäjiä!
+                </h2>
               </v-col>
             </v-row>
           </v-col>
         </v-row>
       </v-tab-item>
-      <v-tab-item :value="'competitions'" class="inputarea">
+      <v-tab-item
+        :value="'competitions'"
+        v-bind:class="{
+          inputarea: !$store.getters.getTheme,
+          'inputarea-dark': $store.getters.getTheme,
+        }"
+      >
         <v-row>
           <v-col>
             <v-row>
@@ -397,13 +446,25 @@
                 </v-sheet>
               </v-col>
               <v-col v-else>
-                <h2>Ei Kilpailuja!</h2>
+                <h2
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Ei Kilpailuja!
+                </h2>
               </v-col>
             </v-row>
           </v-col>
         </v-row>
       </v-tab-item>
-      <v-tab-item :value="'feedback'" class="inputarea">
+      <v-tab-item
+        :value="'feedback'"
+        v-bind:class="{
+          inputarea: !$store.getters.getTheme,
+          'inputarea-dark': $store.getters.getTheme,
+        }"
+      >
         <v-row>
           <v-col>
             <v-row>
@@ -480,13 +541,25 @@
                 </v-sheet>
               </v-col>
               <v-col v-else>
-                <h2>Palautetta ei vielä annettu!</h2>
+                <h2
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Palautetta ei vielä annettu!
+                </h2>
               </v-col>
             </v-row>
           </v-col>
         </v-row>
       </v-tab-item>
-      <v-tab-item :value="'generate'" class="inputarea">
+      <v-tab-item
+        :value="'generate'"
+        v-bind:class="{
+          inputarea: !$store.getters.getTheme,
+          'inputarea-dark': $store.getters.getTheme,
+        }"
+      >
         <v-row>
           <v-col>
             <v-row>
@@ -504,10 +577,19 @@
             </v-row>
             <v-row v-if="cup.name">
               <v-col md="3">
-                <p class="center-align flow-text black--text">Valitse Cup</p>
+                <p
+                  class="center-align flow-text black--text"
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Valitse Cup
+                </p>
               </v-col>
               <v-col class="d-flex" md="6">
                 <v-select
+                  :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
+                  :dark="$store.getters.getTheme"
                   v-model="cup"
                   :items="cups"
                   item-text="select"
@@ -532,6 +614,7 @@
             <v-row v-if="cup.name">
               <v-col md="6" offset-md="3" class="input-fields">
                 <v-text-field
+                  :dark="$store.getters.getTheme"
                   label="Kilpailijoiden määrä"
                   v-model="signees_amount"
                   append-outer-icon="add"
@@ -558,7 +641,13 @@
             <v-row v-if="cup.name">
               <v-col md="6" offset-md="3" class="input-fields">
                 <v-col>
-                  <span class="flow-text black-text">Onko Tiimikilpailua?</span>
+                  <span
+                    class="flow-text"
+                    v-bind:class="{
+                      'white--text': $store.getters.getTheme,
+                    }"
+                    >Onko Tiimikilpailua?</span
+                  >
                 </v-col>
                 <v-col offset-md="4">
                   <v-radio-group
@@ -574,7 +663,13 @@
             </v-row>
             <v-row v-else>
               <v-col md="6" offset-md="3">
-                <h3>Ladataan Cuppeja...</h3>
+                <h3
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Ladataan Cuppeja...
+                </h3>
                 <ProgressBarQuery />
               </v-col>
             </v-row>

@@ -106,6 +106,13 @@ body {
   border-radius: 2%;
   border: white 1px solid;
 }
+
+#app .container-transparent-dark {
+  background: rgba(15, 29, 70, 0.712);
+  border-radius: 2%;
+  border: white 1px solid;
+}
+
 #app h1 {
   -webkit-text-stroke: 1px black;
   color: white;
@@ -119,6 +126,15 @@ body {
   color: black;
   border: 2px solid white;
 }
+
+.time-dark {
+  border-radius: 25px;
+  background: rgba(15, 29, 70, 0.712);
+  padding: 5px;
+  color: black;
+  border: 2px solid rgb(1, 0, 51);
+}
+
 #app li.collection-item:nth-child(odd) {
   background: rgb(255, 142, 142) !important;
   border: 1px solid red;
@@ -130,8 +146,12 @@ body {
 
 #app .inputarea {
   background: rgba(255, 255, 255, 0.7);
-  border-radius: 2%;
 }
+
+#app .inputarea-dark {
+  background: rgba(46, 46, 46, 0.856);
+}
+
 #app .tablearea {
   background: rgb(156, 215, 255);
   border-radius: 2%;
@@ -158,7 +178,7 @@ table.highlight > tr:hover {
   border: 1px solid black;
 }
 #app li#fish_spec:nth-child(odd) {
-  background: rgba(180, 206, 255, 0.43);
+  background: rgba(88, 103, 129, 0.43);
 }
 #app .input-fields {
   background: rgba(160, 228, 255, 0.253);
@@ -190,5 +210,13 @@ table.highlight > tr:hover {
 }
 .v-tab--active {
   background: rgb(65, 141, 255);
+}
+
+.theme--light.v-divider {
+  border-color: rgba(0, 0, 0, 0.699) !important;
+}
+
+.theme--dark.v-divider {
+  border-color: rgba(219, 219, 219, 0.705) !important;
 }
 </style>

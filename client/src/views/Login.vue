@@ -3,7 +3,13 @@
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <div class="container">
     <MainHeader />
-    <div class="container-transparent" style="margin-top:100px">
+    <div
+      v-bind:class="{
+        'container-transparent': !$store.getters.getTheme,
+        'container-transparent-dark': $store.getters.getTheme,
+      }"
+      style="margin-top:100px"
+    >
       <v-container>
         <!-- if there are errors, show this div -->
         <div id="errordiv" v-if="errors.length">
@@ -28,6 +34,7 @@
           <v-row>
             <v-col md="8" offset-md="2" class="input-fields">
               <v-text-field
+                :dark="$store.getters.getTheme"
                 id="email"
                 label="Sähköpostiosoite"
                 v-model="email"
@@ -41,6 +48,7 @@
           <v-row>
             <v-col md="8" offset-md="2" class="input-fields">
               <v-text-field
+                :dark="$store.getters.getTheme"
                 label="Salasana"
                 id="password"
                 v-model="password"

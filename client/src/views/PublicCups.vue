@@ -3,7 +3,10 @@
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container
     style="margin-top:70px;margin-bottom:5px"
-    class="container-transparent"
+    v-bind:class="{
+      'container-transparent': !$store.getters.getTheme,
+      'container-transparent-dark': $store.getters.getTheme,
+    }"
   >
     <MainHeader />
     <v-row id="errordiv" v-if="errors.length">
@@ -19,7 +22,14 @@
           v-for="(error, index) in errors"
           v-bind:key="index"
         >
-          <p class="flow-text">{{ index + 1 }}. {{ error }}</p>
+          <p
+            class="flow-text"
+            v-bind:class="{
+              'white--text': $store.getters.getTheme,
+            }"
+          >
+            {{ index + 1 }}. {{ error }}
+          </p>
         </li>
       </ul>
     </v-row>
@@ -40,6 +50,8 @@
     <v-row v-if="cups.length" class="scroll_table">
       <v-col md="4" offset-md="4">
         <v-autocomplete
+          :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
+          :dark="$store.getters.getTheme"
           v-model="selected_cup"
           :items="cups"
           item-text="select"
@@ -54,11 +66,23 @@
     </v-row>
     <v-row v-else>
       <v-col v-if="!loading">
-        <h2>Haetaan cuppeja...</h2>
+        <h2
+          v-bind:class="{
+            'white--text': $store.getters.getTheme,
+          }"
+        >
+          Haetaan cuppeja...
+        </h2>
         <ProgressBarQuery />
       </v-col>
       <v-col v-else>
-        <h2>Ei cuppeja saatavilla :(</h2>
+        <h2
+          v-bind:class="{
+            'white--text': $store.getters.getTheme,
+          }"
+        >
+          Ei cuppeja saatavilla :(
+        </h2>
       </v-col>
     </v-row>
     <v-row>
@@ -87,12 +111,17 @@
         </v-row>
         <v-row
           v-if="results.length"
-          class="inputarea"
+          v-bind:class="{
+            inputarea: !$store.getters.getTheme,
+            'inputarea-dark': $store.getters.getTheme,
+          }"
           style="padding-top:25px;"
         >
           <v-col class="d-flex" md="4">
             <v-select
               :items="header_options"
+              :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
+              :dark="$store.getters.getTheme"
               label="Kilpailun otsikko"
               outlined
               v-model="header_selection"
@@ -101,6 +130,8 @@
           </v-col>
           <v-col class="d-flex" md="4">
             <v-select
+              :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
+              :dark="$store.getters.getTheme"
               :items="select_numbers"
               label="Cup sijoittumispisteisiin vaikuttavien kilpailujen määrä"
               outlined
@@ -123,7 +154,12 @@
         </v-row>
         <v-row v-if="results.length && not_finished_count > 0">
           <v-col>
-            <p class="flow-text">
+            <p
+              class="flow-text"
+              v-bind:class="{
+                'white--text': $store.getters.getTheme,
+              }"
+            >
               *Punaisella merkityt kilpailut ovat vielä kesken! ({{
                 not_finished_count
               }}
@@ -217,7 +253,14 @@
         </v-row>
         <v-row v-if="competitions.length && selected_cup">
           <v-col v-if="loading">
-            <p class="flow-text">Päivitetään tuloksia...</p>
+            <p
+              class="flow-text"
+              v-bind:class="{
+                'white--text': $store.getters.getTheme,
+              }"
+            >
+              Päivitetään tuloksia...
+            </p>
           </v-col>
         </v-row>
         <v-row v-if="competitions.length && selected_cup">
@@ -237,10 +280,22 @@
         </v-row>
         <v-row v-else>
           <v-col>
-            <h2 v-if="selected_cup && !competitions.length">
+            <h2
+              v-if="selected_cup && !competitions.length"
+              v-bind:class="{
+                'white--text': $store.getters.getTheme,
+              }"
+            >
               Cupissa ei vielä kilpailuja!
             </h2>
-            <h2 v-if="!selected_cup">Cuppia ei vielä valittuna!</h2>
+            <h2
+              v-if="!selected_cup"
+              v-bind:class="{
+                'white--text': $store.getters.getTheme,
+              }"
+            >
+              Cuppia ei vielä valittuna!
+            </h2>
           </v-col>
         </v-row>
       </v-col>
@@ -248,7 +303,13 @@
     <v-row v-else>
       <v-row>
         <v-col>
-          <h2>Haetaan cupin kilpailuja...</h2>
+          <h2
+            v-bind:class="{
+              'white--text': $store.getters.getTheme,
+            }"
+          >
+            Haetaan cupin kilpailuja...
+          </h2>
           <ProgressBarQuery />
         </v-col>
       </v-row>

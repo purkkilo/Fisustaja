@@ -4,7 +4,12 @@
   <v-container>
     <Header />
     <Timedate style="margin-top:0" />
-    <v-row class="container-transparent">
+    <v-row
+      v-bind:class="{
+        'container-transparent': !$store.getters.getTheme,
+        'container-transparent-dark': $store.getters.getTheme,
+      }"
+    >
       <v-col>
         <v-row>
           <v-col>
@@ -15,15 +20,30 @@
           <v-col>
             <!-- if user is found on localstorage (this.user is not null/false) -->
             <div v-if="user">
-              <h3>
+              <p
+                class="flow-text"
+                v-bind:class="{
+                  'white--text': $store.getters.getTheme,
+                }"
+              >
                 <b>{{ user.name }}</b>
-              </h3>
-              <h3>
+              </p>
+              <p
+                class="flow-text"
+                v-bind:class="{
+                  'white--text': $store.getters.getTheme,
+                }"
+              >
                 <b>{{ user.email }}</b>
-              </h3>
-              <h3>
+              </p>
+              <p
+                class="flow-text"
+                v-bind:class="{
+                  'white--text': $store.getters.getTheme,
+                }"
+              >
                 <b>Tili luotu: {{ created }}</b>
-              </h3>
+              </p>
             </div>
 
             <div class="divider black"></div>

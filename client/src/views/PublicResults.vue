@@ -3,7 +3,10 @@
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container
     style="margin-top:70px;margin-bottom:5px"
-    class="container-transparent"
+    v-bind:class="{
+      'container-transparent': !$store.getters.getTheme,
+      'container-transparent-dark': $store.getters.getTheme,
+    }"
   >
     <MainHeader />
     <v-row>
@@ -25,6 +28,8 @@
         <v-row v-if="competitions.length" class="scroll_table">
           <v-col md="4" offset-md="4">
             <v-autocomplete
+              :dark="$store.getters.getTheme"
+              :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
               v-model="selected_competition"
               :items="competitions"
               item-text="select"
@@ -70,7 +75,7 @@
                   tulokset
                 </v-btn>
               </template>
-              <v-card>
+              <v-card :dark="$store.getters.getTheme">
                 <v-card-title>Valitse mitä lataus sisältää</v-card-title>
                 <v-divider></v-divider>
                 <v-card-text style="height: 300px;width:100%;">
@@ -148,7 +153,13 @@
         </v-row>
         <v-row v-if="loading">
           <v-col>
-            <h2>Haetaan kilpailuja...</h2>
+            <h2
+              v-bind:class="{
+                'white--text': $store.getters.getTheme,
+              }"
+            >
+              Haetaan kilpailuja...
+            </h2>
             <ProgressBarQuery />
           </v-col>
         </v-row>
@@ -191,7 +202,13 @@
           v-if="!loading && selected_competition"
         >
           <!-- Tilastoja -->
-          <v-tab-item class="inputarea" :value="'stats'">
+          <v-tab-item
+            v-bind:class="{
+              inputarea: !$store.getters.getTheme,
+              'inputarea-dark': $store.getters.getTheme,
+            }"
+            :value="'stats'"
+          >
             <!-- Save as pdf button, is disabled if there are no results -->
             <v-row style="padding-top:50px">
               <v-col md="3" offset-md="8">
@@ -241,14 +258,23 @@
               <v-col md="8" offset-md="2">
                 <v-row>
                   <v-col>
-                    <h3>Kalalajien määritykset</h3>
+                    <h3
+                      v-bind:class="{
+                        'white--text': $store.getters.getTheme,
+                      }"
+                    >
+                      Kalalajien määritykset
+                    </h3>
                   </v-col>
                 </v-row>
                 <v-row>
                   <v-col class="scroll_table">
                     <table
                       id="fish-weights-table"
-                      class="striped highlight centered responsive-table table_header"
+                      class="highlight centered responsive-table table_header"
+                      v-bind:class="{
+                        'white--text': $store.getters.getTheme,
+                      }"
                     >
                       <thead>
                         <tr>
@@ -309,14 +335,23 @@
 
                 <v-row>
                   <v-col>
-                    <h3>Yleisiä tilastoja</h3>
+                    <h3
+                      v-bind:class="{
+                        'white--text': $store.getters.getTheme,
+                      }"
+                    >
+                      Yleisiä tilastoja
+                    </h3>
                   </v-col>
                 </v-row>
                 <v-row>
                   <v-col md="10" offset-md="1">
                     <table
                       id="misc-table"
-                      class="striped centered responsive-table highlight"
+                      class="centered responsive-table highlight"
+                      v-bind:class="{
+                        'white--text': $store.getters.getTheme,
+                      }"
                     >
                       <tr>
                         <th
@@ -385,7 +420,13 @@
             </v-row>
           </v-tab-item>
           <!-- Normaalikilpailu -->
-          <v-tab-item class="inputarea" :value="'normal-competition'">
+          <v-tab-item
+            v-bind:class="{
+              inputarea: !$store.getters.getTheme,
+              'inputarea-dark': $store.getters.getTheme,
+            }"
+            :value="'normal-competition'"
+          >
             <v-row>
               <v-col
                 md="10"
@@ -395,6 +436,8 @@
                 <v-row>
                   <v-col md="4" offset-md="4">
                     <v-select
+                      :dark="$store.getters.getTheme"
+                      :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
                       label="Valitse näytettävät tulokset"
                       outlined
                       :items="normal_options"
@@ -485,10 +528,23 @@
                 </v-row>
                 <v-row v-else>
                   <v-col v-if="!loading">
-                    <p class="flow-text">Ei tuloksia, vielä...</p>
+                    <p
+                      class="flow-text"
+                      v-bind:class="{
+                        'white--text': $store.getters.getTheme,
+                      }"
+                    >
+                      Ei tuloksia, vielä...
+                    </p>
                   </v-col>
                   <v-col v-else>
-                    <h2>Päivitetään tuloksia tietokannasta...</h2>
+                    <h2
+                      v-bind:class="{
+                        'white--text': $store.getters.getTheme,
+                      }"
+                    >
+                      Päivitetään tuloksia tietokannasta...
+                    </h2>
                     <ProgressBarQuery />
                   </v-col>
                 </v-row>
@@ -498,7 +554,10 @@
 
           <!-- Tiimikilpailu -->
           <v-tab-item
-            class="inputarea"
+            v-bind:class="{
+              inputarea: !$store.getters.getTheme,
+              'inputarea-dark': $store.getters.getTheme,
+            }"
             :value="'team-competition'"
             v-if="isTeamCompetition"
           >
@@ -525,7 +584,14 @@
               >
                 <v-card :dark="$store.getters.getTheme">
                   <v-card-title>
-                    <p class="flow-text">Tiimikilpailu</p>
+                    <p
+                      class="flow-text"
+                      v-bind:class="{
+                        'white--text': $store.getters.getTheme,
+                      }"
+                    >
+                      Tiimikilpailu
+                    </p>
                     <v-spacer></v-spacer>
                     <v-text-field
                       v-model="search_team"
@@ -555,9 +621,23 @@
               </v-col>
               <v-col v-else>
                 <v-col v-if="!loading"> </v-col>
-                <p v-if="!loading" class="flow-text">Ei tuloksia, vielä...</p>
+                <p
+                  v-if="!loading"
+                  class="flow-text"
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Ei tuloksia, vielä...
+                </p>
                 <v-col v-else>
-                  <h2>Päivitetään tuloksia tietokannasta...</h2>
+                  <h2
+                    v-bind:class="{
+                      'white--text': $store.getters.getTheme,
+                    }"
+                  >
+                    Päivitetään tuloksia tietokannasta...
+                  </h2>
                   <ProgressBarQuery />
                 </v-col>
               </v-col>
@@ -565,10 +645,18 @@
           </v-tab-item>
 
           <!-- Suurimmat kalat -->
-          <v-tab-item class="inputarea" :value="'biggest-fishes'">
+          <v-tab-item
+            v-bind:class="{
+              inputarea: !$store.getters.getTheme,
+              'inputarea-dark': $store.getters.getTheme,
+            }"
+            :value="'biggest-fishes'"
+          >
             <v-row style="padding-top:50px">
               <v-col md="3" offset-md="4">
                 <v-select
+                  :dark="$store.getters.getTheme"
+                  :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
                   label="Valitse näytettävät tulokset"
                   outlined
                   @input="calculateBiggestFishes"
@@ -638,20 +726,41 @@
             </v-row>
             <v-row v-else>
               <v-col v-if="!loading">
-                <p class="flow-text">Ei tuloksia, vielä...</p>
+                <p
+                  class="flow-text"
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Ei tuloksia, vielä...
+                </p>
               </v-col>
               <v-col v-else>
-                <h2>Päivitetään tuloksia tietokannasta...</h2>
+                <h2
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Päivitetään tuloksia tietokannasta...
+                </h2>
                 <ProgressBarQuery />
               </v-col>
             </v-row>
           </v-tab-item>
 
           <!-- Suurimmat kalasaaliit -->
-          <v-tab-item class="inputarea" :value="'biggest-fish-amounts'">
+          <v-tab-item
+            v-bind:class="{
+              inputarea: !$store.getters.getTheme,
+              'inputarea-dark': $store.getters.getTheme,
+            }"
+            :value="'biggest-fish-amounts'"
+          >
             <v-row style="padding-top:50px">
               <v-col md="3" offset-md="4">
                 <v-select
+                  :dark="$store.getters.getTheme"
+                  :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
                   label="Valitse näytettävät tulokset"
                   outlined
                   @input="calculateBiggestAmounts"
@@ -681,11 +790,23 @@
             <v-row v-if="biggest_amounts_results.length"
               >>
               <v-col>
-                <p v-if="results_found_amounts" class="flow-text">
+                <p
+                  v-if="results_found_amounts"
+                  class="flow-text"
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
                   Suurimmat kalasaaliit ({{ selected_biggest_amount }}
                   {{ results_found_amounts }})
                 </p>
-                <p v-else class="flow-text">
+                <p
+                  v-else
+                  class="flow-text"
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
                   Suurimmat kalasaaliit ({{ selected_biggest_amount }})
                 </p>
               </v-col>
@@ -734,10 +855,23 @@
             </v-row>
             <v-row v-else>
               <v-col v-if="!loading" md="8" offset-md="2">
-                <p class="flow-text">Ei tuloksia, vielä...</p>
+                <p
+                  class="flow-text"
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Ei tuloksia, vielä...
+                </p>
               </v-col>
               <v-col v-else md="8" offset-md="2">
-                <h2>Päivitetään tuloksia tietokannasta...</h2>
+                <h2
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Päivitetään tuloksia tietokannasta...
+                </h2>
                 <ProgressBarQuery />
               </v-col>
             </v-row>
@@ -745,7 +879,13 @@
         </v-tabs-items>
         <v-row v-else>
           <v-col v-if="!loading_competition && !loading">
-            <h2>Kilpailua ei valittuna</h2>
+            <h2
+              v-bind:class="{
+                'white--text': $store.getters.getTheme,
+              }"
+            >
+              Kilpailua ei valittuna
+            </h2>
           </v-col>
         </v-row>
         <div v-if="competition">
@@ -766,7 +906,13 @@
           </v-row>
           <v-row v-else>
             <v-col>
-              <h2>Päivitetään tuloksia tietokannasta...</h2>
+              <h2
+                v-bind:class="{
+                  'white--text': $store.getters.getTheme,
+                }"
+              >
+                Päivitetään tuloksia tietokannasta...
+              </h2>
               <ProgressBarQuery />
             </v-col>
           </v-row>
@@ -1072,15 +1218,8 @@ export default {
               textShadow: true,
               position: "border",
               textmargin: 1,
-              // text shadow intensity, default is 6
-              shadowBlur: 1,
-              // text shadow X offset, default is 3
-              shadowOffsetX: 2,
-              // text shadow Y offset, default is 3
-              shadowOffsetY: 2,
-              // text shadow color, default is 'rgba(0,0,0,0.3)'
-              shadowColor: "rgba(0,0,0,1)",
-              fontColor: "white",
+
+              fontColor: "#000",
               fontFamily: '"Lucida Console", Monaco, monospace',
             },
           },
@@ -1088,6 +1227,7 @@ export default {
             display: true,
             text: "Kaloja saatu yhteensä",
             fontSize: 28,
+            fontColor: this.$store.getters.getTheme ? "white" : "black",
           },
         },
       };
@@ -1122,6 +1262,7 @@ export default {
             display: true,
             text: "Saalista saaneita",
             fontSize: 28,
+            fontColor: this.$store.getters.getTheme ? "white" : "black",
           },
         },
       };
@@ -1889,6 +2030,7 @@ export default {
           doc.addPage();
         }
         let counter = 0;
+        columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino"];
         this.table_fish_names.forEach((name) => {
           this.selected_biggest_amount = name;
           this.calculateBiggestAmounts();

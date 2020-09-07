@@ -22,9 +22,18 @@
       </ul>
     </div>
 
-    <div class="container-transparent">
+    <div
+      v-bind:class="{
+        'container-transparent': !$store.getters.getTheme,
+        'container-transparent-dark': $store.getters.getTheme,
+      }"
+    >
       <div class="section">
-        <div class="col s12 center-align"><h1>Ilmoittautuminen</h1></div>
+        <div class="col s12 center-align">
+          <h1 v-bind:class="{ 'white--text': $store.getters.getTheme }">
+            Ilmoittautuminen
+          </h1>
+        </div>
       </div>
       <!-- Navigation to other competition pages -->
       <v-row>
@@ -72,12 +81,23 @@
 
       <v-tabs-items v-model="tab" style="background: rgba(0,0,0,0.4);">
         <!-- Signing tab -->
-        <v-tab-item class="inputarea" :value="'signing'">
+        <v-tab-item
+          v-bind:class="{
+            inputarea: !$store.getters.getTheme,
+            'inputarea-dark': $store.getters.getTheme,
+          }"
+          :value="'signing'"
+        >
           <v-row v-if="!loading_site">
             <v-col>
               <v-row style="margin-top:20px;">
                 <v-col md="10" offset-md="1">
-                  <p class="flow-text">Ilmoittautuminen</p>
+                  <p
+                    class="flow-text"
+                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
+                  >
+                    Ilmoittautuminen
+                  </p>
                 </v-col>
               </v-row>
 
@@ -91,20 +111,38 @@
               <!-- If there user is trying to overwrite data to other boat number, which is in use, show differences and ask are you sure -->
               <v-row v-if="old_info">
                 <v-col md="8" offset-md="2">
-                  <h3>Numeron ({{ old_info.boat_number }}.) Vanhat tiedot</h3>
-                  <p class="flow-text">
+                  <h3 v-bind:class="{ 'white--text': $store.getters.getTheme }">
+                    Numeron ({{ old_info.boat_number }}.) Vanhat tiedot
+                  </h3>
+                  <p
+                    class="flow-text"
+                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
+                  >
                     <b>Kippari:</b> {{ old_info.captain_name }}
                   </p>
-                  <p class="flow-text">
+                  <p
+                    class="flow-text"
+                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
+                  >
                     <b>Varakippari:</b> {{ old_info.temp_captain_name }}
                   </p>
-                  <p class="flow-text">
+                  <p
+                    class="flow-text"
+                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
+                  >
                     <b>Seura/Paikkakunta:</b> {{ old_info.locality }}
                   </p>
-                  <p class="flow-text">
+                  <p
+                    class="flow-text"
+                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
+                  >
                     <b>Lähtöpaikka:</b> {{ old_info.starting_place }}
                   </p>
-                  <p v-if="isTeamCompetition" class="flow-text">
+                  <p
+                    v-if="isTeamCompetition"
+                    class="flow-text"
+                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
+                  >
                     <b>Joukkue:</b> {{ old_info.team }}
                   </p>
                 </v-col>
@@ -114,18 +152,38 @@
                 </v-col>
 
                 <v-col md="8" offset-md="2">
-                  <h3>Numeron ({{ boat_number }}.) Uudet tiedot</h3>
-                  <p class="flow-text"><b>Kippari:</b> {{ captain_name }}</p>
-                  <p class="flow-text">
+                  <h3 v-bind:class="{ 'white--text': $store.getters.getTheme }">
+                    Numeron ({{ boat_number }}.) Uudet tiedot
+                  </h3>
+                  <p
+                    class="flow-text"
+                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
+                  >
+                    <b>Kippari:</b> {{ captain_name }}
+                  </p>
+                  <p
+                    class="flow-text"
+                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
+                  >
                     <b>Varakippari:</b> {{ temp_captain_name }}
                   </p>
-                  <p class="flow-text">
+                  <p
+                    class="flow-text"
+                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
+                  >
                     <b>Seura/Paikkakunta:</b> {{ locality }}
                   </p>
-                  <p class="flow-text">
+                  <p
+                    class="flow-text"
+                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
+                  >
                     <b>Lähtöpaikka:</b> {{ starting_place }}
                   </p>
-                  <p v-if="isTeamCompetition" class="flow-text">
+                  <p
+                    v-if="isTeamCompetition"
+                    class="flow-text"
+                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
+                  >
                     <b>Joukkue:</b> {{ team }}
                   </p>
                 </v-col>
@@ -162,6 +220,7 @@
                   <v-row>
                     <v-col md="3" offset-md="4" class="input-fields">
                       <v-text-field
+                        :dark="$store.getters.getTheme"
                         label="Venekunnan numero"
                         v-model="boat_number"
                         append-outer-icon="add"
@@ -183,14 +242,14 @@
                   </v-row>
 
                   <v-row>
-                    <v-col md="2" offset-md="3" style="margin-top:20px;">
+                    <v-col md="2" offset-md="2" style="margin-top:20px;">
                       <v-btn large block color="blue" @click="searchFromCup"
                         ><i class="material-icons left">find_replace</i>Hae
                         cupista</v-btn
                       >
                     </v-col>
 
-                    <v-col md="2" style="margin-top:20px;">
+                    <v-col md="2" offset-md="2" style="margin-top:20px;">
                       <v-btn large block color="indigo" @click="searchSelected"
                         ><i class="material-icons left">find_replace</i>Hae
                         ilmoittautuneista</v-btn
@@ -201,6 +260,7 @@
                   <v-row>
                     <v-col md="5" offset-md="3" class="input-fields">
                       <v-text-field
+                        :dark="$store.getters.getTheme"
                         label="Kippari"
                         v-model="captain_name"
                         :maxlength="maxlength"
@@ -213,6 +273,7 @@
                   <v-row>
                     <v-col md="5" offset-md="3" class="input-fields">
                       <v-text-field
+                        :dark="$store.getters.getTheme"
                         label="Varakippari"
                         v-model="temp_captain_name"
                         :maxlength="maxlength"
@@ -225,6 +286,7 @@
                   <v-row>
                     <v-col md="5" offset-md="3" class="input-fields">
                       <v-text-field
+                        :dark="$store.getters.getTheme"
                         label="Seura/Paikkakunta"
                         v-model="locality"
                         id="locality"
@@ -238,6 +300,7 @@
                   <v-row>
                     <v-col md="5" offset-md="3" class="input-fields">
                       <v-text-field
+                        :dark="$store.getters.getTheme"
                         label="Lähtöpaikka"
                         v-model="starting_place"
                         id="starting_place"
@@ -280,7 +343,12 @@
                   <v-row v-if="!old_info">
                     <v-row v-if="loading">
                       <v-col md="12">
-                        <p class="flow-text">
+                        <p
+                          class="flow-text"
+                          v-bind:class="{
+                            'white--text': $store.getters.getTheme,
+                          }"
+                        >
                           Päivitetään tiedot tietokantaan...
                         </p>
                         <ProgressBarQuery />
@@ -328,13 +396,19 @@
                   </v-row>
                   <v-row>
                     <v-col md="6" offset-md="3">
-                      <p class="flow-text" v-if="refreshing">
+                      <p
+                        class="flow-text"
+                        v-if="refreshing"
+                        v-bind:class="{
+                          'white--text': $store.getters.getTheme,
+                        }"
+                      >
                         Synkronoidaan tietokannan kanssa...
                       </p>
                     </v-col>
                   </v-row>
                   <v-row>
-                    <v-col md="2" offset-md="5">
+                    <v-col md="4" offset-md="4">
                       <v-btn
                         v-if="competition_id"
                         id="updatebtn"
@@ -356,17 +430,28 @@
           <v-row v-else>
             <!-- Show progressbar if loading -->
             <v-col>
-              <h2>Haetaan veneitä...</h2>
+              <h2 v-bind:class="{ 'white--text': $store.getters.getTheme }">
+                Haetaan veneitä...
+              </h2>
               <ProgressBarQuery />
             </v-col>
           </v-row>
         </v-tab-item>
-        <v-tab-item class="inputarea" :value="'signees'">
+        <v-tab-item
+          v-bind:class="{
+            inputarea: !$store.getters.getTheme,
+            'inputarea-dark': $store.getters.getTheme,
+          }"
+          :value="'signees'"
+        >
           <v-row>
             <v-col>
               <v-row style="margin-top:20px;">
                 <v-col class="title" offset-md="4" md="4">
-                  <p class="flow-text">
+                  <p
+                    class="flow-text"
+                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
+                  >
                     Ilmoittautuneita yhteensä: <b>{{ signees.length }}</b>
                   </p>
                 </v-col>
@@ -405,12 +490,22 @@
               </v-row>
               <v-row v-else>
                 <v-col style="margin:20px 50px;">
-                  <p v-if="signees.length" class="flow-text">
+                  <p
+                    v-if="signees.length"
+                    class="flow-text"
+                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
+                  >
                     Voit katsella venekunnan tietoja myös klikkaamalla
                     haluamaasi riviä taulukosta ja painamalla ilmestyvää
                     nappulaa
                   </p>
-                  <h3 v-else class="center-align">Ei ilmoittautuneita!</h3>
+                  <h3
+                    v-else
+                    class="center-align"
+                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
+                  >
+                    Ei ilmoittautuneita!
+                  </h3>
                 </v-col>
               </v-row>
             </v-col>
@@ -588,9 +683,12 @@ export default {
       }
     },
     capitalize_words: function(str) {
-      return str.replace(/\w\S*/g, function(txt) {
-        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-      });
+      return str.replace(
+        /(?:^|\s|['`‘’.-])[^\x60^\x7B-\xDF](?!(\s|$))/g,
+        function(txt) {
+          return txt.toUpperCase();
+        }
+      );
     },
     // Clear all selections and inputs and errors
     clearInputs: function() {

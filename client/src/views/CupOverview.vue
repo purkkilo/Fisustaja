@@ -37,11 +37,22 @@
     </v-tabs>
     <v-tabs-items v-model="tab" style="background: rgba(0,0,0,0.4);">
       <v-tab-item :value="'overview'">
-        <div class="container-transparent">
+        <div
+          v-bind:class="{
+            'container-transparent': !$store.getters.getTheme,
+            'container-transparent-dark': $store.getters.getTheme,
+          }"
+        >
           <div v-if="loading">
             <v-row>
               <v-col>
-                <h2>Valmistellaan Cuppia...</h2>
+                <h2
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Valmistellaan Cuppia...
+                </h2>
                 <ProgressBarQuery />
               </v-col>
             </v-row>
@@ -49,10 +60,23 @@
           <div v-else>
             <v-row>
               <v-col v-if="cup">
-                <h1>{{ cup.name }}, {{ cup.year }}</h1>
+                <h1
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  {{ cup.name }}, {{ cup.year }}
+                </h1>
               </v-col>
               <v-col v-else>
-                <p class="flow-text">Ei kuppia valittuna</p>
+                <p
+                  class="flow-text"
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Ei kuppia valittuna
+                </p>
               </v-col>
             </v-row>
             <div v-if="competitions.length">
@@ -60,7 +84,14 @@
                 <v-col md="10" offset-md="1">
                   <v-card :dark="$store.getters.getTheme">
                     <v-card-title>
-                      <p class="flow-text">Kilpailut</p>
+                      <p
+                        class="flow-text"
+                        v-bind:class="{
+                          'white--text': $store.getters.getTheme,
+                        }"
+                      >
+                        Kilpailut
+                      </p>
                       <v-spacer></v-spacer>
                       <v-text-field
                         v-model="search_comp"
@@ -139,7 +170,13 @@
               </v-row>
               <v-row v-else>
                 <v-col v-if="!loading">
-                  <h2>Ei kilpailuja!</h2>
+                  <h2
+                    v-bind:class="{
+                      'white--text': $store.getters.getTheme,
+                    }"
+                  >
+                    Ei kilpailuja!
+                  </h2>
                   <router-link to="/register-comp">
                     <v-btn tile color="blue lighten-1"
                       ><i class="material-icons left">add_circle_outline</i>Luo
@@ -147,9 +184,23 @@
                     >
                   </router-link>
                 </v-col>
-                <h2 v-if="error" class="error">{{ error }}</h2>
+                <h2
+                  v-if="error"
+                  class="error"
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  {{ error }}
+                </h2>
                 <v-col v-else>
-                  <h2>Ladataan kilpailuja...</h2>
+                  <h2
+                    v-bind:class="{
+                      'white--text': $store.getters.getTheme,
+                    }"
+                  >
+                    Ladataan kilpailuja...
+                  </h2>
                   <ProgressBarQuery />
                 </v-col>
               </v-row>
@@ -158,20 +209,36 @@
         </div>
       </v-tab-item>
       <v-tab-item :value="'points'">
-        <v-row class="container-transparent">
+        <v-row
+          v-bind:class="{
+            'container-transparent': !$store.getters.getTheme,
+            'container-transparent-dark': $store.getters.getTheme,
+          }"
+        >
           <v-col>
             <v-row v-if="results.length">
               <v-col>
-                <h1>Cupin kokonaispisteet</h1>
+                <h1
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Cupin kokonaispisteet
+                </h1>
               </v-col>
             </v-row>
             <v-row
               v-if="results.length"
-              class="inputarea"
+              v-bind:class="{
+                inputarea: !$store.getters.getTheme,
+                'inputarea-dark': $store.getters.getTheme,
+              }"
               style="padding-top:25px;"
             >
               <v-col class="d-flex" md="4">
                 <v-select
+                  :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
+                  :dark="$store.getters.getTheme"
                   :items="header_options"
                   label="Kilpailun otsikko"
                   outlined
@@ -181,6 +248,8 @@
               </v-col>
               <v-col class="d-flex" md="4">
                 <v-select
+                  :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
+                  :dark="$store.getters.getTheme"
                   :items="select_numbers"
                   label="Cup sijoittumispisteisiin vaikuttavien kilpailujen määrä"
                   outlined
@@ -194,7 +263,7 @@
                   tile
                   color="green darken-4"
                   class="white--text"
-                  @click="saveAsPDF(`Cupin Kokonaistulokset`)"
+                  @click="saveAsPDF(`Tulokset`)"
                   :loading="loading"
                 >
                   <i class="material-icons left">picture_as_pdf</i>Lataa pdf
@@ -203,7 +272,12 @@
             </v-row>
             <v-row v-if="results.length && not_finished_count > 0">
               <v-col>
-                <p class="flow-text">
+                <p
+                  class="flow-text"
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
                   *Punaisella merkityt kilpailut ovat vielä kesken! ({{
                     not_finished_count
                   }}
@@ -295,12 +369,25 @@
             </v-row>
             <v-row v-else>
               <v-col>
-                <h2>Kilpailuissa ei vielä tuloksia!</h2>
+                <h2
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Kilpailuissa ei vielä tuloksia!
+                </h2>
               </v-col>
             </v-row>
             <v-row v-if="competitions.length && cup">
               <v-col v-if="loading">
-                <p class="flow-text">Päivitetään tuloksia...</p>
+                <p
+                  class="flow-text"
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Päivitetään tuloksia...
+                </p>
               </v-col>
             </v-row>
             <v-row v-if="competitions.length && cup">
@@ -322,7 +409,13 @@
             </v-row>
             <v-row v-else>
               <v-col>
-                <h2>Ei kilpailuja rekisteröitynä!</h2>
+                <h2
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Ei kilpailuja rekisteröitynä!
+                </h2>
               </v-col>
             </v-row>
           </v-col>
@@ -809,7 +902,15 @@ export default {
       let columns = [];
       let rows;
       let startY;
-      const last_competition = this.competitions[this.competitions.length - 1];
+      // Find last competition from the array which has finished
+      let temp_array = [...this.competitions];
+      var index = temp_array
+        .slice()
+        .reverse()
+        .findIndex((competition) => competition.isFinished === true);
+      var count = temp_array.length - 1;
+      var finalIndex = index >= 0 ? count - index : index;
+      const last_competition = temp_array[finalIndex];
       const start_date = moment(last_competition.start_date);
       const formatted_date = `${start_date.date()}.${start_date.month() +
         1}.${start_date.year()}`;
@@ -818,7 +919,7 @@ export default {
       doc.line(0, 15, 400, 15);
       doc.setFontSize(14);
       // Table, based on given table_id, and table title based on competition_type
-      if (table_title === "Cupin Kokonaistulokset") {
+      if (table_title === "Tulokset") {
         sub_title = `Tilanne ${formatted_date}, ${last_competition.name} (${last_competition.locality}) jälkeen`;
         doc.text(13, 25, sub_title, { align: "left" });
         doc.text(

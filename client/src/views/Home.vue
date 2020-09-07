@@ -1,7 +1,13 @@
 <template>
   <!-- Starting page, / -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <v-container style="margin-top:70px;" class="container-transparent">
+  <v-container
+    style="margin-top:70px;"
+    v-bind:class="{
+      'container-transparent': !$store.getters.getTheme,
+      'container-transparent-dark': $store.getters.getTheme,
+    }"
+  >
     <MainHeader />
     <v-row class="section">
       <v-col md="6" offset-md="3">
@@ -12,7 +18,13 @@
     <v-row>
       <!-- TODO Cool starting page... -->
       <v-col>
-        <h4>Sovellus kalastuskilpailujen järjestämistä varten</h4>
+        <h4
+          v-bind:class="{
+            'white--text': $store.getters.getTheme,
+          }"
+        >
+          Sovellus kalastuskilpailujen järjestämistä varten
+        </h4>
       </v-col>
     </v-row>
     <v-row>

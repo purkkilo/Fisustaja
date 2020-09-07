@@ -21,7 +21,13 @@
         </li>
       </ul>
     </div>
-    <div v-if="!loading" class="container-transparent">
+    <div
+      v-if="!loading"
+      v-bind:class="{
+        'container-transparent': !$store.getters.getTheme,
+        'container-transparent-dark': $store.getters.getTheme,
+      }"
+    >
       <div class="section">
         <div class="col s12 center-align"><h1>Yleisnäkymä</h1></div>
       </div>
