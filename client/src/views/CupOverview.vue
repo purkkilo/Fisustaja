@@ -154,47 +154,42 @@
                 </v-col>
               </v-row>
               <v-row v-if="competitions.length">
-                <v-col>
-                  <router-link to="/register-comp">
-                    <v-btn tile color="blue lighten-1"
-                      ><i class="material-icons left">add_circle_outline</i>Luo
-                      kilpailu!</v-btn
-                    >
-                  </router-link>
+                <v-col style="margin-top:20px">
+                  <v-btn
+                    tile
+                    color="blue lighten-1"
+                    :loading="publishing"
+                    @click="$router.push({ path: '/register-comp' })"
+                    ><i class="material-icons left">add_circle_outline</i>Luo
+                    kilpailu!</v-btn
+                  >
                 </v-col>
-                <v-col>
+                <v-col style="margin-top:20px">
                   <v-btn
                     @click="saveAsPDF(`Ilmoittautuneet`)"
                     color="green darken-4"
                     class="white--text"
+                    :loading="publishing"
                     ><i class="material-icons left">picture_as_pdf</i>Lataa
                     lista kilpailijoista</v-btn
                   >
                 </v-col>
-                <v-col v-if="cup.isPublic">
+                <v-col style="margin-top:20px">
                   <v-btn
                     large
                     tile
-                    color="grey darken-4"
-                    @click="publishCup(false)"
-                    :loading="publishing"
+                    :color="cup.isPublic ? 'grey darken-4' : 'green darken-4'"
+                    @click="publishCup(cup.isPublic)"
                     class="white--text"
-                  >
-                    <i class="material-icons left">unpublished</i>Aseta cup
-                    salaiseksi
-                  </v-btn>
-                </v-col>
-                <v-col v-else>
-                  <v-btn
-                    large
-                    tile
-                    color="green darken-4"
-                    @click="publishCup(true)"
                     :loading="publishing"
-                    class="white--text"
                   >
-                    <i class="material-icons left">published_with_changes</i
-                    >Aseta cup julkiseksi
+                    <div v-if="cup.isPublic">
+                      <v-icon>mdi-incognito</v-icon> Aseta cup salaiseksi
+                    </div>
+                    <div v-else>
+                      <v-icon color="green">mdi-publish</v-icon> Aseta kilpailu
+                      julkiseksi
+                    </div>
                   </v-btn>
                 </v-col>
               </v-row>
@@ -516,7 +511,7 @@ export default {
   },
   methods: {
     async publishCup(isPublic) {
-      this.cup.isPublic = isPublic;
+      this.cup.isPublic = !isPublic;
 
       try {
         //TODO update only this one variable (competition.normal_points) to database, not the whole competition
@@ -717,7 +712,7 @@ export default {
               counter++;
             });
             this.competitions.sort(function compare(a, b) {
-              return moment(a.start_date).isBefore(moment(b.start_date));
+              return moment(b.start_date).isBefore(moment(a.start_date));
             });
             this.selected_competitions = this.competitions.length;
             this.calculateAll(this.competitions, this.selected_competitions);
