@@ -34,8 +34,13 @@
         <v-row>
           <v-col>
             <v-row>
-              <v-col>
-                <v-btn large rounded color="yellow" @click="$router.go(-3)"
+              <v-col v-if="prevRoute">
+                <v-btn
+                  v-if="prevRoute.name"
+                  large
+                  rounded
+                  color="yellow"
+                  @click="$router.push({ path: prevRoute.path })"
                   ><i class="material-icons left">history</i>Palaa
                   takaisin</v-btn
                 >
@@ -131,8 +136,13 @@
         <v-row>
           <v-col>
             <v-row>
-              <v-col>
-                <v-btn large rounded color="yellow" @click="$router.go(-3)"
+              <v-col v-if="prevRoute">
+                <v-btn
+                  v-if="prevRoute.name"
+                  large
+                  rounded
+                  color="yellow"
+                  @click="$router.push({ path: prevRoute.path })"
                   ><i class="material-icons left">history</i>Palaa
                   takaisin</v-btn
                 >
@@ -370,8 +380,13 @@
         <v-row>
           <v-col>
             <v-row>
-              <v-col>
-                <v-btn large rounded color="yellow" @click="$router.go(-3)"
+              <v-col v-if="prevRoute">
+                <v-btn
+                  v-if="prevRoute.name"
+                  large
+                  rounded
+                  color="yellow"
+                  @click="$router.push({ path: prevRoute.path })"
                   ><i class="material-icons left">history</i>Palaa
                   takaisin</v-btn
                 >
@@ -405,9 +420,16 @@
                     :loading="loading_competitions"
                   >
                     <template v-slot:[`item.start_date`]="{ item }">
-                      <v-chip>{{
+                      <v-chip color="primary darken-2">{{
                         item.start_date.format("DD.MM.YYYY")
                       }}</v-chip>
+                    </template>
+                    <template v-slot:[`item.cup_points_multiplier`]="{ item }">
+                      <v-chip
+                        :color="getColor(item.cup_points_multiplier)"
+                        :outlined="$store.getters.getTheme"
+                        >{{ item.cup_points_multiplier }}x</v-chip
+                      >
                     </template>
                     <template v-slot:[`item.choose`]="{ item }">
                       <v-btn
@@ -468,8 +490,13 @@
         <v-row>
           <v-col>
             <v-row>
-              <v-col>
-                <v-btn large rounded color="yellow" @click="$router.go(-3)"
+              <v-col v-if="prevRoute">
+                <v-btn
+                  v-if="prevRoute.name"
+                  large
+                  rounded
+                  color="yellow"
+                  @click="$router.push({ path: prevRoute.path })"
                   ><i class="material-icons left">history</i>Palaa
                   takaisin</v-btn
                 >
@@ -563,8 +590,13 @@
         <v-row>
           <v-col>
             <v-row>
-              <v-col>
-                <v-btn large rounded color="yellow" @click="$router.go(-3)"
+              <v-col v-if="prevRoute">
+                <v-btn
+                  v-if="prevRoute.name"
+                  large
+                  rounded
+                  color="yellow"
+                  @click="$router.push({ path: prevRoute.path })"
                   ><i class="material-icons left">history</i>Palaa
                   takaisin</v-btn
                 >
@@ -675,7 +707,12 @@
             </v-row>
             <v-row>
               <v-col>
-                <v-btn large rounded color="green" @click="generateCompetition"
+                <v-btn
+                  large
+                  rounded
+                  color="green"
+                  :loading="loading_cups"
+                  @click="generateCompetition"
                   ><i class="material-icons left">history</i>Generoi
                   kilpailu</v-btn
                 >
@@ -730,7 +767,13 @@ export default {
       ],
       search_comp: "",
       search: "",
+      prevRoute: null,
     };
+  },
+  beforeRouteEnter(to, from, next) {
+    next((vm) => {
+      vm.prevRoute = from;
+    });
   },
   components: {
     Timedate,
@@ -773,6 +816,11 @@ export default {
     }
   },
   methods: {
+    getColor(multiplier) {
+      if (multiplier > 1) return "red";
+      if (multiplier === 1) return "green";
+      else return "grey";
+    },
     generateCompetition: function() {
       const user = JSON.parse(localStorage.getItem("user"));
       const user_id = user["id"];

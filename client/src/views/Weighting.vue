@@ -2,17 +2,41 @@
   <!-- /weighting -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container>
-    <Header />
-    <Timedate style="margin-top:0" />
+    <Header style="margin-bottom:60px" />
     <div
       v-bind:class="{
         'container-transparent': !$store.getters.getTheme,
         'container-transparent-dark': $store.getters.getTheme,
       }"
     >
-      <div class="section">
-        <div class="col s12 center-align"><h1>Punnitus</h1></div>
-      </div>
+      <v-row class="valign-wrapper">
+        <v-col md="6" offset-md="3">
+          <h1>Punnitus</h1>
+        </v-col>
+        <v-col md="3">
+          <div class="text-center">
+            <v-dialog v-model="dialog">
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn color="red darken-4" dark v-bind="attrs" v-on="on">
+                  Kello/Kilpailuaika
+                </v-btn>
+              </template>
+
+              <v-card :dark="$store.getters.getTheme">
+                <v-card-title class="headline"> </v-card-title>
+                <Timedate />
+
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="primary" outlined @click="dialog = false">
+                    Sulje
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
+          </div>
+        </v-col>
+      </v-row>
       <!-- Navigation to other competition pages -->
 
       <v-row>
@@ -728,6 +752,7 @@ export default {
   },
   data() {
     return {
+      dialog: false,
       tab: null,
       competition_id: null,
       boat_number_input: {},

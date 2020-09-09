@@ -2,26 +2,60 @@
   <!-- /comp-settings -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container>
-    <Header />
-    <Timedate style="margin-top:0" />
+    <Header style="margin-bottom:60px" />
+    <div
+      v-bind:class="{
+        'container-transparent': !$store.getters.getTheme,
+        'container-transparent-dark': $store.getters.getTheme,
+      }"
+    >
+      <v-row class="valign-wrapper">
+        <v-col md="6" offset-md="3">
+          <h1>Kilpailun määritykset</h1>
+        </v-col>
+        <v-col md="3">
+          <div class="text-center">
+            <v-dialog v-model="dialog">
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn color="red darken-4" dark v-bind="attrs" v-on="on">
+                  Kello/Kilpailuaika
+                </v-btn>
+              </template>
 
-    <v-row>
-      <v-col md="6" offset-md="3" style="margin-top:20px">
-        <router-link to="/overview">
-          <v-btn large rounded color="primary"
-            ><i class="material-icons left">info</i>Kilpailun yleisnäkymä</v-btn
-          >
-        </router-link>
-      </v-col>
+              <v-card :dark="$store.getters.getTheme">
+                <v-card-title class="headline"> </v-card-title>
+                <Timedate />
 
-      <v-col md="3" style="margin-top:20px">
-        <router-link to="/signing">
-          <v-btn large rounded color="blue" class="white--text"
-            ><i class="material-icons left">edit</i>Ilmoittautuminen</v-btn
-          >
-        </router-link>
-      </v-col>
-    </v-row>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="primary" outlined @click="dialog = false">
+                    Sulje
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
+          </div>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col md="6" style="margin-top:20px">
+          <router-link to="/overview">
+            <v-btn large rounded color="primary"
+              ><i class="material-icons left">info</i>Kilpailun
+              yleisnäkymä</v-btn
+            >
+          </router-link>
+        </v-col>
+
+        <v-col md="3" offset-md="2" style="margin-top:20px">
+          <router-link to="/signing">
+            <v-btn large rounded color="blue" class="white--text"
+              ><i class="material-icons left">edit</i>Ilmoittautuminen</v-btn
+            >
+          </router-link>
+        </v-col>
+      </v-row>
+    </div>
 
     <!-- Tabs -->
     <v-tabs
@@ -42,18 +76,7 @@
     </v-tabs>
 
     <v-tabs-items v-model="tab" style="background: rgba(0,0,0,0.4);">
-      <v-tab-item
-        :value="'show-settings'"
-        v-bind:class="{
-          'container-transparent': !$store.getters.getTheme,
-          'container-transparent-dark': $store.getters.getTheme,
-        }"
-      >
-        <div class="section">
-          <div class="col s12 center-align">
-            <h1>Kilpailun määritykset</h1>
-          </div>
-        </div>
+      <v-tab-item :value="'show-settings'">
         <!-- if this.loading === false, meaning app isn't loading competition data from database -->
         <v-row
           v-if="!loading"
@@ -203,13 +226,55 @@
                 </table>
               </v-col>
             </v-row>
+            <v-row v-if="!loading">
+              <v-col style="margin-top:20px">
+                <v-btn
+                  large
+                  tile
+                  :color="
+                    competition.isPublic ? 'grey darken-4' : 'green darken-4'
+                  "
+                  @click="publishCompetition(competition.isPublic)"
+                  class="white--text"
+                  :loading="updating"
+                >
+                  <div v-if="competition.isPublic">
+                    <v-icon>mdi-incognito</v-icon> Aseta kilpailu salaiseksi
+                  </div>
+                  <div v-else>
+                    <v-icon color="green">mdi-publish</v-icon> Aseta kilpailu
+                    julkiseksi
+                  </div>
+                </v-btn>
+              </v-col>
+              <v-col style="margin-top:20px">
+                <v-btn
+                  large
+                  tile
+                  :color="competition.isFinished ? 'yellow' : 'green darken-3'"
+                  @click="endCompetition(competition.isFinished)"
+                  :loading="updating"
+                >
+                  <div v-if="competition.isFinished">
+                    <v-icon color="red darken-2">mdi-cancel</v-icon> Aseta
+                    kilpailu keskeneräiseksi
+                  </div>
+                  <div v-else>
+                    <v-icon color="yellow">mdi-trophy</v-icon> Aseta kilpailu
+                    päättyneeksi
+                  </div>
+                </v-btn>
+              </v-col>
+            </v-row>
             <v-row>
-              <v-col md="4" offset-md="4" style="margin-top:20px">
+              <v-col md="3" offset-md="4" style="margin-top:20px">
                 <v-btn
                   block
-                  color="red"
+                  color="red darken-4"
+                  class="white--text"
+                  :loading="updating"
                   @click="deleteCompetition(competition._id, false)"
-                  ><i class="material-icons left">delete_forever</i>Poista
+                  ><v-icon color="white">mdi-delete-forever</v-icon> Poista
                   Kilpailu</v-btn
                 >
               </v-col>
@@ -673,8 +738,13 @@
               </v-row>
               <v-row v-if="!basic_info_validated">
                 <v-col>
-                  <v-btn large color="green darken-4" @click="addInput"
-                    ><i class="material-icons left">add_box</i>Lisää kala</v-btn
+                  <v-btn
+                    large
+                    color="green darken-4"
+                    class="white--text"
+                    @click="addInput"
+                    ><v-icon color="green lighten-2">mdi-plus-circle</v-icon>
+                    Lisää kala</v-btn
                   >
                 </v-col>
               </v-row>
@@ -682,14 +752,14 @@
               <v-row v-if="!basic_info_validated">
                 <v-col md="6" v-if="competition">
                   <v-btn large color="yellow" @click="setOriginalValues"
-                    ><i class="material-icons left">check</i>Peruuta
+                    ><v-icon color="red darken-2">mdi-cancel</v-icon> Peruuta
                     muutokset</v-btn
                   >
                 </v-col>
                 <v-col md="6" v-if="competition">
                   <v-btn large color="green" @click="checkBasicInformation"
-                    ><i class="material-icons left">check</i>Tallenna
-                    muutokset</v-btn
+                    ><v-icon color="green darken-4">mdi-check-outline</v-icon>
+                    Tallenna muutokset</v-btn
                   >
                 </v-col>
               </v-row>
@@ -727,8 +797,8 @@
 <script>
 "use strict";
 import M from "materialize-css";
-import Timedate from "../components/layout/Timedate";
 import Header from "../components/layout/Header";
+import Timedate from "../components/layout/Timedate";
 import moment from "moment";
 import CompetitionService from "../CompetitionService";
 import CupService from "../CupService";
@@ -743,6 +813,7 @@ export default {
   },
   data() {
     return {
+      dialog: false,
       errors: [],
       cups: [],
       cup: {},
@@ -762,6 +833,7 @@ export default {
       end_time: null,
       loading: false,
       loading_cups: false,
+      updating: false,
       tab: null,
       basic_info_validated: true,
       inputs: [],
@@ -844,6 +916,30 @@ export default {
         this.$store.state.logged_in = false;
         this.$store.state.is_admin = false;
       }
+    },
+    async publishCompetition(isPublic) {
+      this.competition.isPublic = !isPublic;
+      this.updateToDatabase(this.competition);
+    },
+    async endCompetition(isFinished) {
+      this.competition.isFinished = !isFinished;
+      this.competition.isFinished
+        ? (this.competition.state = "Päättynyt")
+        : (this.competition.state = "Kesken");
+      this.updateToDatabase(this.competition);
+    },
+    async updateToDatabase(competition) {
+      try {
+        this.$store.commit("refreshCompetition", competition);
+        this.updating = true;
+        await CompetitionService.updateCompetition(
+          this.competition._id,
+          this.competition
+        );
+      } catch (err) {
+        console.error(err.message);
+      }
+      this.updating = false;
     },
     async getCups() {
       this.loading_cups = true;

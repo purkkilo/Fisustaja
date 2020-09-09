@@ -45,112 +45,117 @@
           'container-transparent-dark': $store.getters.getTheme,
         }"
       >
-        <v-container>
-          <v-row>
-            <v-col>
-              <h1>Kilpailut</h1>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col>
-              <div v-if="competitions.length" class="scroll_table">
-                <v-card :dark="$store.getters.getTheme">
-                  <v-card-title>
-                    <p class="flow-text">Kilpailut</p>
-                    <v-spacer></v-spacer>
-                    <v-text-field
-                      :dark="$store.getters.getTheme"
-                      v-model="search_comp"
-                      append-icon="mdi-magnify"
-                      label="Hae kilpailua"
-                      single-line
-                      hide-details
-                    ></v-text-field>
-                  </v-card-title>
-                  <v-data-table
-                    id="normal-table"
-                    :headers="headers"
-                    :items="competitions"
-                    :search="search_comp"
-                  >
-                    <template v-slot:[`item.start_date`]="{ item }">
-                      <v-chip>{{
-                        item.start_date.format("DD.MM.YYYY")
-                      }}</v-chip>
-                    </template>
-                    <template v-slot:[`item.choose`]="{ item }">
-                      <v-btn color="primary" @click="pickCompetition(item)"
-                        ><i class="material-icons left">check</i>Valitse</v-btn
-                      >
-                    </template>
-                  </v-data-table>
-                </v-card>
-              </div>
-              <div v-else>
-                <v-col v-if="!loading">
-                  <v-row>
-                    <v-col v-if="cups.length">
-                      <h2
-                        v-bind:class="{
-                          'white--text': $store.getters.getTheme,
-                        }"
-                      >
-                        Ei kilpailuja!
-                      </h2>
-                      <router-link to="/register-comp">
-                        <v-btn tile color="blue lighten-1"
-                          ><i class="material-icons left">add_circle_outline</i
-                          >Luo kilpailu!</v-btn
-                        >
-                      </router-link>
-                    </v-col>
-                    <v-col v-else>
-                      <h2
-                        v-bind:class="{
-                          'white--text': $store.getters.getTheme,
-                        }"
-                      >
-                        Ei kilpailuja!
-                      </h2>
-                      <h2
-                        v-bind:class="{
-                          'white--text': $store.getters.getTheme,
-                        }"
-                      >
-                        Luo Cup ensin
-                      </h2>
-                      <v-btn tile color="blue lighten-1" @click="tab = 'create'"
+        <v-row>
+          <v-col>
+            <h1>Kilpailut</h1>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col>
+            <div v-if="competitions.length" class="scroll_table">
+              <v-card :dark="$store.getters.getTheme">
+                <v-card-title>
+                  <p class="flow-text">Kilpailut</p>
+                  <v-spacer></v-spacer>
+                  <v-text-field
+                    :dark="$store.getters.getTheme"
+                    v-model="search_comp"
+                    append-icon="mdi-magnify"
+                    label="Hae kilpailua"
+                    single-line
+                    hide-details
+                  ></v-text-field>
+                </v-card-title>
+                <v-data-table
+                  id="normal-table"
+                  :headers="headers"
+                  :items="competitions"
+                  :search="search_comp"
+                >
+                  <template v-slot:[`item.start_date`]="{ item }">
+                    <v-chip color="primary darken-2">{{
+                      item.start_date.format("DD.MM.YYYY")
+                    }}</v-chip>
+                  </template>
+                  <template v-slot:[`item.cup_points_multiplier`]="{ item }">
+                    <v-chip
+                      :color="getColor(item.cup_points_multiplier)"
+                      :outlined="$store.getters.getTheme"
+                      >{{ item.cup_points_multiplier }}x</v-chip
+                    >
+                  </template>
+                  <template v-slot:[`item.choose`]="{ item }">
+                    <v-btn color="primary" @click="pickCompetition(item)"
+                      ><i class="material-icons left">check</i>Valitse</v-btn
+                    >
+                  </template>
+                </v-data-table>
+              </v-card>
+            </div>
+            <div v-else>
+              <v-col v-if="!loading">
+                <v-row>
+                  <v-col v-if="cups.length">
+                    <h2
+                      v-bind:class="{
+                        'white--text': $store.getters.getTheme,
+                      }"
+                    >
+                      Ei kilpailuja!
+                    </h2>
+                    <router-link to="/register-comp">
+                      <v-btn tile color="blue lighten-1"
                         ><i class="material-icons left">add_circle_outline</i
-                        >Luo Cup!</v-btn
+                        >Luo kilpailu!</v-btn
                       >
-                    </v-col>
-                  </v-row>
-                </v-col>
-                <v-col v-else-if="error">
-                  <h2 class="error">{{ error }}</h2>
-                </v-col>
-                <v-col v-else>
-                  <h2
-                    v-bind:class="{
-                      'white--text': $store.getters.getTheme,
-                    }"
-                  >
-                    Ladataan kilpailuja...
-                  </h2>
-                  <ProgressBarQuery />
-                </v-col>
-              </div>
-              <v-col v-if="competitions.length" style="margin-top:20px;">
-                <router-link to="/register-comp">
-                  <v-btn tile color="blue lighten-1"
-                    ><i class="material-icons left">add_circle_outline</i>Luo
-                    uusi kilpailu!</v-btn
-                  >
-                </router-link>
+                    </router-link>
+                  </v-col>
+                  <v-col v-else>
+                    <h2
+                      v-bind:class="{
+                        'white--text': $store.getters.getTheme,
+                      }"
+                    >
+                      Ei kilpailuja!
+                    </h2>
+                    <h2
+                      v-bind:class="{
+                        'white--text': $store.getters.getTheme,
+                      }"
+                    >
+                      Luo Cup ensin
+                    </h2>
+                    <v-btn tile color="blue lighten-1" @click="tab = 'create'"
+                      ><i class="material-icons left">add_circle_outline</i>Luo
+                      Cup!</v-btn
+                    >
+                  </v-col>
+                </v-row>
               </v-col>
+              <v-col v-else-if="error">
+                <h2 class="error">{{ error }}</h2>
+              </v-col>
+              <v-col v-else>
+                <h2
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Ladataan kilpailuja...
+                </h2>
+                <ProgressBarQuery />
+              </v-col>
+            </div>
+            <v-col v-if="competitions.length" style="margin-top:20px;">
+              <router-link to="/register-comp">
+                <v-btn tile color="blue lighten-1"
+                  ><i class="material-icons left">add_circle_outline</i>Luo uusi
+                  kilpailu!</v-btn
+                >
+              </router-link>
             </v-col>
-          </v-row>
-        </v-container>
+          </v-col>
+        </v-row>
       </v-tab-item>
       <v-tab-item
         :value="'create'"
@@ -159,65 +164,63 @@
           'container-transparent-dark': $store.getters.getTheme,
         }"
       >
-        <v-container>
-          <v-row>
-            <v-col>
-              <h1>Luo Cup</h1>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col md="8" offset-md="2" class="input-fields">
-              <v-text-field
-                :dark="$store.getters.getTheme"
-                label="Cupin nimi"
-                v-model="name"
-                :maxlength="40"
-                :loading="loading"
-                :counter="40"
-              />
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col md="6" offset-md="3" class="input-fields">
-              <v-menu
-                ref="menu"
-                :close-on-content-click="false"
-                v-model="menu"
-                :nudge-right="40"
-                transition="scale-transition"
-                offset-y
-                min-width="290px"
-              >
-                <template v-slot:activator="{ on, attrs }">
-                  <v-text-field
-                    :dark="$store.getters.getTheme"
-                    v-model="year"
-                    label="Vuosi"
-                    prepend-icon="event"
-                    readonly
-                    v-bind="attrs"
-                    v-on="on"
-                  ></v-text-field>
-                </template>
-                <v-date-picker
-                  ref="picker"
+        <v-row>
+          <v-col>
+            <h1>Luo Cup</h1>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col md="8" offset-md="2" class="input-fields">
+            <v-text-field
+              :dark="$store.getters.getTheme"
+              label="Cupin nimi"
+              v-model="name"
+              :maxlength="40"
+              :loading="loading"
+              :counter="40"
+            />
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col md="6" offset-md="3" class="input-fields">
+            <v-menu
+              ref="menu"
+              :close-on-content-click="false"
+              v-model="menu"
+              :nudge-right="40"
+              transition="scale-transition"
+              offset-y
+              min-width="290px"
+            >
+              <template v-slot:activator="{ on, attrs }">
+                <v-text-field
+                  :dark="$store.getters.getTheme"
                   v-model="year"
-                  @input="saveYear"
-                  min="2000-01-01"
-                  reactive
-                  no-title
-                ></v-date-picker>
-              </v-menu>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col>
-              <v-btn tile color="primary" @click="saveCup" :loading="loading"
-                ><i class="material-icons left">check</i>Luo Cup</v-btn
-              >
-            </v-col>
-          </v-row>
-        </v-container>
+                  label="Vuosi"
+                  prepend-icon="event"
+                  readonly
+                  v-bind="attrs"
+                  v-on="on"
+                ></v-text-field>
+              </template>
+              <v-date-picker
+                ref="picker"
+                v-model="year"
+                @input="saveYear"
+                min="2000-01-01"
+                reactive
+                no-title
+              ></v-date-picker>
+            </v-menu>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col>
+            <v-btn tile color="primary" @click="saveCup" :loading="loading"
+              ><i class="material-icons left">check</i>Luo Cup</v-btn
+            >
+          </v-col>
+        </v-row>
       </v-tab-item>
       <v-tab-item
         :value="'cups'"
@@ -226,63 +229,64 @@
           'container-transparent-dark': $store.getters.getTheme,
         }"
       >
-        <v-container>
-          <v-row>
-            <v-col>
-              <h1>Cupit</h1>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col>
-              <div v-if="cups.length" class="scroll_table">
-                <v-card :dark="$store.getters.getTheme">
-                  <v-card-title>
-                    <p class="flow-text">Cupit</p>
-                    <v-spacer></v-spacer>
-                    <v-text-field
-                      v-model="search_cup"
-                      append-icon="mdi-magnify"
-                      label="Hae cuppia"
-                      single-line
-                      hide-details
-                    ></v-text-field>
-                  </v-card-title>
-                  <v-data-table
-                    id="normal-table"
-                    :headers="headers_cup"
-                    :items="cups"
-                    :search="search_cup"
-                  >
-                    <template v-slot:[`item.name`]="{ item }">
-                      <v-chip>{{ item.name }}</v-chip>
-                    </template>
-                    <template v-slot:[`item.choose`]="{ item }">
-                      <v-btn color="primary" @click="pickCup(item)"
-                        ><i class="material-icons left">check</i>Valitse</v-btn
-                      >
-                    </template>
-                  </v-data-table>
-                </v-card>
-              </div>
-              <v-row v-else>
-                <v-col v-if="!loading">
-                  <h2>Ei Cuppeja!</h2>
-                  <v-btn tile color="blue lighten-1" @click="tab = 'create'"
-                    ><i class="material-icons left">add_circle_outline</i>Luo
-                    Cup!</v-btn
-                  >
-                </v-col>
-                <v-col v-else-if="error" class="error"
-                  ><h2>{{ error }}</h2></v-col
+        <v-row>
+          <v-col>
+            <h1>Cupit</h1>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col>
+            <div v-if="cups.length" class="scroll_table">
+              <v-card :dark="$store.getters.getTheme">
+                <v-card-title>
+                  <p class="flow-text">Cupit</p>
+                  <v-spacer></v-spacer>
+                  <v-text-field
+                    v-model="search_cup"
+                    append-icon="mdi-magnify"
+                    label="Hae cuppia"
+                    single-line
+                    hide-details
+                  ></v-text-field>
+                </v-card-title>
+                <v-data-table
+                  id="normal-table"
+                  :headers="headers_cup"
+                  :items="cups"
+                  :search="search_cup"
                 >
-                <v-col v-else>
-                  <h2>Ladataan Cuppeja...</h2>
-                  <ProgressBarQuery />
-                </v-col>
-              </v-row>
-            </v-col>
-          </v-row>
-        </v-container>
+                  <template v-slot:[`item.name`]="{ item }">
+                    <v-chip color="primary darken-2">{{ item.name }}</v-chip>
+                  </template>
+                  <template v-slot:[`item.year`]="{ item }">
+                    <v-chip color="green darken-3">{{ item.year }}</v-chip>
+                  </template>
+                  <template v-slot:[`item.choose`]="{ item }">
+                    <v-btn color="primary" @click="pickCup(item)"
+                      ><i class="material-icons left">check</i>Valitse</v-btn
+                    >
+                  </template>
+                </v-data-table>
+              </v-card>
+            </div>
+            <v-row v-else>
+              <v-col v-if="!loading">
+                <h2>Ei Cuppeja!</h2>
+                <v-btn tile color="blue lighten-1" @click="tab = 'create'"
+                  ><i class="material-icons left">add_circle_outline</i>Luo
+                  Cup!</v-btn
+                >
+              </v-col>
+              <v-col v-else-if="error" class="error"
+                ><h2>{{ error }}</h2></v-col
+              >
+              <v-col v-else>
+                <h2>Ladataan Cuppeja...</h2>
+                <ProgressBarQuery />
+              </v-col>
+            </v-row>
+          </v-col>
+        </v-row>
       </v-tab-item>
     </v-tabs-items>
   </v-container>
@@ -376,6 +380,11 @@ export default {
     location.href = "#app";
   },
   methods: {
+    getColor(multiplier) {
+      if (multiplier > 1) return "red";
+      if (multiplier === 1) return "green";
+      else return "grey";
+    },
     // Add error to error array and direct user to it
     showError: function(error) {
       this.errors.push(error);

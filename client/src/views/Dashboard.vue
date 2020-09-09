@@ -3,7 +3,7 @@
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container>
     <Header />
-    <Timedate style="margin-top:0" />
+    <Timedate />
     <v-row
       v-bind:class="{
         'container-transparent': !$store.getters.getTheme,

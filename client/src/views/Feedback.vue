@@ -17,8 +17,13 @@
 
         <div class="section" id="send-feedback">
           <v-row>
-            <v-col>
-              <v-btn large rounded color="yellow" @click="$router.go(-3)"
+            <v-col v-if="prevRoute">
+              <v-btn
+                v-if="prevRoute.name"
+                large
+                rounded
+                color="yellow"
+                @click="$router.push({ path: prevRoute.path })"
                 ><i class="material-icons left">history</i>Palaa takaisin</v-btn
               >
             </v-col>
@@ -97,6 +102,7 @@ export default {
   },
   data() {
     return {
+      prevRoute: null,
       message: null,
       type: null,
       type_options: ["Bugi", "Ehdotus", "Muu"],
@@ -104,7 +110,11 @@ export default {
       error: null,
     };
   },
-  created() {},
+  beforeRouteEnter(to, from, next) {
+    next((vm) => {
+      vm.prevRoute = from;
+    });
+  },
   mounted() {
     //Init materialize elements
     M.AutoInit();

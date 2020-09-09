@@ -226,7 +226,10 @@
               </v-col>
             </v-row>
             <v-row v-if="competition">
-              <v-row style="min-height:400px;">
+              <v-row
+                style="min-height:400px;"
+                v-if="competition.normal_points.length"
+              >
                 <v-col
                   md="6"
                   class="d-flex align-content-start"
@@ -248,9 +251,16 @@
                   </div>
                 </v-col>
               </v-row>
-              <v-row>
-                <v-col style="margin-top:50px">
-                  <v-divider class="black"></v-divider>
+              <v-row v-else>
+                <v-col md="12">
+                  <p
+                    class="flow-text"
+                    v-bind:class="{
+                      'white--text': $store.getters.getTheme,
+                    }"
+                  >
+                    Ei tuloksia, vielä...
+                  </p>
                 </v-col>
               </v-row>
             </v-row>
@@ -1279,7 +1289,14 @@ export default {
       } catch (error) {
         this.tab = "stats";
         charts_drawn = false;
-        setTimeout(() => this.drawCharts(current_tab), 1000);
+        if (this.competition.normal_points.length) {
+          setTimeout(() => this.drawCharts(current_tab), 1000);
+          M.toast({ html: "Piirretään kaaviot..." });
+        } else {
+          M.toast({
+            html: "Ei tuloksia vielä, joten ei voida piirtää kaavioita...",
+          });
+        }
       }
 
       /* eslint-disable no-unused-vars */
@@ -1287,9 +1304,9 @@ export default {
         this.fishes_chart = new Chart(fishes_ctx, fishes_chart_data);
         this.signees_chart = new Chart(signees_ctx, signee_chart_data);
         this.tab = current_tab;
-        M.toast({ html: "Kaaviot piirretty!" });
-      } else {
-        M.toast({ html: "Piirretään kaaviot..." });
+        M.toast({
+          html: "Kaaviot piirretty!",
+        });
       }
     },
     //Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)

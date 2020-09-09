@@ -205,11 +205,11 @@
                     >{{ header.text }}</v-chip
                   >
                 </template>
-                <template v-slot:[`item.placement`]="{ item }">
+                <template v-slot:[`item.final_placement`]="{ item }">
                   <v-chip
                     :outlined="$store.getters.getTheme"
-                    :color="getColor(item.placement)"
-                    >{{ item.placement }}.</v-chip
+                    :color="getColor(item.final_placement)"
+                    >{{ item.final_placement }}.</v-chip
                   >
                 </template>
                 <template
@@ -431,19 +431,19 @@ export default {
         });
         this.changeHeaders();
 
-        let placement = 1;
+        let final_placement = 1;
         let last_points = -1;
         let last_placement = -1;
         this.results.forEach((signee) => {
           if (last_points === signee.cup_results["Total"]) {
-            signee.placement = last_placement;
+            signee.final_placement = last_placement;
           } else {
-            signee.placement = placement;
+            signee.final_placement = final_placement;
             last_points = signee.cup_results["Total"];
-            last_placement = signee.placement;
+            last_placement = signee.final_placement;
           }
           signee.final_cup_points = signee.cup_results["Total"];
-          placement++;
+          final_placement++;
         });
       }
     },
@@ -468,6 +468,14 @@ export default {
             if (signee.cup_results[competition.key_name]) {
               // If signee's points are less than the limit points from the array
               // check which placement the points would have from array, and pair it with points, the signee.placement isn't accurate anymore if competitions are limited
+
+              signee.cup_results[
+                competition.key_name
+              ].placement = competition.normal_points.find(
+                (result) => result.boat_number === signee.boat_number
+              ).placement;
+
+              /* OLD way, don't show real placements after last value in cup_placement_points_array
               signee.cup_results[
                 competition.key_name
               ].placement = competition.cup_placement_points_array.find(
@@ -478,6 +486,8 @@ export default {
                   );
                 }
               ).placement;
+              */
+
               if (
                 signee.cup_results[competition.key_name].points <
                 signee.points_compare[limit]
@@ -603,7 +613,7 @@ export default {
         text: "Sijoitus",
         highlight: false,
         align: "center",
-        value: "placement",
+        value: "final_placement",
       });
       this.headers.push({
         text: "Kilp. Nro",

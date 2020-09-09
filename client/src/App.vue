@@ -4,7 +4,7 @@
   <v-app
     id="app"
     style="
-        background: rgba(0,0,0,0);"
+        background: rgba(0,0,0,0.3);"
   >
     <!-- Sizes your content based upon application components -->
     <v-main>
@@ -72,7 +72,7 @@ export default {
   top: 0; /* top left corner should start at topmost spot */
   width: 100vw; /* take up the full browser width */
   z-index: 200; /* high z index so other content scrolls underneath */
-  height: 50px; /* define height for content */
+  height: 64px; /* define height for content */
 }
 
 .layout {

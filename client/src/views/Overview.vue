@@ -2,8 +2,7 @@
   <!-- /overview -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container>
-    <Header />
-    <Timedate style="margin-top:0" />
+    <Header style="margin-bottom:60px" />
     <div id="errordiv" v-if="errors.length">
       <ul class="collection with-header" style="border:1px solid red;">
         <li class="collection-header" style="background: rgba(0,0,0,0);">
@@ -28,9 +27,34 @@
         'container-transparent-dark': $store.getters.getTheme,
       }"
     >
-      <div class="section">
-        <div class="col s12 center-align"><h1>Yleisnäkymä</h1></div>
-      </div>
+      <v-row class="valign-wrapper">
+        <v-col md="6" offset-md="3">
+          <h1>Yleisnäkymä</h1>
+        </v-col>
+        <v-col md="3">
+          <div class="text-center">
+            <v-dialog v-model="dialog">
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn color="red darken-4" dark v-bind="attrs" v-on="on">
+                  Kello/Kilpailuaika
+                </v-btn>
+              </template>
+
+              <v-card :dark="$store.getters.getTheme">
+                <v-card-title class="headline"> </v-card-title>
+                <Timedate />
+
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="primary" outlined @click="dialog = false">
+                    Sulje
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
+          </div>
+        </v-col>
+      </v-row>
 
       <v-row>
         <v-col order="first" style="margin-top:20px">
@@ -64,26 +88,63 @@
       </v-row>
 
       <div class="divider"></div>
-      <div class="section inputarea">
+      <div
+        class="section"
+        v-bind:class="{
+          inputarea: !$store.getters.getTheme,
+          'inputarea-dark': $store.getters.getTheme,
+        }"
+      >
         <!-- TODO make it pretty... Everyting else is better than this-->
         <div class="col s12">
-          <p class="flow-text">
+          <p
+            class="flow-text"
+            v-bind:class="{
+              'white--text': $store.getters.getTheme,
+            }"
+          >
             <b>{{ competition.name }}</b>
           </p>
-          <p class="flow-text">
+          <p
+            class="flow-text"
+            v-bind:class="{
+              'white--text': $store.getters.getTheme,
+            }"
+          >
             Päivämäärä: {{ formatted_start_date }} - {{ formatted_end_date }}
           </p>
-          <p class="flow-text">
+          <p
+            class="flow-text"
+            v-bind:class="{
+              'white--text': $store.getters.getTheme,
+            }"
+          >
             Kilpailuaika:
             <b>{{ competition.start_time }} - {{ competition.end_time }}</b>
           </p>
-          <p class="flow-text">
+          <p
+            class="flow-text"
+            v-bind:class="{
+              'white--text': $store.getters.getTheme,
+            }"
+          >
             Tila: <b>{{ competition.state }}</b>
           </p>
-          <p class="flow-text">
+          <p
+            class="flow-text"
+            v-bind:class="{
+              'white--text': $store.getters.getTheme,
+            }"
+          >
             Ilmoittautuneita: <b>{{ competition.signees.length }} kpl</b>
           </p>
-          <p v-if="competition.signees.length" class="flow-text">
+          <p
+            v-if="competition.signees.length"
+            class="flow-text"
+            v-bind:class="{
+              'white--text': $store.getters.getTheme,
+            }"
+          >
             Vielä vesillä:
             <b
               >{{
@@ -102,8 +163,22 @@
             }}
             / {{ competition.signees.length }})
           </p>
-          <p v-else class="flow-text">Ketään ei vielä vesillä!</p>
-          <p v-if="competition.signees.length" class="flow-text">
+          <p
+            v-else
+            class="flow-text"
+            v-bind:class="{
+              'white--text': $store.getters.getTheme,
+            }"
+          >
+            Ketään ei vielä vesillä!
+          </p>
+          <p
+            v-if="competition.signees.length"
+            class="flow-text"
+            v-bind:class="{
+              'white--text': $store.getters.getTheme,
+            }"
+          >
             Saalista saanut:
             <b
               >{{
@@ -118,7 +193,12 @@
             ({{ $store.getters.getPointSignees.length }} /
             {{ competition.signees.length }})
           </p>
-          <p class="flow-text">
+          <p
+            class="flow-text"
+            v-bind:class="{
+              'white--text': $store.getters.getTheme,
+            }"
+          >
             Kalaa saatu yhteensä:
             <b>{{ competition.total_weights / 1000 }} kg</b>
           </p>
@@ -153,6 +233,7 @@ export default {
       errors: [],
       formatted_start_date: null,
       formatted_end_date: null,
+      dialog: false,
     };
   },
   created() {

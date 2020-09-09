@@ -2,25 +2,44 @@
   <!-- /cup-overview -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container>
-    <Header />
-    <Timedate style="margin-top:0" />
-    <div id="errordiv" v-if="errors.length">
-      <ul class="collection with-header" style="border:1px solid red;">
-        <li class="collection-header" style="background: rgba(0,0,0,0);">
-          <v-alert type="error">
-            Korjaa seuraavat virheet:
-          </v-alert>
-        </li>
-        <li
-          class="collection-item"
-          id="error"
-          v-for="(error, index) in errors"
-          v-bind:key="index"
+    <Header style="margin-bottom:60px" />
+    <v-row class="valign-wrapper">
+      <v-col md="3">
+        <v-btn
+          rounded
+          color="yellow"
+          @click="$router.push({ path: '/overview' })"
         >
-          <p class="flow-text">{{ index + 1 }}. {{ error }}</p>
-        </li>
-      </ul>
-    </div>
+          <i class="material-icons left">history</i>Takaisin kilpailuun
+        </v-btn>
+      </v-col>
+      <v-col md="6">
+        <h1>Cupin Yleisnäkymä</h1>
+      </v-col>
+      <v-col md="3">
+        <div class="text-center">
+          <v-dialog v-model="dialog_clock">
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn color="red darken-4" dark v-bind="attrs" v-on="on">
+                Kello/Kilpailuaika
+              </v-btn>
+            </template>
+
+            <v-card :dark="$store.getters.getTheme">
+              <v-card-title class="headline"> </v-card-title>
+              <Timedate />
+
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="primary" outlined @click="dialog_clock = false">
+                  Sulje
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+        </div>
+      </v-col>
+    </v-row>
     <v-tabs
       v-model="tab"
       background-color="blue lighten-2"
@@ -109,9 +128,20 @@
                       :loading="loading || limiting"
                     >
                       <template v-slot:[`item.start_date`]="{ item }">
-                        <v-chip>{{
+                        <v-chip color="primary darken-2">{{
                           item.start_date.format("DD.MM.YYYY")
                         }}</v-chip>
+                      </template>
+                      <template
+                        v-slot:[`item.cup_points_multiplier`]="{ item }"
+                      >
+                        <v-chip
+                          :color="
+                            getMultiplierColor(item.cup_points_multiplier)
+                          "
+                          :outlined="$store.getters.getTheme"
+                          >{{ item.cup_points_multiplier }}x</v-chip
+                        >
                       </template>
                       <template v-slot:[`item.choose`]="{ item }">
                         <v-btn color="primary" @click="pickCompetition(item)"
@@ -324,11 +354,11 @@
                         >{{ header.text }}</v-chip
                       >
                     </template>
-                    <template v-slot:[`item.placement`]="{ item }">
+                    <template v-slot:[`item.final_placement`]="{ item }">
                       <v-chip
                         :outlined="$store.getters.getTheme"
-                        :color="getColor(item.placement)"
-                        >{{ item.placement }}.</v-chip
+                        :color="getColor(item.final_placement)"
+                        >{{ item.final_placement }}.</v-chip
                       >
                     </template>
                     <template
@@ -442,6 +472,7 @@ export default {
   },
   data() {
     return {
+      dialog_clock: false,
       cup: null,
       competitions: [],
       headers: [],
@@ -456,7 +487,6 @@ export default {
       isResults: false,
       loading: false,
       publishing: false,
-      errors: [],
       select_numbers: [],
       header_options: ["Paikkakunta", "Kilpailun nimi"],
       header_selection: "Paikkakunta",
@@ -556,19 +586,19 @@ export default {
         });
         this.changeHeaders();
 
-        let placement = 1;
+        let final_placement = 1;
         let last_points = -1;
         let last_placement = -1;
         this.results.forEach((signee) => {
           if (last_points === signee.cup_results["Total"]) {
-            signee.placement = last_placement;
+            signee.final_placement = last_placement;
           } else {
-            signee.placement = placement;
+            signee.final_placement = final_placement;
             last_points = signee.cup_results["Total"];
-            last_placement = signee.placement;
+            last_placement = signee.final_placement;
           }
           signee.final_cup_points = signee.cup_results["Total"];
-          placement++;
+          final_placement++;
         });
         this.limiting = false;
       }
@@ -594,6 +624,14 @@ export default {
             if (signee.cup_results[competition.key_name]) {
               // If signee's points are less than the limit points from the array
               // check which placement the points would have from array, and pair it with points, the signee.placement isn't accurate anymore if competitions are limited
+
+              signee.cup_results[
+                competition.key_name
+              ].placement = competition.normal_points.find(
+                (result) => result.boat_number === signee.boat_number
+              ).placement;
+
+              /*
               signee.cup_results[
                 competition.key_name
               ].placement = competition.cup_placement_points_array.find(
@@ -604,6 +642,7 @@ export default {
                   );
                 }
               ).placement;
+              */
               if (
                 signee.cup_results[competition.key_name].points <
                 signee.points_compare[limit]
@@ -653,7 +692,6 @@ export default {
     },
     async refreshCup(cup_id) {
       this.loading = true;
-      this.errors = [];
       try {
         //Get competition from database (check 'client\src\CupService.js' and 'server\routes\api\cups.js' to see how this works)
         let cups = await CupService.getCup(cup_id);
@@ -679,7 +717,7 @@ export default {
               counter++;
             });
             this.competitions.sort(function compare(a, b) {
-              return moment(b.start_date).isBefore(moment(a.start_date));
+              return moment(a.start_date).isBefore(moment(b.start_date));
             });
             this.selected_competitions = this.competitions.length;
             this.calculateAll(this.competitions, this.selected_competitions);
@@ -734,6 +772,11 @@ export default {
       else if (placement > 5) return "yellow";
       else return "green";
     },
+    getMultiplierColor(multiplier) {
+      if (multiplier > 1) return "red";
+      if (multiplier === 1) return "green";
+      else return "grey";
+    },
     getCompetitionFinishedColor(isFinished) {
       if (isFinished) return "red";
       else return "primary";
@@ -754,7 +797,7 @@ export default {
         text: "Sijoitus",
         highlight: false,
         align: "center",
-        value: "placement",
+        value: "final_placement",
       });
       this.headers.push({
         text: "Kilp. Nro",
