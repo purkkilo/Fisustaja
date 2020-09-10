@@ -49,7 +49,8 @@
     </v-row>
     <v-row v-if="cups.length" class="scroll_table">
       <v-col md="4" offset-md="4">
-        <v-autocomplete
+        <!-- TODO add v-autocompelete, but so that it popsup the keyboad on mobile only when pressing search button? -->
+        <v-select
           :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
           :dark="$store.getters.getTheme"
           v-model="selected_cup"
@@ -61,7 +62,7 @@
           @input="pickCup"
           return-object
           single-line
-        ></v-autocomplete>
+        ></v-select>
       </v-col>
     </v-row>
     <v-row v-else>
@@ -462,7 +463,6 @@ export default {
           signee.cup_results["Total"] = 0;
           let counter = 0; // counter for competitions that have same points as the limit
           // Check each competition
-          //FIXME doesn't handle tied points if they happen to be on the limit, like here: https://gyazo.com/387d88f42fc38b3de8ef336fe82ecc49
           this.competitions.forEach((competition) => {
             // If signee has points for this competition
             if (signee.cup_results[competition.key_name]) {

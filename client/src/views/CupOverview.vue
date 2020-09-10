@@ -6,6 +6,7 @@
     <v-row class="valign-wrapper">
       <v-col md="3">
         <v-btn
+          v-if="competition"
           rounded
           color="yellow"
           @click="$router.push({ path: '/overview' })"
@@ -132,6 +133,17 @@
                           item.start_date.format("DD.MM.YYYY")
                         }}</v-chip>
                       </template>
+                      <template v-slot:[`item.isFinished`]="{ item }">
+                        <v-chip
+                          :color="
+                            item.isFinished
+                              ? 'green lighten-2'
+                              : 'red lighten-2'
+                          "
+                          :outlined="$store.getters.getTheme"
+                          >{{ item.isFinished ? "Kyllä" : "Ei" }}</v-chip
+                        >
+                      </template>
                       <template
                         v-slot:[`item.cup_points_multiplier`]="{ item }"
                       >
@@ -187,7 +199,7 @@
                       <v-icon>mdi-incognito</v-icon> Aseta cup salaiseksi
                     </div>
                     <div v-else>
-                      <v-icon color="green">mdi-publish</v-icon> Aseta kilpailu
+                      <v-icon color="green">mdi-publish</v-icon> Aseta cup
                       julkiseksi
                     </div>
                   </v-btn>
@@ -474,7 +486,7 @@ export default {
       headers_comp: [
         { text: "Kilpailun Päivämäärä", value: "start_date" },
         { text: "Nimi", value: "name" },
-        { text: "Cup", value: "cup_name" },
+        { text: "Päättynyt", value: "isFinished" },
         { text: "Pistekerroin", value: "cup_points_multiplier" },
         { text: "", value: "choose", sortable: false },
       ],
@@ -490,10 +502,12 @@ export default {
       search: "",
       search_comp: "",
       not_finished_count: 0,
+      competition: null,
     };
   },
   created() {},
   mounted() {
+    this.competition = localStorage.getItem("competition");
     //Check if user is logged in has admin status, update header
     this.checkLogin();
     // IF competition on localstorage
@@ -613,7 +627,6 @@ export default {
           signee.cup_results["Total"] = 0;
           let counter = 0; // counter for competitions that have same points as the limit
           // Check each competition
-          //FIXME doesn't handle tied points if they happen to be on the limit, like here: https://gyazo.com/387d88f42fc38b3de8ef336fe82ecc49
           this.competitions.forEach((competition) => {
             // If signee has points for this competition
             if (signee.cup_results[competition.key_name]) {
@@ -902,16 +915,16 @@ export default {
             for (let i of range(boat_number, values[0])) {
               // When the i reaches the value boat_number should be, add the next real row
               if (i === values[0]) {
-                values[0] = "(" + String(values[0]) + ")";
+                values[0] = String(values[0]);
                 missing_numbers = false;
                 // Else just push empty rows until then
               } else {
                 boat_number++;
-                arr.push(["(" + String(i) + ")", "", "", ""]);
+                arr.push([String(i) + "*", "", "", ""]);
               }
             }
           } else {
-            values[0] = "(" + String(values[0]) + ")";
+            values[0] = String(values[0]);
           }
         }
 
@@ -974,19 +987,28 @@ export default {
         startY = 45;
       } else {
         sub_title = `Cupin kilpailijat ${formatted_date}, ${last_competition.name} (${last_competition.locality}) jälkeen`;
-        doc.text(100, 25, sub_title, { align: "center" });
+        doc.text(13, 25, sub_title, { align: "left" });
         doc.setFontSize(8);
+        /*
         doc.text(
           100,
           30,
           "*Tyhjät rivit = numerolla ei vielä cupissa käytyjä kilpailuja",
           { align: "center" }
         );
+        */
         columns = ["Kilp. numero", "Kippari", "Varakippari", "Paikkakunta"];
         this.cup.signees = this.cup.signees.sort(
           (a, b) => a.boat_number - b.boat_number
         );
         rows = this.dictToArray(this.cup.signees, 2);
+        /* eslint-disable no-unused-vars */
+        // Just add some empty rows for new signees
+        let last_number = Number(rows[rows.length - 1][0]) + 1;
+        for (let i of range(last_number, last_number + 6)) {
+          rows.push([" ", "", "", ""]);
+        }
+        /* eslint-enable no-unused-vars */
         startY = 32;
       }
 

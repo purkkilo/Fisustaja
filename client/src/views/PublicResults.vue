@@ -27,7 +27,8 @@
         </v-row>
         <v-row v-if="competitions.length" class="scroll_table">
           <v-col md="4" offset-md="4">
-            <v-autocomplete
+            <!-- TODO add v-autocompelete, but so that it popsup the keyboad on mobile only when pressing search button? -->
+            <v-select
               :dark="$store.getters.getTheme"
               :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
               v-model="selected_competition"
@@ -40,7 +41,7 @@
               @input="pickCompetition"
               return-object
               single-line
-            ></v-autocomplete>
+            ></v-select>
           </v-col>
         </v-row>
         <v-row>
@@ -1072,7 +1073,7 @@ export default {
       else return "green";
     },
     getColorPoints(points) {
-      if (points > 5) return "indigo lighten-2";
+      if (points > 5) return "primary darken-2";
       else return "red";
     },
     // Close dialog, print all the chosen tables to pdf
@@ -1146,7 +1147,6 @@ export default {
             this.fish_amount_names.push(fish.name);
             this.table_fish_names.push(fish.name);
           });
-          // TODO update all the results with some time interval from database
           this.calculateAll();
 
           if (this.fishes_chart && this.signees_chart) {

@@ -1087,7 +1087,7 @@ export default {
       else return "green";
     },
     getColorPoints(points) {
-      if (points > 5) return "indigo lighten-2";
+      if (points > 5) return "primary darken-2";
       else return "red";
     },
     choosePrints: function() {
