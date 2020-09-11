@@ -891,7 +891,7 @@ export default {
       temp_arr.forEach((element) => {
         let values = Object.values(element[1]);
         if (type === 1) {
-          values[0] = String(values[0]) + ".";
+          values[0] = String(values[11]) + ".";
           let cup_results = values[9];
           values[1] = "(" + String(values[1]) + ")";
           values[3] = values[4];
