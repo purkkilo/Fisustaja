@@ -148,7 +148,6 @@ export default {
               this.$store.state.is_admin = is_admin;
               // Set login token (jwt) and user data to localstorage and vuex
               let preferences = response.data.user.preferences;
-              console.log(preferences);
               if (!preferences) {
                 preferences = { isDark: true, lang: "fi" };
               }
