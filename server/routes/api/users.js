@@ -50,6 +50,7 @@ router.post("/register", async (req, res) => {
         name: req.body.name,
         email: req.body.email,
         password: bcrypt.hashSync(req.body.password, 8),
+        preferences: req.body.preferences,
         createdAt: new Date(),
       },
       async function (err) {
@@ -83,6 +84,7 @@ router.post("/register-admin", async (req, res) => {
         email: req.body.email,
         password: bcrypt.hashSync(req.body.password, 8),
         is_admin: true,
+        preferences: req.body.preferences,
         createdAt: new Date(),
       },
       async function (err) {

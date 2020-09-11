@@ -258,6 +258,10 @@ export default {
                 .then((response) => {
                   // If no errors, log in the user
                   // Set values to localstorage and vuex
+                  let preferences = response.data.user.preferences;
+                  if (!preferences) {
+                    preferences = { isDark: true, lang: "fi" };
+                  }
                   localStorage.setItem(
                     "user",
                     JSON.stringify({
@@ -266,9 +270,14 @@ export default {
                       email: response.data.user.email,
                       is_admin: response.data.user.is_admin,
                       createdAt: response.data.user.createdAt,
+                      preferences: preferences,
                     })
                   );
+
                   localStorage.setItem("jwt", response.data.token);
+                  // Set preferences to vuex
+                  this.$store.state.isDark = preferences.isDark;
+                  this.$store.state.lang = preferences.lang;
                   this.$store.state.logged_in = true;
                   this.$store.state.is_admin = true;
 
@@ -301,17 +310,26 @@ export default {
                 .then((response) => {
                   // If no errors, log in the user
                   // Set values to localstorage and vuex
+                  let preferences = response.data.user.preferences;
+                  if (!preferences) {
+                    preferences = { isDark: true, lang: "fi" };
+                  }
                   localStorage.setItem(
                     "user",
                     JSON.stringify({
                       id: response.data.user._id,
                       name: response.data.user.name,
                       email: response.data.user.email,
-                      is_admin: false,
+                      is_admin: response.data.user.is_admin,
                       createdAt: response.data.user.createdAt,
+                      preferences: preferences,
                     })
                   );
+
                   localStorage.setItem("jwt", response.data.token);
+                  // Set preferences to vuex
+                  this.$store.state.isDark = preferences.isDark;
+                  this.$store.state.lang = preferences.lang;
                   this.$store.state.logged_in = true;
                   this.$store.state.is_admin = false;
 
