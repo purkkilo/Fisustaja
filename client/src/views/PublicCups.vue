@@ -710,34 +710,63 @@ export default {
     saveAsPDF: function(table_title) {
       // Format dates for easier reding
       // PDF creation
-      let doc = new jsPDF("landscape");
+      let doc;
+      if (this.competitions.length > 4) {
+        doc = new jsPDF("landscape");
+      } else {
+        doc = new jsPDF();
+      }
 
       // Title
       const title = `${this.selected_cup.name} (${this.selected_cup.year})`;
-      const last_competition = this.competitions[this.competitions.length - 1];
+      let sub_title;
+      let columns = [];
+      let rows;
+      let startY;
+      // Find last competition from the array which has finished
+      let temp_array = [...this.competitions];
+      var index = temp_array
+        .slice()
+        .reverse()
+        .findIndex((competition) => competition.isFinished === true);
+      var count = temp_array.length - 1;
+      var finalIndex = index >= 0 ? count - index : index;
+      const last_competition = temp_array[finalIndex];
       const start_date = moment(last_competition.start_date);
       const formatted_date = `${start_date.date()}.${start_date.month() +
         1}.${start_date.year()}`;
-      const sub_title = `Tilanne ${formatted_date}, ${last_competition.name} (${last_competition.locality}) jälkeen`;
       doc.setFontSize(24);
-      doc.text(13, 10, title, { align: "left" });
-      doc.line(0, 15, 400, 15);
+      doc.text(13, 15, title, { align: "left" });
+      doc.line(0, 20, 400, 20);
       doc.setFontSize(14);
-
       // Table, based on given table_id, and table title based on competition_type
-      doc.text(13, 25, sub_title, { align: "left" });
+      let finished_competitions = 0;
+      let unfinished_competitions = 0;
+      this.competitions.forEach((competition) => {
+        competition.isFinished
+          ? finished_competitions++
+          : unfinished_competitions++;
+      });
+
+      if (unfinished_competitions === 0) {
+        sub_title = `Lopputulokset ${formatted_date}`;
+      } else {
+        sub_title = `Tilanne ${formatted_date}, ${last_competition.name} (${last_competition.locality}) jälkeen (${unfinished_competitions} kpl kilpailuja kesken)`;
+      }
+      doc.text(13, 30, sub_title, { align: "left" });
       doc.text(
         13,
-        35,
+        40,
         table_title +
           ` (${this.selected_competitions}/${this.competitions.length} parasta kilpailua otettu huomioon)`,
         { align: "left" }
       );
-      let columns = [];
       this.headers.forEach((header) => {
         columns.push(header.text);
       });
-      let rows = this.dictToArray(this.results);
+      rows = this.dictToArray(this.results, 1);
+      startY = 45;
+
       doc.autoTable({
         head: [columns],
         body: rows,
@@ -753,12 +782,12 @@ export default {
         theme: "striped",
         pageBreak: "auto",
         tableWidth: "auto",
-        startY: 40,
+        startY: startY,
         margin: { top: 20 },
       });
 
       // Save the pdf
-
+      // Save the pdf
       doc.save(
         `${this.selected_cup.year}_${this.replaceAll(
           "Cup",

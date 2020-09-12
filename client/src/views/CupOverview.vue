@@ -914,7 +914,7 @@ export default {
       // Format dates for easier reding
       // PDF creation
       let doc;
-      if (this.competitions.length > 4) {
+      if (this.competitions.length > 4 && table_title === "Tulokset") {
         doc = new jsPDF("landscape");
       } else {
         doc = new jsPDF();
@@ -939,16 +939,27 @@ export default {
       const formatted_date = `${start_date.date()}.${start_date.month() +
         1}.${start_date.year()}`;
       doc.setFontSize(24);
-      doc.text(13, 10, title, { align: "left" });
-      doc.line(0, 15, 400, 15);
+      doc.text(13, 15, title, { align: "left" });
+      doc.line(0, 20, 400, 20);
       doc.setFontSize(14);
       // Table, based on given table_id, and table title based on competition_type
+      let finished_competitions = 0;
+      let unfinished_competitions = 0;
+      this.competitions.forEach((competition) => {
+        competition.isFinished
+          ? finished_competitions++
+          : unfinished_competitions++;
+      });
       if (table_title === "Tulokset") {
-        sub_title = `Tilanne ${formatted_date}, ${last_competition.name} (${last_competition.locality}) jälkeen`;
-        doc.text(13, 25, sub_title, { align: "left" });
+        if (unfinished_competitions === 0) {
+          sub_title = `Lopputulokset ${formatted_date}`;
+        } else {
+          sub_title = `Tilanne ${formatted_date}, ${last_competition.name} (${last_competition.locality}) jälkeen (${unfinished_competitions} kpl kilpailuja kesken)`;
+        }
+        doc.text(13, 30, sub_title, { align: "left" });
         doc.text(
           13,
-          35,
+          40,
           table_title +
             ` (${this.selected_competitions}/${this.competitions.length} parasta kilpailua otettu huomioon)`,
           { align: "left" }
@@ -959,8 +970,12 @@ export default {
         rows = this.dictToArray(this.results, 1);
         startY = 45;
       } else {
-        sub_title = `Cupin kilpailijat ${formatted_date}, ${last_competition.name} (${last_competition.locality}) jälkeen`;
-        doc.text(13, 25, sub_title, { align: "left" });
+        if (unfinished_competitions === 0) {
+          sub_title = `Cuppiin ilmoittautuneet ${this.cup.year}`;
+        } else {
+          sub_title = `Cupin kilpailijat ${formatted_date}, ${last_competition.name} (${last_competition.locality}) jälkeen`;
+        }
+        doc.text(13, 30, sub_title, { align: "left" });
         doc.setFontSize(8);
         /*
         doc.text(
@@ -982,7 +997,7 @@ export default {
           rows.push([" ", "", "", ""]);
         }
         /* eslint-enable no-unused-vars */
-        startY = 32;
+        startY = 37;
       }
 
       doc.autoTable({
