@@ -1050,14 +1050,10 @@ export default {
     // Save biggest fish to database
     async saveBiggestFish() {
       // If name for biggest fish, boat number and weight for biggest fish all have been selected
-      if (
-        this.selected_fish.name &&
-        this.boat_number_input &&
-        this.biggest_fish
-      ) {
+      if (this.selected_fish && this.boat_number_input && this.biggest_fish) {
         // Create fish object
         let fish = {
-          name: this.selected_fish.name,
+          name: this.selected_fish,
           boat_number: this.boat_number_input.boat_number,
           captain_name: this.boat_number_input.captain_name,
           weight: this.biggest_fish,
@@ -1081,7 +1077,7 @@ export default {
       } else {
         console.log("Jokin input tyhjänä:");
         let fish = {
-          name: this.selected_fish.name,
+          name: this.selected_fish,
           boat_number: this.boat_number_input.boat_number,
           captain_name: this.boat_number_input.captain_name,
           weight: this.biggest_fish,
@@ -1103,7 +1099,7 @@ export default {
       // if biggest fish not yet saved, save it
       if (this.selected_fish && this.boat_number_input && this.biggest_fish) {
         let fish = {
-          name: this.selected_fish.name,
+          name: this.selected_fish,
           boat_number: this.boat_number_input.boat_number,
           captain_name: this.boat_number_input.captain_name,
           weight: this.biggest_fish,
