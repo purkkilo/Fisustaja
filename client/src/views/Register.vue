@@ -2,7 +2,7 @@
   <!-- /register -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <div class="container">
-    <MainHeader />
+    <Header style="margin-bottom:60px" />
     <div
       v-bind:class="{
         'container-transparent': !$store.getters.getTheme,
@@ -170,7 +170,7 @@
 "use strict";
 import M from "materialize-css";
 import UserService from "../UserService";
-import MainHeader from "../components/layout/MainHeader";
+import Header from "../components/layout/Header";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 
 export default {
@@ -187,7 +187,7 @@ export default {
     };
   },
   components: {
-    MainHeader,
+    Header,
     ProgressBarQuery,
   },
   mounted() {

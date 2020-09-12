@@ -201,11 +201,21 @@ export default {
         { title: "Dashboardiin", route: "/dashboard", icon: "dashboard" },
         { title: "Palaute", route: "/feedback", icon: "feedback" },
         { title: "Admin", route: "/admin", icon: "admin_panel_settings" },
+        {
+          title: "Rekisteröi käyttäjä",
+          route: "/register",
+          icon: "add_circle_outline",
+        },
       ];
     } else {
       this.items = [
         { title: "Dashboardiin", route: "/dashboard", icon: "dashboard" },
         { title: "Palaute", route: "/feedback", icon: "feedback" },
+        {
+          title: "Rekisteröi käyttäjä",
+          route: "/register",
+          icon: "add_circle_outline",
+        },
       ];
     }
   },

@@ -28,7 +28,7 @@ const routes = [
     component: () =>
       import(/* webpackChunkName: "about" */ "../views/Register.vue"),
     meta: {
-      guest: true,
+      requiresAuth: true,
     },
   },
   {

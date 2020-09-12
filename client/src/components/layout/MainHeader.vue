@@ -41,14 +41,6 @@
                   ></router-link
                 >
               </li>
-              <li v-bind:class="isRegister">
-                <router-link to="/register"
-                  ><a class="white-text"
-                    ><i class="material-icons left">add_circle_outline</i
-                    >Rekisteröidy</a
-                  ></router-link
-                >
-              </li>
               <li v-bind:class="isLogin">
                 <router-link to="/login"
                   ><a class="white-text"
@@ -117,11 +109,6 @@ export default {
       updateSwitch: this.$store.getters.getTheme,
       items: [
         { title: "Kotisivu", route: "/", icon: "home" },
-        {
-          title: "Rekisteröidy",
-          route: "/register",
-          icon: "add_circle_outline",
-        },
         { title: "Kirjaudu", route: "/login", icon: "play_circle_filled" },
       ],
     };

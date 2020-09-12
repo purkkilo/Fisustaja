@@ -639,18 +639,6 @@ export default {
                 (result) => result.boat_number === signee.boat_number
               ).placement;
 
-              /*
-              signee.cup_results[
-                competition.key_name
-              ].placement = competition.cup_placement_points_array.find(
-                (placement_point) => {
-                  return (
-                    placement_point.points ===
-                    signee.cup_results[competition.key_name].points
-                  );
-                }
-              ).placement;
-              */
               if (
                 signee.cup_results[competition.key_name].points <
                 signee.points_compare[limit]
@@ -658,42 +646,27 @@ export default {
                 // Give signee only participation points
                 signee.cup_results[competition.key_name].points =
                   competition.cup_participation_points;
-                signee.cup_results["Total"] +=
-                  competition.cup_participation_points;
               }
               // If the competition points are same as the limit
               if (
                 signee.cup_results[competition.key_name].points ===
                 signee.points_compare[limit]
               ) {
-                // If there are more than 1 competitions as the limit, reset one of them
-                if (counter === 1) {
-                  signee.cup_results["Total"] += parseInt(
-                    signee.cup_results[competition.key_name].points
-                  );
-
-                  // Give signee only participation points
-                }
-                // Else give full points
-                else {
+                if (counter !== 1) {
                   // Points are greater than the limit points, give full points
                   signee.cup_results[competition.key_name].points =
                     competition.cup_participation_points;
-
-                  signee.cup_results["Total"] +=
-                    competition.cup_participation_points;
                 }
                 counter++;
-              } else {
-                // Points are greater than the limit points, give full points
-                signee.cup_results["Total"] += parseInt(
-                  signee.cup_results[competition.key_name].points
-                );
               }
             }
           });
         }
-        // No need to do anything if limit is bigger
+
+        // Add all the limited points to total points
+        signee.cup_results.forEach((element) => {
+          signee.cup_results["Total"] += element.points;
+        });
       });
       // Return sorted results
       return results;
