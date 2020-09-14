@@ -15,14 +15,13 @@ New:
   ☐ Add tests! Vuetify can also be used for unit testing, add testing
   ☐ Add qr code possibility to signing/weighting (rfid)
   ☐ Add possibility to get weights from usb
-  ☐ Test 1.5x cup_multiplier competition! @high
   ☐ consider changing library for making charts, since chart.js need canvas to be printed to pdf, can't be generated in code
   ☐ Also Fix warning from entrypoint app being too large (optimize somehow)
   ☐ Implement competition updating like updating user preferences (check: Header.vue, Userservice.js, users.js)
-  ☐ Re-implement login/logout/session using https://chrismroberts.com/2019/01/03/authentication-and-protected-routes-in-vuejs/#Protected-Routes
-  ☐ Profile page?
+  ☐ Profile page? @low 
   ☐ Implement ability to create own point system (custom cup_placement_points_array)
   ☐ Improve login and registering
+  ☐ Re-implement login/logout/session using https://chrismroberts.com/2019/01/03/authentication-and-protected-routes-in-vuejs/#Protected-Routes
 Done:
   ✔ Create signees database collection @started(20-05-26 11:19) @today @done(20-05-27 19:34) @lasted(1d8h15m1s)
   ✔ Add fish weights/points to signee properties @started(20-05-26 11:22) @today @done(20-05-28 15:33) @lasted(2d4h11m17s)

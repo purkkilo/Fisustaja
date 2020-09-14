@@ -1224,7 +1224,6 @@ export default {
         await CompetitionService.updateCompetition(comp._id, comp);
         this.notification = `Tiedot päivitetty tietokantaan!`;
         // Update values for next signee
-        this.selected_boat_number = this.competition_boat.boat_number + 1;
         this.boat_number_input = {};
         this.competition_boat = null;
         this.signees = comp.signees;

@@ -560,11 +560,13 @@ export default {
           //Submit Cup to database (check 'client\src\CupService.js' and 'server\routes\api\cups.js' to see how this works)
           await CupService.insertCup(cup);
           M.toast({ html: "Cup lisätty tietokantaan!" });
-          this.cups = await CupService.getCups(user_id);
+          this.cups = await CupService.getCups({
+            user_id: user_id,
+          });
           this.loading = false;
           this.year = null;
           this.name = null;
-          this.tab = "competitions";
+          this.tab = "cups";
         } catch (err) {
           this.errors.push(err.message);
         }

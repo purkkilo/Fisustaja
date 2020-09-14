@@ -27,7 +27,8 @@
           'primary lighten-2': !$store.getters.getTheme,
         }"
       >
-        {{ new Date().getFullYear() }} — <strong>Jori Kosonen</strong>
+        {{ new Date().getFullYear() }} —
+        <strong>© Jori Kosonen. All rights reserved</strong>
       </v-col>
     </v-row>
   </v-footer>

@@ -942,6 +942,7 @@ import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import Chart from "chart.js";
 import "chartjs-plugin-labels";
 import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 export default {
   name: "PublicResults",

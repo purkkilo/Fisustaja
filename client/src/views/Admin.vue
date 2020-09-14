@@ -104,7 +104,11 @@
               <v-col class="inputarea black--text" md="6" offset-md="3">
                 <p v-if="competitions.length" class="flow-text">
                   <i class="material-icons">directions_boat</i> Kilpailuja
-                  yhteensä: {{ competitions.length }} kpl
+                  yhteensä: {{ all_competitions.length }} kpl<br />---> Itse
+                  luotuja {{ competitions.length }}/{{
+                    all_competitions.length
+                  }}
+                  kpl
                 </p>
                 <p v-else class="flow-text">
                   <i class="material-icons">directions_boat</i> Ei kilpailuja!
@@ -119,6 +123,30 @@
                   }"
                 >
                   Ladataan kilpailuja...
+                </h3>
+                <ProgressBarQuery />
+              </v-col>
+            </v-row>
+            <v-row v-if="!loading_cups">
+              <v-col class="inputarea black--text" md="6" offset-md="3">
+                <p v-if="all_cups.length" class="flow-text">
+                  <i class="material-icons">directions_boat</i> Cuppeja
+                  yhteensä: {{ all_cups.length }} kpl<br />---> Itse luotuja
+                  {{ cups.length }}/{{ all_cups.length }} kpl
+                </p>
+                <p v-else class="flow-text">
+                  <i class="material-icons">directions_boat</i> Ei cuppeja!
+                </p>
+              </v-col>
+            </v-row>
+            <v-row v-else>
+              <v-col md="6" offset-md="3">
+                <h3
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Ladataan Cuppeja...
                 </h3>
                 <ProgressBarQuery />
               </v-col>
@@ -415,7 +443,7 @@
                   <v-data-table
                     id="normal-table"
                     :headers="headers"
-                    :items="competitions"
+                    :items="all_competitions"
                     :search="search_comp"
                     :loading="loading_competitions"
                   >
@@ -432,21 +460,35 @@
                       >
                     </template>
                     <template v-slot:[`item.choose`]="{ item }">
-                      <v-btn
-                        color="primary"
-                        @click="pickCompetition(item)"
-                        :loading="loading_competitions"
-                        ><i class="material-icons left">check</i>Valitse</v-btn
-                      >
+                      <v-tooltip right>
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-btn
+                            color="primary"
+                            v-bind="attrs"
+                            v-on="on"
+                            @click="pickCompetition(item)"
+                            ><v-icon color="black"
+                              >mdi-arrow-right-bold-box-outline</v-icon
+                            ></v-btn
+                          >
+                        </template>
+                        <span>Siirry kilpailuun</span>
+                      </v-tooltip>
                     </template>
                     <template v-slot:[`item.delete`]="{ item }">
-                      <v-btn
-                        color="red"
-                        @click="deleteCompetition(item._id, false)"
-                        :loading="loading_competitions"
-                        ><i class="material-icons left">delete_forever</i
-                        >Poista</v-btn
-                      >
+                      <v-tooltip right>
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-btn
+                            v-bind="attrs"
+                            v-on="on"
+                            color="red"
+                            @click="deleteCompetition(item._id, false)"
+                            :loading="loading_competitions"
+                            ><v-icon>mdi-delete-outline</v-icon></v-btn
+                          >
+                        </template>
+                        <span>Siirry kilpailuun</span>
+                      </v-tooltip>
                     </template>
                   </v-data-table>
                 </v-card>
@@ -743,11 +785,15 @@ export default {
       tab: null,
       feedback: [],
       users: [],
+      all_competitions: [],
       competitions: [],
+      user_id: null,
       loading: false,
       loading_users: false,
       loading_competitions: false,
       loading_cups: false,
+      all_cups: [],
+      cups: [],
       cup: {},
       signees_amount: 30,
       team_competition: "Ei",
@@ -762,8 +808,8 @@ export default {
         { text: "Käyttäjä", value: "username" },
         { text: "Cup", value: "cup_name" },
         { text: "Pistekerroin", value: "cup_points_multiplier" },
-        { text: "", value: "choose", sortable: false },
-        { text: "", value: "delete", sortable: false },
+        { text: "Valitse", value: "choose", sortable: false },
+        { text: "Poista", value: "delete", sortable: false },
       ],
       search_comp: "",
       search: "",
@@ -790,7 +836,11 @@ export default {
     location.href = "#";
     location.href = "#app";
     // Show loading progressbars
-    this.loading = this.loading_users = this.loading_competitions = true;
+    this.loading = this.loading_users = this.loading_competitions = this.loading_cups = true;
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user) {
+      this.user_id = user["id"];
+    }
     try {
       // Load data from database
       this.feedback = await FeedbackService.getFeedback();
@@ -801,8 +851,8 @@ export default {
       });
       this.loading_users = false;
       // No query, get all competitions
-      this.competitions = await CompetitionService.getCompetitions();
-      this.competitions.forEach((competition) => {
+      this.all_competitions = await CompetitionService.getCompetitions();
+      this.all_competitions.forEach((competition) => {
         competition.username = this.users.find(
           (user) => user._id === competition.user_id
         ).name;
@@ -810,9 +860,12 @@ export default {
         competition.end_date = moment(competition.end_date);
       });
       // Sort them based on start_date so the oldest competitions are the last
-      this.competitions.sort(function compare(a, b) {
+      this.all_competitions.sort(function compare(a, b) {
         return moment(b.start_date).isAfter(moment(a.start_date));
       });
+      this.competitions = this.all_competitions.filter(
+        (competition) => competition.user_id === this.user_id
+      );
       this.getCups();
       this.loading_competitions = false;
     } catch (err) {
@@ -883,31 +936,30 @@ export default {
       user.menu = false;
     },
     async getCups() {
-      const user = JSON.parse(localStorage.getItem("user"));
-      if (user) {
-        const user_id = user["id"];
+      if (this.user_id) {
         this.loading_cups = true;
         // Get Cups
         try {
-          this.cups = await CupService.getCups({
-            user_id: user_id,
-          });
-          if (this.cups.length) {
-            this.cups.sort(function compare(a, b) {
+          this.all_cups = await CupService.getCups();
+          if (this.all_cups.length) {
+            this.all_cups.sort(function compare(a, b) {
               return a.name - b.name;
             });
-            this.cups.forEach((cup) => {
+            this.all_cups.forEach((cup) => {
               cup.select = `${cup.name} (${cup.year})`;
             });
+            this.cups = this.all_cups.filter(
+              (cup) => cup.user_id === this.user_id
+            );
             this.cup = this.cups[this.cups.length - 1];
           }
         } catch (err) {
           this.error = err.message;
         }
-        this.loading_cups = false;
       } else {
         console.error("No user found in localstorage!");
       }
+      this.loading_cups = false;
     },
     //Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)
     checkLogin: function() {
