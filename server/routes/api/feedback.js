@@ -3,12 +3,13 @@ const mongodb = require("mongodb");
 
 const router = express.Router();
 
-// Get Competitions
+// Get Feedback
 router.get("/", async (req, res) => {
   const feedback = await loadFeedbackCollection();
 
   if (feedback) {
-    res.send(await feedback.find({}).toArray());
+    let query = req.query;
+    res.send(await feedback.find(query).toArray());
   } else {
     // Connection timed out
     res.status(408).send();

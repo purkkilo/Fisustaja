@@ -1030,14 +1030,10 @@ export default {
 
     try {
       this.loading = true;
-      // Query competition with id
-      //TODO move the filtering of public competitions to Competitionservice.js and competitions.js
-      // this.competitions = await CompetitionService.getPublicCompetitions();
-      this.competitions = await CompetitionService.getAllCompetitions();
+      // Query competitions that are public
+      const query = { isPublic: true };
+      this.competitions = await CompetitionService.getCompetitions(query);
       if (this.competitions.length) {
-        this.competitions = this.competitions.filter((competition) => {
-          return competition.isPublic;
-        });
         this.competitions.forEach((competition) => {
           competition.start_date = moment(competition.start_date);
           competition.end_date = moment(competition.end_date);
@@ -1090,9 +1086,9 @@ export default {
         // Load from database
         if (reload) {
           //Get competition from database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
-          let competitions = await CompetitionService.getCompetition(
-            this.competition._id
-          );
+          let competitions = await CompetitionService.getCompetitions({
+            _id: this.competition._id,
+          });
           // IF competition found from database
           if (competitions.length) {
             // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)

@@ -864,9 +864,9 @@ export default {
     async refreshCompetition(competition_id) {
       this.refreshing = true;
       try {
-        let competitions = await CompetitionService.getCompetition(
-          competition_id
-        );
+        let competitions = await CompetitionService.getCompetitions({
+          _id: competition_id,
+        });
         if (competitions.length) {
           // Update to vuex, Assing variables and arrays from vuex (see client/store/index.js)
           let comp = competitions[0];

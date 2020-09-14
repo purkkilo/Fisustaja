@@ -3,57 +3,12 @@ import axios from "axios";
 const url = "api/cups/";
 
 class CupService {
-  // Get cups
-  static async getAllCups() {
-    const res = await axios.get(url);
+  // Get cup(s) with given query
+  static async getCups(query) {
+    const res = await axios.get(`${url}`, { params: query });
     try {
       const data = res.data;
-      return data.map((cup) => ({
-        id: cup._id,
-        name: cup.name,
-        year: cup.year,
-        signees: cup.signees,
-        isPublic: cup.isPublic,
-        createdAt: new Date(cup.createdAt),
-      }));
-    } catch (err) {
-      return err;
-    }
-  }
-
-  // Get user's cup
-  static async getCups(user_id) {
-    const res = await axios.get(`${url}${user_id}`);
-    try {
-      const data = res.data;
-      return data.map((cup) => ({
-        _id: cup._id,
-        user_id: cup.user_id,
-        name: cup.name,
-        year: cup.year,
-        signees: cup.signees,
-        isPublic: cup.isPublic,
-        createdAt: new Date(cup.createdAt),
-      }));
-    } catch (err) {
-      return err;
-    }
-  }
-
-  // Get Cup
-  static async getCup(cup_id) {
-    const res = await axios.get(`${url}cup/${cup_id}`);
-    try {
-      const data = res.data;
-      return data.map((cup) => ({
-        id: cup._id,
-        user_id: cup.user_id,
-        name: cup.name,
-        year: cup.year,
-        signees: cup.signees,
-        isPublic: cup.isPublic,
-        createdAt: new Date(cup.createdAt),
-      }));
+      return dataToCup(data);
     } catch (err) {
       return err;
     }
@@ -78,4 +33,17 @@ class CupService {
     return axios.delete(`${url}${id}`);
   }
 }
+
+function dataToCup(data) {
+  return data.map((cup) => ({
+    id: cup._id,
+    user_id: cup.user_id,
+    name: cup.name,
+    year: cup.year,
+    signees: cup.signees,
+    isPublic: cup.isPublic,
+    createdAt: new Date(cup.createdAt),
+  }));
+}
+
 export default CupService;

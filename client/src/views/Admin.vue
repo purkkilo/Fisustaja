@@ -399,7 +399,7 @@
             </v-row>
             <!-- if there are competitions in database-->
             <v-row v-if="competitions.length">
-              <v-col md="10" offset-md="1">
+              <v-col>
                 <v-card :dark="$store.getters.getTheme">
                   <v-card-title>
                     <p class="flow-text">Kilpailut</p>
@@ -759,7 +759,7 @@ export default {
       headers: [
         { text: "Kilpailun Päivämäärä", value: "start_date" },
         { text: "Nimi", value: "name" },
-        { text: "Käyttäjän id", value: "user_id" },
+        { text: "Käyttäjä", value: "username" },
         { text: "Cup", value: "cup_name" },
         { text: "Pistekerroin", value: "cup_points_multiplier" },
         { text: "", value: "choose", sortable: false },
@@ -800,8 +800,12 @@ export default {
         user.menu = false;
       });
       this.loading_users = false;
-      this.competitions = await CompetitionService.getAllCompetitions();
+      // No query, get all competitions
+      this.competitions = await CompetitionService.getCompetitions();
       this.competitions.forEach((competition) => {
+        competition.username = this.users.find(
+          (user) => user._id === competition.user_id
+        ).name;
         competition.start_date = moment(competition.start_date);
         competition.end_date = moment(competition.end_date);
       });
@@ -828,7 +832,7 @@ export default {
       console.log("TODO: Generoi kilpailu!");
       const competition = {
         user_id: user_id,
-        cup_id: this.cup._id,
+        cup_id: this.cup.id,
         team_competition: this.team_competition === "Ei" ? false : true,
         //Kaikki muu generointi, katso alta
       };
@@ -885,7 +889,9 @@ export default {
         this.loading_cups = true;
         // Get Cups
         try {
-          this.cups = await CupService.getCups(user_id);
+          this.cups = await CupService.getCups({
+            user_id: user_id,
+          });
           if (this.cups.length) {
             this.cups.sort(function compare(a, b) {
               return a.name - b.name;
@@ -962,7 +968,8 @@ export default {
         try {
           //Delete competition from database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
           await CompetitionService.deleteCompetition(id);
-          this.competitions = await CompetitionService.getAllCompetitions();
+          // No query, get all competitions
+          this.competitions = await CompetitionService.getCompetitions();
           // Change dates to moment objects, so they are easy to format
           this.competitions.forEach((competition) => {
             competition.start_date = moment(competition.start_date);

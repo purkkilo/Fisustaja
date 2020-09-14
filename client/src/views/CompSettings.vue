@@ -947,7 +947,9 @@ export default {
       const user_id = user["id"];
       // Get Cups
       try {
-        this.cups = await CupService.getCups(user_id);
+        this.cups = await CupService.getCups({
+          user_id: user_id,
+        });
         if (this.cups.length) {
           this.cups.sort(function compare(a, b) {
             return a.name - b.name;
@@ -956,7 +958,7 @@ export default {
             cup.select = `${cup.name} (${cup.year})`;
           });
           let temp_cup = this.cups.find((cup) => {
-            return this.competition.cup_id === cup._id;
+            return this.competition.cup_id === cup.id;
           });
           if (temp_cup) {
             this.cup = temp_cup;
@@ -975,9 +977,9 @@ export default {
       this.inputs = [];
       try {
         //Get competition from database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
-        let competitions = await CompetitionService.getCompetition(
-          competition_id
-        );
+        let competitions = await CompetitionService.getCompetitions({
+          _id: competition_id,
+        });
         // IF competition found from database
         if (competitions.length) {
           // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
@@ -1145,7 +1147,7 @@ export default {
         this.showError("Kilpailun paikkakunta puuttuu!");
       }
 
-      if (!this.cup._id) {
+      if (!this.cup.id) {
         this.showError("Cuppia ei valittuna!");
       }
       if (!this.cup_placement_points) {
@@ -1242,7 +1244,7 @@ export default {
         );
 
         // Basic info, change all the competition variables with values from inputs
-        this.competition.cup_id = this.cup._id;
+        this.competition.cup_id = this.cup.id;
         this.competition.cup_name = this.cup.name;
         this.competition.name = this.name;
         this.competition.locality = this.locality;

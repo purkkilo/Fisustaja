@@ -1,2 +1,4 @@
 node_modules
 server/routes/api/config.json
+package-lock.json
+client/package-lock.json

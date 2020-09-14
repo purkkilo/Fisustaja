@@ -271,9 +271,9 @@ export default {
       this.errors = [];
       try {
         //Get competition from database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
-        let competitions = await CompetitionService.getCompetition(
-          competition_id
-        );
+        let competitions = await CompetitionService.getCompetitions({
+          _id: competition_id,
+        });
         // IF competition found from database
         if (competitions.length) {
           // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)

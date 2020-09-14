@@ -981,7 +981,9 @@ export default {
       this.loading = true;
       // Get Cups
       try {
-        this.cups = await CupService.getCups(user_id);
+        this.cups = await CupService.getCups({
+          user_id: user_id,
+        });
         if (this.cups.length) {
           this.cups.sort(function compare(a, b) {
             return a.name - b.name;
@@ -1074,7 +1076,7 @@ export default {
         this.showError("Kilpailun paikkakunta puuttuu!");
       }
 
-      if (!this.cup._id) {
+      if (!this.cup.id) {
         this.showError("Cuppia ei valittuna!");
       }
       if (!this.cup_placement_points) {
@@ -1351,7 +1353,7 @@ export default {
         const user_id = user["id"];
 
         // Whole competition object
-        let cup_id = this.cup._id;
+        let cup_id = this.cup.id;
         const competition = {
           cup_id: cup_id,
           user_id: user_id,

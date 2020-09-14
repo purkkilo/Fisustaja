@@ -1110,9 +1110,9 @@ export default {
       let placement = 1;
       try {
         // Query competition with id
-        let competitions = await CompetitionService.getCompetition(
-          competition_id
-        );
+        let competitions = await CompetitionService.getCompetitions({
+          _id: competition_id,
+        });
         // If competition found
         if (competitions.length) {
           // Pick first result (the array should only have one, since id's are unique)

@@ -85,9 +85,20 @@
                     >
                   </template>
                   <template v-slot:[`item.choose`]="{ item }">
-                    <v-btn color="primary" @click="pickCompetition(item)"
-                      ><i class="material-icons left">check</i>Valitse</v-btn
-                    >
+                    <v-tooltip right>
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-btn
+                          color="primary"
+                          v-bind="attrs"
+                          v-on="on"
+                          @click="pickCompetition(item)"
+                          ><v-icon color="black"
+                            >mdi-arrow-right-bold-box-outline</v-icon
+                          ></v-btn
+                        >
+                      </template>
+                      <span>Siirry kilpailuun</span>
+                    </v-tooltip>
                   </template>
                 </v-data-table>
               </v-card>
@@ -254,24 +265,62 @@
                   :headers="headers_cup"
                   :items="cups"
                   :search="search_cup"
+                  :loading="publishing"
                 >
                   <template v-slot:[`item.name`]="{ item }">
-                    <v-chip color="primary darken-2">{{ item.name }}</v-chip>
+                    <v-chip color="primary darken-3">{{ item.name }}</v-chip>
                   </template>
                   <template v-slot:[`item.year`]="{ item }">
-                    <v-chip color="green darken-3">{{ item.year }}</v-chip>
+                    <v-chip color="grey" :outlined="$store.getters.getTheme">{{
+                      item.year
+                    }}</v-chip>
+                  </template>
+                  <template v-slot:[`item.isPublic`]="{ item }">
+                    <v-tooltip right>
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-chip
+                          v-bind="attrs"
+                          v-on="on"
+                          :outlined="$store.getters.getTheme"
+                          :color="
+                            item.isPublic ? 'green darken-2' : 'red darken-2'
+                          "
+                          @click="publishCup(item)"
+                          :disabled="publishing"
+                          >{{ item.isPublic ? "Julkinen" : "Salainen" }}</v-chip
+                        >
+                      </template>
+                      <span>Muuta tila painamalla</span>
+                    </v-tooltip>
                   </template>
                   <template v-slot:[`item.choose`]="{ item }">
-                    <v-btn color="primary" @click="pickCup(item)"
-                      ><i class="material-icons left">check</i>Valitse</v-btn
-                    >
+                    <v-tooltip right>
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-btn
+                          color="primary"
+                          v-bind="attrs"
+                          v-on="on"
+                          @click="pickCup(item)"
+                          ><v-icon color="black"
+                            >mdi-arrow-right-bold-box-outline</v-icon
+                          ></v-btn
+                        >
+                      </template>
+                      <span>Siirry Cuppiin</span>
+                    </v-tooltip>
                   </template>
                 </v-data-table>
               </v-card>
             </div>
             <v-row v-else>
               <v-col v-if="!loading">
-                <h2>Ei Cuppeja!</h2>
+                <h2
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Ei Cuppeja!
+                </h2>
                 <v-btn tile color="blue lighten-1" @click="tab = 'create'"
                   ><i class="material-icons left">add_circle_outline</i>Luo
                   Cup!</v-btn
@@ -281,7 +330,13 @@
                 ><h2>{{ error }}</h2></v-col
               >
               <v-col v-else>
-                <h2>Ladataan Cuppeja...</h2>
+                <h2
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Ladataan Cuppeja...
+                </h2>
                 <ProgressBarQuery />
               </v-col>
             </v-row>
@@ -312,16 +367,18 @@ export default {
         { text: "Nimi", value: "name" },
         { text: "Cup", value: "cup_name" },
         { text: "Pistekerroin", value: "cup_points_multiplier" },
-        { text: "", value: "choose", sortable: false },
+        { text: "Valitse", value: "choose", sortable: false },
       ],
       headers_cup: [
         { text: "Nimi", value: "name" },
         { text: "Vuosi", value: "year" },
-        { text: "", value: "choose", sortable: false },
+        { text: "Julkisuus", value: "isPublic" },
+        { text: "Valitse", value: "choose", sortable: false },
       ],
       error: "",
       competition_input: null,
       loading: false,
+      publishing: false,
       cups: [],
       name: null,
       year: null,
@@ -346,30 +403,61 @@ export default {
     const user = JSON.parse(localStorage.getItem("user"));
     const user_id = user["id"];
     // Get competitions
-    try {
-      this.competitions = await CompetitionService.getCompetitions(user_id);
-      // Convert dates to moment objects
-      this.competitions.forEach((competition) => {
-        competition.start_date = moment(competition.start_date);
-        competition.end_date = moment(competition.end_date);
+    const query = { user_id: user_id };
+    await CompetitionService.getCompetitions(query)
+      .then((response) => {
+        this.competitions = response;
+        // Convert dates to moment objects
+        this.competitions.forEach((competition) => {
+          competition.start_date = moment(competition.start_date);
+          competition.end_date = moment(competition.end_date);
+        });
+        // Sort them based on start_date so the oldest competitions are the last
+        this.competitions.sort(function compare(a, b) {
+          return moment(b.start_date).isAfter(moment(a.start_date));
+        });
+      })
+      .catch((err) => {
+        if (err.response) {
+          if (err.response.status === 408) {
+            this.loading = false;
+            return console.log(err);
+          } else {
+            this.loading = false;
+            return console.log(err);
+          }
+        } else {
+          return console.log(err);
+        }
       });
-      // Sort them based on start_date so the oldest competitions are the last
-      this.competitions.sort(function compare(a, b) {
-        return moment(b.start_date).isAfter(moment(a.start_date));
-      });
-    } catch (err) {
-      this.error = err.message;
-    }
-    // Get Cups
-    try {
-      this.cups = await CupService.getCups(user_id);
-      this.cups.sort(function compare(a, b) {
-        return moment(b.year).isAfter(moment(a.year));
-      });
-    } catch (err) {
-      this.error = err.message;
-    }
 
+    // Get Cups
+    await CupService.getCups({
+      user_id: user_id,
+    })
+      .then((response) => {
+        this.cups = response;
+        this.cups.sort(function compare(a, b) {
+          return moment(b.year).isAfter(moment(a.year));
+        });
+      })
+      .catch((err) => {
+        if (err.response) {
+          if (err.response.status === 400) {
+            console.log(err);
+            return this.showError("Bad request!");
+          }
+          if (err.response.status === 408) {
+            return this.showError(
+              "Yhteyttä tietokantaan ei saatu... Yritä uudelleen päivittämällä sivu (Connection timed out)"
+            );
+          } else {
+            return console.log(err);
+          }
+        } else {
+          return console.log(err);
+        }
+      });
     this.loading = false;
   },
   mounted() {
@@ -384,6 +472,17 @@ export default {
       if (multiplier > 1) return "red";
       if (multiplier === 1) return "green";
       else return "grey";
+    },
+    async publishCup(cup) {
+      cup.isPublic = !cup.isPublic;
+      try {
+        //TODO update only this one variable (competition.normal_points) to database, not the whole competition
+        this.publishing = true;
+        await CupService.updateCup(cup.id, cup);
+      } catch (err) {
+        console.error(err.message);
+      }
+      this.publishing = false;
     },
     // Add error to error array and direct user to it
     showError: function(error) {
@@ -430,8 +529,8 @@ export default {
     },
     pickCup: function(cup) {
       // Pick cup for the app to use
-      // Set cup._id to localstorage for database queries
-      localStorage.setItem("cup", cup._id);
+      // Set cup.id to localstorage for database queries
+      localStorage.setItem("cup", cup.id);
       // redirect to /cup-overview
       this.$router.push({ path: "/cup-overview" });
     },

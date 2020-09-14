@@ -10,7 +10,6 @@
   "author": "Jori Kosonen",
   "license": "ISC",
   "devDependencies": {
-    "electron": "^8.2.3",
     "nodemon": "^2.0.4"
   },
   "dependencies": {

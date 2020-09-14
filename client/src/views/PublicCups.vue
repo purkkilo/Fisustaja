@@ -356,11 +356,10 @@ export default {
   async mounted() {
     //Check if user is logged in has admin status, update header
     this.checkLogin();
-    let cups = await CupService.getAllCups();
-    if (cups.length) {
-      this.cups = cups.filter((cup) => {
-        return cup.isPublic;
-      });
+    this.cups = await CupService.getCups({
+      isPublic: true,
+    });
+    if (this.cups.length) {
       this.cups.forEach((cup) => {
         cup.select = `${cup.name} (${cup.year})`;
       });
@@ -516,7 +515,9 @@ export default {
       // Update to vuex, Assing variables from vuex (see client/store/index.js)
       this.$store.commit("refreshCup", cup);
       try {
-        this.competitions = await CompetitionService.getCupCompetitions(cup.id);
+        this.competitions = await CompetitionService.getCompetitions({
+          cup_id: cup.id,
+        });
         // Convert dates to moment objects
         let counter = 1;
         this.competitions = this.competitions.filter((competition) => {
@@ -749,7 +750,7 @@ export default {
       });
 
       if (unfinished_competitions === 0) {
-        sub_title = `Lopputulokset ${formatted_date}`;
+        sub_title = `Tulokset ${formatted_date}`;
       } else {
         sub_title = `Tilanne ${formatted_date}, ${last_competition.name} (${last_competition.locality}) jälkeen (${unfinished_competitions} kpl kilpailuja kesken)`;
       }
@@ -786,7 +787,6 @@ export default {
         margin: { top: 20 },
       });
 
-      // Save the pdf
       // Save the pdf
       doc.save(
         `${this.selected_cup.year}_${this.replaceAll(

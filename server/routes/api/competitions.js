@@ -2,65 +2,20 @@ const express = require("express");
 const mongodb = require("mongodb");
 const router = express.Router();
 
-// Get all competitions
+// Get competitions with given query
 router.get("/", async (req, res) => {
   const competitions = await loadCompetitionsCollection();
-  if (competitions) {
-    res.send(await competitions.find({}).toArray());
-  } else {
-    // Connection timed out
-    res.status(408).send();
-  }
-});
 
-// Get user's competitions
-router.get("/:user_id", async (req, res) => {
-  const competitions = await loadCompetitionsCollection();
   if (competitions) {
-    res.send(
-      await competitions.find({ user_id: req.params.user_id }).toArray()
-    );
-  } else {
-    // Connection timed out
-    res.status(408).send();
-  }
-});
-
-// Get cup's competitions
-router.get("/cup/:cup_id", async (req, res) => {
-  const competitions = await loadCompetitionsCollection();
-  if (competitions) {
-    res.send(await competitions.find({ cup_id: req.params.cup_id }).toArray());
-  } else {
-    // Connection timed out
-    res.status(408).send();
-  }
-});
-
-// Get certain competition
-router.get("/competition/:competition_id", async (req, res) => {
-  const competitions = await loadCompetitionsCollection();
-  if (competitions) {
-    try {
-      res.send(
-        await competitions
-          .find({ _id: new mongodb.ObjectID(req.params.competition_id) })
-          .toArray()
-      );
-    } catch (err) {
-      console.log(err.message);
+    let query = req.query;
+    if (req.query.isPublic) {
+      let boolean = req.query.isPublic === "true" ? true : false;
+      query = { isPublic: boolean };
     }
-  } else {
-    // Connection timed out
-    res.status(408).send();
-  }
-});
-
-// Get public competitions
-router.get("/public", async (req, res) => {
-  const competitions = await loadCompetitionsCollection();
-  if (competitions) {
-    res.send(await competitions.find({}).toArray());
+    if (req.query._id) {
+      query = { _id: new mongodb.ObjectID(req.query._id) };
+    }
+    res.send(await competitions.find(query).toArray());
   } else {
     // Connection timed out
     res.status(408).send();

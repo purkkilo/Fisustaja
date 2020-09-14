@@ -621,9 +621,10 @@ export default {
     async refreshCompetition(competition_id) {
       this.refreshing = true;
       try {
-        let competitions = await CompetitionService.getCompetition(
-          competition_id
-        );
+        //Get competition from database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
+        let competitions = await CompetitionService.getCompetitions({
+          _id: competition_id,
+        });
         if (competitions.length) {
           // Update to vuex, Assing variables and arrays from vuex (see client/store/index.js)
           this.$store.commit("refreshCompetition", competitions[0]);
@@ -652,7 +653,9 @@ export default {
             this.id = 1;
           }
           // Fetch cup info, to check signee from cups signees array
-          let cups = await CupService.getCup(competitions[0].cup_id);
+          let cups = await CupService.getCups({
+            _id: competitions[0].cup_id,
+          });
           if (cups.length) {
             this.cup = cups[0];
           }

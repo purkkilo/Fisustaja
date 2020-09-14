@@ -126,7 +126,7 @@
                       :headers="headers_comp"
                       :items="competitions"
                       :search="search_comp"
-                      :loading="loading || limiting"
+                      :loading="loading || updating"
                     >
                       <template v-slot:[`item.start_date`]="{ item }">
                         <v-chip color="primary darken-2">{{
@@ -134,15 +134,46 @@
                         }}</v-chip>
                       </template>
                       <template v-slot:[`item.isFinished`]="{ item }">
-                        <v-chip
-                          :color="
-                            item.isFinished
-                              ? 'green lighten-2'
-                              : 'red lighten-2'
-                          "
-                          :outlined="$store.getters.getTheme"
-                          >{{ item.isFinished ? "Kyllä" : "Ei" }}</v-chip
-                        >
+                        <v-tooltip right>
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-chip
+                              v-bind="attrs"
+                              v-on="on"
+                              :color="
+                                item.isFinished
+                                  ? 'green lighten-2'
+                                  : 'red lighten-2'
+                              "
+                              @click="endCompetition(item)"
+                              :outlined="$store.getters.getTheme"
+                              :disabled="updating"
+                              >{{ item.isFinished ? "Kyllä" : "Ei" }}</v-chip
+                            >
+                          </template>
+                          <span>Muuta tila painamalla</span>
+                        </v-tooltip>
+                      </template>
+                      <template v-slot:[`item.isPublic`]="{ item }">
+                        <v-tooltip right>
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-chip
+                              v-bind="attrs"
+                              v-on="on"
+                              :outlined="$store.getters.getTheme"
+                              :color="
+                                item.isPublic
+                                  ? 'green darken-2'
+                                  : 'red darken-2'
+                              "
+                              @click="publishCompetition(item)"
+                              :disabled="updating"
+                              >{{
+                                item.isPublic ? "Julkinen" : "Salainen"
+                              }}</v-chip
+                            >
+                          </template>
+                          <span>Muuta tila painamalla</span>
+                        </v-tooltip>
                       </template>
                       <template
                         v-slot:[`item.cup_points_multiplier`]="{ item }"
@@ -156,10 +187,21 @@
                         >
                       </template>
                       <template v-slot:[`item.choose`]="{ item }">
-                        <v-btn color="primary" @click="pickCompetition(item)"
-                          ><i class="material-icons left">check</i
-                          >Valitse</v-btn
-                        >
+                        <v-tooltip right>
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-btn
+                              color="primary"
+                              v-bind="attrs"
+                              v-on="on"
+                              :disabled="updating"
+                              @click="pickCompetition(item)"
+                              ><v-icon color="black"
+                                >mdi-arrow-right-bold-box-outline</v-icon
+                              ></v-btn
+                            >
+                          </template>
+                          <span>Siirry kilpailuun</span>
+                        </v-tooltip>
                       </template>
                     </v-data-table>
                   </v-card>
@@ -487,13 +529,15 @@ export default {
         { text: "Kilpailun Päivämäärä", value: "start_date" },
         { text: "Nimi", value: "name" },
         { text: "Päättynyt", value: "isFinished" },
+        { text: "Julkisuus", value: "isPublic" },
         { text: "Pistekerroin", value: "cup_points_multiplier" },
-        { text: "", value: "choose", sortable: false },
+        { text: "Valitse", value: "choose", sortable: false },
       ],
       results: [],
       isResults: false,
       loading: false,
       publishing: false,
+      updating: false,
       select_numbers: [],
       header_options: ["Paikkakunta", "Kilpailun nimi"],
       header_selection: "Paikkakunta",
@@ -536,6 +580,29 @@ export default {
         console.error(err.message);
       }
       this.publishing = false;
+    },
+    async publishCompetition(competition) {
+      competition.isPublic = !competition.isPublic;
+      this.updateToDatabase(competition);
+    },
+    async endCompetition(competition) {
+      competition.isFinished = !competition.isFinished;
+      competition.isFinished
+        ? (competition.state = "Päättynyt")
+        : (competition.state = "Kesken");
+      this.updateToDatabase(competition);
+    },
+    async updateToDatabase(competition) {
+      try {
+        this.updating = true;
+        await CompetitionService.updateCompetition(
+          competition._id,
+          competition
+        );
+      } catch (err) {
+        console.error(err.message);
+      }
+      this.updating = false;
     },
     // Calculate all the cup points, and limit the number of races taken into account
     // If limit = 4, 4 races with highest points will be calculated, other races will have 5 points where the signee has participated
@@ -675,7 +742,9 @@ export default {
       this.loading = true;
       try {
         //Get competition from database (check 'client\src\CupService.js' and 'server\routes\api\cups.js' to see how this works)
-        let cups = await CupService.getCup(cup_id);
+        let cups = await CupService.getCups({
+          _id: cup_id,
+        });
         // IF competition found from database
         if (cups.length) {
           // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
@@ -684,9 +753,9 @@ export default {
           // Update to vuex, Assing variables from vuex (see client/store/index.js)
           this.$store.commit("refreshCup", cups[0]);
           try {
-            this.competitions = await CompetitionService.getCupCompetitions(
-              cup_id
-            );
+            this.competitions = await CompetitionService.getCompetitions({
+              cup_id: cup_id,
+            });
             // Convert dates to moment objects
             let counter = 1;
             this.competitions.forEach((competition) => {
@@ -952,7 +1021,7 @@ export default {
       });
       if (table_title === "Tulokset") {
         if (unfinished_competitions === 0) {
-          sub_title = `Lopputulokset ${formatted_date}`;
+          sub_title = `Tulokset ${formatted_date}`;
         } else {
           sub_title = `Tilanne ${formatted_date}, ${last_competition.name} (${last_competition.locality}) jälkeen (${unfinished_competitions} kpl kilpailuja kesken)`;
         }

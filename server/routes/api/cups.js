@@ -7,33 +7,20 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   const cups = await loadCupsCollection();
   if (cups) {
-    res.send(await cups.find({}).toArray());
-  } else {
-    // Connection timed out
-    res.status(408).send();
-  }
-});
-
-// Get user's cups
-router.get("/:user_id", async (req, res) => {
-  const cups = await loadCupsCollection();
-  if (cups) {
-    res.send(await cups.find({ user_id: req.params.user_id }).toArray());
-  } else {
-    // Connection timed out
-    res.status(408).send();
-  }
-});
-
-// Get certain cup
-router.get("/cup/:cup_id", async (req, res) => {
-  const cups = await loadCupsCollection();
-  if (cups) {
-    res.send(
-      await cups
-        .find({ _id: new mongodb.ObjectID(req.params.cup_id) })
-        .toArray()
-    );
+    let query = req.query;
+    if (req.query.isPublic) {
+      let boolean = req.query.isPublic === "true" ? true : false;
+      query = { isPublic: boolean };
+    }
+    if (req.query._id) {
+      query = { _id: new mongodb.ObjectID(req.query._id) };
+    }
+    try {
+      let found_cups = await cups.find(query).toArray();
+      res.status(200).send(found_cups);
+    } catch (error) {
+      res.status(400).send();
+    }
   } else {
     // Connection timed out
     res.status(408).send();
