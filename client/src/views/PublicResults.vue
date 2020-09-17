@@ -1567,10 +1567,14 @@ export default {
 
       return formatted_date;
     },
+    // Capitalize all the words in given string. Takes account all the characters like "-", "'" etc.
     capitalize_words: function(str) {
-      return str.replace(/\w\S*/g, function(txt) {
-        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-      });
+      return str.replace(
+        /(?:^|\s|['`‘’.-])[^\x60^\x7B-\xDF](?!(\s|$))/g,
+        function(txt) {
+          return txt.toUpperCase();
+        }
+      );
     },
     // Convert the charts and the tables to pdf
     saveAsPDF: function(competition_type, table_id) {

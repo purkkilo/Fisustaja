@@ -53,247 +53,373 @@
     >
       <v-tabs-slider color="blue darken-4"></v-tabs-slider>
       <v-tab href="#overview">Yleisnäkymä</v-tab>
-      <v-tab href="#points" :disabled="!competitions.length">Cup pisteet</v-tab>
+      <v-tab href="#points" :disabled="!competitions.length"
+        >Pistetilanne</v-tab
+      >
+      <v-tab href="#stats" :disabled="!competitions.length">Tilastoja</v-tab>
     </v-tabs>
     <v-tabs-items v-model="tab" style="background: rgba(0,0,0,0.4);">
-      <v-tab-item :value="'overview'">
-        <div
-          v-bind:class="{
-            'container-transparent': !$store.getters.getTheme,
-            'container-transparent-dark': $store.getters.getTheme,
-          }"
-        >
-          <div v-if="loading">
-            <v-row>
-              <v-col>
-                <h2
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  Valmistellaan Cuppia...
-                </h2>
-                <ProgressBarQuery />
-              </v-col>
-            </v-row>
-          </div>
-          <div v-else>
-            <v-row>
-              <v-col v-if="cup">
-                <h1
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  {{ cup.name }}, {{ cup.year }}
-                </h1>
-              </v-col>
-              <v-col v-else>
+      <v-tab-item
+        :value="'overview'"
+        v-bind:class="{
+          'container-transparent': !$store.getters.getTheme,
+          'container-transparent-dark': $store.getters.getTheme,
+        }"
+      >
+        <v-row v-if="loading">
+          <v-col>
+            <h2
+              v-bind:class="{
+                'white--text': $store.getters.getTheme,
+              }"
+            >
+              Valmistellaan Cuppia...
+            </h2>
+            <ProgressBarQuery />
+          </v-col>
+        </v-row>
+        <v-row v-else>
+          <v-col v-if="cup">
+            <h1
+              v-bind:class="{
+                'white--text': $store.getters.getTheme,
+              }"
+            >
+              {{ cup.name }}, {{ cup.year }}
+            </h1>
+          </v-col>
+          <v-col v-else>
+            <p
+              class="flow-text"
+              v-bind:class="{
+                'white--text': $store.getters.getTheme,
+              }"
+            >
+              Ei kuppia valittuna
+            </p>
+          </v-col>
+        </v-row>
+        <v-row v-if="competitions.length">
+          <v-col md="4" offset-md="4">
+            <v-select
+              :dark="$store.getters.getTheme"
+              :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
+              label="Valitse näytettävät tiedot"
+              outlined
+              :items="select_table"
+              @input="selectTableData"
+              v-model="selected"
+            />
+          </v-col>
+        </v-row>
+        <v-row v-if="competitions.length">
+          <v-col md="10" offset-md="1">
+            <v-card :dark="$store.getters.getTheme">
+              <v-card-title>
                 <p
                   class="flow-text"
                   v-bind:class="{
                     'white--text': $store.getters.getTheme,
                   }"
                 >
-                  Ei kuppia valittuna
+                  Kilpailut
                 </p>
-              </v-col>
-            </v-row>
-            <div v-if="competitions.length">
-              <v-row v-if="competitions.length">
-                <v-col md="10" offset-md="1">
-                  <v-card :dark="$store.getters.getTheme">
-                    <v-card-title>
-                      <p
-                        class="flow-text"
-                        v-bind:class="{
-                          'white--text': $store.getters.getTheme,
-                        }"
+                <v-spacer></v-spacer>
+                <v-text-field
+                  v-model="search_comp"
+                  append-icon="mdi-magnify"
+                  label="Hae kilpailua"
+                  single-line
+                  hide-details
+                ></v-text-field>
+              </v-card-title>
+              <v-data-table
+                id="normal-table"
+                :headers="selected_headers"
+                :items="selected_items"
+                :search="search_comp"
+                :loading="loading || updating"
+              >
+                <template v-slot:[`item.start_date`]="{ item }">
+                  <v-chip color="primary darken-2">{{
+                    item.start_date.format("DD.MM.YYYY")
+                  }}</v-chip>
+                </template>
+                <template v-slot:[`item.isFinished`]="{ item }">
+                  <v-tooltip right>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-chip
+                        v-bind="attrs"
+                        v-on="on"
+                        :color="
+                          item.isFinished ? 'green lighten-2' : 'red lighten-2'
+                        "
+                        @click="endCompetition(item)"
+                        :outlined="$store.getters.getTheme"
+                        :disabled="updating"
+                        >{{ item.isFinished ? "Kyllä" : "Ei" }}</v-chip
                       >
-                        Kilpailut
-                      </p>
-                      <v-spacer></v-spacer>
-                      <v-text-field
-                        v-model="search_comp"
-                        append-icon="mdi-magnify"
-                        label="Hae kilpailua"
-                        single-line
-                        hide-details
-                      ></v-text-field>
-                    </v-card-title>
-                    <v-data-table
-                      id="normal-table"
-                      :headers="headers_comp"
-                      :items="competitions"
-                      :search="search_comp"
-                      :loading="loading || updating"
-                    >
-                      <template v-slot:[`item.start_date`]="{ item }">
-                        <v-chip color="primary darken-2">{{
-                          item.start_date.format("DD.MM.YYYY")
-                        }}</v-chip>
-                      </template>
-                      <template v-slot:[`item.isFinished`]="{ item }">
-                        <v-tooltip right>
-                          <template v-slot:activator="{ on, attrs }">
-                            <v-chip
-                              v-bind="attrs"
-                              v-on="on"
-                              :color="
-                                item.isFinished
-                                  ? 'green lighten-2'
-                                  : 'red lighten-2'
-                              "
-                              @click="endCompetition(item)"
-                              :outlined="$store.getters.getTheme"
-                              :disabled="updating"
-                              >{{ item.isFinished ? "Kyllä" : "Ei" }}</v-chip
-                            >
-                          </template>
-                          <span>Muuta tila painamalla</span>
-                        </v-tooltip>
-                      </template>
-                      <template v-slot:[`item.isPublic`]="{ item }">
-                        <v-tooltip right>
-                          <template v-slot:activator="{ on, attrs }">
-                            <v-chip
-                              v-bind="attrs"
-                              v-on="on"
-                              :outlined="$store.getters.getTheme"
-                              :color="
-                                item.isPublic
-                                  ? 'green darken-2'
-                                  : 'red darken-2'
-                              "
-                              @click="publishCompetition(item)"
-                              :disabled="updating"
-                              >{{
-                                item.isPublic ? "Julkinen" : "Salainen"
-                              }}</v-chip
-                            >
-                          </template>
-                          <span>Muuta tila painamalla</span>
-                        </v-tooltip>
-                      </template>
-                      <template
-                        v-slot:[`item.cup_points_multiplier`]="{ item }"
+                    </template>
+                    <span>Muuta tila painamalla</span>
+                  </v-tooltip>
+                </template>
+                <template v-slot:[`item.isPublic`]="{ item }">
+                  <v-tooltip right>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-chip
+                        v-bind="attrs"
+                        v-on="on"
+                        :outlined="$store.getters.getTheme"
+                        :color="
+                          item.isPublic ? 'green darken-2' : 'red darken-2'
+                        "
+                        @click="publishCompetition(item)"
+                        :disabled="updating"
+                        >{{ item.isPublic ? "Julkinen" : "Salainen" }}</v-chip
                       >
-                        <v-chip
-                          :color="
-                            getMultiplierColor(item.cup_points_multiplier)
-                          "
-                          :outlined="$store.getters.getTheme"
-                          >{{ item.cup_points_multiplier }}x</v-chip
+                    </template>
+                    <span>Muuta tila painamalla</span>
+                  </v-tooltip>
+                </template>
+                <template v-slot:[`item.cup_points_multiplier`]="{ item }">
+                  <v-chip
+                    :color="getMultiplierColor(item.cup_points_multiplier)"
+                    :outlined="$store.getters.getTheme"
+                    >{{ item.cup_points_multiplier }}x</v-chip
+                  >
+                </template>
+                <template v-slot:[`item.choose`]="{ item }">
+                  <v-tooltip right>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn
+                        color="primary"
+                        v-bind="attrs"
+                        v-on="on"
+                        :disabled="updating"
+                        @click="pickCompetition(item)"
+                        ><v-icon color="black"
+                          >mdi-arrow-right-bold-box-outline</v-icon
+                        ></v-btn
+                      >
+                    </template>
+                    <span>Siirry kilpailuun</span>
+                  </v-tooltip>
+                </template>
+                <template v-slot:[`item.modify`]="{ item }">
+                  <v-btn
+                    color="yellow darken-2"
+                    :dark="$store.getters.getTheme"
+                    @click.stop="
+                      new_captain_name = item.captain_name;
+                      new_temp_captain_name = item.temp_captain_name;
+                      new_locality = item.locality;
+                      $set(dialog_signee, item.boat_number, true);
+                    "
+                    ><v-icon color="black">mdi-account-edit</v-icon></v-btn
+                  >
+                  <v-dialog
+                    v-model="dialog_signee[item.boat_number]"
+                    persistent
+                    max-width="600px"
+                    :key="item.boat_number"
+                  >
+                    <v-card :dark="$store.getters.getTheme">
+                      <v-card-title>
+                        <span class="headline"
+                          >Muokkaa käyttäjän (Nro {{ item.boat_number }}) Cup
+                          tietoja</span
                         >
-                      </template>
-                      <template v-slot:[`item.choose`]="{ item }">
-                        <v-tooltip right>
-                          <template v-slot:activator="{ on, attrs }">
-                            <v-btn
-                              color="primary"
-                              v-bind="attrs"
-                              v-on="on"
-                              :disabled="updating"
-                              @click="pickCompetition(item)"
-                              ><v-icon color="black"
-                                >mdi-arrow-right-bold-box-outline</v-icon
-                              ></v-btn
+                      </v-card-title>
+                      <v-card-text>
+                        <v-container>
+                          <div v-if="errors.length">
+                            <ul
+                              class="collection with-header"
+                              style="border:1px solid red;"
                             >
-                          </template>
-                          <span>Siirry kilpailuun</span>
-                        </v-tooltip>
-                      </template>
-                    </v-data-table>
-                  </v-card>
-                </v-col>
-              </v-row>
-              <v-row v-if="competitions.length">
-                <v-col style="margin-top:20px">
-                  <v-btn
-                    tile
-                    color="blue lighten-1"
-                    :loading="publishing"
-                    @click="$router.push({ path: '/register-comp' })"
-                    ><i class="material-icons left">add_circle_outline</i>Luo
-                    kilpailu!</v-btn
-                  >
-                </v-col>
-                <v-col style="margin-top:20px">
-                  <v-btn
-                    @click="saveAsPDF(`Ilmoittautuneet`)"
-                    color="green darken-4"
-                    class="white--text"
-                    :loading="publishing"
-                    ><i class="material-icons left">picture_as_pdf</i>Lataa
-                    lista kilpailijoista</v-btn
-                  >
-                </v-col>
-                <v-col style="margin-top:20px">
-                  <v-btn
-                    large
-                    tile
-                    :color="cup.isPublic ? 'grey darken-4' : 'green darken-4'"
-                    @click="publishCup(cup.isPublic)"
-                    class="white--text"
-                    :loading="publishing"
-                  >
-                    <div v-if="cup.isPublic">
-                      <v-icon>mdi-incognito</v-icon> Aseta cup salaiseksi
-                    </div>
-                    <div v-else>
-                      <v-icon color="green">mdi-publish</v-icon> Aseta cup
-                      julkiseksi
-                    </div>
-                  </v-btn>
-                </v-col>
-              </v-row>
-              <v-row v-else>
-                <v-col v-if="!loading">
-                  <h2
-                    v-bind:class="{
-                      'white--text': $store.getters.getTheme,
-                    }"
-                  >
-                    Ei kilpailuja!
-                  </h2>
-                  <router-link to="/register-comp">
-                    <v-btn tile color="blue lighten-1"
-                      ><i class="material-icons left">add_circle_outline</i>Luo
-                      kilpailu!</v-btn
-                    >
-                  </router-link>
-                </v-col>
-                <h2
-                  v-if="error"
-                  class="error"
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  {{ error }}
-                </h2>
-                <v-col v-else>
-                  <h2
-                    v-bind:class="{
-                      'white--text': $store.getters.getTheme,
-                    }"
-                  >
-                    Ladataan kilpailuja...
-                  </h2>
-                  <ProgressBarQuery />
-                </v-col>
-              </v-row>
-            </div>
-          </div>
-        </div>
+                              <li
+                                class="collection-header"
+                                style="background: rgba(0,0,0,0);"
+                              >
+                                <v-alert type="error">
+                                  Korjaa seuraavat virheet:
+                                </v-alert>
+                              </li>
+                              <li
+                                class="collection-item"
+                                id="error"
+                                v-for="(error, index) in errors"
+                                v-bind:key="index"
+                              >
+                                <p class="flow-text black--text">
+                                  {{ index + 1 }}. {{ error }}
+                                </p>
+                              </li>
+                            </ul>
+                          </div>
+                          <v-row>
+                            <v-col cols="12" sm="6" md="10">
+                              <v-text-field
+                                v-model="new_captain_name"
+                                :loading="publishing"
+                                label="Kippari*"
+                                maxlength="40"
+                                counter="40"
+                                required
+                              ></v-text-field>
+                            </v-col>
+                          </v-row>
+                          <v-row>
+                            <v-col cols="12" sm="6" md="10">
+                              <v-text-field
+                                v-model="new_temp_captain_name"
+                                :loading="publishing"
+                                label="Varakippari"
+                                maxlength="40"
+                                counter="40"
+                                required
+                              ></v-text-field>
+                            </v-col>
+                          </v-row>
+                          <v-row>
+                            <v-col cols="12" sm="6" md="10">
+                              <v-text-field
+                                v-model="new_locality"
+                                :loading="publishing"
+                                label="Paikkakunta*"
+                                maxlength="40"
+                                counter="40"
+                                required
+                              ></v-text-field>
+                            </v-col>
+                          </v-row>
+                          <small>*Pakolliset kentät</small>
+                        </v-container>
+                      </v-card-text>
+                      <v-card-actions>
+                        <v-btn
+                          color="yellow darken-2"
+                          outlined
+                          :loading="publishing"
+                          @click.stop="
+                            modifySignee(
+                              item,
+                              new_captain_name,
+                              new_temp_captain_name,
+                              new_locality,
+                              false
+                            )
+                          "
+                          >Peruuta</v-btn
+                        >
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          color="green darken-2"
+                          outlined
+                          :loading="publishing"
+                          @click.stop="
+                            modifySignee(
+                              item,
+                              new_captain_name,
+                              new_temp_captain_name,
+                              new_locality,
+                              true
+                            )
+                          "
+                          >Tallenna</v-btn
+                        >
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </template>
+              </v-data-table>
+            </v-card>
+          </v-col>
+        </v-row>
+        <v-row v-if="competitions.length">
+          <v-col style="margin-top:20px">
+            <v-btn
+              tile
+              color="blue lighten-1"
+              :loading="publishing"
+              @click="changePage('/register-comp')"
+              ><i class="material-icons left">add_circle_outline</i>Luo uusi
+              kilpailu!</v-btn
+            >
+          </v-col>
+          <v-col style="margin-top:20px">
+            <v-btn
+              @click="saveAsPDF(`Ilmoittautuneet`)"
+              color="green darken-4"
+              class="white--text"
+              :loading="publishing"
+              ><i class="material-icons left">picture_as_pdf</i>Lataa lista
+              kilpailijoista</v-btn
+            >
+          </v-col>
+          <v-col style="margin-top:20px">
+            <v-btn
+              large
+              tile
+              :color="cup.isPublic ? 'grey darken-4' : 'green darken-4'"
+              @click="publishCup(cup.isPublic)"
+              class="white--text"
+              :loading="publishing"
+            >
+              <div v-if="cup.isPublic">
+                <v-icon>mdi-incognito</v-icon> Aseta cup salaiseksi
+              </div>
+              <div v-else>
+                <v-icon color="green">mdi-publish</v-icon> Aseta cup julkiseksi
+              </div>
+            </v-btn>
+          </v-col>
+        </v-row>
+        <v-row v-else>
+          <v-col v-if="!loading">
+            <h2
+              v-bind:class="{
+                'white--text': $store.getters.getTheme,
+              }"
+            >
+              Ei kilpailuja!
+            </h2>
+            <router-link to="/register-comp">
+              <v-btn tile color="blue lighten-1"
+                ><i class="material-icons left">add_circle_outline</i>Luo
+                kilpailu!</v-btn
+              >
+            </router-link>
+          </v-col>
+          <h2
+            v-if="error"
+            class="error"
+            v-bind:class="{
+              'white--text': $store.getters.getTheme,
+            }"
+          >
+            {{ error }}
+          </h2>
+          <v-col v-else>
+            <h2
+              v-bind:class="{
+                'white--text': $store.getters.getTheme,
+              }"
+            >
+              Ladataan kilpailuja...
+            </h2>
+            <ProgressBarQuery />
+          </v-col>
+        </v-row>
       </v-tab-item>
-      <v-tab-item :value="'points'">
-        <v-row
-          v-bind:class="{
-            'container-transparent': !$store.getters.getTheme,
-            'container-transparent-dark': $store.getters.getTheme,
-          }"
-        >
+      <v-tab-item
+        :value="'points'"
+        v-bind:class="{
+          'container-transparent': !$store.getters.getTheme,
+          'container-transparent-dark': $store.getters.getTheme,
+        }"
+      >
+        <v-row>
           <v-col>
             <v-row v-if="results.length">
               <v-col>
@@ -500,6 +626,22 @@
           </v-col>
         </v-row>
       </v-tab-item>
+      <v-tab-item
+        :value="'stats'"
+        v-bind:class="{
+          'container-transparent': !$store.getters.getTheme,
+          'container-transparent-dark': $store.getters.getTheme,
+        }"
+      >
+        <v-row>
+          <v-col><h1>Tilastoja (Coming soon...)</h1></v-col>
+        </v-row>
+        <v-row>
+          <v-col>
+            <h2>Contenttia</h2>
+          </v-col>
+        </v-row>
+      </v-tab-item>
     </v-tabs-items>
   </v-container>
 </template>
@@ -522,9 +664,15 @@ export default {
   data() {
     return {
       dialog_clock: false,
+      dialog_signee: {},
       cup: null,
       competitions: [],
+      signees: [],
       headers: [],
+      select_table: ["Kilpailut", "Ilmoittautuneet"],
+      selected: "Kilpailut",
+      selected_headers: [],
+      selected_items: [],
       headers_comp: [
         { text: "Kilpailun Päivämäärä", value: "start_date" },
         { text: "Nimi", value: "name" },
@@ -532,6 +680,13 @@ export default {
         { text: "Julkisuus", value: "isPublic" },
         { text: "Pistekerroin", value: "cup_points_multiplier" },
         { text: "Valitse", value: "choose", sortable: false },
+      ],
+      headers_signees: [
+        { text: "Kilp. numero", value: "boat_number" },
+        { text: "Kippari", value: "captain_name" },
+        { text: "Varakippari", value: "temp_captain_name" },
+        { text: "Seura/Paikkakunta", value: "locality" },
+        { text: "Muokkaa", value: "modify", sortable: false },
       ],
       results: [],
       isResults: false,
@@ -547,6 +702,11 @@ export default {
       search_comp: "",
       not_finished_count: 0,
       competition: null,
+      error: null,
+      errors: [],
+      new_locality: null,
+      new_captain_name: null,
+      new_temp_captain_name: null,
     };
   },
   created() {},
@@ -604,6 +764,106 @@ export default {
       }
       this.updating = false;
     },
+    changePage: function(path) {
+      this.$router.push({
+        path: path,
+        query: { cup: localStorage.getItem("cup") },
+      });
+    },
+    selectTableData: function() {
+      if (this.selected === "Kilpailut") {
+        this.selected_items = this.competitions;
+        this.selected_headers = this.headers_comp;
+      } else {
+        this.selected_items = this.signees;
+        this.selected_headers = this.headers_signees;
+      }
+    },
+    // Function to modify signees' captain, temp_captain or locality
+    async modifySignee(
+      signee,
+      new_captain_name,
+      new_temp_captain_name,
+      new_locality,
+      modify
+    ) {
+      this.errors = [];
+      // If user has pressed "Tallenna" button
+      if (modify) {
+        // First check that all the inputs are correctly filled
+        if (!new_captain_name) {
+          this.errors.push("Kipparin nimi puuttuu!");
+        } else {
+          signee.captain_name = this.capitalize_words(signee.captain_name);
+        }
+
+        if (!new_temp_captain_name) {
+          new_temp_captain_name = signee.temp_captain_name = "-";
+        } else {
+          signee.temp_captain_name = this.capitalize_words(
+            signee.temp_captain_name
+          );
+        }
+        if (!new_locality) {
+          this.errors.push("Seura/Paikkakunta puuttuu!");
+        } else {
+          signee.locality = this.capitalize_words(signee.locality);
+        }
+        // No errors left
+        if (!this.errors.length) {
+          // Check if anything has been modified, if there is something modified -> update to database
+          if (
+            signee.captain_name !== new_captain_name ||
+            signee.temp_captain_name !== new_temp_captain_name ||
+            signee.locality !== new_locality
+          ) {
+            signee.captain_name = new_captain_name;
+            signee.temp_captain_name = new_temp_captain_name;
+            signee.locality = new_locality;
+            this.$store.state.cup = this.cup;
+            this.publishing = true;
+            await CupService.updateCup(this.cup.id, this.cup)
+              .then(() => {
+                // Update names to "points" table
+                this.calculateAll(
+                  this.competitions,
+                  this.selected_competitions
+                );
+                this.$set(this.dialog_signee, signee.boat_number, false);
+                M.toast({ html: "Kilpailijan tiedot päivitetty!" });
+              })
+              .catch((err) => {
+                M.toast({
+                  html:
+                    "Virhe kilpailijan tietojen päivityksessä... Yritä uudelleen!",
+                });
+                console.log(err);
+              });
+            this.publishing = false;
+          } else {
+            // Nothing modified -> do nothing
+            M.toast({
+              html: "Kaikki tiedot ovat samoja kuin aikaisemmin, poistutaan...",
+            });
+            this.$set(this.dialog_signee, signee.boat_number, false);
+          }
+        }
+      }
+      // If user has pressed "Peruuta" button
+      else {
+        // Do nothing
+        this.$set(this.dialog_signee, signee.boat_number, false);
+      }
+    },
+    // Capitalize all the words in given string. Takes account all the characters like "-", "'" etc.
+    capitalize_words: function(str) {
+      return str.replace(
+        /(?:^|\s|['`‘’.-])[^\x60^\x7B-\xDF](?!(\s|$))/g,
+        function(txt) {
+          return txt.toUpperCase();
+        }
+      );
+    },
     // Calculate all the cup points, and limit the number of races taken into account
     // If limit = 4, 4 races with highest points will be calculated, other races will have 5 points where the signee has participated
     calculateAll: function(competitions, limit) {
@@ -622,6 +882,7 @@ export default {
                 parseInt(signee.boat_number) === parseInt(item.boat_number)
               );
             });
+
             //If the signee is found there
             if (index > -1) {
               // Get the signee, and add competitions results to array, under the competition.name key
@@ -636,6 +897,13 @@ export default {
             }
             // Not any points on cup_results yet
             else {
+              // Get the data that is stored in the cup's signees array
+              let cup_signee = this.signees.find(
+                (element) => element.boat_number === signee.boat_number
+              );
+              signee.captain_name = cup_signee.captain_name;
+              signee.temp_captain_name = cup_signee.temp_captain_name;
+              signee.locality = cup_signee.locality;
               // Initialize variables and add first points
               signee.cup_results = [];
               // Array for comparing points with limit
@@ -769,8 +1037,15 @@ export default {
             this.competitions.sort(function compare(a, b) {
               return moment(b.start_date).isBefore(moment(a.start_date));
             });
+            this.signees = this.cup.signees.sort(
+              (a, b) => a.boat_number - b.boat_number
+            );
+            this.signees.forEach((signee) => {
+              signee.dialog = false;
+            });
             this.selected_competitions = this.competitions.length;
             this.calculateAll(this.competitions, this.selected_competitions);
+            this.selectTableData();
             M.toast({ html: "Tiedot ajantasalla!" });
           } catch (error) {
             console.error(error);
@@ -920,11 +1195,6 @@ export default {
     replaceAll: function(string, search, replace) {
       return string.split(search).join(replace);
     },
-    capitalize_words: function(str) {
-      return str.replace(/\w\S*/g, function(txt) {
-        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-      });
-    },
     dictToArray: function(dict, type) {
       const temp_arr = Object.entries(dict);
       const arr = [];
@@ -1055,10 +1325,10 @@ export default {
         );
         */
         columns = ["Kilp. numero", "Kippari", "Varakippari", "Paikkakunta"];
-        this.cup.signees = this.cup.signees.sort(
+        this.signees = this.cup.signees.sort(
           (a, b) => a.boat_number - b.boat_number
         );
-        rows = this.dictToArray(this.cup.signees, 2);
+        rows = this.dictToArray(this.signees, 2);
         /* eslint-disable no-unused-vars */
         // Just add some empty rows for new signees
         let last_number = Number(rows[rows.length - 1][0]) + 1;

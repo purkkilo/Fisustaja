@@ -461,6 +461,9 @@ export default {
     this.loading = false;
   },
   mounted() {
+    if (this.$route.query.tab) {
+      this.tab = this.$route.query.tab;
+    }
     M.AutoInit();
     this.checkLogin();
     // Focus on top of the page when changing pages

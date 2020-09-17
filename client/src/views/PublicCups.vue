@@ -371,7 +371,6 @@ export default {
   },
   methods: {
     pickCup: function() {
-      this.$store.commit("refreshCup", this.selected_cup);
       this.refreshCup(this.selected_cup);
     },
     // Calculate all the cup points, and limit the number of races taken into account
@@ -405,6 +404,13 @@ export default {
             }
             // Not any points on cup_results yet
             else {
+              // Get the data that is stored in the cup's signees array
+              let cup_signee = this.selected_cup.signees.find(
+                (element) => element.boat_number === signee.boat_number
+              );
+              signee.captain_name = cup_signee.captain_name;
+              signee.temp_captain_name = cup_signee.temp_captain_name;
+              signee.locality = cup_signee.locality;
               // Initialize variables and add first points
               signee.cup_results = [];
               // Array for comparing points with limit
@@ -675,10 +681,14 @@ export default {
     replaceAll: function(string, search, replace) {
       return string.split(search).join(replace);
     },
+    // Capitalize all the words in given string. Takes account all the characters like "-", "'" etc.
     capitalize_words: function(str) {
-      return str.replace(/\w\S*/g, function(txt) {
-        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-      });
+      return str.replace(
+        /(?:^|\s|['`‘’.-])[^\x60^\x7B-\xDF](?!(\s|$))/g,
+        function(txt) {
+          return txt.toUpperCase();
+        }
+      );
     },
     // Parses dictionary/json to array, for pdf autotables
     dictToArray: function(dict) {

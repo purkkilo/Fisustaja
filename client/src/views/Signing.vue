@@ -706,6 +706,7 @@ export default {
         }
       }
     },
+    // Capitalize all the words in given string. Takes account all the characters like "-", "'" etc.
     capitalize_words: function(str) {
       return str.replace(
         /(?:^|\s|['`‘’.-])[^\x60^\x7B-\xDF](?!(\s|$))/g,

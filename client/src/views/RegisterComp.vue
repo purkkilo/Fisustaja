@@ -143,12 +143,18 @@
                     ></v-select>
                   </v-col>
                   <v-col md="3" style="margin-top:20px">
-                    <router-link to="/continue">
-                      <v-btn tile color="green lighten-1"
-                        ><i class="material-icons left">add_circle_outline</i
-                        >Luo uusi cup!</v-btn
-                      >
-                    </router-link>
+                    <v-btn
+                      tile
+                      color="green lighten-1"
+                      @click="
+                        $router.push({
+                          path: '/continue',
+                          query: { tab: 'create' },
+                        })
+                      "
+                      ><i class="material-icons left">add_circle_outline</i>Luo
+                      uusi cup!</v-btn
+                    >
                   </v-col>
                 </v-row>
                 <v-row v-else class="valign-wrapper">
@@ -991,7 +997,14 @@ export default {
           this.cups.forEach((cup) => {
             cup.select = `${cup.name} (${cup.year})`;
           });
-          this.cup = this.cups[this.cups.length - 1];
+          // If localstorage has cup, select it
+          if (this.$route.query.cup) {
+            this.cup = this.cups.find(
+              (cup) => cup.id === this.$route.query.cup
+            );
+          } else {
+            this.cup = this.cups[this.cups.length - 1];
+          }
         }
       } catch (err) {
         this.error = err.message;
