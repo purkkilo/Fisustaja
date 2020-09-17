@@ -1,15 +1,19 @@
+const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
+  .BundleAnalyzerPlugin;
+
 module.exports = {
-  "outputDir": "J:\\Fisustaja\\JSVersion\\FisuJS\\server\\public",
-  "devServer": {
-    "proxy": {
-      "^/api": {
-        "target": "http://localhost:5000",
-        "ws": true,
-        "changeOrigin": true
-      }
-    }
+  configureWebpack: {
+    plugins: [new BundleAnalyzerPlugin()],
   },
-  "transpileDependencies": [
-    "vuetify"
-  ]
-}
+  outputDir: "J:\\Fisustaja\\JSVersion\\FisuJS\\server\\public",
+  devServer: {
+    proxy: {
+      "^/api": {
+        target: "http://localhost:5000",
+        ws: true,
+        changeOrigin: true,
+      },
+    },
+  },
+  transpileDependencies: ["vuetify"],
+};
