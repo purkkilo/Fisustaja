@@ -622,12 +622,12 @@ export default {
       this.refreshing = true;
       try {
         //Get competition from database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
-        let competitions = await CompetitionService.getCompetitions({
+        let competition = await CompetitionService.getCompetitions({
           _id: competition_id,
         });
-        if (competitions.length) {
+        if (competition) {
           // Update to vuex, Assing variables and arrays from vuex (see client/store/index.js)
-          this.$store.commit("refreshCompetition", competitions[0]);
+          this.$store.commit("refreshCompetition", competition);
           this.isTeamCompetition = this.$store.getters.isTeamCompetition;
           this.signees = this.$store.getters.getSignees;
           this.teams = this.$store.getters.getTeams;
@@ -653,11 +653,11 @@ export default {
             this.id = 1;
           }
           // Fetch cup info, to check signee from cups signees array
-          let cups = await CupService.getCups({
-            _id: competitions[0].cup_id,
+          let cup = await CupService.getCups({
+            _id: competition.cup_id,
           });
-          if (cups.length) {
-            this.cup = cups[0];
+          if (cup) {
+            this.cup = cup;
           }
         } else {
           console.log("No competition found on database...");

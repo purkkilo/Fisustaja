@@ -1087,15 +1087,15 @@ export default {
         // Load from database
         if (reload) {
           //Get competition from database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
-          let competitions = await CompetitionService.getCompetitions({
+          let competition = await CompetitionService.getCompetitions({
             _id: this.competition._id,
           });
           // IF competition found from database
-          if (competitions.length) {
+          if (competition) {
             // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
             //TODO make a test for this?
-            this.competition = competitions[0];
-            this.$store.commit("refreshCompetition", competitions[0]);
+            this.competition = competition;
+            this.$store.commit("refreshCompetition", this.competition);
           }
         }
         // Else update and calculate from picked competition

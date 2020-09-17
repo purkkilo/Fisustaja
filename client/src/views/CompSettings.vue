@@ -892,13 +892,7 @@ export default {
     location.href = "#";
     location.href = "#app";
   },
-  mounted() {
-    if (!this.competition) {
-      const competition = JSON.parse(localStorage.getItem("competition"));
-      const competition_id = competition["id"];
-      this.refreshCompetition(competition_id);
-    }
-  },
+  mounted() {},
   methods: {
     //Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)
     checkLogin: function() {
@@ -981,16 +975,16 @@ export default {
       this.inputs = [];
       try {
         //Get competition from database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
-        let competitions = await CompetitionService.getCompetitions({
+        let competition = await CompetitionService.getCompetitions({
           _id: competition_id,
         });
         // IF competition found from database
-        if (competitions.length) {
+        if (competition) {
           // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
           //TODO make a test for this?
-          this.competition = competitions[0];
+          this.competition = competition;
           // Update to vuex, Assing variables from vuex (see client/store/index.js)
-          this.$store.commit("refreshCompetition", competitions[0]);
+          this.$store.commit("refreshCompetition", competition);
           this.fish_specs = this.$store.getters.getCompetitionFishes;
           let temp_start_date = moment(this.competition.start_date);
           let temp_end_date = moment(this.competition.end_date);

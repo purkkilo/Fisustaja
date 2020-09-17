@@ -8,14 +8,24 @@ router.get("/", async (req, res) => {
 
   if (competitions) {
     let query = req.query;
-    if (req.query.isPublic) {
-      let boolean = req.query.isPublic === "true" ? true : false;
-      query = { isPublic: boolean };
+    try {
+      if (req.query.isPublic) {
+        // Transform string into boolean
+        let boolean = req.query.isPublic === "true" ? true : false;
+        query = { isPublic: boolean };
+      }
+      // Fetch by competition._id, only find one competition
+      if (req.query._id) {
+        query = { _id: new mongodb.ObjectID(req.query._id) };
+        res.status(200).send(await competitions.findOne(query));
+      }
+      // Otherwise return an array of all the competitions that match query
+      else {
+        res.status(200).send(await competitions.find(query).toArray());
+      }
+    } catch (error) {
+      res.status(400).send(error);
     }
-    if (req.query._id) {
-      query = { _id: new mongodb.ObjectID(req.query._id) };
-    }
-    res.send(await competitions.find(query).toArray());
   } else {
     // Connection timed out
     res.status(408).send();

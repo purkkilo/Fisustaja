@@ -1024,16 +1024,16 @@ export default {
       this.loading = true;
       try {
         //Get competition from database (check 'client\src\CupService.js' and 'server\routes\api\cups.js' to see how this works)
-        let cups = await CupService.getCups({
+        let cup = await CupService.getCups({
           _id: cup_id,
         });
         // IF competition found from database
-        if (cups.length) {
+        if (cup) {
           // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
           //TODO make a test for this?
-          this.cup = cups[0];
+          this.cup = cup;
           // Update to vuex, Assing variables from vuex (see client/store/index.js)
-          this.$store.commit("refreshCup", cups[0]);
+          this.$store.commit("refreshCup", this.cup);
           try {
             this.competitions = await CompetitionService.getCompetitions({
               cup_id: cup_id,

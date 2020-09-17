@@ -7,8 +7,13 @@ class CompetitionService {
   static async getCompetitions(query) {
     const res = await axios.get(`${url}`, { params: query });
     try {
-      const data = res.data;
-      return dataToCompetition(data);
+      let competition = res.data;
+      // Array, with multiple competitions
+      if (typeof competition == "object" && competition.constructor === Array) {
+        competition = dataToCompetition(competition);
+      }
+      // If it's not an array, just return res.data
+      return competition;
     } catch (err) {
       return err;
     }

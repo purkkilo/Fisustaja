@@ -8,18 +8,23 @@ router.get("/", async (req, res) => {
   const cups = await loadCupsCollection();
   if (cups) {
     let query = req.query;
-    if (req.query.isPublic) {
-      let boolean = req.query.isPublic === "true" ? true : false;
-      query = { isPublic: boolean };
-    }
-    if (req.query._id) {
-      query = { _id: new mongodb.ObjectID(req.query._id) };
-    }
     try {
-      let found_cups = await cups.find(query).toArray();
-      res.status(200).send(found_cups);
+      if (req.query.isPublic) {
+        // Transform string into boolean
+        let boolean = req.query.isPublic === "true" ? true : false;
+        query = { isPublic: boolean };
+      }
+      // Fetch by cup._id, only find one cup
+      if (req.query._id) {
+        query = { _id: new mongodb.ObjectID(req.query._id) };
+        res.status(200).send(await cups.findOne(query));
+      }
+      // Otherwise return an array of all the cups that match query
+      else {
+        res.status(200).send(await cups.find(query).toArray());
+      }
     } catch (error) {
-      res.status(400).send();
+      res.status(400).send(error);
     }
   } else {
     // Connection timed out

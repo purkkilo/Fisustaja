@@ -7,8 +7,11 @@ class CupService {
   static async getCups(query) {
     const res = await axios.get(`${url}`, { params: query });
     try {
-      const data = res.data;
-      return dataToCup(data);
+      let cup = res.data;
+      if (typeof cup == "object" && cup.constructor === Array) {
+        cup = dataToCup(cup);
+      }
+      return cup;
     } catch (err) {
       return err;
     }

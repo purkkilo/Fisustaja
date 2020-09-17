@@ -271,16 +271,16 @@ export default {
       this.errors = [];
       try {
         //Get competition from database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
-        let competitions = await CompetitionService.getCompetitions({
+        let competition = await CompetitionService.getCompetitions({
           _id: competition_id,
         });
         // IF competition found from database
-        if (competitions.length) {
+        if (competition) {
           // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
           //TODO make a test for this?
-          this.competition = competitions[0];
+          this.competition = competition;
           // Update to vuex, Assing variables from vuex (see client/store/index.js)
-          this.$store.commit("refreshCompetition", competitions[0]);
+          this.$store.commit("refreshCompetition", this.competition);
           localStorage.setItem("cup", this.competition.cup_id);
           let start_date = moment(this.competition.start_date);
           let end_date = moment(this.competition.end_date);

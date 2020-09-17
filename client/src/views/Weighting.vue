@@ -864,12 +864,12 @@ export default {
     async refreshCompetition(competition_id) {
       this.refreshing = true;
       try {
-        let competitions = await CompetitionService.getCompetitions({
+        let competition = await CompetitionService.getCompetitions({
           _id: competition_id,
         });
-        if (competitions.length) {
+        if (competition) {
           // Update to vuex, Assing variables and arrays from vuex (see client/store/index.js)
-          let comp = competitions[0];
+          let comp = competition;
           let normal_results = this.calculateNormalResults(comp);
           comp.normal_points = normal_results.normal_points;
           comp.normal_weights = normal_results.normal_weights;

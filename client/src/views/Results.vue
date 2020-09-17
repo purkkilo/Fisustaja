@@ -1110,13 +1110,13 @@ export default {
       let placement = 1;
       try {
         // Query competition with id
-        let competitions = await CompetitionService.getCompetitions({
+        let competition = await CompetitionService.getCompetitions({
           _id: competition_id,
         });
         // If competition found
-        if (competitions.length) {
+        if (competition) {
           // Pick first result (the array should only have one, since id's are unique)
-          this.competition = competitions[0];
+          this.competition = competition;
           // Update to vuex, Assing variables and arrays from vuex (see client/store/index.js)
           this.$store.commit("refreshCompetition", this.competition);
           this.isTeamCompetition = this.$store.getters.isTeamCompetition;
