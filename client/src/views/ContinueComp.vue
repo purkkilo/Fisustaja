@@ -481,7 +481,10 @@ export default {
       try {
         //TODO update only this one variable (competition.normal_points) to database, not the whole competition
         this.publishing = true;
-        await CupService.updateCup(cup.id, cup);
+        const newvalues = {
+          $set: { isPublic: cup.isPublic },
+        };
+        await CupService.updateValues(cup.id, newvalues);
       } catch (err) {
         console.error(err.message);
       }

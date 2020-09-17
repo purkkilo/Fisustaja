@@ -1182,24 +1182,28 @@ export default {
     },
     async publishCompetition(isPublic) {
       this.competition.isPublic = !isPublic;
-      this.updateToDatabase(this.competition);
+      const newvalues = {
+        $set: { isPublic: this.competition.isPublic },
+      };
+      this.updateToDatabase(this.competition, newvalues);
     },
     async endCompetition(isFinished) {
       this.competition.isFinished = !isFinished;
       this.competition.isFinished
         ? (this.competition.state = "Päättynyt")
         : (this.competition.state = "Kesken");
-      this.updateToDatabase(this.competition);
+
+      const newvalues = {
+        $set: { isFinished: this.competition.isFinished },
+      };
+      this.updateToDatabase(this.competition, newvalues);
     },
 
-    async updateToDatabase(competition) {
+    async updateToDatabase(competition, newvalues) {
       try {
         this.$store.commit("refreshCompetition", this.competition);
         this.updating = true;
-        await CompetitionService.updateCompetition(
-          this.competition._id,
-          this.competition
-        );
+        await CompetitionService.updateValues(this.competition._id, newvalues);
       } catch (err) {
         console.error(err.message);
       }

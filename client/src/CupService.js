@@ -25,8 +25,14 @@ class CupService {
     });
   }
 
+  // Update whole cup
   static updateCup(id, cup) {
     return axios.put(`${url}${id}`, cup);
+  }
+
+  // Update some values
+  static updateValues(id, newvalues) {
+    return axios.put(`${url}${id}`, newvalues);
   }
 
   static deleteCup(id) {

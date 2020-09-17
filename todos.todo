@@ -17,7 +17,6 @@ New:
   ☐ Add possibility to get weights from usb
   ☐ consider changing library for making charts, since chart.js need canvas to be printed to pdf, can't be generated in code
   ☐ Also Fix warning from entrypoint app being too large (optimize somehow)
-  ☐ Implement competition updating like updating user preferences (check: Header.vue, Userservice.js, users.js)
   ☐ Profile page? @low 
   ☐ Implement ability to create own point system (custom cup_placement_points_array)
   ☐ Improve login and registering
@@ -50,6 +49,7 @@ Done:
   ✔ Add plus icon next to weighting inputs, when clicked user can input more weights that are added to existing sum on the input @done(20-08-18 00:08)
   ✔ Handle timeout response on all Service.js calls on .vue files (Request failed with status code 408 -> Timeout -> Bad internet or api problem); @done(20-08-18 00:09)
   ✔ Move darkmode switch from each table to header or somewhere handy, update it to vuex or user's datatable @done(20-09-01 05:21)
+  ✔ Implement competition updating like updating user preferences (check: Header.vue, Userservice.js, users.js) @done(20-09-17 10:35)
 Cancelled:
   ✘ Press Alt+C to mark a todo as cancelled
   

@@ -735,7 +735,10 @@ export default {
         //TODO update only this one variable (competition.normal_points) to database, not the whole competition
         this.$store.state.cup = this.cup;
         this.publishing = true;
-        await CupService.updateCup(this.cup.id, this.cup);
+        const newvalues = {
+          $set: { isPublic: this.cup.isPublic },
+        };
+        await CupService.updateValues(this.cup.id, newvalues);
       } catch (err) {
         console.error(err.message);
       }
@@ -743,22 +746,25 @@ export default {
     },
     async publishCompetition(competition) {
       competition.isPublic = !competition.isPublic;
-      this.updateToDatabase(competition);
+      const newvalues = {
+        $set: { isPublic: competition.isPublic },
+      };
+      this.updateToDatabase(competition, newvalues);
     },
     async endCompetition(competition) {
       competition.isFinished = !competition.isFinished;
       competition.isFinished
         ? (competition.state = "Päättynyt")
         : (competition.state = "Kesken");
-      this.updateToDatabase(competition);
+      const newvalues = {
+        $set: { isFinished: competition.isFinished },
+      };
+      this.updateToDatabase(competition, newvalues);
     },
-    async updateToDatabase(competition) {
+    async updateToDatabase(competition, newvalues) {
       try {
         this.updating = true;
-        await CompetitionService.updateCompetition(
-          competition._id,
-          competition
-        );
+        await CompetitionService.updateValues(competition._id, newvalues);
       } catch (err) {
         console.error(err.message);
       }
@@ -822,7 +828,15 @@ export default {
             signee.locality = new_locality;
             this.$store.state.cup = this.cup;
             this.publishing = true;
-            await CupService.updateCup(this.cup.id, this.cup)
+            const new_signees = [...this.signees];
+            // No need to have this variable in database
+            new_signees.forEach((signee) => {
+              delete signee.dialog;
+            });
+            const newvalues = {
+              $set: { signees: this.signees },
+            };
+            await CupService.updateValues(this.cup.id, newvalues)
               .then(() => {
                 // Update names to "points" table
                 this.calculateAll(

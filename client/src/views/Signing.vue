@@ -938,17 +938,24 @@ export default {
       // Create competition object
       let comp = this.$store.getters.getCompetition;
       this.signees = this.$store.getters.getSignees;
+      // Store to vuex
       comp.signees = this.signees;
       comp.state = "Ilmoittautuminen";
-      // Store to vuex
       this.$store.commit("refreshCompetition", comp);
       try {
         this.loading = true;
-        // Store to database
-        await CompetitionService.updateCompetition(comp._id, comp);
+        // Update signees and state to competition
+        let newvalues = {
+          $set: { signees: comp.signees, state: comp.state },
+        };
+        //await CompetitionService.updateCompetition(comp._id, comp);
+        await CompetitionService.updateValues(comp._id, newvalues);
         this.loading = false;
         // Update signees to cup
-        await CupService.updateCup(comp.cup_id, this.cup);
+        newvalues = {
+          $set: { signees: this.cup.signees },
+        };
+        await CupService.updateValues(comp.cup_id, newvalues);
       } catch (err) {
         console.error(err.message);
       }
@@ -1024,9 +1031,21 @@ export default {
           this.$store.commit("refreshCompetition", comp);
           try {
             this.loading = true;
-            await CompetitionService.updateCompetition(comp._id, comp);
+            let newvalues = {
+              $set: { signees: comp.signees },
+            };
+            //await CompetitionService.updateCompetition(comp._id, comp);
+            await CompetitionService.updateValues(comp._id, newvalues);
             this.loading = false;
             this.clearInputs();
+            // Update values for next signee
+            this.boat_number =
+              Math.max.apply(
+                Math,
+                this.signees.map(function(o) {
+                  return o.boat_number;
+                })
+              ) + 1;
             M.toast({
               html: `Poistettu (Nro: ${found_signee.boat_number}, Kippari: ${found_signee.captain_name}) Tiedot!`,
             });

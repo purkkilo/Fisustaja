@@ -938,16 +938,21 @@ export default {
       // Update signees array to database/vuex
       let comp = this.$store.getters.getCompetition;
       let normal_results = this.calculateNormalResults(comp);
-      let normal_points = normal_results.normal_points;
-      let normal_weights = normal_results.normal_weights;
-      // Get signees from vuex
-      comp.normal_points = normal_points;
-      comp.normal_weights = normal_weights;
+      comp.normal_points = normal_results.normal_points;
+      comp.normal_weights = normal_results.normal_weights;
       comp.signees = this.signees;
       this.$store.commit("refreshCompetition", comp);
       try {
         this.loading = true;
-        await CompetitionService.updateCompetition(comp._id, comp);
+        let newvalues = {
+          $set: {
+            normal_points: comp.normal_points,
+            normal_weights: comp.normal_weights,
+            signees: comp.signees,
+          },
+        };
+        //await CompetitionService.updateCompetition(comp._id, comp);
+        await CompetitionService.updateValues(comp._id, newvalues);
         this.loading = false;
         this.still_on_water = this.$store.getters.getStillOnWaterSignees;
         M.toast({ html: "Kaikki kilpailijat merkattu maaliin saapuneeksi!" });
@@ -1066,7 +1071,13 @@ export default {
         this.$store.commit("refreshCompetition", comp);
         try {
           this.loading_fish = true;
-          await CompetitionService.updateCompetition(comp._id, comp);
+          let newvalues = {
+            $set: {
+              biggest_fishes: comp.biggest_fishes,
+            },
+          };
+          //await CompetitionService.updateCompetition(comp._id, comp);
+          await CompetitionService.updateValues(comp._id, newvalues);
           this.notification = `Tiedot päivitetty tietokantaan!`;
           this.loading_fish = false;
           (this.selected_fish = null), (this.biggest_fish = null);
@@ -1195,14 +1206,12 @@ export default {
       this.$store.commit("replaceSignee", this.competition_boat);
       let comp = this.$store.getters.getCompetition;
       let normal_results = this.calculateNormalResults(comp);
-      let normal_points = normal_results.normal_points;
-      let normal_weights = normal_results.normal_weights;
       let competition_total_weights = this.calculateTotalWeights();
 
-      // Get signees from vuex
+      // Store to database and vuex
       comp.signees = this.$store.getters.getCompetitionSignees;
-      comp.normal_points = normal_points;
-      comp.normal_weights = normal_weights;
+      comp.normal_points = normal_results.normal_points;
+      comp.normal_weights = normal_results.normal_weights;
       if (comp.team_competition) {
         comp.team_results = this.calculateTeamResults();
       }
@@ -1221,7 +1230,20 @@ export default {
       try {
         this.loading = true;
         this.loading_fish = true;
-        await CompetitionService.updateCompetition(comp._id, comp);
+        let newvalues = {
+          $set: {
+            signees: comp.signees,
+            normal_points: comp.normal_points,
+            normal_weights: comp.normal_weights,
+            team_results: comp.team_results,
+            biggest_fishes: comp.biggest_fishes,
+            biggest_amounts: comp.biggest_amounts,
+            total_weights: comp.total_weights,
+            state: comp.state,
+          },
+        };
+        //await CompetitionService.updateCompetition(comp._id, comp);
+        await CompetitionService.updateValues(comp._id, newvalues);
         this.notification = `Tiedot päivitetty tietokantaan!`;
         // Update values for next signee
         this.boat_number_input = {};
