@@ -26,6 +26,21 @@ export default {
   components: {
     Footer,
   },
+  created() {
+    if (!localStorage.getItem("preferences")) {
+      localStorage.setItem(
+        "preferences",
+        JSON.stringify({ isDark: false, lang: "fi" })
+      );
+    } else {
+      this.$store.state.isDark = JSON.parse(
+        localStorage.getItem("preferences")
+      ).isDark;
+      this.$store.state.lang = JSON.parse(
+        localStorage.getItem("preferences")
+      ).lang;
+    }
+  },
   mounted() {
     try {
       window.addEventListener("beforeunload", async function() {

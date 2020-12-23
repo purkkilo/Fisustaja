@@ -17,8 +17,23 @@
           <div class="text-center">
             <v-dialog v-model="dialog">
               <template v-slot:activator="{ on, attrs }">
-                <v-btn color="red darken-4" dark v-bind="attrs" v-on="on">
+                <p
+                  v-bind:class="{
+                    'black-text': !$store.getters.getTheme,
+                    'white-text': $store.getters.getTheme,
+                  }"
+                >
                   Kello/Kilpailuaika
+                </p>
+                <v-btn
+                  text
+                  outlined
+                  color="red darken-4"
+                  dark
+                  v-bind="attrs"
+                  v-on="on"
+                >
+                  <v-icon>mdi-timer</v-icon>
                 </v-btn>
               </template>
 
@@ -87,143 +102,177 @@
           }"
         >
           <v-col>
-            <v-row>
-              <v-col>
-                <h3
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  Perustiedot
-                </h3>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col md="10" offset-md="1" class="scroll_table">
-                <table
-                  class="striped centered responsive-table highlight"
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  <tr>
-                    <th style="border:1px solid black;" class="center-align">
-                      Kilpailu
-                    </th>
-                    <!-- competition.name would be this.competition.name if referenced on javascript etc. -->
-                    <td style="border:1px solid black;" class="center-align">
-                      {{ competition.name }} ({{ competition.locality }})
-                    </td>
-                  </tr>
-                  <tr>
-                    <th style="border:1px solid black;" class="center-align">
-                      Cup
-                    </th>
-                    <td style="border:1px solid black;" class="center-align">
-                      {{ competition.cup_name }}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th style="border:1px solid black;" class="center-align">
-                      Voittajan Cup sijoittumispisteet
-                    </th>
-                    <td style="border:1px solid black;" class="center-align">
-                      {{ competition.cup_placement_points }}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th style="border:1px solid black;" class="center-align">
-                      Kilpailijoiden Cup osallistumispisteet
-                    </th>
-                    <td style="border:1px solid black;" class="center-align">
-                      {{ competition.cup_participation_points }}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th style="border:1px solid black;" class="center-align">
-                      Kilpailun pistekerroin
-                    </th>
-                    <td style="border:1px solid black;" class="center-align">
-                      x {{ competition.cup_points_multiplier }}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th style="border:1px solid black;" class="center-align">
-                      Onko kilpailu julkinen
-                    </th>
-                    <td style="border:1px solid black;" class="center-align">
-                      {{ competition.isPublic ? "Kyllä" : "Ei" }}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th style="border:1px solid black;" class="center-align">
-                      Aloituspäivä
-                    </th>
-                    <td style="border:1px solid black;" class="center-align">
-                      {{ formatted_start_date }}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th style="border:1px solid black;" class="center-align">
-                      Lopetuspäivämäärä
-                    </th>
-                    <td style="border:1px solid black;" class="center-align">
-                      {{ formatted_end_date }}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th style="border:1px solid black;" class="center-align">
-                      Kilpailuaika
-                    </th>
-                    <td style="border:1px solid black;" class="center-align">
-                      {{ competition.start_time }} -
-                      {{ competition.end_time }}
-                    </td>
-                  </tr>
-                </table>
-              </v-col>
-            </v-row>
-            <v-row style="margin-top:70px;margin-bottom:0">
+            <v-row style="margin-top:20px">
               <v-col md="10" offset-md="1">
-                <h3
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  Kalojen määritykset
-                </h3>
+                <v-card :dark="$store.getters.getTheme" elevation="20" outlined>
+                  <v-card-title class="text-center"
+                    ><p class="display-1">
+                      Perustiedot
+                    </p></v-card-title
+                  >
+                  <v-list outlined elevation="10">
+                    <v-list-item>
+                      <v-list-item-icon>
+                        <v-icon>mdi-ferry</v-icon>
+                      </v-list-item-icon>
+                      <v-list-item-title>Kilpailu</v-list-item-title>
+                      <v-list-item-subtitle class="blue-text">
+                        <b
+                          >{{ competition.name }} ({{
+                            competition.locality
+                          }})</b
+                        >
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item>
+                      <v-list-item-icon>
+                        <v-icon color="yellow darken-4">mdi-trophy</v-icon>
+                      </v-list-item-icon>
+                      <v-list-item-title>Cup</v-list-item-title>
+                      <v-list-item-subtitle class="blue-text">
+                        <b>{{ competition.cup_name }}</b>
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item>
+                      <v-list-item-icon>
+                        <v-icon>mdi-calendar-arrow-right</v-icon>
+                      </v-list-item-icon>
+                      <v-list-item-title>Aloituspäivä</v-list-item-title>
+                      <v-list-item-subtitle class="blue-text">
+                        <b>{{ formatted_start_date }}</b>
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item>
+                      <v-list-item-icon>
+                        <v-icon>mdi-calendar-multiple-check</v-icon>
+                      </v-list-item-icon>
+                      <v-list-item-title>Lopetuspäivä</v-list-item-title>
+                      <v-list-item-subtitle class="blue-text">
+                        <b>{{ formatted_end_date }}</b>
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item>
+                      <v-list-item-icon>
+                        <v-icon>mdi-calendar-clock</v-icon>
+                      </v-list-item-icon>
+                      <v-list-item-title>Kilpailuaika</v-list-item-title>
+                      <v-list-item-subtitle class="blue-text">
+                        <b>
+                          {{ competition.start_time }} -
+                          {{ competition.end_time }}</b
+                        >
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item>
+                      <v-list-item-icon>
+                        <v-icon color="green">mdi-format-list-numbered</v-icon>
+                      </v-list-item-icon>
+                      <v-list-item-title
+                        >Voittajan Cup sijoittumispisteet</v-list-item-title
+                      >
+                      <v-list-item-subtitle class="blue-text">
+                        <b>{{ competition.cup_placement_points }}</b>
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item>
+                      <v-list-item-icon>
+                        <v-icon color="green darken-2"
+                          >mdi-clipboard-check</v-icon
+                        >
+                      </v-list-item-icon>
+                      <v-list-item-title
+                        >Kilpailijoiden Cup
+                        osallistumispisteet</v-list-item-title
+                      >
+                      <v-list-item-subtitle class="blue-text">
+                        <b>{{ competition.cup_participation_points }}</b>
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item>
+                      <v-list-item-icon>
+                        <v-icon color="green darken-1"
+                          >mdi-calculator-variant-outline</v-icon
+                        >
+                      </v-list-item-icon>
+                      <v-list-item-title
+                        >Kilpailun pistekerroin</v-list-item-title
+                      >
+                      <v-list-item-subtitle class="blue-text">
+                        <b>x {{ competition.cup_points_multiplier }}</b>
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item>
+                      <v-list-item-icon>
+                        <v-icon>mdi-incognito</v-icon>
+                      </v-list-item-icon>
+                      <v-list-item-title
+                        >Onko kilpailu julkinen</v-list-item-title
+                      >
+                      <v-list-item-subtitle class="blue-text">
+                        <v-icon
+                          v-if="competition.isPublic"
+                          color="green darken-2"
+                          >mdi-check-bold</v-icon
+                        >
+                        <v-icon v-else color="red">mdi-close</v-icon>
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item>
+                      <v-list-item-icon>
+                        <v-icon color="yellow darken-4"
+                          >mdi-trophy-award</v-icon
+                        >
+                      </v-list-item-icon>
+                      <v-list-item-title
+                        >Onko kilpailu päättynyt</v-list-item-title
+                      >
+                      <v-list-item-subtitle class="blue-text">
+                        <v-icon
+                          v-if="competition.isFinished"
+                          color="green darken-2"
+                          >mdi-check-bold</v-icon
+                        >
+                        <v-icon v-else color="red">mdi-close</v-icon>
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                  </v-list>
+                </v-card>
               </v-col>
             </v-row>
             <v-row class="fishes_summary">
               <v-col md="10" offset-md="1" class="scroll_table">
-                <table
-                  class="highlight centered responsive-table table_header"
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  <thead>
-                    <tr>
-                      <th>Kalalaji</th>
-                      <th>Pistekerroin</th>
-                      <th>Alamitta</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <!-- for every fish in this.fish_specs, show info for that fish -->
-                    <tr v-for="(fish, index) in fish_specs" :key="index">
-                      <th style="border:1px solid black;" scope="row">
-                        {{ fish.name }}
-                      </th>
-                      <td style="border:1px solid black;">
-                        x {{ fish.multiplier }}
-                      </td>
-                      <td style="border:1px solid black;">
-                        {{ fish.minsize }} cm
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                <v-card :dark="$store.getters.getTheme" elevation="20" outlined>
+                  <v-card-title class="text-center"
+                    ><p class="display-1">
+                      Kalojen määritykset
+                    </p></v-card-title
+                  >
+                  <v-list outlined elevation="10">
+                    <div v-for="(fish, index) in fish_specs" :key="index">
+                      <v-list-item>
+                        <v-list-item-title>{{ fish.name }}</v-list-item-title>
+                        <v-divider vertical></v-divider>
+                        <v-list-item-subtitle class="green-text">
+                          <b> x {{ fish.multiplier }}</b>
+                        </v-list-item-subtitle>
+                        <v-divider vertical></v-divider>
+                        <v-list-item-subtitle class="blue-text">
+                          <b>{{ fish.minsize }} cm</b>
+                        </v-list-item-subtitle>
+                      </v-list-item>
+                      <v-divider></v-divider>
+                    </div>
+                  </v-list>
+                </v-card>
               </v-col>
             </v-row>
             <v-row v-if="!loading">
@@ -799,7 +848,6 @@
 import M from "materialize-css";
 import Header from "../components/layout/Header";
 import Timedate from "../components/layout/Timedate";
-import moment from "moment";
 import CompetitionService from "../CompetitionService";
 import CupService from "../CupService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
@@ -986,8 +1034,8 @@ export default {
           // Update to vuex, Assing variables from vuex (see client/store/index.js)
           this.$store.commit("refreshCompetition", competition);
           this.fish_specs = this.$store.getters.getCompetitionFishes;
-          let temp_start_date = moment(this.competition.start_date);
-          let temp_end_date = moment(this.competition.end_date);
+          let temp_start_date = this.$moment(this.competition.start_date);
+          let temp_end_date = this.$moment(this.competition.end_date);
           this.formatted_start_date = `${temp_start_date.date()}.${temp_start_date.month() +
             1}.${temp_start_date.year()}`;
           this.formatted_end_date = `${temp_end_date.date()}.${temp_end_date.month() +
@@ -1127,13 +1175,25 @@ export default {
       this.basic_info_validated = false;
       this.validated = false;
       // Check if the given dates and times are valid with moment
-      var isDateValid = moment(this.start_date, "YYYY-M-D", true).isValid();
+      var isDateValid = this.$moment(
+        this.start_date,
+        "YYYY-M-D",
+        true
+      ).isValid();
 
-      var isEndDateValid = moment(this.end_date, "YYYY-M-D", true).isValid();
+      var isEndDateValid = this.$moment(
+        this.end_date,
+        "YYYY-M-D",
+        true
+      ).isValid();
 
-      var isStartTimeValid = moment(this.start_time, "H:mm", true).isValid();
+      var isStartTimeValid = this.$moment(
+        this.start_time,
+        "H:mm",
+        true
+      ).isValid();
 
-      var isEndTimeValid = moment(this.end_time, "H:mm", true).isValid();
+      var isEndTimeValid = this.$moment(this.end_time, "H:mm", true).isValid();
 
       // Check other variables
       if (!this.name) {
@@ -1192,14 +1252,14 @@ export default {
               'Syötä päivämäärä muodossa "PP.KK.VVVV (esim: 06.02.2020)'
             );
       } else {
-        let temp_start = moment(this.start_date).format("DD.MM.YYYY");
-        let temp_end = moment(this.end_date).format("DD.MM.YYYY");
+        let temp_start = this.$moment(this.start_date).format("DD.MM.YYYY");
+        let temp_end = this.$moment(this.end_date).format("DD.MM.YYYY");
         // If dates are valid, check that start_date is before end_date
-        let start_date = moment(
+        let start_date = this.$moment(
           `${temp_start} ${this.start_time}`,
           "DD.MM.YYYY HH:mm"
         );
-        let end_date = moment(
+        let end_date = this.$moment(
           `${temp_end} ${this.end_time}`,
           "DD.MM.YYYY HH:mm"
         );
@@ -1230,13 +1290,13 @@ export default {
 
       // If all inputs validated
       if (!this.errors.length) {
-        let temp_start = moment(this.start_date).format("DD.MM.YYYY");
-        let temp_end = moment(this.end_date).format("DD.MM.YYYY");
-        let start_date = moment(
+        let temp_start = this.$moment(this.start_date).format("DD.MM.YYYY");
+        let temp_end = this.$moment(this.end_date).format("DD.MM.YYYY");
+        let start_date = this.$moment(
           `${temp_start} ${this.start_time}`,
           "DD.MM.YYYY HH:mm"
         );
-        let end_date = moment(
+        let end_date = this.$moment(
           `${temp_end} ${this.end_time}`,
           "DD.MM.YYYY HH:mm"
         );

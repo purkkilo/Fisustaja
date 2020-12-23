@@ -35,8 +35,23 @@
           <div class="text-center">
             <v-dialog v-model="dialog">
               <template v-slot:activator="{ on, attrs }">
-                <v-btn color="red darken-4" dark v-bind="attrs" v-on="on">
+                <p
+                  v-bind:class="{
+                    'black-text': !$store.getters.getTheme,
+                    'white-text': $store.getters.getTheme,
+                  }"
+                >
                   Kello/Kilpailuaika
+                </p>
+                <v-btn
+                  text
+                  outlined
+                  color="red darken-4"
+                  dark
+                  v-bind="attrs"
+                  v-on="on"
+                >
+                  <v-icon>mdi-timer</v-icon>
                 </v-btn>
               </template>
 

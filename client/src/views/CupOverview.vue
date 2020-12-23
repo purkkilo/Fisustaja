@@ -21,9 +21,24 @@
         <div class="text-center">
           <v-dialog v-model="dialog_clock">
             <template v-slot:activator="{ on, attrs }">
-              <v-btn color="red darken-4" dark v-bind="attrs" v-on="on">
-                Kello/Kilpailuaika
-              </v-btn>
+                <p
+                  v-bind:class="{
+                    'black-text': !$store.getters.getTheme,
+                    'white-text': $store.getters.getTheme,
+                  }"
+                >
+                  Kello/Kilpailuaika
+                </p>
+                <v-btn
+                  text
+                  outlined
+                  color="red darken-4"
+                  dark
+                  v-bind="attrs"
+                  v-on="on"
+                >
+                  <v-icon>mdi-timer</v-icon>
+                </v-btn>
             </template>
 
             <v-card :dark="$store.getters.getTheme">
@@ -650,7 +665,6 @@
 import M from "materialize-css";
 import CupService from "../CupService";
 import CompetitionService from "../CompetitionService";
-import moment from "moment";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
@@ -1042,14 +1056,14 @@ export default {
             let counter = 1;
             this.competitions.forEach((competition) => {
               this.select_numbers.push(counter);
-              competition.start_date = moment(competition.start_date);
-              competition.end_date = moment(competition.end_date);
+              competition.start_date = this.$moment(competition.start_date);
+              competition.end_date = this.$moment(competition.end_date);
               // Index for competition
               competition.key_name = counter;
               counter++;
             });
-            this.competitions.sort(function compare(a, b) {
-              return moment(b.start_date).isBefore(moment(a.start_date));
+            this.competitions.sort((a, b) => {
+              return b.start_date.isBefore(a.start_date);
             });
             this.signees = this.cup.signees.sort(
               (a, b) => a.boat_number - b.boat_number
@@ -1288,7 +1302,7 @@ export default {
       var count = temp_array.length - 1;
       var finalIndex = index >= 0 ? count - index : index;
       const last_competition = temp_array[finalIndex];
-      const start_date = moment(last_competition.start_date);
+      const start_date = this.$moment(last_competition.start_date);
       const formatted_date = `${start_date.date()}.${start_date.month() +
         1}.${start_date.year()}`;
       doc.setFontSize(24);

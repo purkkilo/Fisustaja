@@ -880,7 +880,6 @@ import M from "materialize-css";
 import { options_picker } from "../i18n";
 import CompetitionService from "../CompetitionService";
 import CupService from "../CupService";
-import moment from "moment";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import Timedate from "../components/layout/Timedate";
 import Header from "../components/layout/Header";
@@ -970,7 +969,6 @@ export default {
     var collabs = document.querySelectorAll(".collapsible");
     var instances3 = M.Collapsible.init(collabs, options_picker);
     /* eslint-enable no-unused-vars */
-    moment.locale("fi"); //FIXME redundant declaration?
     this.getCups();
 
     // Focus on top of the page when changing pages
@@ -1071,13 +1069,25 @@ export default {
       this.basic_info_validated = false;
       this.validated = false;
       // Check if the given dates and times are valid with moment
-      var isDateValid = moment(this.start_date, "YYYY-M-D", true).isValid();
+      var isDateValid = this.$moment(
+        this.start_date,
+        "YYYY-M-D",
+        true
+      ).isValid();
 
-      var isEndDateValid = moment(this.end_date, "YYYY-M-D", true).isValid();
+      var isEndDateValid = this.$moment(
+        this.end_date,
+        "YYYY-M-D",
+        true
+      ).isValid();
 
-      var isStartTimeValid = moment(this.start_time, "H:mm", true).isValid();
+      var isStartTimeValid = this.$moment(
+        this.start_time,
+        "H:mm",
+        true
+      ).isValid();
 
-      var isEndTimeValid = moment(this.end_time, "H:mm", true).isValid();
+      var isEndTimeValid = this.$moment(this.end_time, "H:mm", true).isValid();
 
       // Check other variables
       if (!this.name) {
@@ -1136,14 +1146,14 @@ export default {
               'Syötä päivämäärä muodossa "PP.KK.VVVV (esim: 06.02.2020)'
             );
       } else {
-        let temp_start = moment(this.start_date).format("DD.MM.YYYY");
-        let temp_end = moment(this.end_date).format("DD.MM.YYYY");
+        let temp_start = this.$moment(this.start_date).format("DD.MM.YYYY");
+        let temp_end = this.$moment(this.end_date).format("DD.MM.YYYY");
         // If dates are valid, check that start_date is before end_date
-        let start_date = moment(
+        let start_date = this.$moment(
           `${temp_start} ${this.start_time}`,
           "DD.MM.YYYY HH:mm"
         );
-        let end_date = moment(
+        let end_date = this.$moment(
           `${temp_end} ${this.end_time}`,
           "DD.MM.YYYY HH:mm"
         );
@@ -1156,13 +1166,13 @@ export default {
       }
       // If all inputs validated
       if (!this.errors.length) {
-        let temp_start = moment(this.start_date).format("DD.MM.YYYY");
-        let temp_end = moment(this.end_date).format("DD.MM.YYYY");
-        let start_date = moment(
+        let temp_start = this.$moment(this.start_date).format("DD.MM.YYYY");
+        let temp_end = this.$moment(this.end_date).format("DD.MM.YYYY");
+        let start_date = this.$moment(
           `${temp_start} ${this.start_time}`,
           "DD.MM.YYYY HH:mm"
         );
-        let end_date = moment(
+        let end_date = this.$moment(
           `${temp_end} ${this.end_time}`,
           "DD.MM.YYYY HH:mm"
         );

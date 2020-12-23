@@ -121,6 +121,8 @@ export default {
     updateSwitch(newValue) {
       //called whenever isDark switch changes
       this.$store.state.isDark = newValue;
+      // Update values to database, NOTE no support for language yet but added here already to support it in the future
+      this.updatePreferences(newValue, "fi");
     },
   },
   computed: {
@@ -152,6 +154,12 @@ export default {
       } else {
         M.toast({ html: "Olet jo tällä sivulla!" });
       }
+    },
+    async updatePreferences(isDark, lang) {
+      localStorage.setItem(
+        "preferences",
+        JSON.stringify({ isDark: isDark, lang: lang })
+      );
     },
   },
 };

@@ -3,8 +3,6 @@
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container>
     <Header />
-    <Timedate style="margin-top:0" />
-
     <!-- Tabs -->
     <v-tabs
       v-model="tab"
@@ -775,9 +773,7 @@ import CompetitionService from "../CompetitionService";
 import UserService from "../UserService";
 import CupService from "../CupService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
-import Timedate from "../components/layout/Timedate";
 import Header from "../components/layout/Header";
-import moment from "moment";
 
 export default {
   data() {
@@ -822,7 +818,6 @@ export default {
     });
   },
   components: {
-    Timedate,
     ProgressBarQuery,
     Header,
   },
@@ -856,12 +851,12 @@ export default {
         competition.username = this.users.find(
           (user) => user._id === competition.user_id
         ).name;
-        competition.start_date = moment(competition.start_date);
-        competition.end_date = moment(competition.end_date);
+        competition.start_date = this.$moment(competition.start_date);
+        competition.end_date = this.$moment(competition.end_date);
       });
       // Sort them based on start_date so the oldest competitions are the last
       this.all_competitions.sort(function compare(a, b) {
-        return moment(b.start_date).isAfter(moment(a.start_date));
+        return b.start_date.isAfter(a.start_date);
       });
       this.competitions = this.all_competitions.filter(
         (competition) => competition.user_id === this.user_id
@@ -1024,8 +1019,8 @@ export default {
           this.competitions = await CompetitionService.getCompetitions();
           // Change dates to moment objects, so they are easy to format
           this.competitions.forEach((competition) => {
-            competition.start_date = moment(competition.start_date);
-            competition.end_date = moment(competition.end_date);
+            competition.start_date = this.$moment(competition.start_date);
+            competition.end_date = this.$moment(competition.end_date);
           });
           // Store to vuex
           this.$store.state.competitions = this.competitions;

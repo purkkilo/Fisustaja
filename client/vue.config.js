@@ -1,3 +1,4 @@
+const webpack = require("webpack");
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
   .BundleAnalyzerPlugin;
 
@@ -16,4 +17,19 @@ module.exports = {
     },
   },
   transpileDependencies: ["vuetify"],
+  configureWebpack: {
+    optimization: {
+      splitChunks: {
+        minSize: 10000,
+        maxSize: 250000,
+      },
+    },
+    plugins: [
+      //new BundleAnalyzerPlugin(),
+      new webpack.IgnorePlugin({
+        resourceRegExp: /^\.\/locale$/,
+        contextRegExp: /moment$/,
+      }),
+    ],
+  },
 };

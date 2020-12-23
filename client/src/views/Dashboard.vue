@@ -3,7 +3,6 @@
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container>
     <Header />
-    <Timedate />
     <v-row
       v-bind:class="{
         'container-transparent': !$store.getters.getTheme,
@@ -77,14 +76,11 @@
 
 <script>
 "use strict";
-import moment from "moment";
-import Timedate from "../components/layout/Timedate";
 import Header from "../components/layout/Header";
 
 export default {
   name: "Home",
   components: {
-    Timedate,
     Header,
   },
   data() {
@@ -104,7 +100,7 @@ export default {
     // Get user info form localstorage
     if (localStorage.getItem("user") != null) {
       this.user = JSON.parse(localStorage.getItem("user"));
-      let createdAt = moment(this.user.createdAt);
+      let createdAt = this.$moment(this.user.createdAt);
       this.created = `${createdAt.date()}.${createdAt.month() +
         1}.${createdAt.year()}`;
     }

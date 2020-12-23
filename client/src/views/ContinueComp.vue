@@ -3,7 +3,6 @@
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container>
     <Header />
-    <Timedate style="margin-top:0" />
     <!-- if there are errors, show this div -->
     <div id="errordiv" v-if="errors.length">
       <ul class="collection with-header" style="border:1px solid red;">
@@ -348,13 +347,11 @@
 </template>
 
 <script>
-import Timedate from "../components/layout/Timedate";
 import Header from "../components/layout/Header";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import CompetitionService from "../CompetitionService";
 import CupService from "../CupService";
 import M from "materialize-css";
-import moment from "moment";
 
 export default {
   name: "ContinueComp",
@@ -394,7 +391,6 @@ export default {
     },
   },
   components: {
-    Timedate,
     ProgressBarQuery,
     Header,
   },
@@ -409,12 +405,12 @@ export default {
         this.competitions = response;
         // Convert dates to moment objects
         this.competitions.forEach((competition) => {
-          competition.start_date = moment(competition.start_date);
-          competition.end_date = moment(competition.end_date);
+          competition.start_date = this.$moment(competition.start_date);
+          competition.end_date = this.$moment(competition.end_date);
         });
         // Sort them based on start_date so the oldest competitions are the last
         this.competitions.sort(function compare(a, b) {
-          return moment(b.start_date).isAfter(moment(a.start_date));
+          return b.start_date.isAfter(a.start_date);
         });
       })
       .catch((err) => {
@@ -437,8 +433,8 @@ export default {
     })
       .then((response) => {
         this.cups = response;
-        this.cups.sort(function compare(a, b) {
-          return moment(b.year).isAfter(moment(a.year));
+        this.cups.sort((a, b) => {
+          return this.$moment(b.year).isAfter(this.$moment(a.year));
         });
       })
       .catch((err) => {

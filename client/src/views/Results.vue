@@ -17,8 +17,23 @@
           <div class="text-center">
             <v-dialog v-model="dialog_clock">
               <template v-slot:activator="{ on, attrs }">
-                <v-btn color="red darken-4" dark v-bind="attrs" v-on="on">
+                <p
+                  v-bind:class="{
+                    'black-text': !$store.getters.getTheme,
+                    'white-text': $store.getters.getTheme,
+                  }"
+                >
                   Kello/Kilpailuaika
+                </p>
+                <v-btn
+                  text
+                  outlined
+                  color="red darken-4"
+                  dark
+                  v-bind="attrs"
+                  v-on="on"
+                >
+                  <v-icon>mdi-timer</v-icon>
                 </v-btn>
               </template>
 
@@ -951,7 +966,6 @@
 import M from "materialize-css";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-import moment from "moment";
 import CompetitionService from "../CompetitionService";
 import Chart from "chart.js";
 import "chartjs-plugin-labels";
@@ -1597,7 +1611,7 @@ export default {
     },
     // Returns date in format dd/mm/yyyy as string
     formatDate: function(start_date) {
-      start_date = moment(start_date);
+      start_date = this.$moment(start_date);
       let formatted_date = `${start_date.date()}.${start_date.month() +
         1}.${start_date.year()}`;
 
@@ -1745,7 +1759,7 @@ export default {
       // Save the pdf
 
       doc.save(
-        `${moment(this.competition.start_date).year()}_${this.replaceAll(
+        `${this.$moment(this.competition.start_date).year()}_${this.replaceAll(
           this.competition.name,
           " ",
           ""
@@ -1776,13 +1790,7 @@ export default {
 
       // "Tilastot"
       // Resize charts to be better looking on a pdf
-      this.fishes_chart.canvas.parentNode.style.height = "500px";
-      this.fishes_chart.canvas.parentNode.style.width = "1000px";
-      this.fishes_chart.resize();
-
-      this.signees_chart.canvas.parentNode.style.height = "500px";
-      this.signees_chart.canvas.parentNode.style.width = "1000px";
-      this.signees_chart.resize();
+      this.onbeforeprint();
       var fishesImg = document
         .getElementById("fishesChart")
         .toDataURL("image/png", 1.0);
@@ -1835,16 +1843,11 @@ export default {
       });
 
       // Set charts to be responsive again
-      this.fishes_chart.canvas.parentNode.style.height = "30vh";
-      this.fishes_chart.canvas.parentNode.style.width = "60vw";
-      this.fishes_chart.resize();
-      this.signees_chart.canvas.parentNode.style.height = "30vh";
-      this.signees_chart.canvas.parentNode.style.width = "60vw";
-      this.signees_chart.resize();
+      this.onafterprint();
 
       // Save to pdf
       doc.save(
-        `${moment(this.competition.start_date).year()}_${this.replaceAll(
+        `${this.$moment(this.competition.start_date).year()}_${this.replaceAll(
           this.competition.name,
           " ",
           ""
@@ -1865,7 +1868,7 @@ export default {
       // Format dates for easier reding
       let temp_start_date = this.formatDate(this.competition.start_date);
       let temp_end_date = this.formatDate(this.competition.end_date);
-      let year = moment(this.competition.start_date).year();
+      let year = this.$moment(this.competition.start_date).year();
       let doc = new jsPDF();
 
       // Title
@@ -2254,13 +2257,7 @@ export default {
         doc.setFontSize(18);
         // "Tilastot"
         // Resize charts to be better looking on a pdf
-        this.fishes_chart.canvas.parentNode.style.height = "500px";
-        this.fishes_chart.canvas.parentNode.style.width = "1000px";
-        this.fishes_chart.resize();
-
-        this.signees_chart.canvas.parentNode.style.height = "500px";
-        this.signees_chart.canvas.parentNode.style.width = "1000px";
-        this.signees_chart.resize();
+        this.onbeforeprint();
         var fishesImg = document
           .getElementById("fishesChart")
           .toDataURL("image/png", 1.0);
@@ -2322,12 +2319,7 @@ export default {
           startY: doc.autoTable.previous.finalY + 25,
         });
         // Set charts to be responsive again
-        this.fishes_chart.canvas.parentNode.style.height = "30vh";
-        this.fishes_chart.canvas.parentNode.style.width = "60vw";
-        this.fishes_chart.resize();
-        this.signees_chart.canvas.parentNode.style.height = "30vh";
-        this.signees_chart.canvas.parentNode.style.width = "60vw";
-        this.signees_chart.resize();
+        this.onafterprint();
       }
 
       // Reset variables
@@ -2349,6 +2341,27 @@ export default {
         );
       } else {
         M.toast({ html: "Kaaviot ei ruudulla, yritetään uudelleen..." });
+      }
+    },
+    //Fix chartjs printing:
+    onbeforeprint: function() {
+      const Chart = require("chart.js");
+      for (var id in Chart.instances) {
+        let chart = Chart.instances[id];
+        // Resize charts to fit pdf nicely
+        chart.canvas.parentNode.style.height = "1000px";
+        chart.canvas.parentNode.style.width = "2000px";
+        chart.resize();
+      }
+    },
+    onafterprint: function() {
+      const Chart = require("chart.js");
+      for (var id in Chart.instances) {
+        let chart = Chart.instances[id];
+        // Resize charts back to original width
+        chart.canvas.parentNode.style.height = "30vh";
+        chart.canvas.parentNode.style.width = "60vh";
+        chart.resize();
       }
     },
   },

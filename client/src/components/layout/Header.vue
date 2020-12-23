@@ -26,12 +26,6 @@
               ><i class="material-icons">menu</i></a
             >
             <ul class="right hide-on-med-and-down" v-if="isUserLoggedIn">
-              <li v-if="uploading">
-                <v-progress-circular
-                  indeterminate
-                  color="primary"
-                ></v-progress-circular>
-              </li>
               <li v-if="isCompetitionSet" v-bind:class="isOverviewPage">
                 <router-link to="/overview"
                   ><a class="white-text"
@@ -177,7 +171,6 @@
 
 <script>
 import M from "materialize-css";
-import UserService from "../../UserService";
 
 export default {
   name: "Header",
@@ -185,7 +178,8 @@ export default {
     return {
       user: null,
       items: [],
-      isDark: JSON.parse(localStorage.getItem("user"))["preferences"].isDark,
+      preferences: JSON.parse(localStorage.getItem("preferences")),
+      isDark: true,
       drawer: null,
       uploading: false,
     };
@@ -195,7 +189,8 @@ export default {
     M.AutoInit();
     const user = JSON.parse(localStorage.getItem("user"));
     const isAdmin = user["is_admin"];
-    this.$store.state.isDark = user["preferences"].isDark;
+    this.$store.state.isDark = this.preferences.isDark;
+    this.isDark = this.preferences.isDark;
     if (isAdmin) {
       this.items = [
         { title: "Dashboardiin", route: "/dashboard", icon: "dashboard" },
@@ -256,7 +251,7 @@ export default {
       //called whenever isDark switch changes
       this.$store.state.isDark = newValue;
       // Update values to database, NOTE no support for language yet but added here already to support it in the future
-      this.updateUser(newValue, "fi");
+      this.updatePreferences(newValue, "fi");
     },
   },
   methods: {
@@ -272,27 +267,11 @@ export default {
         M.toast({ html: "Olet jo tällä sivulla!" });
       }
     },
-    async updateUser(isDark, lang) {
-      const user = JSON.parse(localStorage.getItem("user"));
-      if (user) {
-        try {
-          this.uploading = true;
-          const user_id = user["id"];
-          user.preferences = { isDark: isDark, lang: lang };
-          localStorage.setItem("user", JSON.stringify(user));
-          const newvalues = {
-            $set: { preferences: { isDark: isDark, lang: lang } },
-          };
-          await UserService.updateUser(user_id, newvalues);
-        } catch (err) {
-          console.error(err.message);
-        }
-        this.uploading = false;
-      } else {
-        console.error(
-          "Can't update user preferences: No user in localstorage!"
-        );
-      }
+    async updatePreferences(isDark, lang) {
+      localStorage.setItem(
+        "preferences",
+        JSON.stringify({ isDark: isDark, lang: lang })
+      );
     },
     logout: function() {
       localStorage.removeItem("user");

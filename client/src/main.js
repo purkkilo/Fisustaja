@@ -6,10 +6,15 @@ import store from "./store";
 import VueSimpleAlert from "vue-simple-alert";
 import vuetify from "./plugins/vuetify"; //Breaks layout as is, needs styling
 import vSelect from "vue-select";
+import moment from "moment";
+import "moment/locale/fi";
 
 Vue.component("vue-select", vSelect);
 Vue.use(VueSimpleAlert);
 Vue.config.productionTip = false;
+
+moment.locale("fi");
+Vue.prototype.$moment = moment;
 
 new Vue({
   router,

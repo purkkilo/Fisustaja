@@ -46,7 +46,6 @@ class UserService {
       email: user.email,
       password: user.password,
       is_admin: false,
-      preferences: { isDark: true, lang: "fi" },
     });
   }
 
@@ -58,7 +57,6 @@ class UserService {
       email: user.email,
       password: user.password,
       is_admin: user.is_admin,
-      preferences: { isDark: true, lang: "fi" },
     });
   }
 

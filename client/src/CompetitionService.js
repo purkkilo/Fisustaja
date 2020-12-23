@@ -3,7 +3,7 @@ import axios from "axios";
 const url = "api/competitions/";
 
 class CompetitionService {
-  // Get user's competitions
+  // Get competitions with given query from api/competitions/
   static async getCompetitions(query) {
     const res = await axios.get(`${url}`, { params: query });
     try {

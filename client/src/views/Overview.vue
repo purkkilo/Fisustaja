@@ -35,8 +35,23 @@
           <div class="text-center">
             <v-dialog v-model="dialog">
               <template v-slot:activator="{ on, attrs }">
-                <v-btn color="red darken-4" dark v-bind="attrs" v-on="on">
+                <p
+                  v-bind:class="{
+                    'black-text': !$store.getters.getTheme,
+                    'white-text': $store.getters.getTheme,
+                  }"
+                >
                   Kello/Kilpailuaika
+                </p>
+                <v-btn
+                  text
+                  outlined
+                  color="red darken-4"
+                  dark
+                  v-bind="attrs"
+                  v-on="on"
+                >
+                  <v-icon>mdi-timer</v-icon>
                 </v-btn>
               </template>
 
@@ -97,111 +112,129 @@
       >
         <!-- TODO make it pretty... Everyting else is better than this-->
         <div class="col s12">
-          <p
-            class="flow-text"
-            v-bind:class="{
-              'white--text': $store.getters.getTheme,
-            }"
-          >
-            <b>{{ competition.name }}</b>
-          </p>
-          <p
-            class="flow-text"
-            v-bind:class="{
-              'white--text': $store.getters.getTheme,
-            }"
-          >
-            Päivämäärä: {{ formatted_start_date }} - {{ formatted_end_date }}
-          </p>
-          <p
-            class="flow-text"
-            v-bind:class="{
-              'white--text': $store.getters.getTheme,
-            }"
-          >
-            Kilpailuaika:
-            <b>{{ competition.start_time }} - {{ competition.end_time }}</b>
-          </p>
-          <p
-            class="flow-text"
-            v-bind:class="{
-              'white--text': $store.getters.getTheme,
-            }"
-          >
-            Tila: <b>{{ competition.state }}</b>
-          </p>
-          <p
-            class="flow-text"
-            v-bind:class="{
-              'white--text': $store.getters.getTheme,
-            }"
-          >
-            Ilmoittautuneita: <b>{{ competition.signees.length }} kpl</b>
-          </p>
-          <p
-            v-if="competition.signees.length"
-            class="flow-text"
-            v-bind:class="{
-              'white--text': $store.getters.getTheme,
-            }"
-          >
-            Vielä vesillä:
-            <b
-              >{{
-                Math.round(
-                  ((competition.signees.length -
-                    $store.getters.getFinishedSignees.length) /
-                    competition.signees.length) *
-                    100 *
-                    100
-                ) / 100
-              }}%</b
+          <v-card :dark="$store.getters.getTheme" elevation="20" outlined>
+            <v-card-title class="text-center"
+              ><p class="display-1">
+                {{ competition.name }}
+              </p></v-card-title
             >
-            ({{
-              competition.signees.length -
-                $store.getters.getFinishedSignees.length
-            }}
-            / {{ competition.signees.length }})
-          </p>
-          <p
-            v-else
-            class="flow-text"
-            v-bind:class="{
-              'white--text': $store.getters.getTheme,
-            }"
-          >
-            Ketään ei vielä vesillä!
-          </p>
-          <p
-            v-if="competition.signees.length"
-            class="flow-text"
-            v-bind:class="{
-              'white--text': $store.getters.getTheme,
-            }"
-          >
-            Saalista saanut:
-            <b
-              >{{
-                Math.round(
-                  ($store.getters.getPointSignees.length /
-                    competition.signees.length) *
-                    100 *
-                    100
-                ) / 100
-              }}%</b
-            >
-            ({{ $store.getters.getPointSignees.length }} /
-            {{ competition.signees.length }})
-          </p>
-          <p
-            class="flow-text"
-            v-bind:class="{
-              'white--text': $store.getters.getTheme,
-            }"
-          >
-            Kalaa saatu yhteensä:
-            <b>{{ competition.total_weights / 1000 }} kg</b>
-          </p>
+            <v-list outlined elevation="10">
+              <v-list-item>
+                <v-list-item-icon>
+                  <v-icon>mdi-calendar-today</v-icon>
+                </v-list-item-icon>
+                <v-list-item-title>Päivämäärä</v-list-item-title>
+                <v-list-item-subtitle class="blue-text">
+                  <b>{{ formatted_start_date }} - {{ formatted_end_date }}</b>
+                </v-list-item-subtitle>
+              </v-list-item>
+              <v-divider></v-divider>
+              <v-list-item>
+                <v-list-item-icon>
+                  <v-icon>mdi-clock-time-four</v-icon>
+                </v-list-item-icon>
+                <v-list-item-title>Kilpailuaika</v-list-item-title>
+                <v-list-item-subtitle class="blue-text">
+                  <b
+                    >{{ competition.start_time }} -
+                    {{ competition.end_time }}</b
+                  >
+                </v-list-item-subtitle>
+              </v-list-item>
+              <v-divider></v-divider>
+              <v-list-item>
+                <v-list-item-icon>
+                  <v-icon color="green darken-4">mdi-state-machine</v-icon>
+                </v-list-item-icon>
+                <v-list-item-title>Tila</v-list-item-title>
+                <v-list-item-subtitle
+                  v-bind:class="{
+                    'green-text': competition.state === 'Kaikki maalissa',
+                    'blue-text': competition.state !== 'Kaikki maalissa',
+                  }"
+                >
+                  <b>{{ competition.state }}</b>
+                </v-list-item-subtitle>
+              </v-list-item>
+              <v-divider></v-divider>
+              <v-list-item>
+                <v-list-item-icon>
+                  <v-icon>mdi-card-account-details-outline</v-icon>
+                </v-list-item-icon>
+                <v-list-item-title>Ilmoittautuneita</v-list-item-title>
+                <v-list-item-subtitle
+                  v-bind:class="{
+                    'green-text': competition.signees.length,
+                    'red-text': !competition.signees.length,
+                  }"
+                >
+                  <b>{{ competition.signees.length }}</b>
+                </v-list-item-subtitle>
+              </v-list-item>
+              <v-divider></v-divider>
+              <v-list-item>
+                <v-list-item-icon>
+                  <v-icon color="blue darken-4">mdi-water-alert</v-icon>
+                </v-list-item-icon>
+                <v-list-item-title>Vielä vesillä</v-list-item-title>
+                <v-list-item-subtitle
+                  v-if="competition.signees.length"
+                  v-bind:class="{
+                    'green-text':
+                      !competition.signees.length -
+                      $store.getters.getFinishedSignees.length,
+                    'red-text': competition.signees.length,
+                  }"
+                >
+                  <b>{{ hasNotReturnedPercentage }}%</b>
+                  ({{
+                    competition.signees.length -
+                      $store.getters.getFinishedSignees.length
+                  }}
+                  / {{ competition.signees.length }})
+                </v-list-item-subtitle>
+
+                <v-list-item-subtitle class="green-text" v-else
+                  ><b>Ketään ei vielä vesillä!</b></v-list-item-subtitle
+                >
+              </v-list-item>
+              <v-divider></v-divider>
+              <v-list-item>
+                <v-list-item-icon>
+                  <v-icon color="blue">mdi-fish</v-icon>
+                </v-list-item-icon>
+                <v-list-item-title>Saalista saaneita</v-list-item-title>
+                <v-list-item-subtitle
+                  class="green-text"
+                  v-if="competition.signees.length"
+                >
+                  <b>{{ hasGottenFishPercentage }}%</b> ({{
+                    $store.getters.getPointSignees.length
+                  }}
+                  / {{ competition.signees.length }})
+                </v-list-item-subtitle>
+                <v-list-item-subtitle class="red-text" v-else
+                  ><b>Ei vielä ilmoittautuneita!</b></v-list-item-subtitle
+                >
+              </v-list-item>
+              <v-divider></v-divider>
+              <v-list-item>
+                <v-list-item-icon>
+                  <v-icon color="yellow darken-4">mdi-seal</v-icon>
+                </v-list-item-icon>
+                <v-list-item-title>Kalaa saatu yhteensä</v-list-item-title>
+                <v-list-item-subtitle
+                  class="green-text"
+                  v-if="competition.signees.length"
+                >
+                  <b>{{ competition.total_weights / 1000 }} kg</b>
+                </v-list-item-subtitle>
+                <v-list-item-subtitle class="red-text" v-else
+                  ><b>Ei vielä ilmoittautuneita!</b></v-list-item-subtitle
+                >
+              </v-list-item>
+            </v-list>
+          </v-card>
         </div>
       </div>
     </div>
@@ -214,7 +247,6 @@
 <script>
 "use strict";
 import CompetitionService from "../CompetitionService";
-import moment from "moment";
 import Timedate from "../components/layout/Timedate";
 import Header from "../components/layout/Header";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
@@ -234,6 +266,8 @@ export default {
       formatted_start_date: null,
       formatted_end_date: null,
       dialog: false,
+      hasNotReturnedPercentage: 0,
+      hasGottenFishPercentage: 0,
     };
   },
   created() {
@@ -282,12 +316,29 @@ export default {
           // Update to vuex, Assing variables from vuex (see client/store/index.js)
           this.$store.commit("refreshCompetition", this.competition);
           localStorage.setItem("cup", this.competition.cup_id);
-          let start_date = moment(this.competition.start_date);
-          let end_date = moment(this.competition.end_date);
+          let start_date = this.$moment(this.competition.start_date);
+          let end_date = this.$moment(this.competition.end_date);
           this.formatted_start_date = `${start_date.date()}.${start_date.month() +
             1}.${start_date.year()}`;
           this.formatted_end_date = `${end_date.date()}.${end_date.month() +
             1}.${end_date.year()}`;
+
+          this.hasGottenFishPercentage =
+            Math.round(
+              (this.$store.getters.getPointSignees.length /
+                this.competition.signees.length) *
+                100 *
+                100
+            ) / 100;
+
+          this.hasNotReturnedPercentage =
+            Math.round(
+              ((this.competition.signees.length -
+                this.$store.getters.getFinishedSignees.length) /
+                competition.signees.length) *
+                100 *
+                100
+            ) / 100;
         } else {
           this.competition = { name: "Kilpailua ei löytynyt tietokannasta..." };
         }
