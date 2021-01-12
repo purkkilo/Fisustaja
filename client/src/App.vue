@@ -234,4 +234,24 @@ table.highlight > tr:hover {
 .theme--dark.v-divider {
   border-color: rgba(219, 219, 219, 0.705) !important;
 }
+
+.theme--light.v-data-table tbody tr:nth-of-type(even) {
+  background-color: rgba(167, 177, 194, 0.5);
+}
+.theme--light.v-data-table tbody tr:nth-of-type(odd) {
+  background-color: rgba(115, 125, 139, 0.5);
+}
+.theme--dark.v-data-table tbody tr:nth-of-type(even) {
+  background-color: rgba(6, 8, 19, 0.5);
+}
+.theme--dark.v-data-table tbody tr:nth-of-type(odd) {
+  background-color: rgba(36, 40, 53, 0.5);
+}
+
+.theme--dark.v-data-table thead tr {
+  background-color: rgba(0, 0, 0, 0.438);
+}
+.theme--light.v-data-table thead tr {
+  background-color: rgba(83, 88, 105, 0.5);
+}
 </style>

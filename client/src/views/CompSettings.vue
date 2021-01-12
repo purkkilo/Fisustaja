@@ -39,8 +39,6 @@
 
               <v-card :dark="$store.getters.getTheme">
                 <v-card-title class="headline"> </v-card-title>
-                <Timedate />
-
                 <v-card-actions>
                   <v-spacer></v-spacer>
                   <v-btn color="primary" outlined @click="dialog = false">
@@ -847,7 +845,6 @@
 "use strict";
 import M from "materialize-css";
 import Header from "../components/layout/Header";
-import Timedate from "../components/layout/Timedate";
 import CompetitionService from "../CompetitionService";
 import CupService from "../CupService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
@@ -855,7 +852,6 @@ import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 export default {
   name: "CompSettings",
   components: {
-    Timedate,
     ProgressBarQuery,
     Header,
   },

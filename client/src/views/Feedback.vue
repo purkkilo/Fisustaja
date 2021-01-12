@@ -3,7 +3,6 @@
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container>
     <Header />
-    <Timedate style="margin-top:0" />
     <v-row
       v-bind:class="{
         'container-transparent': !$store.getters.getTheme,
@@ -91,13 +90,11 @@
 import M from "materialize-css";
 import { options_picker } from "../i18n";
 import FeedbackService from "../FeedbackService";
-import Timedate from "../components/layout/Timedate";
 import Header from "../components/layout/Header";
 
 export default {
   name: "Feedback",
   components: {
-    Timedate,
     Header,
   },
   data() {

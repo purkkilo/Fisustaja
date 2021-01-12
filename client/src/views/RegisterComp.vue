@@ -3,7 +3,6 @@
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <div class="container">
     <Header />
-    <Timedate style="margin-top:0" />
     <!-- if errors, show errors -->
     <div id="errordiv" v-if="errors.length">
       <ul class="collection with-header" style="border:1px solid red;">
@@ -24,6 +23,7 @@
     </div>
 
     <div
+      style="margin-top:70px"
       v-bind:class="{
         'container-transparent': !$store.getters.getTheme,
         'container-transparent-dark': $store.getters.getTheme,
@@ -881,7 +881,6 @@ import { options_picker } from "../i18n";
 import CompetitionService from "../CompetitionService";
 import CupService from "../CupService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
-import Timedate from "../components/layout/Timedate";
 import Header from "../components/layout/Header";
 
 export default {
@@ -889,7 +888,6 @@ export default {
   components: {
     ProgressBarQuery,
     Header,
-    Timedate,
   },
   data() {
     return {

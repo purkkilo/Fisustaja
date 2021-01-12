@@ -17,44 +17,7 @@
       <v-col md="6">
         <h1>Cupin Yleisnäkymä</h1>
       </v-col>
-      <v-col md="3">
-        <div class="text-center">
-          <v-dialog v-model="dialog_clock">
-            <template v-slot:activator="{ on, attrs }">
-                <p
-                  v-bind:class="{
-                    'black-text': !$store.getters.getTheme,
-                    'white-text': $store.getters.getTheme,
-                  }"
-                >
-                  Kello/Kilpailuaika
-                </p>
-                <v-btn
-                  text
-                  outlined
-                  color="red darken-4"
-                  dark
-                  v-bind="attrs"
-                  v-on="on"
-                >
-                  <v-icon>mdi-timer</v-icon>
-                </v-btn>
-            </template>
-
-            <v-card :dark="$store.getters.getTheme">
-              <v-card-title class="headline"> </v-card-title>
-              <Timedate />
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn color="primary" outlined @click="dialog_clock = false">
-                  Sulje
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
-        </div>
-      </v-col>
+      <v-col md="3"> </v-col>
     </v-row>
     <v-tabs
       v-model="tab"
@@ -365,10 +328,11 @@
           <v-col style="margin-top:20px">
             <v-btn
               @click="saveAsPDF(`Ilmoittautuneet`)"
-              color="green darken-4"
-              class="white--text"
+              large
+              outlined
+              :dark="$store.getters.getTheme"
               :loading="publishing"
-              ><i class="material-icons left">picture_as_pdf</i>Lataa lista
+              ><v-icon color="red">mdi-file-pdf-outline</v-icon> Lataa lista
               kilpailijoista</v-btn
             >
           </v-col>
@@ -391,7 +355,7 @@
           </v-col>
         </v-row>
         <v-row v-else>
-          <v-col v-if="!loading">
+          <v-col v-if="!loading && !competitions.length">
             <h2
               v-bind:class="{
                 'white--text': $store.getters.getTheme,
@@ -406,16 +370,18 @@
               >
             </router-link>
           </v-col>
-          <h2
-            v-if="error"
-            class="error"
-            v-bind:class="{
-              'white--text': $store.getters.getTheme,
-            }"
-          >
-            {{ error }}
-          </h2>
-          <v-col v-else>
+          <v-col v-if="error">
+            <h2
+              class="error"
+              v-bind:class="{
+                'white--text': $store.getters.getTheme,
+              }"
+            >
+              {{ error }}
+            </h2>
+          </v-col>
+
+          <v-col v-if="loading">
             <h2
               v-bind:class="{
                 'white--text': $store.getters.getTheme,
@@ -480,13 +446,12 @@
               <v-col md="4">
                 <v-btn
                   large
-                  tile
-                  color="green darken-4"
-                  class="white--text"
+                  outlined
+                  :dark="$store.getters.getTheme"
                   @click="saveAsPDF(`Tulokset`)"
                   :loading="loading"
                 >
-                  <i class="material-icons left">picture_as_pdf</i>Lataa pdf
+                  <v-icon color="red">mdi-file-pdf-outline</v-icon> Lataa pdf
                 </v-btn>
               </v-col>
             </v-row>
@@ -530,25 +495,21 @@
                       v-for="(h, index) in headers"
                       v-slot:[`header.${h.value}`]="{ header }"
                     >
-                      <v-chip
+                      <span
                         v-if="header.highlight"
                         :key="index"
-                        :outlined="$store.getters.getTheme"
-                        :color="getCompetitionFinishedColor(header.isFinished)"
-                        >{{ header.text }}</v-chip
+                        v-bind:class="{
+                          'red-text': header.isFinished,
+                          'green-text': !header.isFinished,
+                        }"
                       >
-                      <v-chip
-                        v-else
-                        :key="index"
-                        :outlined="$store.getters.getTheme"
-                        >{{ header.text }}</v-chip
-                      >
+                        {{ header.text }}
+                      </span>
+                      <span v-else :key="index">{{ header.text }}</span>
                     </template>
                     <template v-slot:[`item.final_placement`]="{ item }">
-                      <v-chip
-                        :outlined="$store.getters.getTheme"
-                        :color="getColor(item.final_placement)"
-                        >{{ item.final_placement }}.</v-chip
+                      <span :class="getColor(item.final_placement)"
+                        >{{ item.final_placement }}.</span
                       >
                     </template>
                     <template
@@ -565,13 +526,10 @@
                             item.cup_results[c].placement
                           }}.)</span
                         >
-                        <v-chip
-                          v-else
-                          :outlined="$store.getters.getTheme"
-                          :color="getColor(item.cup_results[c].placement)"
+                        <span v-else :class="getColor(item.final_placement)"
                           >{{ item.cup_results[c].points }}p ({{
                             item.cup_results[c].placement
-                          }}.)</v-chip
+                          }}.)</span
                         >
                       </div>
                       <span v-else v-bind:key="c">
@@ -671,7 +629,6 @@ import "jspdf-autotable";
 export default {
   name: "CupOverview",
   components: {
-    Timedate: () => import("../components/layout/Timedate"),
     ProgressBarQuery: () => import("../components/layout/ProgressBarQuery"),
     Header: () => import("../components/layout/Header"),
   },
@@ -702,6 +659,7 @@ export default {
         { text: "Seura/Paikkakunta", value: "locality" },
         { text: "Muokkaa", value: "modify", sortable: false },
       ],
+
       results: [],
       isResults: false,
       loading: false,
@@ -721,6 +679,7 @@ export default {
       new_locality: null,
       new_captain_name: null,
       new_temp_captain_name: null,
+      isSimpleMode: true,
     };
   },
   created() {},
@@ -1120,19 +1079,15 @@ export default {
       this.$router.push({ path: "/overview" });
     },
     getColor(placement) {
-      if (placement > 30) return "red";
-      if (placement > 20) return "orange";
-      else if (placement > 5) return "yellow";
-      else return "green";
+      if (placement > 30) return "red-text";
+      if (placement > 20) return "orange-text";
+      else if (placement > 5) return "yellow-text";
+      else return "green-text";
     },
     getMultiplierColor(multiplier) {
       if (multiplier > 1) return "red";
       if (multiplier === 1) return "green";
       else return "grey";
-    },
-    getCompetitionFinishedColor(isFinished) {
-      if (isFinished) return "red";
-      else return "primary";
     },
     replaceAllChars: function(text, obj) {
       return [...text]
@@ -1301,8 +1256,15 @@ export default {
         .findIndex((competition) => competition.isFinished === true);
       var count = temp_array.length - 1;
       var finalIndex = index >= 0 ? count - index : index;
-      const last_competition = temp_array[finalIndex];
-      const start_date = this.$moment(last_competition.start_date);
+      const last_competition = temp_array[finalIndex]
+        ? temp_array[finalIndex]
+        : null;
+      let last_competition_string = "";
+      let start_date = this.$moment();
+      if (last_competition) {
+        last_competition_string = `${last_competition.name} (${last_competition.locality})`;
+        start_date = this.$moment(last_competition.start_date);
+      }
       const formatted_date = `${start_date.date()}.${start_date.month() +
         1}.${start_date.year()}`;
       doc.setFontSize(24);
@@ -1321,7 +1283,7 @@ export default {
         if (unfinished_competitions === 0) {
           sub_title = `Tulokset ${formatted_date}`;
         } else {
-          sub_title = `Tilanne ${formatted_date}, ${last_competition.name} (${last_competition.locality}) jälkeen (${unfinished_competitions} kpl kilpailuja kesken)`;
+          sub_title = `Tilanne ${formatted_date}, ${last_competition_string}  (${unfinished_competitions} kpl kilpailuja kesken)`;
         }
         doc.text(13, 30, sub_title, { align: "left" });
         doc.text(
@@ -1340,7 +1302,7 @@ export default {
         if (unfinished_competitions === 0) {
           sub_title = `Cuppiin ilmoittautuneet ${this.cup.year}`;
         } else {
-          sub_title = `Cupin kilpailijat ${formatted_date}, ${last_competition.name} (${last_competition.locality}) jälkeen`;
+          sub_title = `Cupin kilpailijat ${formatted_date} ${last_competition_string}`;
         }
         doc.text(13, 30, sub_title, { align: "left" });
         doc.setFontSize(8);
