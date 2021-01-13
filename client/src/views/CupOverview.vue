@@ -508,15 +508,18 @@
                       <span v-else :key="index">{{ header.text }}</span>
                     </template>
                     <template v-slot:[`item.final_placement`]="{ item }">
-                      <span :class="getColor(item.final_placement)"
-                        >{{ item.final_placement }}.</span
+                      <v-chip :color="getColor(item.final_placement)"
+                        >{{ item.final_placement }}.</v-chip
                       >
                     </template>
                     <template
                       v-for="(c, index) in competitions.length"
                       v-slot:[`item.cup_results[${c}].points`]="{ item }"
                     >
-                      <div v-if="item.cup_results[c]" v-bind:key="c">
+                      <div
+                        v-if="item.cup_results[c]"
+                        v-bind:key="c"
+                      >
                         <span
                           v-if="
                             item.cup_results[c].points ===
@@ -526,7 +529,13 @@
                             item.cup_results[c].placement
                           }}.)</span
                         >
-                        <span v-else :class="getColor(item.final_placement)"
+                        <span
+                          v-else
+                          :class="
+                            `font-weight-bold text-outline  ${getColor(
+                              item.cup_results[c].placement
+                            )}-text`
+                          "
                           >{{ item.cup_results[c].points }}p ({{
                             item.cup_results[c].placement
                           }}.)</span
@@ -537,8 +546,8 @@
                       </span>
                     </template>
                     <template v-slot:[`item.final_cup_points`]="{ item }">
-                      <v-chip color="indigo darken-3 white--text"
-                        >{{ item.final_cup_points }}p</v-chip
+                      <span class="indigo-text"
+                        >{{ item.final_cup_points }}p</span
                       >
                     </template>
                   </v-data-table>
@@ -1079,10 +1088,10 @@ export default {
       this.$router.push({ path: "/overview" });
     },
     getColor(placement) {
-      if (placement > 30) return "red-text";
-      if (placement > 20) return "orange-text";
-      else if (placement > 5) return "yellow-text";
-      else return "green-text";
+      if (placement > 30) return "red";
+      if (placement > 20) return "orange";
+      else if (placement > 5) return "yellow";
+      else return "green";
     },
     getMultiplierColor(multiplier) {
       if (multiplier > 1) return "red";

@@ -236,16 +236,20 @@ table.highlight > tr:hover {
 }
 
 .theme--light.v-data-table tbody tr:nth-of-type(even) {
-  background-color: rgba(167, 177, 194, 0.5);
+  background-color: rgba(105, 140, 197, 0.5);
 }
 .theme--light.v-data-table tbody tr:nth-of-type(odd) {
-  background-color: rgba(115, 125, 139, 0.5);
+  background-color: rgba(78, 97, 134, 0.5);
 }
 .theme--dark.v-data-table tbody tr:nth-of-type(even) {
   background-color: rgba(6, 8, 19, 0.5);
 }
 .theme--dark.v-data-table tbody tr:nth-of-type(odd) {
   background-color: rgba(36, 40, 53, 0.5);
+}
+
+tbody tr :hover {
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
 .theme--dark.v-data-table thead tr {

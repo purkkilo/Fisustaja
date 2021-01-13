@@ -187,29 +187,26 @@
                 :headers="headers"
                 :items="results"
                 :search="search"
+                :loading="loading"
               >
                 <template
                   v-for="(h, index) in headers"
                   v-slot:[`header.${h.value}`]="{ header }"
                 >
-                  <v-chip
+                  <span
                     v-if="header.highlight"
                     :key="index"
-                    :outlined="$store.getters.getTheme"
-                    :color="getCompetitionFinishedColor(header.isFinished)"
-                    >{{ header.text }}</v-chip
+                    v-bind:class="{
+                      'red-text': header.isFinished,
+                      'green-text': !header.isFinished,
+                    }"
                   >
-                  <v-chip
-                    v-else
-                    :key="index"
-                    :outlined="$store.getters.getTheme"
-                    >{{ header.text }}</v-chip
-                  >
+                    {{ header.text }}
+                  </span>
+                  <span v-else :key="index">{{ header.text }}</span>
                 </template>
                 <template v-slot:[`item.final_placement`]="{ item }">
-                  <v-chip
-                    :outlined="$store.getters.getTheme"
-                    :color="getColor(item.final_placement)"
+                  <v-chip :color="getColor(item.final_placement)"
                     >{{ item.final_placement }}.</v-chip
                   >
                 </template>
@@ -218,7 +215,6 @@
                   v-slot:[`item.cup_results[${c}].points`]="{ item }"
                 >
                   <div v-if="item.cup_results[c]" v-bind:key="c">
-                    <!-- Points which are the same as competition participation points == not that important -->
                     <span
                       v-if="
                         item.cup_results[c].points ===
@@ -228,25 +224,24 @@
                         item.cup_results[c].placement
                       }}.)</span
                     >
-                    <!-- Highlight pointsthat matter -->
-                    <v-chip
-                      :outlined="$store.getters.getTheme"
-                      :color="getColor(item.cup_results[c].placement)"
+                    <span
                       v-else
+                      :class="
+                        `font-weight-bold text-outline  ${getColor(
+                          item.cup_results[c].placement
+                        )}-text`
+                      "
                       >{{ item.cup_results[c].points }}p ({{
                         item.cup_results[c].placement
-                      }}.)</v-chip
+                      }}.)</span
                     >
                   </div>
-                  <!-- No points, show '-' -->
                   <span v-else v-bind:key="c">
                     -
                   </span>
                 </template>
                 <template v-slot:[`item.final_cup_points`]="{ item }">
-                  <v-chip color="indigo darken-3 white--text"
-                    >{{ item.final_cup_points }}p</v-chip
-                  >
+                  <span class="indigo-text">{{ item.final_cup_points }}p</span>
                 </template>
               </v-data-table>
             </v-card>
