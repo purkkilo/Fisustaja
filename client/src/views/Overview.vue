@@ -71,47 +71,14 @@
         </v-col>
       </v-row>
 
-      <v-row>
-        <v-col order="first" style="margin-top:20px">
-          <router-link to="/comp-settings">
-            <v-btn large rounded color="grey" class="white--text"
-              ><i class="material-icons left">tune</i>Määritykset</v-btn
-            >
-          </router-link>
-        </v-col>
-        <v-col style="margin-top:20px">
-          <router-link to="/signing">
-            <v-btn large rounded color="blue" class="white--text"
-              ><i class="material-icons left">edit</i>Ilmoittautuminen</v-btn
-            >
-          </router-link>
-        </v-col>
-        <v-col style="margin-top:20px">
-          <router-link to="/weighting">
-            <v-btn large rounded color="blue darken-4" class="white--text"
-              ><i class="material-icons left">fitness_center</i>Punnitus</v-btn
-            >
-          </router-link>
-        </v-col>
-        <v-col order="last" style="margin-top:20px">
-          <router-link to="/results">
-            <v-btn large rounded color="green" class="white--text"
-              ><i class="material-icons left">emoji_events</i>Tulokset</v-btn
-            >
-          </router-link>
-        </v-col>
-      </v-row>
-
-      <div class="divider"></div>
-      <div
+      <v-row
         class="section"
         v-bind:class="{
           inputarea: !$store.getters.getTheme,
           'inputarea-dark': $store.getters.getTheme,
         }"
       >
-        <!-- TODO make it pretty... Everyting else is better than this-->
-        <div class="col s12">
+        <v-col md="9">
           <v-card :dark="$store.getters.getTheme" elevation="20" outlined>
             <v-card-title class="text-center"
               ><p class="display-1">
@@ -235,8 +202,37 @@
               </v-list-item>
             </v-list>
           </v-card>
-        </div>
-      </div>
+        </v-col>
+        <v-col md="3">
+          <v-card
+            class="mx-auto"
+            max-width="400"
+            tile
+            :dark="$store.getters.getTheme"
+          >
+            <v-list dense>
+              <p>Navigointi</p>
+              <v-list-item-group v-model="selectedItem" color="primary">
+                <v-divider></v-divider>
+                <div v-for="(item, i) in items" :key="i">
+                  <v-list-item
+                    @click="changePage(item.path)"
+                    :disabled="$router.currentRoute.path === item.path"
+                  >
+                    <v-list-item-icon>
+                      <v-icon v-text="item.icon"></v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-content>
+                      <v-list-item-title v-text="item.text"></v-list-item-title>
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-divider></v-divider>
+                </div>
+              </v-list-item-group>
+            </v-list>
+          </v-card>
+        </v-col>
+      </v-row>
     </div>
     <div v-else>
       <h2>Valmistellaan kilpailua...</h2>
@@ -250,6 +246,7 @@ import CompetitionService from "../CompetitionService";
 import Timedate from "../components/layout/Timedate";
 import Header from "../components/layout/Header";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
+import M from "materialize-css";
 
 export default {
   name: "Overview",
@@ -268,6 +265,34 @@ export default {
       dialog: false,
       hasNotReturnedPercentage: 0,
       hasGottenFishPercentage: 0,
+      selectedItem: 0,
+      items: [
+        {
+          text: "Yleisnäkymä",
+          icon: "mdi-desktop-mac-dashboard",
+          path: "/overview",
+        },
+        {
+          text: "Määritykset",
+          icon: "mdi-tune",
+          path: "/comp-settings",
+        },
+        {
+          text: "Ilmoittautuminen",
+          icon: "mdi-draw",
+          path: "/signing",
+        },
+        {
+          text: "Punnitus",
+          icon: "mdi-dumbbell",
+          path: "/weighting",
+        },
+        {
+          text: "Tulokset",
+          icon: "mdi-seal",
+          path: "/results",
+        },
+      ],
     };
   },
   created() {
@@ -299,6 +324,14 @@ export default {
     }
   },
   methods: {
+    changePage: function(route) {
+      if (this.$router.currentRoute.path !== route) {
+        this.$router.push(route);
+        this.drawer = !this.drawer;
+      } else {
+        M.toast({ html: "Olet jo tällä sivulla!" });
+      }
+    },
     // fetch/update competition from database
     async refreshCompetition(competition_id) {
       this.loading = true;

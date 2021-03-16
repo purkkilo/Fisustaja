@@ -248,14 +248,15 @@ table.highlight > tr:hover {
   background-color: rgba(36, 40, 53, 0.5);
 }
 
-tbody tr :hover {
-  background-color: rgba(0, 0, 0, 0.5);
-}
-
 .theme--dark.v-data-table thead tr {
   background-color: rgba(0, 0, 0, 0.438);
 }
 .theme--light.v-data-table thead tr {
   background-color: rgba(83, 88, 105, 0.5);
+}
+.strokeme {
+  color: white;
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000,
+    1px 1px 0 #000;
 }
 </style>

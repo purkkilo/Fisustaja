@@ -27,77 +27,97 @@
         'container-transparent-dark': $store.getters.getTheme,
       }"
     >
-      <v-row class="valign-wrapper">
-        <v-col md="9">
-          <h1>Ilmoittautuminen</h1>
-        </v-col>
-        <v-col md="3">
-          <div class="text-center">
-            <v-dialog v-model="dialog">
-              <template v-slot:activator="{ on, attrs }">
-                <p
-                  v-bind:class="{
-                    'black-text': !$store.getters.getTheme,
-                    'white-text': $store.getters.getTheme,
-                  }"
-                >
-                  Kello/Kilpailuaika
-                </p>
-                <v-btn
-                  text
-                  outlined
-                  color="red darken-4"
-                  dark
-                  v-bind="attrs"
-                  v-on="on"
-                >
-                  <v-icon>mdi-timer</v-icon>
-                </v-btn>
-              </template>
-
-              <v-card :dark="$store.getters.getTheme">
-                <v-card-title class="headline"> </v-card-title>
-                <Timedate />
-
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn color="primary" outlined @click="dialog = false">
-                    Sulje
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
-          </div>
-        </v-col>
-      </v-row>
-      <!-- Navigation to other competition pages -->
-      <v-row>
+      <v-card
+        style="background-color:rgba(0, 0, 0, 0.0);"
+        :dark="$store.getters.getTheme"
+      >
         <v-row>
-          <v-col order="first" style="margin-top:20px">
-            <router-link to="/comp-settings">
-              <v-btn large rounded color="grey" class="white--text"
-                ><i class="material-icons left">tune</i>Määritykset</v-btn
-              >
-            </router-link>
+          <v-col cols="12" xs="3" sm="3" md="3">
+            <v-navigation-drawer permanent>
+              <v-list>
+                <v-list-item link>
+                  <v-list-item-content>
+                    <v-list-item-title>
+                      Navigointi
+                    </v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+              </v-list>
+
+              <v-divider></v-divider>
+
+              <v-list nav dense>
+                <v-list-item-group v-model="selectedItem" color="primary">
+                  <v-divider></v-divider>
+                  <div v-for="(item, i) in items" :key="i">
+                    <v-list-item
+                      @click="changePage(item.path)"
+                      :disabled="$router.currentRoute.path === item.path"
+                      link
+                    >
+                      <v-list-item-icon>
+                        <v-icon v-text="item.icon"></v-icon>
+                      </v-list-item-icon>
+                      <v-list-item-content>
+                        <v-list-item-title
+                          v-text="item.text"
+                        ></v-list-item-title>
+                      </v-list-item-content>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                  </div>
+                </v-list-item-group>
+              </v-list>
+            </v-navigation-drawer>
           </v-col>
-          <v-col style="margin-top:20px">
-            <router-link to="/overview">
-              <v-btn large rounded color="primary"
-                ><i class="material-icons left">info</i>Kilpailun
-                yleisnäkymä</v-btn
-              >
-            </router-link>
-          </v-col>
-          <v-col order="last" style="margin-top:20px">
-            <router-link to="/weighting">
-              <v-btn large rounded color="blue darken-4" class="white--text"
-                ><i class="material-icons left">fitness_center</i
-                >Punnitus</v-btn
-              >
-            </router-link>
+          <v-col cols="12" xs="9" sm="9" md="9">
+            <v-row>
+              <v-col md="7">
+                <h1>Ilmoittautuminen</h1>
+              </v-col>
+              <v-col md="5">
+                <div class="text-center">
+                  <v-dialog v-model="dialog">
+                    <template v-slot:activator="{ on, attrs }">
+                      <p
+                        v-bind:class="{
+                          'black-text': !$store.getters.getTheme,
+                          'white-text': $store.getters.getTheme,
+                        }"
+                      >
+                        Kello/Kilpailuaika
+                      </p>
+                      <v-btn
+                        text
+                        outlined
+                        color="red darken-4"
+                        dark
+                        v-bind="attrs"
+                        v-on="on"
+                      >
+                        <v-icon>mdi-timer</v-icon>
+                      </v-btn>
+                    </template>
+
+                    <v-card :dark="$store.getters.getTheme">
+                      <v-card-title class="headline"> </v-card-title>
+                      <Timedate />
+
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn color="primary" outlined @click="dialog = false">
+                          Sulje
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </div>
+              </v-col>
+            </v-row>
           </v-col>
         </v-row>
-      </v-row>
+      </v-card>
+
       <!-- Tabs -->
       <v-tabs
         v-model="tab"
@@ -605,6 +625,34 @@ export default {
       ],
       timer_refresh: null,
       interval: 60000,
+      selectedItem: 2,
+      items: [
+        {
+          text: "Yleisnäkymä",
+          icon: "mdi-desktop-mac-dashboard",
+          path: "/overview",
+        },
+        {
+          text: "Määritykset",
+          icon: "mdi-tune",
+          path: "/comp-settings",
+        },
+        {
+          text: "Ilmoittautuminen",
+          icon: "mdi-draw",
+          path: "/signing",
+        },
+        {
+          text: "Punnitus",
+          icon: "mdi-dumbbell",
+          path: "/weighting",
+        },
+        {
+          text: "Tulokset",
+          icon: "mdi-seal",
+          path: "/results",
+        },
+      ],
     };
   },
   mounted() {
@@ -632,6 +680,14 @@ export default {
     //clearInterval(this.timer_refresh);
   },
   methods: {
+    changePage: function(route) {
+      if (this.$router.currentRoute.path !== route) {
+        this.$router.push(route);
+        this.drawer = !this.drawer;
+      } else {
+        M.toast({ html: "Olet jo tällä sivulla!" });
+      }
+    },
     // Fetch competition from database, and update variables
     async refreshCompetition(competition_id) {
       this.refreshing = true;

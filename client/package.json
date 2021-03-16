@@ -9,6 +9,8 @@
   },
   "dependencies": {
     "axios": "^0.21.1",
+    "browserslist": "^4.16.3",
+    "caniuse-lite": "^1.0.30001202",
     "chart.js": "^2.9.3",
     "chartjs-plugin-labels": "^1.1.0",
     "core-js": "^3.6.4",

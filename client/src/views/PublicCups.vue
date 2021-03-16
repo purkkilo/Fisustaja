@@ -9,6 +9,35 @@
     }"
   >
     <MainHeader />
+    <v-row>
+      <v-col md="3" offset-md="8">
+        <v-card
+          class="mx-auto"
+          max-width="400"
+          tile
+          :dark="$store.getters.getTheme"
+        >
+          <v-list dense>
+            <p>Navigointi</p>
+            <v-list-item-group v-model="selectedItem" color="primary">
+              <v-list-item
+                v-for="(item, i) in items"
+                :key="i"
+                @click="changePage(item.path)"
+                :disabled="item.disabled"
+              >
+                <v-list-item-icon>
+                  <v-icon v-text="item.icon"></v-icon>
+                </v-list-item-icon>
+                <v-list-item-content>
+                  <v-list-item-title v-text="item.text"></v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list-item-group>
+          </v-list>
+        </v-card>
+      </v-col>
+    </v-row>
     <v-row id="errordiv" v-if="errors.length">
       <ul class="collection with-header" style="border:1px solid red;">
         <li class="collection-header" style="background: rgba(0,0,0,0);">
@@ -36,15 +65,6 @@
     <v-row class="section">
       <v-col md="6" offset-md="3">
         <h1>Cuppien tuloksia</h1>
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col md="3" offset-md="8">
-        <router-link to="/public-results">
-          <v-btn large rounded color="green" class="white--text">
-            <i class="material-icons left">emoji_events</i>Kilpailujen tuloksia
-          </v-btn>
-        </router-link>
       </v-col>
     </v-row>
     <v-row v-if="cups.length" class="scroll_table">
@@ -196,6 +216,7 @@
                   <span
                     v-if="header.highlight"
                     :key="index"
+                    class="strokeme"
                     v-bind:class="{
                       'red-text': header.isFinished,
                       'green-text': !header.isFinished,
@@ -206,7 +227,9 @@
                   <span v-else :key="index">{{ header.text }}</span>
                 </template>
                 <template v-slot:[`item.final_placement`]="{ item }">
-                  <v-chip :color="getColor(item.final_placement)"
+                  <v-chip
+                    :outlined="$store.getters.getTheme"
+                    :color="getColor(item.final_placement)"
                     >{{ item.final_placement }}.</v-chip
                   >
                 </template>
@@ -216,6 +239,7 @@
                 >
                   <div v-if="item.cup_results[c]" v-bind:key="c">
                     <span
+                      class="strokeme"
                       v-if="
                         item.cup_results[c].points ===
                           competitions[index].cup_participation_points
@@ -229,7 +253,7 @@
                       :class="
                         `font-weight-bold text-outline  ${getColor(
                           item.cup_results[c].placement
-                        )}-text`
+                        )}-text strokeme`
                       "
                       >{{ item.cup_results[c].points }}p ({{
                         item.cup_results[c].placement
@@ -345,6 +369,21 @@ export default {
       tab: null,
       search: "",
       not_finished_count: 0,
+      selectedItem: 1,
+      items: [
+        {
+          text: "Kilpailujen tuloksia",
+          icon: "mdi-seal",
+          path: "/public-results",
+          disabled: false,
+        },
+        {
+          text: "Cuppien tuloksia",
+          icon: "mdi-trophy",
+          path: "/public-cups",
+          disabled: true,
+        },
+      ],
     };
   },
   async mounted() {
@@ -366,6 +405,15 @@ export default {
   methods: {
     pickCup: function() {
       this.refreshCup(this.selected_cup);
+    },
+
+    changePage: function(route) {
+      if (this.$router.currentRoute.path !== route) {
+        this.$router.push(route);
+        this.drawer = !this.drawer;
+      } else {
+        M.toast({ html: "Olet jo tällä sivulla!" });
+      }
     },
     // Calculate all the cup points, and limit the number of races taken into account
     // If limit = 4, 4 races with highest points will be calculated, other races will have 5 points where the signee has participated
@@ -806,5 +854,8 @@ export default {
 <style scoped>
 .isFinished {
   background-color: rgb(117, 23, 0);
+}
+tbody tr :hover {
+  background-color: rgba(0, 0, 0, 0.5);
 }
 </style>

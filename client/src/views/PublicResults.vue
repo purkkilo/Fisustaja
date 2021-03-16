@@ -10,19 +10,39 @@
   >
     <MainHeader />
     <v-row>
+      <v-col md="3" offset-md="8">
+        <v-card
+          class="mx-auto"
+          max-width="400"
+          tile
+          :dark="$store.getters.getTheme"
+        >
+          <v-list dense>
+            <p>Navigointi</p>
+            <v-list-item-group v-model="selectedItem" color="primary">
+              <v-list-item
+                v-for="(item, i) in items"
+                :key="i"
+                @click="changePage(item.path)"
+                :disabled="item.disabled"
+              >
+                <v-list-item-icon>
+                  <v-icon v-text="item.icon"></v-icon>
+                </v-list-item-icon>
+                <v-list-item-content>
+                  <v-list-item-title v-text="item.text"></v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list-item-group>
+          </v-list>
+        </v-card>
+      </v-col>
+    </v-row>
+    <v-row>
       <v-col>
         <v-row>
           <v-col md="6" offset-md="3">
             <h1>Kilpailujen tuloksia</h1>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col md="3" offset-md="8">
-            <router-link to="/public-cups">
-              <v-btn large rounded color="blue" class="white--text">
-                <i class="material-icons left">emoji_events</i>Cuppien tuloksia
-              </v-btn>
-            </router-link>
           </v-col>
         </v-row>
         <v-row v-if="competitions.length" class="scroll_table">
@@ -63,7 +83,6 @@
             <v-dialog v-model="dialog" scrollable max-width="300px">
               <template v-slot:activator="{ on, attrs }">
                 <v-btn
-
                   v-bind="attrs"
                   v-on="on"
                   :dark="$store.getters.getTheme"
@@ -301,153 +320,154 @@
             </v-row>
             <v-row v-if="competition">
               <v-col md="8" offset-md="2">
-            <v-hover v-slot="{ hover }">
-                <v-card
-                  :dark="$store.getters.getTheme"
-                  :elevation="hover ? 20 : 5"
-                  :class="{ 'on-hover': hover }"
-                  style="padding:20px"
-                >
-                  <v-row>
-                    <v-col>
-                      <v-card
-                        :dark="$store.getters.getTheme"
-                        elevation="20"
-                        outlined
-                      >
-                        <v-card-title class="text-center"
-                          ><p class="display-1">
-                            Kalalajien määritykset
-                          </p></v-card-title
+                <v-hover v-slot="{ hover }">
+                  <v-card
+                    :dark="$store.getters.getTheme"
+                    :elevation="hover ? 20 : 5"
+                    :class="{ 'on-hover': hover }"
+                    style="padding:20px"
+                  >
+                    <v-row>
+                      <v-col>
+                        <v-card
+                          :dark="$store.getters.getTheme"
+                          elevation="20"
+                          outlined
                         >
-                        <v-list outlined elevation="10">
-                          <div
-                            v-for="(fish, index) in calculated_fish_weights"
-                            :key="index"
+                          <v-card-title class="text-center"
+                            ><p class="display-1">
+                              Kalalajien määritykset
+                            </p></v-card-title
                           >
+                          <v-list outlined elevation="10">
+                            <div
+                              v-for="(fish, index) in calculated_fish_weights"
+                              :key="index"
+                            >
+                              <v-list-item>
+                                <v-list-item-title>{{
+                                  fish.name
+                                }}</v-list-item-title>
+                                <v-divider vertical></v-divider>
+                                <v-list-item-subtitle class="green-text">
+                                  <b> x {{ fish.multiplier }}</b>
+                                </v-list-item-subtitle>
+                                <v-divider vertical></v-divider>
+                                <v-list-item-subtitle class="blue-text">
+                                  <v-tooltip bottom>
+                                    <template v-slot:activator="{ on, attrs }">
+                                      <span v-bind="attrs" v-on="on"
+                                        ><b>{{ fish.minsize }} cm</b></span
+                                      >
+                                    </template>
+                                    <span>{{ fish.minsize }}</span>
+                                  </v-tooltip>
+                                </v-list-item-subtitle>
+                                <v-divider vertical></v-divider>
+                                <v-list-item-subtitle class="green-text">
+                                  {{
+                                    fish.weights
+                                      ? Math.round(
+                                          (fish.weights / 1000 +
+                                            Number.EPSILON) *
+                                            100
+                                        ) / 100
+                                      : 0
+                                  }}
+                                  kg
+                                </v-list-item-subtitle>
+                              </v-list-item>
+                              <v-divider></v-divider>
+                            </div>
                             <v-list-item>
-                              <v-list-item-title>{{
-                                fish.name
-                              }}</v-list-item-title>
-                              <v-divider vertical></v-divider>
-                              <v-list-item-subtitle class="green-text">
-                                <b> x {{ fish.multiplier }}</b>
-                              </v-list-item-subtitle>
-                              <v-divider vertical></v-divider>
-                              <v-list-item-subtitle class="blue-text">
-                                <v-tooltip bottom>
-                                  <template v-slot:activator="{ on, attrs }">
-                                    <span v-bind="attrs" v-on="on"
-                                      ><b>{{ fish.minsize }} cm</b></span
-                                    >
-                                  </template>
-                                  <span>{{ fish.minsize }}</span>
-                                </v-tooltip>
-                              </v-list-item-subtitle>
-                              <v-divider vertical></v-divider>
-                              <v-list-item-subtitle class="green-text">
-                                {{
-                                  fish.weights
-                                    ? Math.round(
-                                        (fish.weights / 1000 + Number.EPSILON) *
+                              <v-list-item-title>
+                                Saalista yhteensä
+                              </v-list-item-title>
+                              <v-list-item-subtitle>
+                                <h4 class="green-text">
+                                  <b
+                                    >{{
+                                      Math.round(
+                                        (calculated_total_weights / 1000 +
+                                          Number.EPSILON) *
                                           100
                                       ) / 100
-                                    : 0
-                                }}
-                                kg
+                                    }}
+                                    kg</b
+                                  >
+                                </h4></v-list-item-subtitle
+                              >
+                            </v-list-item>
+                          </v-list>
+                        </v-card>
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col>
+                        <v-card
+                          :dark="$store.getters.getTheme"
+                          elevation="20"
+                          outlined
+                        >
+                          <v-card-title class="text-center"
+                            ><p class="display-1">
+                              Yleisiä tilastoja
+                            </p></v-card-title
+                          >
+                          <v-list outlined elevation="10">
+                            <v-list-item>
+                              <v-list-item-title
+                                >Cup pistekerroin</v-list-item-title
+                              >
+                              <v-divider vertical></v-divider>
+                              <v-list-item-subtitle class="green-text">
+                                <b>x {{ competition.cup_points_multiplier }}</b>
                               </v-list-item-subtitle>
                             </v-list-item>
                             <v-divider></v-divider>
-                          </div>
-                          <v-list-item>
-                            <v-list-item-title>
-                              Saalista yhteensä
-                            </v-list-item-title>
-                            <v-list-item-subtitle>
-                              <h4 class="green-text">
+                            <v-list-item>
+                              <v-list-item-title>
+                                <b>Ilmoittautuneita yhteensä</b>
+                              </v-list-item-title>
+                              <v-divider vertical></v-divider>
+                              <v-list-item-subtitle class="green-text">
+                                <b>{{ signees.length }}</b> venettä
+                              </v-list-item-subtitle>
+                            </v-list-item>
+                            <v-divider></v-divider>
+                            <v-list-item>
+                              <v-list-item-title>
+                                <b>Saalista saaneita</b>
+                              </v-list-item-title>
+                              <v-divider vertical></v-divider>
+                              <v-list-item-subtitle
+                                v-if="$store.getters.getPointSignees.length"
+                                class="green-text"
+                              >
                                 <b
                                   >{{
                                     Math.round(
-                                      (calculated_total_weights / 1000 +
-                                        Number.EPSILON) *
+                                      ($store.getters.getPointSignees.length /
+                                        competition.signees.length) *
+                                        100 *
                                         100
                                     ) / 100
+                                  }}% ({{
+                                    $store.getters.getPointSignees.length
                                   }}
-                                  kg</b
+                                  / {{ signees.length }})</b
                                 >
-                              </h4></v-list-item-subtitle
-                            >
-                          </v-list-item>
-                        </v-list>
-                      </v-card>
-                    </v-col>
-                  </v-row>
-                  <v-row>
-                    <v-col>
-                      <v-card
-                        :dark="$store.getters.getTheme"
-                        elevation="20"
-                        outlined
-                      >
-                        <v-card-title class="text-center"
-                          ><p class="display-1">
-                            Yleisiä tilastoja
-                          </p></v-card-title
-                        >
-                        <v-list outlined elevation="10">
-                          <v-list-item>
-                            <v-list-item-title
-                              >Cup pistekerroin</v-list-item-title
-                            >
-                            <v-divider vertical></v-divider>
-                            <v-list-item-subtitle class="green-text">
-                              <b>x {{ competition.cup_points_multiplier }}</b>
-                            </v-list-item-subtitle>
-                          </v-list-item>
-                          <v-divider></v-divider>
-                          <v-list-item>
-                            <v-list-item-title>
-                              <b>Ilmoittautuneita yhteensä</b>
-                            </v-list-item-title>
-                            <v-divider vertical></v-divider>
-                            <v-list-item-subtitle class="green-text">
-                              <b>{{ signees.length }}</b> venettä
-                            </v-list-item-subtitle>
-                          </v-list-item>
-                          <v-divider></v-divider>
-                          <v-list-item>
-                            <v-list-item-title>
-                              <b>Saalista saaneita</b>
-                            </v-list-item-title>
-                            <v-divider vertical></v-divider>
-                            <v-list-item-subtitle
-                              v-if="$store.getters.getPointSignees.length"
-                              class="green-text"
-                            >
-                              <b
-                                >{{
-                                  Math.round(
-                                    ($store.getters.getPointSignees.length /
-                                      competition.signees.length) *
-                                      100 *
-                                      100
-                                  ) / 100
-                                }}% ({{
-                                  $store.getters.getPointSignees.length
-                                }}
-                                / {{ signees.length }})</b
+                              </v-list-item-subtitle>
+                              <v-list-item-subtitle class="red-text" v-else
+                                ><b>0% (0/0)</b></v-list-item-subtitle
                               >
-                            </v-list-item-subtitle>
-                            <v-list-item-subtitle class="red-text" v-else
-                              ><b>0% (0/0)</b></v-list-item-subtitle
-                            >
-                          </v-list-item>
-                        </v-list>
-                      </v-card>
-                    </v-col>
-                  </v-row>
-                </v-card>
-              </v-hover>
+                            </v-list-item>
+                          </v-list>
+                        </v-card>
+                      </v-col>
+                    </v-row>
+                  </v-card>
+                </v-hover>
               </v-col>
             </v-row>
           </v-tab-item>
@@ -1044,6 +1064,21 @@ export default {
       fishes_chart_data: null,
       fishes_chart_title: null,
       signee_chart_title: null,
+      selectedItem: 0,
+      items: [
+        {
+          text: "Kilpailujen tuloksia",
+          icon: "mdi-seal",
+          path: "/public-results",
+          disabled: true,
+        },
+        {
+          text: "Cuppien tuloksia",
+          icon: "mdi-trophy",
+          path: "/public-cups",
+          disabled: false,
+        },
+      ],
     };
   },
   created() {
@@ -1107,7 +1142,14 @@ export default {
       this.dialog = false;
       this.saveAllAsPDF(this.tab);
     },
-
+    changePage: function(route) {
+      if (this.$router.currentRoute.path !== route) {
+        this.$router.push(route);
+        this.drawer = !this.drawer;
+      } else {
+        M.toast({ html: "Olet jo tällä sivulla!" });
+      }
+    },
     // Calculate "Suurimmat Kalat"
     calculateBiggestFishes() {
       let fishes = this.biggest_fishes;

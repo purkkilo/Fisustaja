@@ -4,7 +4,7 @@ import "materialize-css/dist/css/materialize.min.css";
 import router from "./router";
 import store from "./store";
 import VueSimpleAlert from "vue-simple-alert";
-import vuetify from "./plugins/vuetify"; //Breaks layout as is, needs styling
+import vuetify from "@/plugins/vuetify"; // path to vuetify export
 import vSelect from "vue-select";
 import moment from "moment";
 import "moment/locale/fi";

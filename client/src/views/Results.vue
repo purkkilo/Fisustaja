@@ -9,49 +9,96 @@
         'container-transparent-dark': $store.getters.getTheme,
       }"
     >
-      <v-row class="valign-wrapper">
-        <v-col md="6" offset-md="3">
-          <h1>Tulokset</h1>
-        </v-col>
-        <v-col md="3">
-          <div class="text-center">
-            <v-dialog v-model="dialog_clock">
-              <template v-slot:activator="{ on, attrs }">
-                <p
-                  v-bind:class="{
-                    'black-text': !$store.getters.getTheme,
-                    'white-text': $store.getters.getTheme,
-                  }"
-                >
-                  Kello/Kilpailuaika
-                </p>
-                <v-btn
-                  text
-                  outlined
-                  color="red darken-4"
-                  dark
-                  v-bind="attrs"
-                  v-on="on"
-                >
-                  <v-icon>mdi-timer</v-icon>
-                </v-btn>
-              </template>
+      <v-card
+        style="background-color:rgba(0, 0, 0, 0.0);"
+        :dark="$store.getters.getTheme"
+      >
+        <v-row>
+          <v-col cols="12" xs="3" sm="3" md="3">
+            <v-navigation-drawer permanent>
+              <v-list>
+                <v-list-item link>
+                  <v-list-item-content>
+                    <v-list-item-title>
+                      Navigointi
+                    </v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+              </v-list>
 
-              <v-card :dark="$store.getters.getTheme">
-                <v-card-title class="headline"> </v-card-title>
-                <Timedate />
+              <v-divider></v-divider>
 
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn color="primary" outlined @click="dialog_clock = false">
-                    Sulje
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
-          </div>
-        </v-col>
-      </v-row>
+              <v-list nav dense>
+                <v-list-item-group v-model="selectedItem" color="primary">
+                  <v-divider></v-divider>
+                  <div v-for="(item, i) in items" :key="i">
+                    <v-list-item
+                      @click="changePage(item.path)"
+                      :disabled="$router.currentRoute.path === item.path"
+                      link
+                    >
+                      <v-list-item-icon>
+                        <v-icon v-text="item.icon"></v-icon>
+                      </v-list-item-icon>
+                      <v-list-item-content>
+                        <v-list-item-title
+                          v-text="item.text"
+                        ></v-list-item-title>
+                      </v-list-item-content>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                  </div>
+                </v-list-item-group>
+              </v-list>
+            </v-navigation-drawer>
+          </v-col>
+          <v-col cols="12" xs="9" sm="9" md="9">
+            <v-row>
+              <v-col md="7">
+                <h1>Tulokset</h1>
+              </v-col>
+              <v-col md="5">
+                <div class="text-center">
+                  <v-dialog v-model="dialog">
+                    <template v-slot:activator="{ on, attrs }">
+                      <p
+                        v-bind:class="{
+                          'black-text': !$store.getters.getTheme,
+                          'white-text': $store.getters.getTheme,
+                        }"
+                      >
+                        Kello/Kilpailuaika
+                      </p>
+                      <v-btn
+                        text
+                        outlined
+                        color="red darken-4"
+                        dark
+                        v-bind="attrs"
+                        v-on="on"
+                      >
+                        <v-icon>mdi-timer</v-icon>
+                      </v-btn>
+                    </template>
+
+                    <v-card :dark="$store.getters.getTheme">
+                      <v-card-title class="headline"> </v-card-title>
+                      <Timedate />
+
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn color="primary" outlined @click="dialog = false">
+                          Sulje
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </div>
+              </v-col>
+            </v-row>
+          </v-col>
+        </v-row>
+      </v-card>
       <v-row>
         <v-col
           md="4"
@@ -97,7 +144,7 @@
           "
           style="margin-top:20px"
         >
-          <v-dialog v-model="dialog" scrollable max-width="300px">
+          <v-dialog v-model="dialog_print" scrollable max-width="300px">
             <template v-slot:activator="{ on, attrs }">
               <v-btn
                 v-bind="attrs"
@@ -170,7 +217,7 @@
                     outlined
                     color="red darken-4"
                     text
-                    @click="dialog = false"
+                    @click="dialog_print = false"
                     >Sulje</v-btn
                   >
                 </v-col>
@@ -1030,6 +1077,8 @@ export default {
   data() {
     return {
       dialog_clock: false,
+      dialog: false,
+      dialog_print: false,
       loading: false,
       updating: false,
       tab: null,
@@ -1099,12 +1148,39 @@ export default {
       search_fishes: "",
       search_amounts: "",
       selected_print: [],
-      dialog: false,
       intervalSwitch: false,
       signee_chart_data: null,
       fishes_chart_data: null,
       fishes_chart_title: null,
       signee_chart_title: null,
+      selectedItem: 4,
+      items: [
+        {
+          text: "Yleisnäkymä",
+          icon: "mdi-desktop-mac-dashboard",
+          path: "/overview",
+        },
+        {
+          text: "Määritykset",
+          icon: "mdi-tune",
+          path: "/comp-settings",
+        },
+        {
+          text: "Ilmoittautuminen",
+          icon: "mdi-draw",
+          path: "/signing",
+        },
+        {
+          text: "Punnitus",
+          icon: "mdi-dumbbell",
+          path: "/weighting",
+        },
+        {
+          text: "Tulokset",
+          icon: "mdi-seal",
+          path: "/results",
+        },
+      ],
     };
   },
   watch: {
@@ -1162,8 +1238,17 @@ export default {
     clearInterval(this.timer_refresh);
   },
   methods: {
+    changePage: function(route) {
+      if (this.$router.currentRoute.path !== route) {
+        this.$router.push(route);
+        this.drawer = !this.drawer;
+      } else {
+        M.toast({ html: "Olet jo tällä sivulla!" });
+      }
+    },
     choosePrints: function() {
-      this.dialog = false;
+      // FIXME / TODO printing of statistics
+      this.dialog_print = false;
       this.saveAllAsPDF(this.tab);
     },
     // Fetch competition from database, and update all the arrays

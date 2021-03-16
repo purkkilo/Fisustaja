@@ -498,6 +498,7 @@
                       <span
                         v-if="header.highlight"
                         :key="index"
+                        class="strokeme"
                         v-bind:class="{
                           'red-text': header.isFinished,
                           'green-text': !header.isFinished,
@@ -508,7 +509,9 @@
                       <span v-else :key="index">{{ header.text }}</span>
                     </template>
                     <template v-slot:[`item.final_placement`]="{ item }">
-                      <v-chip :color="getColor(item.final_placement)"
+                      <v-chip
+                        :outlined="$store.getters.getTheme"
+                        :color="getColor(item.final_placement)"
                         >{{ item.final_placement }}.</v-chip
                       >
                     </template>
@@ -516,11 +519,9 @@
                       v-for="(c, index) in competitions.length"
                       v-slot:[`item.cup_results[${c}].points`]="{ item }"
                     >
-                      <div
-                        v-if="item.cup_results[c]"
-                        v-bind:key="c"
-                      >
+                      <div v-if="item.cup_results[c]" v-bind:key="c">
                         <span
+                          class="strokeme"
                           v-if="
                             item.cup_results[c].points ===
                               competitions[index].cup_participation_points
@@ -530,6 +531,7 @@
                           }}.)</span
                         >
                         <span
+                          class="strokeme"
                           v-else
                           :class="
                             `font-weight-bold text-outline  ${getColor(
