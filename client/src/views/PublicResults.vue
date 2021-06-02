@@ -8,7 +8,8 @@
       'container-transparent-dark': $store.getters.getTheme,
     }"
   >
-    <MainHeader />
+    <Header v-if="$store.state.logged_in" />
+    <MainHeader v-else />
     <v-row>
       <v-col md="3" offset-md="8">
         <v-card
@@ -972,6 +973,7 @@
 </template>
 <script>
 "use strict";
+import Header from "../components/layout/Header";
 import MainHeader from "../components/layout/MainHeader";
 import M from "materialize-css";
 import CompetitionService from "../CompetitionService";
@@ -984,6 +986,7 @@ export default {
   name: "PublicResults",
   components: {
     ProgressBarQuery,
+    Header,
     MainHeader,
     PieChart,
     DoughnutChart,

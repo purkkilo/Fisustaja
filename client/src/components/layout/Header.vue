@@ -139,7 +139,7 @@
           @click="changePage(item.route)"
         >
           <v-list-item-icon>
-            <v-icon>{{ item.icon }}</v-icon>
+            <v-icon v-text="item.icon"></v-icon>
           </v-list-item-icon>
 
           <v-list-item-content>
@@ -201,6 +201,16 @@ export default {
           route: "/register",
           icon: "add_circle_outline",
         },
+        {
+          title: "Julkiset kilpailut",
+          route: "/public-results",
+          icon: "military_tech",
+        },
+        {
+          title: "Julkiset cupit",
+          route: "/public-cups",
+          icon: "emoji_events",
+        },
       ];
     } else {
       this.items = [
@@ -210,6 +220,16 @@ export default {
           title: "Rekisteröi käyttäjä",
           route: "/register",
           icon: "add_circle_outline",
+        },
+        {
+          title: "Julkiset kilpailut",
+          route: "/public-results",
+          icon: "military_tech",
+        },
+        {
+          title: "Julkiset cupit",
+          route: "/public-cups",
+          icon: "emoji_events",
         },
       ];
     }

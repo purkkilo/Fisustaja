@@ -1,47 +1,87 @@
 <template>
   <!-- Starting page, / -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <v-container
-    style="margin-top:70px;"
-    v-bind:class="{
-      'container-transparent': !$store.getters.getTheme,
-      'container-transparent-dark': $store.getters.getTheme,
-    }"
-  >
-    <MainHeader />
-    <v-row class="section">
-      <v-col md="6" offset-md="3">
-        <h1>Fisustaja</h1>
-      </v-col>
-    </v-row>
-
+  <v-container style="margin-top:70px;">
+    <Header v-if="$store.state.logged_in" />
+    <MainHeader v-else />
     <v-row>
       <!-- TODO Cool starting page... -->
       <v-col>
-        <h4
+        <v-card
           v-bind:class="{
-            'white--text': $store.getters.getTheme,
+            'container-transparent': !$store.getters.getTheme,
+            'container-transparent-dark': $store.getters.getTheme,
           }"
         >
-          Sovellus kalastuskilpailujen järjestämistä varten
-        </h4>
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col order="first" style="margin-top:20px">
-        <router-link to="/public-results">
-          <v-btn large rounded color="blue darken-4" class="white--text"
-            ><i class="material-icons left">emoji_events</i>Kilpailujen
-            tuloksia</v-btn
-          >
-        </router-link>
-      </v-col>
-      <v-col order="last" style="margin-top:20px">
-        <router-link to="/public-cups">
-          <v-btn large rounded color="green darken-4" class="white--text">
-            <i class="material-icons left">emoji_events</i>Cuppien tuloksia
-          </v-btn>
-        </router-link>
+          <v-row>
+            <v-col>
+              <h1 class="ml-3">
+                Fisustaja
+                <v-avatar size="56">
+                  <img alt="user" src="https://i.imgur.com/2WcI49A.png" />
+                </v-avatar>
+              </h1>
+            </v-col>
+          </v-row>
+
+          <v-row>
+            <v-col md="6">
+              <v-card :dark="$store.getters.getTheme">
+                <v-img
+                  class="white--text align-end"
+                  height="400px"
+                  src="@/assets/competition.jpg"
+                >
+                  <v-card-title class="strokeme"
+                    >Kilpailujen tuloksia</v-card-title
+                  >
+                </v-img>
+                <router-link to="/public-results">
+                  <v-btn
+                    class="ma-2"
+                    color="primary"
+                    :dark="$store.getters.getTheme"
+                    text
+                    outlined
+                    >Tarkastele
+                    <v-icon :dark="$store.getters.getTheme">
+                      mdi-seal
+                    </v-icon>
+                  </v-btn>
+                </router-link>
+              </v-card>
+            </v-col>
+            <v-col md="6">
+              <v-card :dark="$store.getters.getTheme">
+                <v-img
+                  class="white--text align-end"
+                  height="400px"
+                  src="@/assets/cup.jpg"
+                >
+                  <v-card-title class="strokeme">Cuppien tuloksia</v-card-title>
+                </v-img>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <router-link to="/public-cups">
+                    <v-btn
+                      class="ma-2"
+                      color="green darken-4"
+                      dark
+                      text
+                      outlined
+                    >
+                      Tarkastele
+                      <v-icon dark right>
+                        mdi-trophy
+                      </v-icon>
+                    </v-btn>
+                  </router-link>
+                  <v-spacer></v-spacer>
+                </v-card-actions>
+              </v-card>
+            </v-col>
+          </v-row>
+        </v-card>
       </v-col>
     </v-row>
   </v-container>
@@ -49,16 +89,25 @@
 
 <script>
 "use strict";
+import Header from "../components/layout/Header";
 import MainHeader from "../components/layout/MainHeader";
 
 export default {
   name: "Home",
   components: {
+    Header,
     MainHeader,
   },
   data() {
     return {
       updateSwitch: this.$store.getters.getTheme,
+      items: [
+        {
+          text: "Järjestä yksittäisiä kalastuskilpailuja",
+          icon: "military_tech",
+        },
+        { text: "Hallinnoi cuppia", icon: "emoji_events" },
+      ],
     };
   },
   watch: {

@@ -8,7 +8,8 @@
       'container-transparent-dark': $store.getters.getTheme,
     }"
   >
-    <MainHeader />
+    <Header v-if="$store.state.logged_in" />
+    <MainHeader v-else />
     <v-row>
       <v-col md="3" offset-md="8">
         <v-card
@@ -343,6 +344,7 @@ import CupService from "../CupService";
 import CompetitionService from "../CompetitionService";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import Header from "../components/layout/Header";
 import MainHeader from "../components/layout/MainHeader";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 
@@ -350,6 +352,7 @@ export default {
   name: "PublicCups",
   components: {
     ProgressBarQuery,
+    Header,
     MainHeader,
   },
   data() {

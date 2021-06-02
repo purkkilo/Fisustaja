@@ -73,6 +73,19 @@ function dictToArray(dict, type) {
       values[4] = locality;
       values[5] = team;
     }
+    //Kalalajien info
+    if (type === 7) {
+      let fish_name = values[0];
+      let fish_multiplier = values[1];
+      let fish_minsize = values[2];
+      let fish_weights = values[3];
+      values[0] = fish_name;
+      values[1] = "x " + String(fish_multiplier);
+      values[2] = fish_minsize;
+      values[3] =
+        String(Math.round((fish_weights / 1000 + Number.EPSILON) * 100) / 100) +
+        " kg";
+    }
     arr.push(values);
   });
   return arr;
@@ -269,9 +282,12 @@ function saveStatsAsPDF(competition_type) {
   doc.addImage(fishesImg, "PNG", -30, 40, 180, 90);
   doc.addImage(signeeImg, "PNG", 70, 40, 180, 90);
   doc.text(100, 145, "Kalalajien määritykset", { align: "center" });
-  // Table straight from html
+  // Generate table
+  let rows = this.dictToArray(this.calculated_fish_weights, 7);
+  let columns = ["Kalalaji", "Kerroin", "Alamitta", "Saalista saatu"];
   doc.autoTable({
-    html: "#fish-weights-table",
+    head: [columns],
+    body: rows,
     styles: {
       overflow: "linebreak",
       cellWidth: "wrap",
@@ -292,8 +308,26 @@ function saveStatsAsPDF(competition_type) {
   doc.text(100, doc.autoTable.previous.finalY + 20, "Yleisiä tilastoja", {
     align: "center",
   });
+
+  columns = ["", ""];
+  rows = [
+    ["Cup pistekerroin", `x ${this.competition.cup_points_multiplier}`],
+    ["Ilmoittautuneita yhteensä", `${this.signees.length} kpl`],
+    [
+      "Saalista saaneita",
+      `${Math.round(
+        (this.$store.getters.getPointSignees.length /
+          this.competition.signees.length) *
+          100 *
+          100
+      ) / 100} % (${this.$store.getters.getPointSignees.length}/${
+        this.signees.length
+      })`,
+    ],
+  ];
   doc.autoTable({
-    html: "#misc-table",
+    head: [columns],
+    body: rows,
     styles: {
       overflow: "linebreak",
       cellWidth: "wrap",
@@ -740,8 +774,12 @@ function saveAllAsPDF(tab) {
     }
     doc.text(100, 165, "Kalalajien määritykset", { align: "center" });
     // Table generated straight from html
+    rows = this.dictToArray(this.calculated_fish_weights, 7);
+    columns = ["Kalalaji", "Kerroin", "Alamitta", "Saalista saatu"];
+
     doc.autoTable({
-      html: "#fish-weights-table",
+      head: [columns],
+      body: rows,
       styles: {
         overflow: "linebreak",
         cellWidth: "wrap",
@@ -762,9 +800,26 @@ function saveAllAsPDF(tab) {
     doc.text(100, doc.autoTable.previous.finalY + 20, "Yleisiä tilastoja", {
       align: "center",
     });
-    // Table generated straight from html
+    // Generate table
+    columns = ["", ""];
+    rows = [
+      ["Cup pistekerroin", `x ${this.competition.cup_points_multiplier}`],
+      ["Ilmoittautuneita yhteensä", `${this.signees.length} kpl`],
+      [
+        "Saalista saaneita",
+        `${Math.round(
+          (this.$store.getters.getPointSignees.length /
+            this.competition.signees.length) *
+            100 *
+            100
+        ) / 100} % (${this.$store.getters.getPointSignees.length}/${
+          this.signees.length
+        })`,
+      ],
+    ];
     doc.autoTable({
-      html: "#misc-table",
+      head: [columns],
+      body: rows,
       styles: {
         overflow: "linebreak",
         cellWidth: "wrap",

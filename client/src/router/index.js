@@ -10,7 +10,7 @@ const routes = [
     name: "Home",
     component: Home,
     meta: {
-      guest: true,
+      requiresAuth: false,
     },
   },
   {
@@ -19,7 +19,7 @@ const routes = [
     component: () =>
       import(/* webpackChunkName: "about" */ "../views/Login.vue"),
     meta: {
-      guest: true,
+      requiresAuth: false,
     },
   },
   {
@@ -37,7 +37,7 @@ const routes = [
     component: () =>
       import(/* webpackChunkName: "about" */ "../views/PublicResults.vue"),
     meta: {
-      guest: true,
+      requiresAuth: false,
     },
   },
   {
@@ -46,7 +46,7 @@ const routes = [
     component: () =>
       import(/* webpackChunkName: "about" */ "../views/PublicCups.vue"),
     meta: {
-      guest: true,
+      requiresAuth: false,
     },
   },
   {
@@ -152,6 +152,17 @@ const routes = [
       requiresAuth: true,
     },
   },
+  {
+    name: "404",
+    path: "/404",
+    // route level code-splitting
+    component: () => import("@/views/NotFound.vue"),
+    meta: { title: "Energiahoyla - Not Found" },
+  },
+  {
+    path: "*",
+    redirect: "404",
+  },
 ];
 
 let router = new VueRouter({
@@ -173,24 +184,14 @@ router.beforeEach((to, from, next) => {
         if (user.is_admin == true) {
           next();
         } else {
-          // If token found, direct admin
-          next({ name: "dashboard" });
+          router.push({ name: "404" });
         }
       } else {
         next();
       }
     }
-  } else if (to.matched.some((record) => record.meta.guest)) {
-    if (localStorage.getItem("jwt") == null) {
-      // token not found
-      next();
-    } else {
-      // If token found, direct guest to dashboard (e.g '/test')
-      next({ name: "dashboard" });
-    }
   } else {
-    // If route doesn't match any page (e.g '/test')
-    next({ name: "Home" });
+    next();
   }
 });
 
