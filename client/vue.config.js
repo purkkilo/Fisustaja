@@ -6,7 +6,7 @@ module.exports = {
   configureWebpack: {
     plugins: [new BundleAnalyzerPlugin()],
   },
-  outputDir: "J:\\Fisustaja\\JSVersion\\FisuJS\\server\\public",
+  outputDir: "../server/public",
   devServer: {
     proxy: {
       "^/api": {
