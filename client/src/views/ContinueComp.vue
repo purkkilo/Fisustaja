@@ -76,6 +76,11 @@
                       item.start_date.format("DD.MM.YYYY")
                     }}</v-chip>
                   </template>
+                                    <template v-slot:[`item.cup_name`]="{ item }">
+                    <v-chip>{{
+                      item.cup_name
+                    }} ({{item.start_date.format("YYYY")}})</v-chip>
+                  </template>
                   <template v-slot:[`item.cup_points_multiplier`]="{ item }">
                     <v-chip
                       :color="getColor(item.cup_points_multiplier)"
