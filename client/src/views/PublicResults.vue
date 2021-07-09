@@ -47,7 +47,7 @@
           </v-col>
         </v-row>
         <v-row v-if="competitions.length" class="scroll_table">
-          <v-col md="4" offset-md="4">
+          <v-col md="6" offset-md="3">
             <!-- TODO add v-autocompelete, but so that it popsup the keyboad on mobile only when pressing search button? -->
             <v-select
               :dark="$store.getters.getTheme"
@@ -62,7 +62,37 @@
               @input="pickCompetition"
               return-object
               single-line
-            ></v-select>
+            >
+              <template v-slot:item="data">
+                <v-list-item-icon>
+                  <v-icon v-if="data.item.isFinished" color="green"
+                    >mdi-trophy</v-icon
+                  >
+                  <v-icon v-else color="yellow">mdi-trophy</v-icon>
+                </v-list-item-icon>
+                <v-list-item-content>
+                  <v-list-item-title
+                    v-html="data.item.name + ', ' + data.item.locality"
+                  ></v-list-item-title>
+                  <v-list-item-subtitle
+                    class="green--text"
+                    v-html="
+                      data.item.cup_name +
+                        ' (' +
+                        $moment(data.item.start_date).format('YYYY') +
+                        ')'
+                    "
+                  ></v-list-item-subtitle>
+                  <v-list-item-subtitle
+                    class="blue--text"
+                    v-html="$moment(data.item.start_date).format('DD.MM.YYYY')"
+                  ></v-list-item-subtitle>
+                  <v-list-item-subtitle v-if="!data.item.isFinished"
+                    >Kesken!</v-list-item-subtitle
+                  >
+                </v-list-item-content>
+              </template>
+            </v-select>
           </v-col>
         </v-row>
         <v-row>

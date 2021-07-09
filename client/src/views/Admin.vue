@@ -2,7 +2,7 @@
   <!-- /admin -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container>
-    <Header />
+    <Header style="margin-bottom:100px" />
     <!-- Tabs -->
     <v-tabs
       v-model="tab"
@@ -100,7 +100,7 @@
             <!-- if this.loading_competitions === false, meaning app isn't loading competitions, then show this div -->
             <v-row v-if="!loading_competitions">
               <v-col class="inputarea black--text" md="6" offset-md="3">
-                <p v-if="competitions.length" class="flow-text">
+                <p v-if="all_competitions.length" class="flow-text">
                   <i class="material-icons">directions_boat</i> Kilpailuja
                   yhteensä: {{ all_competitions.length }} kpl<br />---> Itse
                   luotuja {{ competitions.length }}/{{
@@ -424,7 +424,7 @@
               </v-col>
             </v-row>
             <!-- if there are competitions in database-->
-            <v-row v-if="competitions.length">
+            <v-row v-if="all_competitions.length">
               <v-col>
                 <v-card :dark="$store.getters.getTheme">
                   <v-card-title>
@@ -485,7 +485,7 @@
                             ><v-icon>mdi-delete-outline</v-icon></v-btn
                           >
                         </template>
-                        <span>Siirry kilpailuun</span>
+                        <span>Poista kilpailu</span>
                       </v-tooltip>
                     </template>
                   </v-data-table>
@@ -853,14 +853,14 @@ export default {
         ).name;
         competition.start_date = this.$moment(competition.start_date);
         competition.end_date = this.$moment(competition.end_date);
+        competition.cup_name = `${
+          competition.cup_name
+        } (${competition.start_date.format("YYYY")})`;
       });
       // Sort them based on start_date so the oldest competitions are the last
       this.all_competitions.sort(function compare(a, b) {
         return b.start_date.isAfter(a.start_date);
       });
-      this.competitions = this.all_competitions.filter(
-        (competition) => competition.user_id === this.user_id
-      );
       this.getCups();
       this.loading_competitions = false;
     } catch (err) {
@@ -1016,14 +1016,10 @@ export default {
           //Delete competition from database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
           await CompetitionService.deleteCompetition(id);
           // No query, get all competitions
-          this.competitions = await CompetitionService.getCompetitions();
-          // Change dates to moment objects, so they are easy to format
-          this.competitions.forEach((competition) => {
-            competition.start_date = this.$moment(competition.start_date);
-            competition.end_date = this.$moment(competition.end_date);
-          });
-          // Store to vuex
-          this.$store.state.competitions = this.competitions;
+          let index = this.all_competitions.findIndex((c) => c._id === id);
+          if (index > -1) {
+            this.all_competitions.splice(index, 1);
+          }
           this.loading_competitions = false;
         } catch (err) {
           console.error(err.message);

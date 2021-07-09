@@ -1284,7 +1284,7 @@ export default {
       this.$store.commit("replaceSignee", this.competition_boat);
       let comp = this.$store.getters.getCompetition;
       let normal_results = this.calculateNormalResults(comp);
-      let competition_total_weights = this.calculateTotalWeights();
+      let temp_total_weights = this.calculateTotalWeights();
 
       // Store to database and vuex
       comp.signees = this.$store.getters.getCompetitionSignees;
@@ -1295,7 +1295,8 @@ export default {
       }
       comp.biggest_fishes = this.biggest_fishes;
       comp.biggest_amounts = this.biggest_amounts;
-      comp.total_weights = competition_total_weights;
+      comp.total_weights = temp_total_weights.total_weights;
+      comp.fishes = temp_total_weights.competition_fishes;
 
       // Update competition state
       if (this.still_on_water.length) {
@@ -1316,6 +1317,7 @@ export default {
             team_results: comp.team_results,
             biggest_fishes: comp.biggest_fishes,
             biggest_amounts: comp.biggest_amounts,
+            fishes: comp.fishes,
             total_weights: comp.total_weights,
             state: comp.state,
           },
@@ -1327,6 +1329,7 @@ export default {
         this.boat_number_input = {};
         this.competition_boat = null;
         this.signees = comp.signees;
+        this.competition_fishes = this.$store.getters.getCompetitionFishes;
         this.calculated_total_weights = this.$store.getters.getCompetitionTotalWeights;
         this.result_signees = this.$store.getters.getResultSignees;
         this.still_on_water = this.$store.getters.getStillOnWaterSignees;
@@ -1537,7 +1540,10 @@ export default {
           total_weights += parseInt(fish_weights);
         }
       });
-      return total_weights;
+      return {
+        total_weights: total_weights,
+        competition_fishes: competition_fishes,
+      };
     },
     // Clear all inputs and selections
     clearInputs: function() {

@@ -1014,7 +1014,7 @@ export default {
         this.$store.state.logged_in = true;
         let user = JSON.parse(localStorage.getItem("user"));
         // Check if user is admin
-        //TODO safer way to check this than use localstorage?
+        //TODO safer way to check this than use localstorage? cookies!
         user.is_admin == true
           ? (this.$store.state.is_admin = true)
           : (this.$store.state.is_admin = false);
