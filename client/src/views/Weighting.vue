@@ -973,7 +973,7 @@ export default {
           this.competition_fishes.forEach((fish) => {
             this.inputs.push({
               name: fish.name,
-              value: 0,
+              value: null,
               dialog: false,
               addition: null,
             });
@@ -1098,7 +1098,11 @@ export default {
           (fish) => fish.name === fish_name
         ).weights;
         // Assign the value to input
-        input.value = fish_weights;
+        if (fish_weights > 0) {
+          input.value = fish_weights;
+        } else {
+          input.value = null;
+        }
       });
     },
     // Search signee from database when selected from table
@@ -1165,13 +1169,6 @@ export default {
         M.toast({ html: "Isoin kala tallennettu listaan!" });
       } else {
         console.log("Jokin input tyhjänä:");
-        let fish = {
-          name: this.selected_fish,
-          boat_number: this.boat_number_input.boat_number,
-          captain_name: this.boat_number_input.captain_name,
-          weight: this.biggest_fish,
-        };
-        console.log(fish);
       }
     },
     // Save all weights to database
@@ -1549,7 +1546,7 @@ export default {
     clearInputs: function() {
       M.toast({ html: "Pyyhitään inputit ja valinnat..." });
       this.inputs.forEach((input) => {
-        input.value = 0;
+        input.value = null;
       });
       this.competition_boat = null;
       this.boat_number_input = {};

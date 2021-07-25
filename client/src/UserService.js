@@ -5,7 +5,7 @@ const register_url = "api/users/register";
 const register_admin_url = "api/users/register-admin";
 const login_url = "api/users/login";
 const auth_url = "api/users/auth";
-
+// TODO restrict access to api!
 class UserService {
   // Get users
   static async getUsers() {

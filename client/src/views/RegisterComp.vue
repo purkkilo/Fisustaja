@@ -483,30 +483,73 @@
                 <v-row>
                   <v-col md="10" offset-md="1">
                     <v-combobox
-                      :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
-                      :dark="$store.getters.getTheme"
                       v-model="selected"
+                      :filter="filter"
+                      :hide-no-data="!search"
                       :items="options"
-                      label="Valitse kalalaji, tai luo oma kirjoittamalla"
+                      :search-input.sync="search"
                       :disabled="fish_species_validated"
+                      hide-selected
+                      label="Valitse kalalaji, tai luo oma kirjoittamalla"
                       multiple
-                      chips
+                      solo
+                      clearable
+                      :rules="rules"
+                      :maxlength="40"
+                      :dark="$store.getters.getTheme"
+                      :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
                     >
-                      <template v-slot:selection="data">
+                      <template v-slot:no-data>
+                        <v-list-item>
+                          <span class="subheading"
+                            >Luo uusi kalalaji painamalla Enter:
+                          </span>
+                          <v-chip :color="`${colors[nonce - 1]}`" label small>
+                            {{ search }}
+                          </v-chip>
+                        </v-list-item>
+                      </template>
+                      <template
+                        v-slot:selection="{ attrs, item, parent, selected }"
+                      >
                         <v-chip
-                          :key="JSON.stringify(data.item)"
-                          v-bind="data.attrs"
-                          :input-value="data.selected"
-                          :disabled="data.disabled"
-                          @click:close="data.parent.selectItem(data.item)"
+                          v-if="item === Object(item)"
+                          v-bind="attrs"
+                          :color="item.color"
+                          :input-value="selected"
+                          label
                         >
-                          <v-avatar
-                            class="accent white--text"
-                            left
-                            v-text="data.item.slice(0, 1).toUpperCase()"
-                          ></v-avatar>
-                          {{ data.item }}
+                          <span class="pr-2">
+                            {{ item.text }}
+                          </span>
+                          <v-icon small @click="parent.selectItem(item)">
+                            $delete
+                          </v-icon>
                         </v-chip>
+                      </template>
+                      <template v-slot:item="{ index, item }">
+                        <v-text-field
+                          v-if="editing === item"
+                          v-model="editing.text"
+                          autofocus
+                          flat
+                          background-color="transparent"
+                          solo
+                          :maxlength="40"
+                          :rules="rules"
+                          @keyup.enter="edit(index, item)"
+                        ></v-text-field>
+                        <v-chip v-else :color="item.color" dark label>
+                          {{ item.text }}
+                        </v-chip>
+                        <v-spacer></v-spacer>
+                        <v-list-item-action @click.stop>
+                          <v-btn icon @click.stop.prevent="edit(index, item)">
+                            <v-icon>{{
+                              editing !== item ? "mdi-pencil" : "mdi-check"
+                            }}</v-icon>
+                          </v-btn>
+                        </v-list-item-action>
                       </template>
                     </v-combobox>
                   </v-col>
@@ -604,7 +647,7 @@
                             'white--text': $store.getters.getTheme,
                           }"
                           :id="'fish_' + (index + 1) + '_name'"
-                          >{{ index + 1 }}. {{ fish }}</span
+                          >{{ index + 1 }}. {{ fish.text }}</span
                         >
                       </v-col>
                       <v-col class="input-fields">
@@ -882,6 +925,7 @@ import CompetitionService from "../CompetitionService";
 import CupService from "../CupService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import Header from "../components/layout/Header";
+import shared from "@/shared";
 
 export default {
   name: "RegisterComp",
@@ -893,7 +937,6 @@ export default {
     return {
       tab: null,
       errors: [],
-      options: ["Ahven", "Hauki", "Kuha", "Lohi", "Taimen"],
       selected: [],
       days_options: [1, 2, 3, 4, 5, 6, 7],
       name: null,
@@ -955,12 +998,51 @@ export default {
         { points: 6, placement: 25 },
         { points: 5, placement: 26 },
       ],
+      activator: null,
+      attach: null,
+      colors: [
+        "green lighten-2",
+        "purple lighten-2",
+        "indigo lighten-2",
+        "cyan lighten-2",
+        "teal lighten-2",
+        "orange lighten-2",
+      ],
+      options: [
+        {
+          text: "Ahven",
+          color: "blue lighten-1",
+        },
+        {
+          text: "Hauki",
+          color: "red lighten-1",
+        },
+        {
+          text: "Kuha",
+          color: "green lighten-1",
+        },
+        {
+          text: "Lohi",
+          color: "purple lighten-1",
+        },
+        {
+          text: "Taimen",
+          color: "indigo lighten-1",
+        },
+      ],
+      editing: null,
+      editingIndex: -1,
+      nonce: 1,
+      menu: false,
+      x: 0,
+      search: null,
+      y: 0,
     };
   },
   // Runs everytime this page loads
   mounted() {
     //Check if user is logged in has admin status, update header
-    this.checkLogin();
+    this.checkLogin = shared.checkLogin;
     M.AutoInit();
     // options_picker variable loads from client\src\i18n.js and contains finnish translations
     /* eslint-disable no-unused-vars */
@@ -973,9 +1055,57 @@ export default {
     location.href = "#";
     location.href = "#app";
   },
+  watch: {
+    selected(val, prev) {
+      if (val.length === prev.length) return;
+
+      this.selected = val.map((v) => {
+        if (typeof v === "string") {
+          let colorIndex = 0;
+          if (this.nonce >= 1) {
+            colorIndex = this.nonce - 1;
+          }
+
+          v = {
+            text: v,
+            color: this.colors[colorIndex],
+          };
+
+          this.options.push(v);
+          this.nonce++;
+        }
+
+        return v;
+      });
+    },
+  },
   methods: {
     changeTab: function(id) {
       this.tab = id;
+    },
+    edit(index, item) {
+      if (!this.editing) {
+        this.editing = item;
+        this.editingIndex = index;
+      } else {
+        this.editing = null;
+        this.editingIndex = -1;
+      }
+    },
+    filter(item, queryText, itemText) {
+      if (item.header) return false;
+
+      const hasValue = (val) => (val != null ? val : "");
+
+      const text = hasValue(itemText);
+      const query = hasValue(queryText);
+
+      return (
+        text
+          .toString()
+          .toLowerCase()
+          .indexOf(query.toString().toLowerCase()) > -1
+      );
     },
     async getCups() {
       const user = JSON.parse(localStorage.getItem("user"));
@@ -1222,18 +1352,12 @@ export default {
 
       // If there are at least one fish chosen from v-select
       if (this.selected.length) {
-        let temp_array = [];
         //TODO better solution for long names, change to vuetify combobox(https://vuetifyjs.com/en/components/combobox/) or vuetify select(https://vuetifyjs.com/en/components/selects/)
         this.selected.forEach((fish) => {
-          if (fish.length > 40) {
-            let shortened = fish.slice(0, 40);
-            temp_array.push(shortened);
-          } else {
-            temp_array.push(fish);
+          if (fish.text.length > 40) {
+            fish.text = fish.text.slice(0, 40);
           }
         });
-        // Sort names based on alphabet
-        this.selected = temp_array.sort();
         // Enable next tab
         // Disable current tab's inputs
         this.disableInputs(true);
@@ -1244,16 +1368,11 @@ export default {
         this.showError("Yhtään kalalajia ei ole valittu!");
       }
     },
-    // Generate random colors for the fish chart in Result.vue (since adding fishes is dynamic)
-    //TODO look for 8-15 good colors to add/choose from, maybe with color picker next to fish name
-    generateRandomColor: function() {
-      var randomColor = "#" + Math.floor(Math.random() * 16777215).toString(16);
-      return randomColor;
-    },
 
     // Validate fish specifications from "Pistekertoimet ja alamitat" tab
     checkFishSpecs: function() {
       this.completed_fish_specs = [];
+      let colors = shared.getRandomColors(this.selected.length);
       this.errors = [];
       // Create fish objects
       for (let i = 1; i < this.selected.length + 1; i++) {
@@ -1267,7 +1386,7 @@ export default {
           ),
           minsize: document.getElementById(`fish_${i}_minsize`).value,
           weights: 0,
-          color: this.generateRandomColor(),
+          color: colors[i - 1],
         };
 
         // If there are some missing inputs
