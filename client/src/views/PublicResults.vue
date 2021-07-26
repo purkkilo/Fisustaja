@@ -101,10 +101,7 @@
               large
               tile
               color="yellow"
-              @click="
-                competition = null;
-                selected_competition = null;
-              "
+              @click="cancelSelection"
               :disabled="!competition"
             >
               <i class="material-icons left">remove_circle</i>Peruuta valinta
@@ -1183,6 +1180,11 @@ export default {
         M.toast({ html: "Olet jo tällä sivulla!" });
       }
     },
+    cancelSelection() {
+      this.competition = null;
+      this.selected_competition = null;
+      localStorage.removeItem("competition");
+    },
     // Calculate "Suurimmat Kalat"
     calculateBiggestFishes() {
       let fishes = this.biggest_fishes;
@@ -1321,6 +1323,14 @@ export default {
             //TODO make a test for this?
             this.competition = competition;
             this.$store.commit("refreshCompetition", this.competition);
+            localStorage.setItem(
+              "competition",
+              JSON.stringify({
+                id: competition._id,
+                start_date: competition.start_date,
+                end_date: competition.end_date,
+              })
+            );
           }
         }
         // Else update and calculate from picked competition
@@ -1398,6 +1408,14 @@ export default {
     pickCompetition: function() {
       this.$store.commit("refreshCompetition", this.selected_competition);
       this.competition = this.selected_competition;
+      localStorage.setItem(
+        "competition",
+        JSON.stringify({
+          id: this.competition._id,
+          start_date: this.competition.start_date,
+          end_date: this.competition.end_date,
+        })
+      );
       this.refreshCompetition(false);
     },
   },

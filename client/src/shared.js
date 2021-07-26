@@ -81,7 +81,7 @@ function dictToArray(dict, type) {
       let fish_weights = values[3];
       values[0] = fish_name;
       values[1] = "x " + String(fish_multiplier);
-      values[2] = fish_minsize;
+      values[2] = fish_minsize + " cm";
       values[3] =
         String(Math.round((fish_weights / 1000 + Number.EPSILON) * 100) / 100) +
         " kg";
