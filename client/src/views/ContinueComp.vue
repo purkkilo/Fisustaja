@@ -76,10 +76,12 @@
                       item.start_date.format("DD.MM.YYYY")
                     }}</v-chip>
                   </template>
-                                    <template v-slot:[`item.cup_name`]="{ item }">
-                    <v-chip>{{
-                      item.cup_name
-                    }} ({{item.start_date.format("YYYY")}})</v-chip>
+                  <template v-slot:[`item.cup_name`]="{ item }">
+                    <v-chip
+                      >{{ item.cup_name }} ({{
+                        item.start_date.format("YYYY")
+                      }})</v-chip
+                    >
                   </template>
                   <template v-slot:[`item.cup_points_multiplier`]="{ item }">
                     <v-chip
@@ -501,21 +503,26 @@ export default {
     //Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)
     checkLogin: function() {
       // If login token present --> user is logged in
-      if (localStorage.getItem("jwt") != null) {
+      const user = JSON.parse(localStorage.getItem("user"));
+      const jwt = localStorage.getItem("jwt");
+      if (user != null && jwt != null) {
         this.$store.state.logged_in = true;
-        let user = JSON.parse(localStorage.getItem("user"));
-        // Set preferences to vuex
-        this.$store.state.isDark = user.preferences.isDark;
-        this.$store.state.lang = user.preferences.lang;
         // Check if user is admin
         //TODO safer way to check this than use localstorage?
         user.is_admin == true
           ? (this.$store.state.is_admin = true)
           : (this.$store.state.is_admin = false);
       } else {
+        if (user) {
+          localStorage.removeItem("user");
+        }
+        if (jwt) {
+          localStorage.removeItem("jwt");
+        }
         //Not logger in, so not admin either
         this.$store.state.logged_in = false;
         this.$store.state.is_admin = false;
+        M.toast({ html: "Tapahtui virhe... Kirjaudu sisään uudestaan" });
       }
     },
     pickCompetition: function(competition) {

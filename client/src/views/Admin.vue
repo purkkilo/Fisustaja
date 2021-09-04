@@ -956,26 +956,6 @@ export default {
       }
       this.loading_cups = false;
     },
-    //Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)
-    checkLogin: function() {
-      // If login token present --> user is logged in
-      if (localStorage.getItem("jwt") != null) {
-        this.$store.state.logged_in = true;
-        let user = JSON.parse(localStorage.getItem("user"));
-        // Set preferences to vuex
-        this.$store.state.isDark = user.preferences.isDark;
-        this.$store.state.lang = user.preferences.lang;
-        // Check if user is admin
-        //TODO safer way to check this than use localstorage?
-        user.is_admin == true
-          ? (this.$store.state.is_admin = true)
-          : (this.$store.state.is_admin = false);
-      } else {
-        //Not logger in, so not admin either
-        this.$store.state.logged_in = false;
-        this.$store.state.is_admin = false;
-      }
-    },
     // Delete received feedback
     async deleteFeedback(id) {
       this.loading = true;
@@ -1039,6 +1019,31 @@ export default {
               console.error(error);
             }
           });
+      }
+    },
+    //Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)
+    checkLogin: function() {
+      // If login token present --> user is logged in
+      const user = JSON.parse(localStorage.getItem("user"));
+      const jwt = localStorage.getItem("jwt");
+      if (user != null && jwt != null) {
+        this.$store.state.logged_in = true;
+        // Check if user is admin
+        //TODO safer way to check this than use localstorage?
+        user.is_admin == true
+          ? (this.$store.state.is_admin = true)
+          : (this.$store.state.is_admin = false);
+      } else {
+        if (user) {
+          localStorage.removeItem("user");
+        }
+        if (jwt) {
+          localStorage.removeItem("jwt");
+        }
+        //Not logger in, so not admin either
+        this.$store.state.logged_in = false;
+        this.$store.state.is_admin = false;
+        M.toast({ html: "Tapahtui virhe... Kirjaudu sisään uudestaan" });
       }
     },
   },

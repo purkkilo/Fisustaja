@@ -138,15 +138,22 @@ export default {
     //Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)
     checkLogin: function() {
       // If login token present --> user is logged in
-      if (localStorage.getItem("jwt") != null) {
+      const user = JSON.parse(localStorage.getItem("user"));
+      const jwt = localStorage.getItem("jwt");
+      if (user != null && jwt != null) {
         this.$store.state.logged_in = true;
-        let user = JSON.parse(localStorage.getItem("user"));
         // Check if user is admin
         //TODO safer way to check this than use localstorage?
         user.is_admin == true
           ? (this.$store.state.is_admin = true)
           : (this.$store.state.is_admin = false);
       } else {
+        if (user) {
+          localStorage.removeItem("user");
+        }
+        if (jwt) {
+          localStorage.removeItem("jwt");
+        }
         //Not logger in, so not admin either
         this.$store.state.logged_in = false;
         this.$store.state.is_admin = false;

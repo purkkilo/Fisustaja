@@ -176,7 +176,6 @@ router.beforeEach((to, from, next) => {
     if (localStorage.getItem("jwt") == null) {
       next({
         path: "/login",
-        params: { nextUrl: to.fullPath },
       });
     } else {
       let user = JSON.parse(localStorage.getItem("user"));

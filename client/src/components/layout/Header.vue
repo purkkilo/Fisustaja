@@ -188,50 +188,52 @@ export default {
     //Init materialize elements
     M.AutoInit();
     const user = JSON.parse(localStorage.getItem("user"));
-    const isAdmin = user["is_admin"];
-    this.$store.state.isDark = this.preferences.isDark;
-    this.isDark = this.preferences.isDark;
-    if (isAdmin) {
-      this.items = [
-        { title: "Dashboardiin", route: "/dashboard", icon: "dashboard" },
-        { title: "Palaute", route: "/feedback", icon: "feedback" },
-        { title: "Admin", route: "/admin", icon: "admin_panel_settings" },
-        {
-          title: "Rekisteröi käyttäjä",
-          route: "/register",
-          icon: "add_circle_outline",
-        },
-        {
-          title: "Julkiset kilpailut",
-          route: "/public-results",
-          icon: "military_tech",
-        },
-        {
-          title: "Julkiset cupit",
-          route: "/public-cups",
-          icon: "emoji_events",
-        },
-      ];
-    } else {
-      this.items = [
-        { title: "Dashboardiin", route: "/dashboard", icon: "dashboard" },
-        { title: "Palaute", route: "/feedback", icon: "feedback" },
-        {
-          title: "Rekisteröi käyttäjä",
-          route: "/register",
-          icon: "add_circle_outline",
-        },
-        {
-          title: "Julkiset kilpailut",
-          route: "/public-results",
-          icon: "military_tech",
-        },
-        {
-          title: "Julkiset cupit",
-          route: "/public-cups",
-          icon: "emoji_events",
-        },
-      ];
+    if (user) {
+      const isAdmin = user["is_admin"];
+      this.$store.state.isDark = this.preferences.isDark;
+      this.isDark = this.preferences.isDark;
+      if (isAdmin) {
+        this.items = [
+          { title: "Dashboardiin", route: "/dashboard", icon: "dashboard" },
+          { title: "Palaute", route: "/feedback", icon: "feedback" },
+          { title: "Admin", route: "/admin", icon: "admin_panel_settings" },
+          {
+            title: "Rekisteröi käyttäjä",
+            route: "/register",
+            icon: "add_circle_outline",
+          },
+          {
+            title: "Julkiset kilpailut",
+            route: "/public-results",
+            icon: "military_tech",
+          },
+          {
+            title: "Julkiset cupit",
+            route: "/public-cups",
+            icon: "emoji_events",
+          },
+        ];
+      } else {
+        this.items = [
+          { title: "Dashboardiin", route: "/dashboard", icon: "dashboard" },
+          { title: "Palaute", route: "/feedback", icon: "feedback" },
+          {
+            title: "Rekisteröi käyttäjä",
+            route: "/register",
+            icon: "add_circle_outline",
+          },
+          {
+            title: "Julkiset kilpailut",
+            route: "/public-results",
+            icon: "military_tech",
+          },
+          {
+            title: "Julkiset cupit",
+            route: "/public-cups",
+            icon: "emoji_events",
+          },
+        ];
+      }
     }
   },
   computed: {
@@ -246,10 +248,10 @@ export default {
       };
     },
     isUser() {
-      if (localStorage.getItem("jwt") != null) {
+      if (localStorage.getItem("user") != null) {
         return JSON.parse(localStorage.getItem("user"));
       } else {
-        return null;
+        return { name: "", email: "" };
       }
     },
     isUserLoggedIn() {
@@ -287,7 +289,7 @@ export default {
         M.toast({ html: "Olet jo tällä sivulla!" });
       }
     },
-    async updatePreferences(isDark, lang) {
+    updatePreferences(isDark, lang) {
       localStorage.setItem(
         "preferences",
         JSON.stringify({ isDark: isDark, lang: lang })

@@ -155,7 +155,7 @@ export default {
         M.toast({ html: "Olet jo tällä sivulla!" });
       }
     },
-    async updatePreferences(isDark, lang) {
+    updatePreferences(isDark, lang) {
       localStorage.setItem(
         "preferences",
         JSON.stringify({ isDark: isDark, lang: lang })

@@ -27,18 +27,15 @@ export default {
     Footer,
   },
   created() {
-    if (!localStorage.getItem("preferences")) {
+    let preferences = JSON.parse(localStorage.getItem("preferences"));
+    if (!preferences) {
       localStorage.setItem(
         "preferences",
         JSON.stringify({ isDark: false, lang: "fi" })
       );
     } else {
-      this.$store.state.isDark = JSON.parse(
-        localStorage.getItem("preferences")
-      ).isDark;
-      this.$store.state.lang = JSON.parse(
-        localStorage.getItem("preferences")
-      ).lang;
+      this.$store.state.isDark = preferences.isDark;
+      this.$store.state.lang = preferences.lang;
     }
   },
   mounted() {

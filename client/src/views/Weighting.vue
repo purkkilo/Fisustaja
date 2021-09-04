@@ -779,7 +779,6 @@
 <script>
 "use strict";
 import M from "materialize-css";
-import { options_picker } from "../i18n";
 import CompetitionService from "../CompetitionService";
 import Timedate from "../components/layout/Timedate";
 import Header from "../components/layout/Header";
@@ -911,9 +910,6 @@ export default {
     this.checkLogin();
     //Init materialize elements
     M.AutoInit();
-    /* eslint-disable no-unused-vars */
-    var collabs = document.querySelectorAll(".collapsible");
-    var instances2 = M.Collapsible.init(collabs, options_picker);
     /* eslint-enable no-unused-vars */
     if (!this.competition_id) {
       const competition = JSON.parse(localStorage.getItem("competition"));
@@ -986,26 +982,6 @@ export default {
       }
       this.loading_site = false;
       this.refreshing = false;
-    },
-    //Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)
-    checkLogin: function() {
-      // If login token present --> user is logged in
-      if (localStorage.getItem("jwt") != null) {
-        this.$store.state.logged_in = true;
-        let user = JSON.parse(localStorage.getItem("user"));
-        // Set preferences to vuex
-        this.$store.state.isDark = user.preferences.isDark;
-        this.$store.state.lang = user.preferences.lang;
-        // Check if user is admin
-        //TODO safer way to check this than use localstorage?
-        user.is_admin == true
-          ? (this.$store.state.is_admin = true)
-          : (this.$store.state.is_admin = false);
-      } else {
-        //Not logger in, so not admin either
-        this.$store.state.logged_in = false;
-        this.$store.state.is_admin = false;
-      }
     },
     // "Kaikki päässeet maaliin" button pressed
     async allFinished() {
@@ -1553,6 +1529,31 @@ export default {
       this.selected_fish = null;
       this.biggest_fish = null;
       this.searched = false;
+    },
+    //Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)
+    checkLogin: function() {
+      // If login token present --> user is logged in
+      const user = JSON.parse(localStorage.getItem("user"));
+      const jwt = localStorage.getItem("jwt");
+      if (user != null && jwt != null) {
+        this.$store.state.logged_in = true;
+        // Check if user is admin
+        //TODO safer way to check this than use localstorage?
+        user.is_admin == true
+          ? (this.$store.state.is_admin = true)
+          : (this.$store.state.is_admin = false);
+      } else {
+        if (user) {
+          localStorage.removeItem("user");
+        }
+        if (jwt) {
+          localStorage.removeItem("jwt");
+        }
+        //Not logger in, so not admin either
+        this.$store.state.logged_in = false;
+        this.$store.state.is_admin = false;
+        M.toast({ html: "Tapahtui virhe... Kirjaudu sisään uudestaan" });
+      }
     },
   },
 };

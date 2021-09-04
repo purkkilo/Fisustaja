@@ -953,24 +953,6 @@ function drawCharts() {
   };
 }
 
-//Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)
-function checkLogin() {
-  // If login token present --> user is logged in
-  if (localStorage.getItem("jwt") != null) {
-    this.$store.state.logged_in = true;
-    let user = JSON.parse(localStorage.getItem("user"));
-    // Check if user is admin
-    //TODO safer way to check this than use localstorage?
-    user.is_admin == true
-      ? (this.$store.state.is_admin = true)
-      : (this.$store.state.is_admin = false);
-  } else {
-    //Not logger in, so not admin either
-    this.$store.state.logged_in = false;
-    this.$store.state.is_admin = false;
-  }
-}
-
 // Sorts the dictionary based on weights
 function sortDict(fishes) {
   if (fishes) {
@@ -1111,7 +1093,6 @@ export default {
   getColorPoints: getColorPoints,
   getColor: getColor,
   drawCharts: drawCharts,
-  checkLogin: checkLogin,
   sortDict: sortDict,
   HSVtoRGB: HSVtoRGB,
   getRandomColors: getRandomColors,

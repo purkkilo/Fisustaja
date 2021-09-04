@@ -3,9 +3,6 @@ const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
   .BundleAnalyzerPlugin;
 
 module.exports = {
-  configureWebpack: {
-    plugins: [new BundleAnalyzerPlugin()],
-  },
   outputDir: "../server/public",
   devServer: {
     proxy: {
@@ -25,7 +22,7 @@ module.exports = {
       },
     },
     plugins: [
-      //new BundleAnalyzerPlugin(),
+      new BundleAnalyzerPlugin(),
       new webpack.IgnorePlugin({
         resourceRegExp: /^\.\/locale$/,
         contextRegExp: /moment$/,

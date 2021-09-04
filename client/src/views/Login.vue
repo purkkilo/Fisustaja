@@ -147,10 +147,6 @@ export default {
               let is_admin = JSON.stringify(response.data.user.is_admin);
               this.$store.state.is_admin = is_admin;
               // Set login token (jwt) and user data to localstorage and vuex
-              let preferences = response.data.user.preferences;
-              if (!preferences) {
-                preferences = { isDark: true, lang: "fi" };
-              }
               localStorage.setItem(
                 "user",
                 JSON.stringify({
@@ -159,12 +155,9 @@ export default {
                   email: response.data.user.email,
                   is_admin: response.data.user.is_admin,
                   createdAt: response.data.user.createdAt,
-                  preferences: preferences,
                 })
               );
               // Set preferences to vuex
-              this.$store.state.isDark = preferences.isDark;
-              this.$store.state.lang = preferences.lang;
               localStorage.setItem("jwt", response.data.token);
               this.$store.state.logged_in = true;
               if (localStorage.getItem("jwt") != null) {

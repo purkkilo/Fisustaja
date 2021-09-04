@@ -1123,7 +1123,6 @@ export default {
     this.getColorPoints = shared.getColorPoints;
     this.getColor = shared.getColor;
     this.drawCharts = shared.drawCharts;
-    this.checkLogin = shared.checkLogin;
     this.sortDict = shared.sortDict;
     this.onafterprint = shared.onafterprint;
     this.onbeforeprint = shared.onbeforeprint;
@@ -1132,7 +1131,7 @@ export default {
     //Init materialize elements
     M.AutoInit();
     /* eslint-disable no-unused-vars */
-
+    this.checkLogin();
     try {
       this.loading = true;
       // Query competitions that are public
@@ -1417,6 +1416,30 @@ export default {
         })
       );
       this.refreshCompetition(false);
+    },
+    //Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)
+    checkLogin: function() {
+      // If login token present --> user is logged in
+      const user = JSON.parse(localStorage.getItem("user"));
+      const jwt = localStorage.getItem("jwt");
+      if (user != null && jwt != null) {
+        this.$store.state.logged_in = true;
+        // Check if user is admin
+        //TODO safer way to check this than use localstorage?
+        user.is_admin == true
+          ? (this.$store.state.is_admin = true)
+          : (this.$store.state.is_admin = false);
+      } else {
+        if (user) {
+          localStorage.removeItem("user");
+        }
+        if (jwt) {
+          localStorage.removeItem("jwt");
+        }
+        //Not logger in, so not admin either
+        this.$store.state.logged_in = false;
+        this.$store.state.is_admin = false;
+      }
     },
   },
 };

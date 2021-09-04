@@ -88,7 +88,6 @@
 <script>
 "use strict";
 import M from "materialize-css";
-import { options_picker } from "../i18n";
 import FeedbackService from "../FeedbackService";
 import Header from "../components/layout/Header";
 
@@ -115,13 +114,6 @@ export default {
   mounted() {
     //Init materialize elements
     M.AutoInit();
-    /* eslint-disable no-unused-vars */
-    var tabs = document.querySelectorAll(".tabs");
-    var instance = M.Tabs.init(tabs, options_picker);
-
-    var collabs = document.querySelectorAll(".collapsible");
-    var instances2 = M.Collapsible.init(collabs, options_picker);
-    /* eslint-enable no-unused-vars */
     // Set "Bugi" to v-select as initial value
     this.type = this.type_options[0];
     //Check if user is logged in has admin status, update header
@@ -163,15 +155,22 @@ export default {
     //Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)
     checkLogin: function() {
       // If login token present --> user is logged in
-      if (localStorage.getItem("jwt") != null) {
+      const user = JSON.parse(localStorage.getItem("user"));
+      const jwt = localStorage.getItem("jwt");
+      if (user != null && jwt != null) {
         this.$store.state.logged_in = true;
-        let user = JSON.parse(localStorage.getItem("user"));
         // Check if user is admin
         //TODO safer way to check this than use localstorage?
         user.is_admin == true
           ? (this.$store.state.is_admin = true)
           : (this.$store.state.is_admin = false);
       } else {
+        if (user) {
+          localStorage.removeItem("user");
+        }
+        if (jwt) {
+          localStorage.removeItem("jwt");
+        }
         //Not logger in, so not admin either
         this.$store.state.logged_in = false;
         this.$store.state.is_admin = false;

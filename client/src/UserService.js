@@ -18,7 +18,6 @@ class UserService {
         email: user.email,
         is_admin: user.is_admin,
         createdAt: user.createdAt,
-        preferences: user.preferences,
       }));
     } catch (err) {
       return err;
