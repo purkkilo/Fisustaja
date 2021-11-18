@@ -18,12 +18,12 @@ New:
   ☐ Also Fix warning from entrypoint app being too large (optimize somehow)
   ☐ Profile page? @low 
   ☐ Implement ability to create own point system (custom cup_placement_points_array)
-  ☐ Improve login and registering
-  ☐ Re-implement login/logout/session using https://chrismroberts.com/2019/01/03/authentication-and-protected-routes-in-vuejs/#Protected-Routes
   ☐ Add internatialization @low https://www.freecodecamp.org/news/how-to-add-internationalization-to-a-vue-application-d9cfdcabb03b/
   ☐ Create all fishes category in biggest fishes and biggest amounts
   ☐ Remove errors going to browser console
-  ☐ Change so that in public-cups cup competitions are only fetched when cup is selected
+  ☐ Reimplement api for competitions,cups and feedback (like users)
+  ☐ Replace materialize components with vuetify (toast -> snackbar etc.)
+
 
 Done:
   ✔ Create signees database collection @started(20-05-26 11:19) @today @done(20-05-27 19:34) @lasted(1d8h15m1s)

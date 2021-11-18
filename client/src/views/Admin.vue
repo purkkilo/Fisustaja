@@ -857,6 +857,10 @@ export default {
           competition.cup_name
         } (${competition.start_date.format("YYYY")})`;
       });
+
+      this.competitions = this.all_competitions.filter(
+        (competition) => competition.user_id === this.user_id
+      );
       // Sort them based on start_date so the oldest competitions are the last
       this.all_competitions.sort(function compare(a, b) {
         return b.start_date.isAfter(a.start_date);

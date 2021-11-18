@@ -52,7 +52,7 @@ async function loadFeedbackCollection() {
   if (process.env.NODE_ENV === "production") {
     mongodb_url = process.env.MONGODB_URI;
   } else {
-    const config = require("./config.json");
+    const config = require("../../config/config.json");
     mongodb_url = config.mongodb_url;
   }
 

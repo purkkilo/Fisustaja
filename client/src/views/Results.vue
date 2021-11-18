@@ -1249,7 +1249,6 @@ export default {
       }
     },
     choosePrints: function() {
-      // FIXME / TODO printing of statistics
       this.dialog_print = false;
       this.saveAllAsPDF(this.tab);
     },

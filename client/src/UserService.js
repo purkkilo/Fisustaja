@@ -2,16 +2,14 @@ import axios from "axios";
 
 const url = "api/users/";
 const register_url = "api/users/register";
-const register_admin_url = "api/users/register-admin";
 const login_url = "api/users/login";
-const auth_url = "api/users/auth";
-// TODO restrict access to api!
+
 class UserService {
-  // Get users
+  // Get all the users (only admin)
   static async getUsers() {
     const res = await axios.get(url);
     try {
-      const data = res.data;
+      const data = res.data.users;
       return data.map((user) => ({
         _id: user._id,
         name: user.name,
@@ -24,57 +22,78 @@ class UserService {
     }
   }
 
-  // Get users
-  static async getEmail(email) {
-    const res = await axios.get(`${url}${email}`);
-    try {
-      const data = res.data;
-      return data.map((user) => ({
-        email: user.email,
-      }));
-    } catch (err) {
-      return err;
-    }
-  }
-
   // Create user
-  static insertUser(user) {
-    return axios.post(register_url, {
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      password: user.password,
-      is_admin: false,
-    });
+  static async insertUser(user) {
+    let res = {};
+    await axios
+      .post(register_url, {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        password: user.password,
+        is_admin: user.is_admin,
+      })
+      .then((response) => {
+        res = response.data;
+      })
+      .catch((err) => {
+        res = {
+          error: err.response.data.msg ? err.response.data : err,
+          success: false,
+        };
+      });
+    return res;
   }
 
-  // Create admin
-  static insertAdmin(user) {
-    return axios.post(register_admin_url, {
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      password: user.password,
-      is_admin: user.is_admin,
-    });
+  // Login user
+  static async loginUser(user) {
+    let res = {};
+    await axios
+      .post(login_url, {
+        name: user.name,
+        email: user.email,
+        password: user.password,
+      })
+      .then((response) => {
+        let { user, is_admin } = updateLocalStorage(response);
+        res = { user: user, is_admin: is_admin, success: true };
+      })
+      .catch((err) => {
+        res = {
+          error: err.response.data,
+          success: false,
+          status: err.response.status,
+        };
+      });
+    return res;
   }
 
-  // Get user
-  static loginUser(user) {
-    return axios.post(login_url, {
-      email: user.email,
-      password: user.password,
-    });
-  }
-
-  //Update preferences
-  static updateUser(id, newvalues) {
-    return axios.put(`${url}${id}`, newvalues);
-  }
-
-  //Verify token
-  static checkToken(token) {
-    return axios.post(auth_url, { token: token });
+  // logout user
+  static async logoutUser() {
+    await localStorage.removeItem("token");
+    await localStorage.removeItem("user");
+    delete axios.defaults.headers.common["Authorization"];
+    return;
   }
 }
+
+function updateLocalStorage(response) {
+  // Check if user is admin
+  let is_admin = JSON.stringify(response.data.user.is_admin);
+  let user = {
+    id: response.data.user._id,
+    name: response.data.user.name,
+    email: response.data.user.email,
+    is_admin: response.data.user.is_admin,
+    createdAt: response.data.user.createdAt,
+  };
+  let token = response.data.token;
+  // Set login token (jwt) and user data to localstorage and vuex
+  localStorage.setItem("user", JSON.stringify(user));
+  // Set preferences to vuex
+  localStorage.setItem("jwt", token);
+  axios.defaults.headers.common["Authorization"] = token;
+  return { is_admin, user };
+}
+
 export default UserService;

@@ -497,7 +497,6 @@ function saveAllAsPDF(tab) {
       ];
       // Format dictionary/json to format that autotable understands (arrays in arrays);
       rows = this.dictToArray(this.normal_points, 1);
-      //TODO generate table in code instead of html, like the others
       doc.autoTable({
         head: [columns],
         body: rows,
@@ -869,7 +868,6 @@ function saveAllAsPDF(tab) {
   }
 }
 
-//Fix chartjs printing:
 function onbeforeprint() {
   const Chart = require("chart.js");
   for (var id in Chart.instances) {

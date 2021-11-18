@@ -232,115 +232,25 @@ export default {
         this.password.length > 0
       ) {
         if (!this.errors.length) {
-          // Check if  user has already registered with this email
-          let users = await UserService.getEmail(this.email);
-          // User(s) found
-          if (users.length) {
-            this.showError(
-              "Tällä sähköpostilla on jo rekisteröitynyt käyttäjä!"
-            );
-            this.loading = false;
-          }
-          // No user found, so register user
-          else {
-            //TODO more password validation (password length etc.)
-            // If value of radiobox is "Yes"
-            if (this.is_admin == "Yes") {
-              // User object, as admin
-              const user = {
-                name: this.name,
-                email: this.email,
-                password: this.password,
-                is_admin: true,
-              };
-              // Add admin to database (check 'client\src\UserServiceService.js' and 'server\routes\api\users.js' to see how this works)
-              await UserService.insertAdmin(user)
-                .then((response) => {
-                  // If no errors, log in the user
-                  // Set values to localstorage and vuex
-                  localStorage.setItem(
-                    "user",
-                    JSON.stringify({
-                      id: response.data.user._id,
-                      name: response.data.user.name,
-                      email: response.data.user.email,
-                      is_admin: response.data.user.is_admin,
-                      createdAt: response.data.user.createdAt,
-                    })
-                  );
-
-                  localStorage.setItem("jwt", response.data.token);
-                  // Set preferences to vuex
-                  this.$store.state.logged_in = true;
-                  this.$store.state.is_admin = true;
-
-                  // Redirect
-                  if (localStorage.getItem("jwt") != null) {
-                    this.$emit("loggedIn");
-                    // if route.params.nextURL not set, redirect to dashboard
-                    if (this.$route.params.nextUrl != null) {
-                      this.$router.push(this.$route.params.nextUrl);
-                    } else {
-                      this.$router.push({ path: "/dashboard" });
-                    }
-                  }
-                  this.loading = false;
-                })
-                .catch((error) => {
-                  this.loading = false;
-                  this.showError(error);
-                });
+          const user = {
+            name: this.name,
+            email: this.email,
+            password: this.password,
+            is_admin: this.is_admin === "Yes" ? true : false,
+          };
+          // Add admin to database (check 'client\src\UserServiceService.js' and 'server\routes\api\users.js' to see how this works)
+          const res = await UserService.insertUser(user);
+          this.loading = false;
+          if (res.success) {
+            this.showError("Käyttäjä rekisteröity!");
+          } else {
+            if (res.error.msg === "Email is already in use!") {
+              this.showError("Sähköposti on jo käytössä!");
+            } else if (res.error.msg === "Username is already taken!") {
+              this.showError("Käyttäjänimi on jo käytössä!");
             } else {
-              // If user is not an admin (radiobutton value = "No")
-              // User object, as regular user
-              const user = {
-                name: this.name,
-                email: this.email,
-                password: this.password,
-              };
-              // Add admin to database (check 'client\src\UserServiceService.js' and 'server\routes\api\users.js' to see how this works)
-              await UserService.insertUser(user)
-                .then((response) => {
-                  // If no errors, log in the user
-                  // Set values to localstorage and vuex
-                  localStorage.setItem(
-                    "user",
-                    JSON.stringify({
-                      id: response.data.user._id,
-                      name: response.data.user.name,
-                      email: response.data.user.email,
-                      is_admin: response.data.user.is_admin,
-                      createdAt: response.data.user.createdAt,
-                    })
-                  );
-
-                  localStorage.setItem("jwt", response.data.token);
-                  // Set preferences to vuex
-                  this.$store.state.logged_in = true;
-                  this.$store.state.is_admin = false;
-
-                  // Redirect
-                  if (localStorage.getItem("jwt") != null) {
-                    this.$emit("loggedIn");
-                    if (this.$route.params.nextUrl != null) {
-                      this.$router.push(this.$route.params.nextUrl);
-                    } else {
-                      this.$router.push({ path: "/dashboard" });
-                    }
-                  }
-                  this.loading = false;
-                })
-                .catch((err) => {
-                  if (err.response.status === 500) {
-                    this.loading = false;
-                    this.showError(
-                      "Ongelma käyttäjän rekisteröimisessä... Tarkasta tiedot ja yritä uudelleen"
-                    );
-                    return;
-                  }
-                  this.loading = false;
-                  return console.error(err);
-                });
+              this.showError("Jokin meni pieleen... yritä uudelleen!");
+              console.log(res.error);
             }
           }
         } else {

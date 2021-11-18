@@ -171,6 +171,7 @@
 
 <script>
 import M from "materialize-css";
+import UserService from "../../UserService";
 
 export default {
   name: "Header",
@@ -184,7 +185,7 @@ export default {
       uploading: false,
     };
   },
-  mounted() {
+  async mounted() {
     //Init materialize elements
     M.AutoInit();
     const user = JSON.parse(localStorage.getItem("user"));
@@ -295,15 +296,16 @@ export default {
         JSON.stringify({ isDark: isDark, lang: lang })
       );
     },
-    logout: function() {
-      localStorage.removeItem("user");
-      localStorage.removeItem("jwt");
-      this.$store.state.logged_in = false;
-      this.$store.state.is_admin = false;
-      this.$router.push({ path: "/" });
-      this.$store.commit("refreshCompetition", null);
-      this.user = null;
-      M.toast({ html: "Kirjattu ulos onnistuneesti!" });
+    async logout() {
+      await UserService.logoutUser().then(() => {
+        // Do something with the module.
+        this.$store.state.logged_in = false;
+        this.$store.state.is_admin = false;
+        this.$router.push({ path: "/" });
+        this.$store.commit("refreshCompetition", null);
+        this.user = null;
+        M.toast({ html: "Kirjattu ulos onnistuneesti!" });
+      });
     },
   },
 };

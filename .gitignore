@@ -1,5 +1,5 @@
 node_modules
-server/routes/api/config.json
+server/config/config.json
 package-lock.json
 client/package-lock.json
 .vscode/settings.json

@@ -64,7 +64,6 @@ export default {
     },
   },
   mounted() {
-    //TODO Fix timers to that they are in sync
     this.setTime();
     this.setDate();
     this.timer_clock = setInterval(this.setTime, this.clock_interval);

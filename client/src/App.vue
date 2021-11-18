@@ -10,6 +10,15 @@
     <v-main>
       <!-- If using vue-router -->
       <router-view></router-view>
+      <v-snackbar v-model="snackbar" :timeout="timeout">
+        {{ text }}
+
+        <template v-slot:action="{ attrs }">
+          <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
+            Close
+          </v-btn>
+        </template>
+      </v-snackbar>
     </v-main>
 
     <Footer />
@@ -18,11 +27,18 @@
 
 <script>
 "use strict";
-import UserService from "./UserService";
 import Footer from "./components/layout/Footer";
+import UserService from "./UserService";
 
 export default {
   name: "App",
+  data() {
+    return {
+      snackbar: false,
+      text: "Sessio vanhentunut, kirjaudu sisään uudelleen!",
+      timeout: 5000,
+    };
+  },
   components: {
     Footer,
   },
@@ -38,39 +54,34 @@ export default {
       this.$store.state.lang = preferences.lang;
     }
   },
-  mounted() {
-    try {
-      window.addEventListener("beforeunload", async function() {
-        //TODO implement this in express? with a '/logout' route and verifyToken middleware somehow?
-        if (localStorage.getItem("jwt") !== null) {
-          let token = localStorage.getItem("jwt");
-          //FIXME gives 400 bad request error on console when token is expired, but still works
-          await UserService.checkToken(token)
-            .then((response) => {
-              // Token valid, no action needed
-              console.log(response);
-            })
-            .catch((err) => {
-              if (err.message === "Request aborted") {
-                return;
-              }
-              // Expired token
-              if (err.response.status === 400) {
-                localStorage.removeItem("jwt");
-                localStorage.removeItem("user");
-                return;
-              }
-              // No token
-              if (err.response.status === 401) {
-                return;
-              }
-              return console.log(err);
-            });
-        }
-      });
-    } catch (err) {
-      console.log(err.message);
+  async mounted() {
+    const token = localStorage.getItem("jwt");
+    if (token) {
+      const jwtPayload = this.parseJwt(token);
+      if (jwtPayload.exp < Date.now() / 1000) {
+        // token expired
+        await UserService.logoutUser().then(() => {
+          this.snackbar = true;
+        });
+      }
     }
+  },
+  methods: {
+    parseJwt(token) {
+      var base64Url = token.split(".")[1];
+      var base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      var jsonPayload = decodeURIComponent(
+        Buffer.from(base64, "base64")
+          .toString("ascii")
+          .split("")
+          .map(function(c) {
+            return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+          })
+          .join("")
+      );
+
+      return JSON.parse(jsonPayload);
+    },
   },
 };
 </script>

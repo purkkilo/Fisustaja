@@ -35,10 +35,9 @@
             <v-col md="8" offset-md="2" class="input-fields">
               <v-text-field
                 :dark="$store.getters.getTheme"
-                id="email"
-                label="Sähköpostiosoite"
-                v-model="email"
-                type="email"
+                id="name"
+                label="Käyttäjänimi"
+                v-model="name"
                 maxlength="40"
                 :loading="loading"
                 :counter="40"
@@ -92,7 +91,7 @@ export default {
   data() {
     return {
       errors: [],
-      email: null,
+      name: null,
       password: null,
       loading: false,
     };
@@ -125,8 +124,8 @@ export default {
     async handleSubmit(e) {
       e.preventDefault();
       this.errors = [];
-      if (!this.email) {
-        this.showError("Syötä sähköposti!");
+      if (!this.name) {
+        this.showError("Syötä Käyttäjänimi!");
       }
       if (!this.password) {
         this.showError("Syötä salasana!");
@@ -136,59 +135,35 @@ export default {
         this.loading = true;
         // user object
         const user = {
-          email: this.email,
+          name: this.name,
+          email: this.name,
           password: this.password,
         };
         try {
           // Login user  (check 'client\src\UserService.js' and 'server\routes\api\users.js' to see how this works)
-          await UserService.loginUser(user)
-            .then((response) => {
-              // Check if user is admin
-              let is_admin = JSON.stringify(response.data.user.is_admin);
-              this.$store.state.is_admin = is_admin;
-              // Set login token (jwt) and user data to localstorage and vuex
-              localStorage.setItem(
-                "user",
-                JSON.stringify({
-                  id: response.data.user._id,
-                  name: response.data.user.name,
-                  email: response.data.user.email,
-                  is_admin: response.data.user.is_admin,
-                  createdAt: response.data.user.createdAt,
-                })
-              );
-              // Set preferences to vuex
-              localStorage.setItem("jwt", response.data.token);
-              this.$store.state.logged_in = true;
-              if (localStorage.getItem("jwt") != null) {
-                this.$emit("loggedIn");
-                if (this.$route.params.nextUrl != null) {
-                  this.$router.push(this.$route.params.nextUrl);
-                }
-                // if route.params.nextURL not set, redirect to dashboard
-                else {
-                  this.$router.push({ path: "/dashboard" });
-                }
-              }
+          let res = await UserService.loginUser(user);
+          if (res.success) {
+            this.$store.state.is_admin = res.is_admin;
+            this.$store.state.logged_in = true;
+            if (this.$route.params.nextUrl != null) {
+              this.$router.push(this.$route.params.nextUrl);
+            }
+            // if route.params.nextURL not set, redirect to dashboard
+            else {
+              this.$router.push({ path: "/dashboard" });
+            }
+            this.loading = false;
+          } else {
+            if (res.status === 401 || res.status === 404) {
               this.loading = false;
-            })
-            .catch((err) => {
-              if (err.response) {
-                if (
-                  err.response.status === 401 ||
-                  err.response.status === 404
-                ) {
-                  this.loading = false;
-                  this.showError("Käyttäjänimi tai salasana ei täsmää!");
-                  return;
-                } else {
-                  this.loading = false;
-                  return console.log(err);
-                }
-              } else {
-                return console.log(err);
-              }
-            });
+              this.showError("Käyttäjänimi tai salasana ei täsmää!");
+              return;
+            } else {
+              this.loading = false;
+              this.showError("Jokin meni vikaan, yritä uudestaan!");
+              console.log(res.error, res.status);
+            }
+          }
         } catch (error) {
           console.log(error);
           this.showError("Näillä tiedoilla ei löytynyt käyttäjää!");

@@ -1,184 +1,158 @@
 const express = require("express");
-const mongodb = require("mongodb");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const verify = require("./verifyToken");
 const router = express.Router();
-let mongodb_url = "";
-let secret = "";
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const passport = require("passport");
+let key;
+const User = require("../../models/User");
 
 if (process.env.NODE_ENV === "production") {
-  mongodb_url = process.env.MONGODB_URI;
-  secret = process.env.SECRET;
+  key = process.env.secret;
 } else {
-  const config = require("./config.json");
-  mongodb_url = config.mongodb_url;
-  secret = config.secret;
+  const config = require("../../config/config.json");
+  key = config.secret;
 }
 
-// Get users
-router.get("/", async (req, res) => {
-  const users = await loadUsersCollection();
+/**
+ * @route POST api/users/register
+ * @desc Register the User
+ * @access Public
+ */
+router.post("/register", (req, res) => {
+  let { name, email, password, is_admin } = req.body;
 
-  if (users) {
-    res.send(await users.find({}).toArray());
-  } else {
-    // Connection timed out
-    res.status(408).send();
-  }
-});
-
-// Get user
-router.get("/:email", async (req, res) => {
-  const users = await loadUsersCollection();
-
-  if (users) {
-    res.send(await users.find({ email: req.params.email }).toArray());
-  } else {
-    // Connection timed out
-    res.status(408).send();
-  }
-});
-
-// REGISTER ROUTES
-router.post("/register", async (req, res) => {
-  const users = await loadUsersCollection();
-
-  if (users) {
-    await users.insertOne(
-      {
-        name: req.body.name,
-        email: req.body.email,
-        password: bcrypt.hashSync(req.body.password, 8),
-        preferences: req.body.preferences,
-        createdAt: new Date(),
-      },
-      async function (err) {
-        if (err)
-          return res
-            .status(500)
-            .send("There was a problem registering the user.");
-        await users.findOne({ email: req.body.email }, (err, user) => {
-          if (err)
-            return res.status(500).send("There was a problem getting user");
-          let token = jwt.sign({ id: user.id }, secret, {
-            expiresIn: 86400, // expires in 24 hours
-          });
-          res.status(200).send({ auth: true, token: token, user: user });
-        });
-      }
-    );
-  } else {
-    // Connection timed out
-    res.status(408).send();
-  }
-});
-
-router.post("/register-admin", async (req, res) => {
-  const users = await loadUsersCollection();
-
-  if (users) {
-    await users.insertOne(
-      {
-        name: req.body.name,
-        email: req.body.email,
-        password: bcrypt.hashSync(req.body.password, 8),
-        is_admin: true,
-        preferences: req.body.preferences,
-        createdAt: new Date(),
-      },
-      async function (err) {
-        if (err)
-          return res
-            .status(500)
-            .send("There was a problem registering the user.");
-        await users.findOne({ email: req.body.email }, (err, user) => {
-          if (err)
-            return res.status(500).send("There was a problem getting user");
-          let token = jwt.sign({ id: user.id }, secret);
-          res.status(200).send({ auth: true, token: token, user: user });
-        });
-      }
-    );
-  } else {
-    // Connection timed out
-    res.status(408).send();
-  }
-});
-
-// Update users preferences
-router.put("/:id", async (req, res) => {
-  const users = await loadUsersCollection();
-
-  if (users) {
-    const newvalues = req.body;
-    await users.updateOne(
-      { _id: new mongodb.ObjectID(req.params.id) },
-      newvalues
-    );
-    res.status(204).send();
-  } else {
-    // Connection timed out
-    res.status(408).send();
-  }
-});
-
-// Login ROUTES
-router.post("/login", async (req, res) => {
-  const users = await loadUsersCollection();
-  if (users) {
-    await users.findOne({ email: req.body.email }, (err, user) => {
-      if (err) return res.status(500).send("Error on the server.");
-      if (!user) return res.status(404).send("No user found.");
-      let passwordIsValid = bcrypt.compareSync(
-        req.body.password,
-        user.password
-      );
-      if (!passwordIsValid)
-        return res.status(401).send({ auth: false, token: null });
-      let token = jwt.sign({ id: user.id }, secret, {
-        expiresIn: 86400, // expires in 24 hours
+  User.findOne({ email: email }).then((user) => {
+    if (user) {
+      console.log("Email is already in use!");
+      res.status(409).json({
+        msg: "Email is already in use!",
       });
-      res.header("auth-token", token);
-      res.status(200).send({ auth: true, token: token, user: user });
-    });
-  } else {
-    // Connection timed out
-    res.status(408).send();
-  }
+      return;
+    } else {
+      // Check name and email for duplicates
+      User.findOne({ name: name }).then((user) => {
+        if (user) {
+          console.log("Username is already taken!");
+          res.status(409).json({
+            msg: "Username is already taken!",
+          });
+          return;
+        } else {
+          // User is valid
+          let newUser = new User({
+            name,
+            email,
+            password,
+            is_admin,
+          });
+
+          // Hash the password
+          bcrypt.genSalt(10, (err, salt) => {
+            bcrypt.hash(newUser.password, salt, (err, hash) => {
+              if (err) {
+                console.log(err);
+                res.sendStatus(500);
+                return;
+              }
+              newUser.password = hash;
+              newUser.save().then((user) => {
+                res.status(201).json({
+                  success: true,
+                  msg: "User is now registered.",
+                });
+                return;
+              });
+            });
+          });
+        }
+      });
+    }
+  });
 });
 
-router.post("/auth", async (req, res) => {
-  const token = req.body.token;
-  if (!token) return res.status(401).send("No token!");
-
-  try {
-    // Check token, if expired throws an error
-    const verified = jwt.verify(token, secret);
-    req.user = verified;
-  } catch (err) {
-    //TokenExpiredError
-    if (err.message === "jwt expired") {
-      res.status(400).send("Expired Token");
+/**
+ * @route POST api/users/login
+ * @desc Login the User
+ * @access Public
+ */
+router.post("/login", (req, res) => {
+  User.findOne({ name: req.body.name }).then((user) => {
+    if (!user) {
+      res.status(404).json({
+        msg: "Username not found",
+        success: false,
+      });
+      return;
+    } else {
+      // If there is user, compare the password
+      bcrypt.compare(req.body.password, user.password).then((isMatch) => {
+        if (isMatch) {
+          // Password correct! send back JSON Token back
+          const payload = {
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            is_admin: user.is_admin,
+          };
+          // token expires in a week
+          jwt.sign(payload, key, { expiresIn: 10 }, (err, token) => {
+            res.status(200).json({
+              success: true,
+              token: `Bearer ${token}`,
+              user: user,
+              msg: "You are now logged in!",
+            });
+          });
+        } else {
+          res.status(404).json({
+            msg: "Incorrect password",
+            success: false,
+          });
+          return;
+        }
+      });
     }
-    //All other errors?
-    else {
-      res.status(400).send("Invalid Token");
-    }
-  }
+  });
 });
 
-async function loadUsersCollection() {
-  try {
-    const client = await mongodb.MongoClient.connect(mongodb_url, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+/**
+ * @route POST api/users/profile
+ * @desc Return the User's data
+ * @access Private
+ */
+router.get(
+  "/profile",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    return res.json({
+      user: req.user,
     });
-
-    return client.db("fisustaja").collection("users");
-  } catch (err) {
-    console.log(err.message);
   }
-}
+);
+
+/**
+ * @route POST api/users/
+ * @desc Return users
+ * @access Private
+ */
+router.get(
+  "/",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    if (req.user.is_admin) {
+      User.find({}).then((users) => {
+        return res.json({
+          users: users,
+        });
+      });
+    } else {
+      res.status(401).json({
+        msg: "Unauthorized access",
+        success: false,
+      });
+      return;
+    }
+  }
+);
 
 module.exports = router;
