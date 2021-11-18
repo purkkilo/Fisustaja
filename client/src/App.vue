@@ -58,29 +58,37 @@ export default {
     const token = localStorage.getItem("jwt");
     if (token) {
       const jwtPayload = this.parseJwt(token);
-      if (jwtPayload.exp < Date.now() / 1000) {
-        // token expired
-        await UserService.logoutUser().then(() => {
-          this.snackbar = true;
-        });
+      if (jwtPayload) {
+        if (jwtPayload.exp < Date.now() / 1000) {
+          // token expired
+          await UserService.logoutUser().then(() => {
+            this.snackbar = true;
+          });
+        }
+      } else {
+        console.log("parseJwt error");
       }
     }
   },
   methods: {
     parseJwt(token) {
-      var base64Url = token.split(".")[1];
-      var base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-      var jsonPayload = decodeURIComponent(
-        Buffer.from(base64, "base64")
-          .toString("ascii")
-          .split("")
-          .map(function(c) {
-            return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
-          })
-          .join("")
-      );
+      try {
+        var base64Url = token.split(".")[1];
+        var base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+        var jsonPayload = decodeURIComponent(
+          Buffer.from(base64, "base64")
+            .toString("ascii")
+            .split("")
+            .map(function(c) {
+              return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+            })
+            .join("")
+        );
 
-      return JSON.parse(jsonPayload);
+        return JSON.parse(jsonPayload);
+      } catch {
+        return null;
+      }
     },
   },
 };
