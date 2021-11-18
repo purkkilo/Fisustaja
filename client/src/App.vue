@@ -59,6 +59,7 @@ export default {
     if (token) {
       const jwtPayload = this.parseJwt(token);
       if (jwtPayload) {
+        console.log(jwtPayload);
         if (jwtPayload.exp < Date.now() / 1000) {
           // token expired
           await UserService.logoutUser().then(() => {
@@ -73,6 +74,7 @@ export default {
   },
   methods: {
     parseJwt(token) {
+      console.log(token);
       try {
         var base64Url = token.split(".")[1];
         var base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
