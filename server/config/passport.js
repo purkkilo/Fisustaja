@@ -11,7 +11,6 @@ if (process.env.NODE_ENV === "production") {
 }
 
 const opts = {};
-console.log(key);
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = key;
 

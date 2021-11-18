@@ -37,7 +37,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 let db = "";
 if (process.env.NODE_ENV === "production") {
-  db = process.env.mongodb_url;
+  db = process.env.MONGODB_URI;
 } else {
   const config = require("./config/config.json");
   db = config.mongodb_url;
