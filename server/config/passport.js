@@ -4,13 +4,14 @@ const User = require("../models/User");
 let key;
 
 if (process.env.NODE_ENV === "production") {
-  key = process.env.secret;
+  key = process.env.SECRET;
 } else {
   const config = require("./config.json");
   key = config.secret;
 }
 
 const opts = {};
+console.log(key);
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = key;
 
