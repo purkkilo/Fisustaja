@@ -7,7 +7,7 @@ let key;
 const User = require("../../models/User");
 
 if (process.env.NODE_ENV === "production") {
-  key = process.env.secret;
+  key = process.env.SECRET;
 } else {
   const config = require("../../config/config.json");
   key = config.secret;
