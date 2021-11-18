@@ -23,6 +23,7 @@ New:
   ☐ Remove errors going to browser console
   ☐ Reimplement api for competitions,cups and feedback (like users)
   ☐ Replace materialize components with vuetify (toast -> snackbar etc.)
+  ☐ Implement refreshing access tokens
 
 
 Done:

@@ -63,6 +63,7 @@ export default {
           // token expired
           await UserService.logoutUser().then(() => {
             this.snackbar = true;
+            this.$router.push({ path: "/login" });
           });
         }
       } else {

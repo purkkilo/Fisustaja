@@ -95,7 +95,7 @@ router.post("/login", (req, res) => {
             is_admin: user.is_admin,
           };
           // token expires in a week
-          jwt.sign(payload, key, { expiresIn: 10 }, (err, token) => {
+          jwt.sign(payload, key, { expiresIn: 604800 }, (err, token) => {
             res.status(200).json({
               success: true,
               token: `Bearer ${token}`,
@@ -146,6 +146,7 @@ router.get(
         });
       });
     } else {
+      console.log("Unauthorized access");
       res.status(401).json({
         msg: "Unauthorized access",
         success: false,
