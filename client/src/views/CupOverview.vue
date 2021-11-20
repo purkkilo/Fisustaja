@@ -1,7 +1,7 @@
 <template>
   <!-- /cup-overview -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <v-container>
+  <v-container style="width: 70%">
     <Header style="margin-bottom:60px" />
     <v-row class="valign-wrapper">
       <v-col md="3">
@@ -209,7 +209,7 @@
                         >
                       </v-card-title>
                       <v-card-text>
-                        <v-container>
+                        <v-container style="width: 70%">
                           <div v-if="errors.length">
                             <ul
                               class="collection with-header"
@@ -986,8 +986,6 @@ export default {
   created() {},
   mounted() {
     this.competition = localStorage.getItem("competition");
-    //Check if user is logged in has admin status, update header
-    this.checkLogin();
     // IF competition on localstorage
     if (localStorage.getItem("cup") != null) {
       // update from database
@@ -1099,7 +1097,9 @@ export default {
         });
 
         for (const fish in competition.biggest_fishes) {
-          let fishes = competition.biggest_fishes[fish].sort(sortBy("weight"));
+          let fishes = competition.biggest_fishes[fish].sort(
+            sortBy("weight", false)
+          );
           if (fishes[0].weight > 0) {
             all_biggest_fishes.push({
               boat_number: fishes[0].boat_number,
@@ -1112,7 +1112,9 @@ export default {
         }
 
         for (const fish in competition.biggest_amounts) {
-          let fishes = competition.biggest_amounts[fish].sort(sortBy("weight"));
+          let fishes = competition.biggest_amounts[fish].sort(
+            sortBy("weight", false)
+          );
           if (fishes[0].weight > 0) {
             all_biggest_amounts.push({
               boat_number: fishes[0].boat_number,
@@ -1126,7 +1128,7 @@ export default {
       });
 
       // Data for Kalasaaliit tab
-      this.cup_fishes_total = all_fishes.sort(sortBy("weights"));
+      this.cup_fishes_total = all_fishes.sort(sortBy("weights", false));
       this.cup_fishes_total.forEach((fish) => {
         all_labels.push(fish.name);
         all_data.push(fish.weights);
@@ -1143,7 +1145,7 @@ export default {
       };
 
       this.cup_fishes_competition = this.cup_fishes_competition.sort(
-        sortBy("weights")
+        sortBy("weights", false)
       );
       this.cup_fishes_competition.forEach((fish) => {
         competition_labels.push(`${fish.name} (${fish.comp_name})`);
@@ -1161,7 +1163,9 @@ export default {
       };
 
       // Data for Suurimmat kalat tab
-      this.cup_biggest_fishes = all_biggest_fishes.sort(sortBy("weight"));
+      this.cup_biggest_fishes = all_biggest_fishes.sort(
+        sortBy("weight", false)
+      );
       this.cup_biggest_fishes.forEach((item) => {
         all_biggest_fishes_labels.push(
           `${item.fish_name}, Vene (${item.boat_number})`
@@ -1182,7 +1186,9 @@ export default {
       };
 
       // Data for Suurimmat kalat tab
-      this.cup_biggest_amounts = all_biggest_amounts.sort(sortBy("weight"));
+      this.cup_biggest_amounts = all_biggest_amounts.sort(
+        sortBy("weight", false)
+      );
       this.cup_biggest_amounts.forEach((item) => {
         all_biggest_amounts_labels.push(
           `${item.fish_name} | Venekunta nro. (${item.boat_number})`
@@ -1203,7 +1209,7 @@ export default {
       };
 
       // Data for Kilpailijat tab
-      this.cup_signees = all_signees.sort(sortBy("signees"));
+      this.cup_signees = all_signees.sort(sortBy("signees", false));
       this.cup_signees.forEach((item) => {
         all_signees_labels.push(item.comp_name);
         all_signees_data.push(item.signees);
@@ -1487,7 +1493,7 @@ export default {
             this.competitions.sort((a, b) => {
               return b.start_date.isBefore(a.start_date);
             });
-            this.signees = this.cup.signees.sort(sortBy("boat_number"));
+            this.signees = this.cup.signees.sort(sortBy("boat_number", true));
             this.signees.forEach((signee) => {
               signee.dialog = false;
             });
@@ -1504,31 +1510,6 @@ export default {
         console.log(err.message);
       }
       this.loading = false;
-    },
-    //Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)
-    checkLogin: function() {
-      // If login token present --> user is logged in
-      const user = JSON.parse(localStorage.getItem("user"));
-      const jwt = localStorage.getItem("jwt");
-      if (user != null && jwt != null) {
-        this.$store.state.logged_in = true;
-        // Check if user is admin
-        //TODO safer way to check this than use localstorage?
-        user.is_admin == true
-          ? (this.$store.state.is_admin = true)
-          : (this.$store.state.is_admin = false);
-      } else {
-        if (user) {
-          localStorage.removeItem("user");
-        }
-        if (jwt) {
-          localStorage.removeItem("jwt");
-        }
-        //Not logger in, so not admin either
-        this.$store.state.logged_in = false;
-        this.$store.state.is_admin = false;
-        M.toast({ html: "Tapahtui virhe... Kirjaudu sisään uudestaan" });
-      }
     },
     pickCompetition: function(competition) {
       // Pick competition for the app to use
@@ -1783,7 +1764,7 @@ export default {
         );
         */
         columns = ["Kilp. numero", "Kippari", "Varakippari", "Paikkakunta"];
-        this.signees = this.cup.signees.sort(sortBy("boat_number"));
+        this.signees = this.cup.signees.sort(sortBy("boat_number", true));
         rows = this.dictToArray(this.signees, 2);
         /* eslint-disable no-unused-vars */
         // Just add some empty rows for new signees
@@ -1827,9 +1808,13 @@ export default {
   },
 };
 
-function sortBy(field) {
+function sortBy(field, isAscending) {
   return function(a, b) {
-    return (b[field] > a[field]) - (b[field] < a[field]);
+    if (isAscending) {
+      return (b[field] < a[field]) - (b[field] > a[field]);
+    } else {
+      return (b[field] > a[field]) - (b[field] < a[field]);
+    }
   };
 }
 

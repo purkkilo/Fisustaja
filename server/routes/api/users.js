@@ -95,15 +95,21 @@ router.post("/login", (req, res) => {
             is_admin: user.is_admin,
           };
           // token expires in a week
-          jwt.sign(payload, key, { expiresIn: 604800 }, (err, token) => {
-            console.log(err);
-            console.log(token);
-            res.status(200).json({
-              success: true,
-              token: `Bearer ${token}`,
-              user: user,
-              msg: "You are now logged in!",
-            });
+          jwt.sign(payload, key, { expiresIn: 86400 }, (err, token) => {
+            if (err) {
+              res.status(409).json({
+                msg: "Error with creating token",
+                error: err,
+                success: false,
+              });
+            } else {
+              res.status(200).json({
+                success: true,
+                token: `Bearer ${token}`,
+                user: user,
+                msg: "You are now logged in!",
+              });
+            }
           });
         } else {
           res.status(404).json({
@@ -124,10 +130,56 @@ router.post("/login", (req, res) => {
  */
 router.get(
   "/profile",
-  passport.authenticate("jwt", { session: false }),
+  passport.authenticate("jwt", { session: false, failWithError: true }),
   (req, res) => {
     return res.json({
       user: req.user,
+    });
+  },
+  (err, req, res, next) => {
+    res.status(401).json({
+      error: "Unauthorized access",
+    });
+  }
+);
+
+/**
+ * @route POST api/users/profile
+ * @desc Return the User's data
+ * @access Private
+ */
+router.post(
+  "/refresh-token",
+  passport.authenticate("jwt", { session: false, failWithError: true }),
+  (req, res) => {
+    // Refresh access token
+    const user = req.body.user;
+    const payload = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      is_admin: user.is_admin,
+    };
+    jwt.sign(payload, key, { expiresIn: 86400 }, (err, token) => {
+      if (err) {
+        res.status(409).json({
+          msg: "Error with creating token",
+          error: err,
+          success: false,
+        });
+      } else {
+        res.status(200).json({
+          success: true,
+          token: `Bearer ${token}`,
+          user: user,
+          msg: "Token refreshed!",
+        });
+      }
+    });
+  },
+  (err, req, res, next) => {
+    res.status(401).json({
+      error: "Unauthorized access",
     });
   }
 );
@@ -139,8 +191,8 @@ router.get(
  */
 router.get(
   "/",
-  passport.authenticate("jwt", { session: false }),
-  (req, res) => {
+  passport.authenticate("jwt", { session: false, failWithError: true }),
+  (req, res, next) => {
     if (req.user.is_admin) {
       User.find({}).then((users) => {
         return res.json({
@@ -148,13 +200,16 @@ router.get(
         });
       });
     } else {
-      console.log("Unauthorized access");
       res.status(401).json({
-        msg: "Unauthorized access",
+        error: "Unauthorized access",
         success: false,
       });
-      return;
     }
+  },
+  (err, req, res, next) => {
+    res.status(401).json({
+      error: "Unauthorized access",
+    });
   }
 );
 

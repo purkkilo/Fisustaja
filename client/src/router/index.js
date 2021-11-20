@@ -173,7 +173,10 @@ let router = new VueRouter({
 // Check auth before loading page
 router.beforeEach((to, from, next) => {
   if (to.matched.some((record) => record.meta.requiresAuth)) {
-    if (localStorage.getItem("jwt") == null) {
+    if (
+      localStorage.getItem("jwt") == null ||
+      localStorage.getItem("user") == null
+    ) {
       next({
         path: "/login",
       });

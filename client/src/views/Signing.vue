@@ -32,7 +32,7 @@
         </v-list>
       </v-card>
     </v-navigation-drawer>
-    <v-container>
+    <v-container style="width: 70%">
       <div id="errordiv" v-if="errors.length">
         <ul class="collection with-header" style="border:1px solid red;">
           <li class="collection-header" style="background: rgba(0,0,0,0);">
@@ -662,7 +662,6 @@ export default {
   },
   mounted() {
     M.AutoInit();
-    this.checkLogin();
     if (localStorage.getItem("competition") != null) {
       const competition = JSON.parse(localStorage.getItem("competition"));
       this.competition_id = competition["id"];
@@ -743,31 +742,6 @@ export default {
       }
       this.loading_site = false;
       this.refreshing = false;
-    },
-    //Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)
-    checkLogin: function() {
-      // If login token present --> user is logged in
-      const user = JSON.parse(localStorage.getItem("user"));
-      const jwt = localStorage.getItem("jwt");
-      if (user != null && jwt != null) {
-        this.$store.state.logged_in = true;
-        // Check if user is admin
-        //TODO safer way to check this than use localstorage?
-        user.is_admin == true
-          ? (this.$store.state.is_admin = true)
-          : (this.$store.state.is_admin = false);
-      } else {
-        if (user) {
-          localStorage.removeItem("user");
-        }
-        if (jwt) {
-          localStorage.removeItem("jwt");
-        }
-        //Not logger in, so not admin either
-        this.$store.state.logged_in = false;
-        this.$store.state.is_admin = false;
-        M.toast({ html: "Tapahtui virhe... Kirjaudu sisään uudestaan" });
-      }
     },
     // Check if input value is number, and only accept numbers to inputs
     isNumber: function(evt) {

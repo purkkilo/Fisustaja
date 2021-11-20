@@ -55,26 +55,39 @@ export default {
     }
   },
   async mounted() {
-    const token = localStorage.getItem("jwt");
-    if (token) {
-      const jwtPayload = this.parseJwt(token);
-      if (jwtPayload) {
-        console.log(jwtPayload);
-        if (jwtPayload.exp < Date.now() / 1000) {
-          // token expired
-          await UserService.logoutUser().then(() => {
-            this.snackbar = true;
-            this.$router.push({ path: "/login" });
-          });
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user) {
+      const token = localStorage.getItem("jwt");
+      if (token) {
+        const jwtPayload = this.parseJwt(token);
+        if (jwtPayload) {
+          if (jwtPayload.exp < Date.now() / 1000) {
+            // token expired
+            await UserService.logoutUser().then(() => {
+              this.snackbar = true;
+              this.$store.state.logged_in = false;
+              this.$store.state.is_admin = false;
+              if (this.$router.currentRoute.meta.requiresAuth) {
+                this.$router.push({ path: "/login" });
+              }
+            });
+          } else {
+            let res = await UserService.refreshToken(user);
+            if (res.success) {
+              this.$store.state.is_admin = res.is_admin;
+              this.$store.state.logged_in = true;
+            } else {
+              console.log(res.error, res.status, "!!!!");
+            }
+          }
+        } else {
+          console.log("parseJwt error");
         }
-      } else {
-        console.log("parseJwt error");
       }
     }
   },
   methods: {
     parseJwt(token) {
-      console.log(token);
       try {
         var base64Url = token.split(".")[1];
         var base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");

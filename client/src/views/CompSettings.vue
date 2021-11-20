@@ -32,7 +32,7 @@
         </v-list>
       </v-card>
     </v-navigation-drawer>
-    <v-container>
+    <v-container style="width: 70%">
       <v-card
         :dark="$store.getters.getTheme"
         v-bind:class="{
@@ -984,8 +984,6 @@ export default {
     };
   },
   created() {
-    // Check login
-    this.checkLogin();
     if (localStorage.getItem("competition") != null) {
       const competition = JSON.parse(localStorage.getItem("competition"));
       const competition_id = competition["id"];
@@ -1005,31 +1003,6 @@ export default {
         this.drawer = !this.drawer;
       } else {
         M.toast({ html: "Olet jo tällä sivulla!" });
-      }
-    },
-    //Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)
-    checkLogin: function() {
-      // If login token present --> user is logged in
-      const user = JSON.parse(localStorage.getItem("user"));
-      const jwt = localStorage.getItem("jwt");
-      if (user != null && jwt != null) {
-        this.$store.state.logged_in = true;
-        // Check if user is admin
-        //TODO safer way to check this than use localstorage?
-        user.is_admin == true
-          ? (this.$store.state.is_admin = true)
-          : (this.$store.state.is_admin = false);
-      } else {
-        if (user) {
-          localStorage.removeItem("user");
-        }
-        if (jwt) {
-          localStorage.removeItem("jwt");
-        }
-        //Not logger in, so not admin either
-        this.$store.state.logged_in = false;
-        this.$store.state.is_admin = false;
-        M.toast({ html: "Tapahtui virhe... Kirjaudu sisään uudestaan" });
       }
     },
     async publishCompetition(isPublic) {
@@ -1063,7 +1036,7 @@ export default {
     async getCups() {
       this.loading_cups = true;
       const user = JSON.parse(localStorage.getItem("user"));
-      const user_id = user["id"];
+      const user_id = user["_id"];
       // Get Cups
       try {
         this.cups = await CupService.getCups({

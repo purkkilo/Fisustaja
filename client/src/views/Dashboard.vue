@@ -1,7 +1,7 @@
 <template>
   <!-- /dashboard-->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <v-container>
+  <v-container style="width: 70%">
     <Header />
     <v-row
       v-bind:class="{
@@ -77,6 +77,7 @@
 <script>
 "use strict";
 import Header from "../components/layout/Header";
+
 export default {
   name: "Home",
   components: {
@@ -94,8 +95,6 @@ export default {
     localStorage.removeItem("competition");
     this.$store.commit("refreshCup", null);
     localStorage.removeItem("cup");
-    //Check if user is logged in has admin status, update header
-    this.checkLogin();
     // Get user info form localstorage
     if (localStorage.getItem("user") != null) {
       this.user = JSON.parse(localStorage.getItem("user"));
@@ -108,32 +107,7 @@ export default {
     location.href = "#";
     location.href = "#app";
   },
-  methods: {
-    //Check if user is logged in has admin status, update values to vuex (Header.vue updates based on these values)
-    checkLogin: function() {
-      // If login token present --> user is logged in
-      const user = JSON.parse(localStorage.getItem("user"));
-      const jwt = localStorage.getItem("jwt");
-      if (user != null && jwt != null) {
-        this.$store.state.logged_in = true;
-        // Check if user is admin
-        //TODO safer way to check this than use localstorage?
-        user.is_admin == true
-          ? (this.$store.state.is_admin = true)
-          : (this.$store.state.is_admin = false);
-      } else {
-        if (user) {
-          localStorage.removeItem("user");
-        }
-        if (jwt) {
-          localStorage.removeItem("jwt");
-        }
-        //Not logger in, so not admin either
-        this.$store.state.logged_in = false;
-        this.$store.state.is_admin = false;
-      }
-    },
-  },
+  methods: {},
 };
 </script>
 

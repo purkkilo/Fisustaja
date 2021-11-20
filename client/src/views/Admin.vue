@@ -1,7 +1,7 @@
 <template>
   <!-- /admin -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <v-container>
+  <v-container style="width: 70%">
     <Header style="margin-bottom:100px" />
     <!-- Tabs -->
     <v-tabs
@@ -833,19 +833,42 @@ export default {
     this.loading = this.loading_users = this.loading_competitions = this.loading_cups = true;
     const user = JSON.parse(localStorage.getItem("user"));
     if (user) {
-      this.user_id = user["id"];
+      this.user_id = user["_id"];
     }
     try {
       // Load data from database
-      this.feedback = await FeedbackService.getFeedback();
-      this.loading = false;
+      // Users first, if token is expired logout user
       await UserService.getUsers()
-        .then((res) => {
+        .then(async (res) => {
+          this.feedback = await FeedbackService.getFeedback();
+          this.loading = false;
           this.users = res;
           this.users.forEach((user) => {
             user.menu = false;
           });
           this.loading_users = false;
+          // No query, get all competitions
+          this.all_competitions = await CompetitionService.getCompetitions();
+          this.all_competitions.forEach((competition) => {
+            competition.username = this.users.find(
+              (user) => user._id === competition.user_id
+            ).name;
+            competition.start_date = this.$moment(competition.start_date);
+            competition.end_date = this.$moment(competition.end_date);
+            competition.cup_name = `${
+              competition.cup_name
+            } (${competition.start_date.format("YYYY")})`;
+          });
+
+          this.competitions = this.all_competitions.filter(
+            (competition) => competition.user_id === this.user_id
+          );
+          // Sort them based on start_date so the oldest competitions are the last
+          this.all_competitions.sort(function compare(a, b) {
+            return b.start_date.isAfter(a.start_date);
+          });
+          this.getCups();
+          this.loading_competitions = false;
         })
         .catch(async (err) => {
           if (err.response.status === 401) {
@@ -861,29 +884,6 @@ export default {
             M.toast({ html: err.response.data });
           }
         });
-
-      // No query, get all competitions
-      this.all_competitions = await CompetitionService.getCompetitions();
-      this.all_competitions.forEach((competition) => {
-        competition.username = this.users.find(
-          (user) => user._id === competition.user_id
-        ).name;
-        competition.start_date = this.$moment(competition.start_date);
-        competition.end_date = this.$moment(competition.end_date);
-        competition.cup_name = `${
-          competition.cup_name
-        } (${competition.start_date.format("YYYY")})`;
-      });
-
-      this.competitions = this.all_competitions.filter(
-        (competition) => competition.user_id === this.user_id
-      );
-      // Sort them based on start_date so the oldest competitions are the last
-      this.all_competitions.sort(function compare(a, b) {
-        return b.start_date.isAfter(a.start_date);
-      });
-      this.getCups();
-      this.loading_competitions = false;
     } catch (err) {
       console.error(err.message);
     }
@@ -896,7 +896,7 @@ export default {
     },
     generateCompetition: function() {
       const user = JSON.parse(localStorage.getItem("user"));
-      const user_id = user["id"];
+      const user_id = user["_id"];
       M.toast({ html: "TODO: Generoi kilpailu!" });
       console.log("TODO: Generoi kilpailu!");
       const competition = {
