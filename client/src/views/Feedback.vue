@@ -2,7 +2,6 @@
   <!-- /feedback -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container style="width: 70%">
-    <Header />
     <v-row
       v-bind:class="{
         'container-transparent': !$store.getters.getTheme,
@@ -14,88 +13,91 @@
           {{ error }}
         </v-row>
 
-        <div class="section" id="send-feedback">
-          <v-row>
-            <v-col v-if="prevRoute">
-              <v-btn
-                v-if="prevRoute.name"
-                large
-                rounded
-                color="yellow"
-                @click="$router.push({ path: prevRoute.path })"
-                ><i class="material-icons left">history</i>Palaa takaisin</v-btn
-              >
-            </v-col>
-          </v-row>
-          <h1>Lähetä palautetta</h1>
-          <p class="flow-text title black-text">
-            Ilmoita bugeista, kehitysehdotuksista jne jne.
-          </p>
-
-          <v-row>
-            <v-col class="d-flex" md="4" offset-md="4">
-              <v-select
-                :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
-                :dark="$store.getters.getTheme"
-                item-color="blue"
-                v-model="type"
-                :items="type_options"
-                label="Palautteen tyyppi"
-                outlined
-              ></v-select>
-            </v-col>
-          </v-row>
-
-          <v-row>
-            <v-col
-              md="8"
-              offset-md="2"
-              v-bind:class="{
-                inputarea: !$store.getters.getTheme,
-                'inputarea-dark': $store.getters.getTheme,
-              }"
+        <v-row id="send-feedback">
+          <v-col v-if="prevRoute">
+            <v-btn
+              v-if="prevRoute.name"
+              large
+              rounded
+              color="yellow"
+              @click="$router.push({ path: prevRoute.path })"
+              ><v-icon>mdi-keyboard-return</v-icon>Palaa takaisin</v-btn
             >
-              <v-textarea
-                :dark="$store.getters.getTheme"
-                v-model="message"
-                name="input-7-1"
-                filled
-                label="Palaute tähän"
-                auto-grow
-                :value="message"
-                maxlength="800"
-              ></v-textarea>
-            </v-col>
-          </v-row>
+          </v-col>
+        </v-row>
+        <h1>Lähetä palautetta</h1>
+        <p class="flow-text title black-text">
+          Ilmoita bugeista, kehitysehdotuksista jne jne.
+        </p>
 
-          <v-row>
-            <v-col md="4" offset-md="4">
-              <v-btn
-                block
-                color="grey darken-2"
-                @click="sendFeedback"
-                :loading="loading"
-                ><i class="material-icons left">note_add</i>Lähetä
-                palaute</v-btn
-              >
-            </v-col>
-          </v-row>
-        </div>
+        <v-row>
+          <v-col class="d-flex" md="4" offset-md="4">
+            <v-select
+              :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
+              :dark="$store.getters.getTheme"
+              item-color="blue"
+              v-model="type"
+              :items="type_options"
+              label="Palautteen tyyppi"
+              outlined
+            ></v-select>
+          </v-col>
+        </v-row>
+
+        <v-row>
+          <v-col
+            md="8"
+            offset-md="2"
+            v-bind:class="{
+              inputarea: !$store.getters.getTheme,
+              'inputarea-dark': $store.getters.getTheme,
+            }"
+          >
+            <v-textarea
+              :dark="$store.getters.getTheme"
+              v-model="message"
+              name="input-7-1"
+              filled
+              label="Palaute tähän"
+              auto-grow
+              :value="message"
+              maxlength="800"
+            ></v-textarea>
+          </v-col>
+        </v-row>
+
+        <v-row>
+          <v-col md="4" offset-md="4">
+            <v-btn
+              block
+              color="grey darken-2"
+              @click="sendFeedback"
+              :loading="loading"
+              ><v-icon>mdi-send</v-icon>Lähetä palaute</v-btn
+            >
+          </v-col>
+        </v-row>
       </v-col>
     </v-row>
+    <v-snackbar v-model="snackbar" :timeout="timeout">
+      {{ text }}
+
+      <template v-slot:action="{ attrs }">
+        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
   </v-container>
 </template>
 <script>
 "use strict";
-import M from "materialize-css";
+
 import FeedbackService from "../FeedbackService";
-import Header from "../components/layout/Header";
 
 export default {
   name: "Feedback",
-  components: {
-    Header,
-  },
+  components: {},
   data() {
     return {
       prevRoute: null,
@@ -104,6 +106,9 @@ export default {
       type_options: ["Bugi", "Ehdotus", "Muu"],
       loading: false,
       error: null,
+      snackbar: false,
+      text: "",
+      timeout: 5000,
     };
   },
   beforeRouteEnter(to, from, next) {
@@ -112,8 +117,6 @@ export default {
     });
   },
   mounted() {
-    //Init materialize elements
-    M.AutoInit();
     // Focus on top of the page when changing pages
     location.href = "#";
     location.href = "#app";
@@ -134,17 +137,20 @@ export default {
             // Add object to database
             //Add feedback to database (check 'client\src\FeedbackService.js' and 'server\routes\api\feedback.js' to see how this works)
             await FeedbackService.insertFeedback(feedback);
-            M.toast({ html: "Palaute vastaanotettu!" });
+            this.text = "Palaute vastaanotettu!";
+            this.snackbar = true;
           } catch (err) {
             console.error(err.message);
           }
           this.loading = false;
           this.message = null;
         } else {
-          M.toast({ html: "Kirjoita vähintään 5 merkkiä pitkä palaute!" });
+          this.text = "Kirjoita vähintään 5 merkkiä pitkä palaute!";
+          this.snackbar = true;
         }
       } else {
-        M.toast({ html: "Kirjoita vähintään 5 merkkiä pitkä palaute!" });
+        this.text = "Kirjoita vähintään 5 merkkiä pitkä palaute!";
+        this.snackbar = true;
       }
     },
   },

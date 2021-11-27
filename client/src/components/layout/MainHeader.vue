@@ -1,69 +1,35 @@
 <template>
-  <div>
-    <header class="header">
-      <div class="navbar-fixed">
-        <nav>
-          <div
-            class="nav-wrapper"
-            v-bind:class="{
-              'grey darken-4': $store.getters.getTheme,
-              'blue lighten-2': !$store.getters.getTheme,
-            }"
-          >
-            <router-link to="/"
-              ><img
-                src="https://i.imgur.com/2WcI49A.png"
-                alt=""
-                class="circle responsive-img left"
-                style="height:55px;width:55px;margin:5px 10px;"
-            /></router-link>
-            <router-link to="/"
-              ><a href="#!" class="brand-logo white-text"
-                >Fisustaja</a
-              ></router-link
-            >
-            <a @click.stop="openDrawer" class="sidenav-trigger right"
-              ><i class="material-icons">menu</i></a
-            >
-            <ul class="right hide-on-med-and-down">
-              <li style="margin-right:20px">
-                <v-switch
-                  v-model="updateSwitch"
-                  :dark="updateSwitch"
-                  color="indigo darken-3"
-                  label="Tumma teema"
-                ></v-switch>
-              </li>
-              <li v-bind:class="isHome">
-                <router-link to="/"
-                  ><a class="white-text"
-                    ><i class="material-icons left">home</i>Kotisivu</a
-                  ></router-link
-                >
-              </li>
-              <li v-bind:class="isLogin">
-                <router-link to="/login"
-                  ><a class="white-text"
-                    ><i class="material-icons left">play_circle_filled</i
-                    >Kirjaudu</a
-                  ></router-link
-                >
-              </li>
-            </ul>
-          </div>
-        </nav>
-      </div>
-    </header>
+  <v-card class="overflow-hidden">
+    <v-app-bar
+      app
+      color="white"
+      :dark="updateSwitch"
+      v-bind:class="{
+        'grey darken-4': $store.getters.getTheme,
+        'blue lighten-2': !$store.getters.getTheme,
+      }"
+    >
+      <v-app-bar-nav-icon @click="drawer = true"></v-app-bar-nav-icon>
+
+      <v-toolbar-title>Fisustaja</v-toolbar-title>
+
+      <v-spacer></v-spacer>
+
+      <router-link to="/login"
+        ><v-btn text outlined rounded color="green"
+          ><v-icon>mdi-login</v-icon>Kirjaudu</v-btn
+        ></router-link
+      >
+    </v-app-bar>
     <v-navigation-drawer
       v-model="drawer"
-      absolute
-      :dark="$store.getters.getTheme"
+      app
       temporary
-      :src="
-        $store.getters.getTheme
-          ? 'https://cdn.vuetifyjs.com/images/backgrounds/vbanner.jpg'
-          : 'https://cdn.vuetifyjs.com/images/backgrounds/bg-2.jpg'
-      "
+      :dark="$store.getters.getTheme"
+      v-bind:class="{
+        'grey darken-4': $store.getters.getTheme,
+        'blue lighten-2': !$store.getters.getTheme,
+      }"
     >
       <v-list dense nav class="py-0">
         <v-list-item two-line>
@@ -79,7 +45,7 @@
           @click="changePage(item.route)"
         >
           <v-list-item-icon>
-            <v-icon>{{ item.icon }}</v-icon>
+            <v-icon :color="item.color">{{ item.icon }}</v-icon>
           </v-list-item-icon>
 
           <v-list-item-content>
@@ -88,18 +54,25 @@
         </v-list-item>
         <v-list-item>
           <v-list-item-action>
-            <v-switch v-model="updateSwitch" color="purple"></v-switch>
+            <v-switch v-model="updateSwitch" color="indigo darken-3"></v-switch>
           </v-list-item-action>
           <v-list-item-title>Tumma teema</v-list-item-title>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
-  </div>
+    <v-snackbar v-model="snackbar" :timeout="timeout">
+      {{ text }}
+
+      <template v-slot:action="{ attrs }">
+        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
+  </v-card>
 </template>
 
 <script>
-import M from "materialize-css";
-
 export default {
   name: "Header",
   data() {
@@ -108,15 +81,20 @@ export default {
       drawer: null,
       updateSwitch: this.$store.getters.getTheme,
       items: [
-        { title: "Kotisivu", route: "/", icon: "home" },
-        { title: "Kirjaudu", route: "/login", icon: "play_circle_filled" },
+        { title: "Kotisivu", route: "/", icon: "mdi-home", color: "white" },
+        {
+          title: "Kirjaudu",
+          route: "/login",
+          icon: "mdi-login",
+          color: "green darken-1",
+        },
       ],
+      snackbar: false,
+      text: "",
+      timeout: 5000,
     };
   },
-  mounted() {
-    //Init materialize elements
-    M.AutoInit();
-  },
+  mounted() {},
   watch: {
     updateSwitch(newValue) {
       //called whenever isDark switch changes
@@ -143,16 +121,17 @@ export default {
     },
   },
   methods: {
-    openDrawer: function() {
+    openDrawer: function () {
       location.href = "#app";
       this.drawer = !this.drawer;
     },
-    changePage: function(route) {
+    changePage: function (route) {
       if (this.$router.currentRoute.path !== route) {
         this.$router.push(route);
         this.drawer = !this.drawer;
       } else {
-        M.toast({ html: "Olet jo tällä sivulla!" });
+        this.text = "Olet jo tällä sivulla!";
+        this.snackbar = true;
       }
     },
     updatePreferences(isDark, lang) {

@@ -2,7 +2,6 @@
   <!-- /dashboard-->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container style="width: 70%">
-    <Header />
     <v-row
       v-bind:class="{
         'container-transparent': !$store.getters.getTheme,
@@ -45,28 +44,25 @@
               </p>
             </div>
 
-            <div class="divider black"></div>
-            <div class="section">
-              <v-row>
-                <v-col md="6" style="margin-top:20px">
-                  <router-link to="/register-comp">
-                    <v-btn large tile color="blue lighten-1"
-                      ><i class="material-icons left">add_circle_outline</i>Uusi
-                      kilpailu</v-btn
-                    >
-                  </router-link>
-                </v-col>
+            <v-divider></v-divider>
 
-                <v-col md="6" style="margin-top:20px">
-                  <router-link to="/continue">
-                    <v-btn large tile color="green lighten-1"
-                      ><i class="material-icons left">play_circle_filled</i
-                      >Jatka kilpailua</v-btn
-                    >
-                  </router-link>
-                </v-col>
-              </v-row>
-            </div>
+            <v-row>
+              <v-col md="6" style="margin-top: 20px">
+                <router-link to="/register-comp">
+                  <v-btn large tile color="blue lighten-1"
+                    ><v-icon>mdi-plus-circle</v-icon>Uusi kilpailu</v-btn
+                  >
+                </router-link>
+              </v-col>
+
+              <v-col md="6" style="margin-top: 20px">
+                <router-link to="/continue">
+                  <v-btn large tile color="green lighten-1"
+                    ><v-icon>mdi-play-circle</v-icon>Jatka kilpailua</v-btn
+                  >
+                </router-link>
+              </v-col>
+            </v-row>
           </v-col>
         </v-row>
       </v-col>
@@ -76,13 +72,10 @@
 
 <script>
 "use strict";
-import Header from "../components/layout/Header";
 
 export default {
   name: "Home",
-  components: {
-    Header,
-  },
+  components: {},
   data() {
     return {
       user: null,
@@ -99,8 +92,9 @@ export default {
     if (localStorage.getItem("user") != null) {
       this.user = JSON.parse(localStorage.getItem("user"));
       let createdAt = this.$moment(this.user.createdAt);
-      this.created = `${createdAt.date()}.${createdAt.month() +
-        1}.${createdAt.year()}`;
+      this.created = `${createdAt.date()}.${
+        createdAt.month() + 1
+      }.${createdAt.year()}`;
     }
 
     // Focus on top of the page when changing pages

@@ -2,7 +2,6 @@
   <!-- /cup-overview -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container style="width: 70%">
-    <Header style="margin-bottom:60px" />
     <v-row class="valign-wrapper">
       <v-col md="3">
         <v-btn
@@ -11,7 +10,7 @@
           color="yellow"
           @click="$router.push({ path: '/overview' })"
         >
-          <i class="material-icons left">history</i>Takaisin kilpailuun
+          <v-icon>mdi-keyboard-return</v-icon>Takaisin kilpailuun
         </v-btn>
       </v-col>
       <v-col md="6">
@@ -36,7 +35,7 @@
       >
       <v-tab href="#stats" :disabled="!competitions.length">Tilastoja</v-tab>
     </v-tabs>
-    <v-tabs-items v-model="tab" style="background: rgba(0,0,0,0.4);">
+    <v-tabs-items v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
       <v-tab-item
         :value="'overview'"
         v-bind:class="{
@@ -213,11 +212,11 @@
                           <div v-if="errors.length">
                             <ul
                               class="collection with-header"
-                              style="border:1px solid red;"
+                              style="border: 1px solid red"
                             >
                               <li
                                 class="collection-header"
-                                style="background: rgba(0,0,0,0);"
+                                style="background: rgba(0, 0, 0, 0)"
                               >
                                 <v-alert type="error">
                                   Korjaa seuraavat virheet:
@@ -315,17 +314,16 @@
           </v-col>
         </v-row>
         <v-row v-if="competitions.length">
-          <v-col style="margin-top:20px">
+          <v-col style="margin-top: 20px">
             <v-btn
               tile
               color="blue lighten-1"
               :loading="publishing"
               @click="changePage('/register-comp')"
-              ><i class="material-icons left">add_circle_outline</i>Luo uusi
-              kilpailu!</v-btn
+              ><v-icon>mdi-plus-circle</v-icon>Luo uusi kilpailu!</v-btn
             >
           </v-col>
-          <v-col style="margin-top:20px">
+          <v-col style="margin-top: 20px">
             <v-btn
               @click="saveAsPDF(`Ilmoittautuneet`)"
               large
@@ -336,7 +334,7 @@
               kilpailijoista</v-btn
             >
           </v-col>
-          <v-col style="margin-top:20px">
+          <v-col style="margin-top: 20px">
             <v-btn
               large
               tile
@@ -365,8 +363,7 @@
             </h2>
             <router-link to="/register-comp">
               <v-btn tile color="blue lighten-1"
-                ><i class="material-icons left">add_circle_outline</i>Luo
-                kilpailu!</v-btn
+                ><v-icon>mdi-plus-circle</v-icon>Luo kilpailu!</v-btn
               >
             </router-link>
           </v-col>
@@ -419,7 +416,7 @@
                 inputarea: !$store.getters.getTheme,
                 'inputarea-dark': $store.getters.getTheme,
               }"
-              style="padding-top:25px;"
+              style="padding-top: 25px"
             >
               <v-col class="d-flex" md="4">
                 <v-select
@@ -524,7 +521,7 @@
                           class="strokeme"
                           v-if="
                             item.cup_results[c].points ===
-                              competitions[index].cup_participation_points
+                            competitions[index].cup_participation_points
                           "
                           >{{ item.cup_results[c].points }}p ({{
                             item.cup_results[c].placement
@@ -533,19 +530,15 @@
                         <span
                           class="strokeme"
                           v-else
-                          :class="
-                            `font-weight-bold text-outline  ${getColor(
-                              item.cup_results[c].placement
-                            )}-text`
-                          "
+                          :class="`font-weight-bold text-outline  ${getColor(
+                            item.cup_results[c].placement
+                          )}-text`"
                           >{{ item.cup_results[c].points }}p ({{
                             item.cup_results[c].placement
                           }}.)</span
                         >
                       </div>
-                      <span v-else v-bind:key="c">
-                        -
-                      </span>
+                      <span v-else v-bind:key="c"> - </span>
                     </template>
                     <template v-slot:[`item.final_cup_points`]="{ item }">
                       <span class="indigo-text"
@@ -591,8 +584,7 @@
                   @click="refreshCup(cup.id)"
                   class="white--text"
                 >
-                  <i class="material-icons left">update</i>Päivitä cupin
-                  tulokset
+                  <v-icon>mdi-update</v-icon>Päivitä cupin tulokset
                 </v-btn>
               </v-col>
             </v-row>
@@ -663,7 +655,10 @@
             </v-tabs>
           </v-col>
         </v-row>
-        <v-tabs-items v-model="stats_tab" style="background: rgba(0,0,0,0.4);">
+        <v-tabs-items
+          v-model="stats_tab"
+          style="background: rgba(0, 0, 0, 0.4)"
+        >
           <v-tab-item
             :value="'cupfishes'"
             v-bind:class="{
@@ -674,9 +669,7 @@
             <v-row v-if="total_fishes_chart_data && showCharts">
               <v-col>
                 <v-card :dark="$store.getters.getTheme">
-                  <v-card-title>
-                    Cupin kalasaaliit (Total)
-                  </v-card-title>
+                  <v-card-title> Cupin kalasaaliit (Total) </v-card-title>
                   <bar-chart
                     :chart-data="total_fishes_chart_data"
                     chart-id="total_fishes_signee_chart"
@@ -754,9 +747,7 @@
             <v-row v-if="competition_fishes_chart_data && showCharts">
               <v-col>
                 <v-card :dark="$store.getters.getTheme">
-                  <v-card-title>
-                    Cupin suurimmat kalat
-                  </v-card-title>
+                  <v-card-title> Cupin suurimmat kalat </v-card-title>
                   <bar-chart
                     :chart-data="cup_biggest_fishes_chart_data"
                     chart-id="cup_biggest_fishes_chart"
@@ -768,9 +759,7 @@
             <v-row v-if="competition_fishes_chart_data && showCharts">
               <v-col>
                 <v-card :dark="$store.getters.getTheme">
-                  <v-card-title>
-                    Cupin suurimmat kalasaaliit
-                  </v-card-title>
+                  <v-card-title> Cupin suurimmat kalasaaliit </v-card-title>
                   <bar-chart
                     :chart-data="cup_biggest_amounts_chart_data"
                     chart-id="cup_biggest_amounts_chart"
@@ -841,9 +830,7 @@
             <v-row v-if="cup_signees_chart_data && showCharts">
               <v-col>
                 <v-card :dark="$store.getters.getTheme">
-                  <v-card-title>
-                    Kilpailujen osallistujamäärät
-                  </v-card-title>
+                  <v-card-title> Kilpailujen osallistujamäärät </v-card-title>
                   <bar-chart
                     :chart-data="cup_signees_chart_data"
                     chart-id="cup_signees_chart"
@@ -876,11 +863,20 @@
         </v-tabs-items>
       </v-tab-item>
     </v-tabs-items>
+    <v-snackbar v-model="snackbar" :timeout="timeout">
+      {{ text }}
+
+      <template v-slot:action="{ attrs }">
+        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
   </v-container>
 </template>
 <script>
 "use strict";
-import M from "materialize-css";
+
 import CupService from "../CupService";
 import CompetitionService from "../CompetitionService";
 import jsPDF from "jspdf";
@@ -891,7 +887,6 @@ export default {
   name: "CupOverview",
   components: {
     ProgressBarQuery: () => import("../components/layout/ProgressBarQuery"),
-    Header: () => import("../components/layout/Header"),
     BarChart,
   },
   data() {
@@ -981,6 +976,9 @@ export default {
       isSimpleMode: true,
       showTables: false,
       showCharts: true,
+      snackbar: false,
+      text: "",
+      timeout: 5000,
     };
   },
   created() {},
@@ -1042,13 +1040,13 @@ export default {
       }
       this.updating = false;
     },
-    changePage: function(path) {
+    changePage: function (path) {
       this.$router.push({
         path: path,
         query: { cup: localStorage.getItem("cup") },
       });
     },
-    selectTableData: function() {
+    selectTableData: function () {
       if (this.selected === "Kilpailut") {
         this.selected_items = this.competitions;
         this.selected_headers = this.headers_comp;
@@ -1286,21 +1284,21 @@ export default {
                   this.selected_competitions
                 );
                 this.$set(this.dialog_signee, signee.boat_number, false);
-                M.toast({ html: "Kilpailijan tiedot päivitetty!" });
+                this.text = "Kilpailijan tiedot päivitetty!";
+                this.snackbar = true;
               })
               .catch((err) => {
-                M.toast({
-                  html:
-                    "Virhe kilpailijan tietojen päivityksessä... Yritä uudelleen!",
-                });
+                this.text =
+                  "Virhe kilpailijan tietojen päivityksessä... Yritä uudelleen!";
+                this.snackbar = true;
                 console.log(err);
               });
             this.publishing = false;
           } else {
             // Nothing modified -> do nothing
-            M.toast({
-              html: "Kaikki tiedot ovat samoja kuin aikaisemmin, poistutaan...",
-            });
+            this.text =
+              "Kaikki tiedot ovat samoja kuin aikaisemmin, poistutaan...";
+            this.snackbar = true;
             this.$set(this.dialog_signee, signee.boat_number, false);
           }
         }
@@ -1312,17 +1310,17 @@ export default {
       }
     },
     // Capitalize all the words in given string. Takes account all the characters like "-", "'" etc.
-    capitalize_words: function(str) {
+    capitalize_words: function (str) {
       return str.replace(
         /(?:^|\s|['`‘’.-])[^\x60^\x7B-\xDF](?!(\s|$))/g,
-        function(txt) {
+        function (txt) {
           return txt.toUpperCase();
         }
       );
     },
     // Calculate all the cup points, and limit the number of races taken into account
     // If limit = 4, 4 races with highest points will be calculated, other races will have 5 points where the signee has participated
-    calculateAll: function(competitions, limit) {
+    calculateAll: function (competitions, limit) {
       let all_results = [];
       this.isResults = false;
       this.limiting = true;
@@ -1403,7 +1401,7 @@ export default {
         this.limiting = false;
       }
     },
-    limitCompetitions: function(results, limit) {
+    limitCompetitions: function (results, limit) {
       limit = limit < 0 ? 0 : limit; // Make sure limit is at least 1
 
       results.forEach((signee) => {
@@ -1424,11 +1422,10 @@ export default {
               // If signee's points are less than the limit points from the array
               // check which placement the points would have from array, and pair it with points, the signee.placement isn't accurate anymore if competitions are limited
 
-              signee.cup_results[
-                competition.key_name
-              ].placement = competition.normal_points.find(
-                (result) => result.boat_number === signee.boat_number
-              ).placement;
+              signee.cup_results[competition.key_name].placement =
+                competition.normal_points.find(
+                  (result) => result.boat_number === signee.boat_number
+                ).placement;
 
               if (
                 signee.cup_results[competition.key_name].points <
@@ -1501,7 +1498,8 @@ export default {
             this.calculateAll(this.competitions, this.selected_competitions);
             this.selectTableData();
             this.calculateCupStatistics();
-            M.toast({ html: "Tiedot ajantasalla!" });
+            this.text = "Tiedot ajantasalla!";
+            this.snackbar = true;
           } catch (error) {
             console.error(error);
           }
@@ -1511,7 +1509,7 @@ export default {
       }
       this.loading = false;
     },
-    pickCompetition: function(competition) {
+    pickCompetition: function (competition) {
       // Pick competition for the app to use
       //NOTE Store competition to vuex, redundant?
       this.$store.state.competition = competition;
@@ -1538,7 +1536,7 @@ export default {
       if (multiplier === 1) return "green";
       else return "grey";
     },
-    replaceAllChars: function(text, obj) {
+    replaceAllChars: function (text, obj) {
       return [...text]
         .map((each) => {
           for (const o in obj) {
@@ -1548,7 +1546,7 @@ export default {
         })
         .join("");
     },
-    changeHeaders: function() {
+    changeHeaders: function () {
       this.headers = [];
       this.headers.push({
         text: "Sijoitus",
@@ -1587,9 +1585,9 @@ export default {
             return competition.locality === header.text;
           });
           if (found_headers.length) {
-            let new_header_text = ` ${
-              competition.locality
-            } #${found_headers.length + 1}`;
+            let new_header_text = ` ${competition.locality} #${
+              found_headers.length + 1
+            }`;
             this.headers.push({
               text: new_header_text,
               align: "center",
@@ -1624,10 +1622,10 @@ export default {
       });
     },
     // For naming the pdf, replace certain characters
-    replaceAll: function(string, search, replace) {
+    replaceAll: function (string, search, replace) {
       return string.split(search).join(replace);
     },
-    dictToArray: function(dict, type) {
+    dictToArray: function (dict, type) {
       const temp_arr = Object.entries(dict);
       const arr = [];
       let boat_number = 1;
@@ -1681,7 +1679,7 @@ export default {
       return arr;
     },
     // Convert the charts and the tables to pdf
-    saveAsPDF: function(table_title) {
+    saveAsPDF: function (table_title) {
       // Format dates for easier reding
       // PDF creation
       let doc;
@@ -1714,8 +1712,9 @@ export default {
         last_competition_string = `${last_competition.name} (${last_competition.locality})`;
         start_date = this.$moment(last_competition.start_date);
       }
-      const formatted_date = `${start_date.date()}.${start_date.month() +
-        1}.${start_date.year()}`;
+      const formatted_date = `${start_date.date()}.${
+        start_date.month() + 1
+      }.${start_date.year()}`;
       doc.setFontSize(24);
       doc.text(13, 15, title, { align: "left" });
       doc.line(0, 20, 400, 20);
@@ -1809,7 +1808,7 @@ export default {
 };
 
 function sortBy(field, isAscending) {
-  return function(a, b) {
+  return function (a, b) {
     if (isAscending) {
       return (b[field] < a[field]) - (b[field] > a[field]);
     } else {

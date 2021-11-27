@@ -1,90 +1,103 @@
 <template>
   <!-- /login -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <div class="container">
-    <MainHeader />
-    <div
-      v-bind:class="{
-        'container-transparent': !$store.getters.getTheme,
-        'container-transparent-dark': $store.getters.getTheme,
-      }"
-      style="margin-top:100px"
-    >
-      <v-container style="width: 70%">
-        <!-- if there are errors, show this div -->
-        <div id="errordiv" v-if="errors.length">
-          <ul class="collection with-header" style="border:1px solid red;">
-            <li class="collection-header" style="background: rgba(0,0,0,0);">
-              <v-alert type="error">
-                Korjaa seuraavat virheet:
-              </v-alert>
-            </li>
-            <li
-              class="collection-item"
-              id="error"
-              v-for="(error, index) in errors"
-              v-bind:key="index"
-            >
-              <p class="flow-text">{{ index + 1 }}. {{ error }}</p>
-            </li>
-          </ul>
-        </div>
-        <h1>Login</h1>
-        <form>
-          <v-row>
-            <v-col md="8" offset-md="2" class="input-fields">
-              <v-text-field
-                :dark="$store.getters.getTheme"
-                id="name"
-                label="Käyttäjänimi"
-                v-model="name"
-                maxlength="40"
-                :loading="loading"
-                :counter="40"
-              />
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col md="8" offset-md="2" class="input-fields">
-              <v-text-field
-                :dark="$store.getters.getTheme"
-                label="Salasana"
-                id="password"
-                v-model="password"
-                type="password"
-                maxlength="40"
-                :loading="loading"
-                :counter="40"
-              />
-            </v-col>
-          </v-row>
-          <v-row v-if="loading">
-            <ProgressBarQuery style="margin-bottom:20px" />
-          </v-row>
-          <v-row v-else>
-            <v-col>
-              <v-btn
-                id="sbtn"
-                large
-                tile
-                color="blue darken-4"
-                class="white--text"
-                @click="handleSubmit"
-              >
-                <i class="material-icons left">login</i>Kirjaudu
-              </v-btn>
-            </v-col>
-          </v-row>
-        </form>
-      </v-container>
-    </div>
-  </div>
+  <v-container>
+    <v-row>
+      <v-col>
+        <v-card
+          max-width="800px"
+          style="padding: 30px; margin: auto"
+          :dark="$store.getters.getTheme"
+          v-bind:class="{
+            'container-transparent': !$store.getters.getTheme,
+            'container-transparent-dark': $store.getters.getTheme,
+          }"
+        >
+          <!-- if there are errors, show this div -->
+          <v-card
+            :dark="$store.getters.getTheme"
+            id="errordiv"
+            elevation="20"
+            v-if="errors.length"
+          >
+            <v-alert type="error"> Korjaa seuraavat virheet: </v-alert>
+            <v-list>
+              <v-list-item v-for="(error, index) in errors" v-bind:key="index">
+                <v-list-item-icon>
+                  <v-icon color="red">mdi-alert-circle</v-icon>
+                </v-list-item-icon>
+
+                <v-list-item-content>
+                  <v-list-item-title>{{ error }}</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list>
+          </v-card>
+          <h1 style="margin: 50px">Login</h1>
+          <form>
+            <v-row>
+              <v-col md="8" offset-md="2" class="input-fields">
+                <v-text-field
+                  :dark="$store.getters.getTheme"
+                  id="name"
+                  label="Käyttäjänimi"
+                  v-model="name"
+                  maxlength="40"
+                  :loading="loading"
+                  :counter="40"
+                />
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col md="8" offset-md="2" class="input-fields">
+                <v-text-field
+                  :dark="$store.getters.getTheme"
+                  label="Salasana"
+                  id="password"
+                  v-model="password"
+                  type="password"
+                  maxlength="40"
+                  :loading="loading"
+                  :counter="40"
+                />
+              </v-col>
+            </v-row>
+            <v-row v-if="loading">
+              <ProgressBarQuery style="margin-bottom: 20px" />
+            </v-row>
+            <v-row v-else>
+              <v-col>
+                <v-btn
+                  id="sbtn"
+                  large
+                  tile
+                  color="blue darken-4"
+                  class="white--text"
+                  @click="handleSubmit"
+                >
+                  <v-icon>mdi-login</v-icon>Kirjaudu
+                </v-btn>
+              </v-col>
+            </v-row>
+          </form>
+        </v-card>
+      </v-col>
+    </v-row>
+    <v-snackbar v-model="snackbar" :timeout="timeout">
+      {{ text }}
+
+      <template v-slot:action="{ attrs }">
+        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
+  </v-container>
 </template>
 <script>
 "use strict";
-import M from "materialize-css";
+
 import UserService from "../UserService";
-import MainHeader from "../components/layout/MainHeader";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 
 export default {
@@ -94,15 +107,17 @@ export default {
       name: null,
       password: null,
       loading: false,
+      snackbar: false,
+      text: "",
+      timeout: 5000,
     };
   },
   components: {
-    MainHeader,
     ProgressBarQuery,
   },
   mounted() {
     var input = document.getElementById("password");
-    input.addEventListener("keyup", function(event) {
+    input.addEventListener("keyup", function (event) {
       if (event.keyCode === 13) {
         event.preventDefault();
         document.getElementById("sbtn").click();
@@ -114,9 +129,8 @@ export default {
   },
   methods: {
     // Add error to error array and direct user to it
-    showError: function(error) {
+    showError: function (error) {
       this.errors.push(error);
-      M.toast({ html: error });
       location.href = "#";
       location.href = "#app";
     },

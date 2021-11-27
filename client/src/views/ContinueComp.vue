@@ -2,25 +2,26 @@
   <!-- /continue -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container style="width: 70%">
-    <Header />
     <!-- if there are errors, show this div -->
-    <div id="errordiv" v-if="errors.length">
-      <ul class="collection with-header" style="border:1px solid red;">
-        <li class="collection-header" style="background: rgba(0,0,0,0);">
-          <v-alert type="error">
-            Korjaa seuraavat virheet:
-          </v-alert>
-        </li>
-        <li
-          class="collection-item"
-          id="error"
-          v-for="(error, index) in errors"
-          v-bind:key="index"
-        >
-          <p class="flow-text">{{ index + 1 }}. {{ error }}</p>
-        </li>
-      </ul>
-    </div>
+    <v-card
+      :dark="$store.getters.getTheme"
+      id="errordiv"
+      elevation="20"
+      v-if="errors.length"
+    >
+      <v-alert type="error"> Korjaa seuraavat virheet: </v-alert>
+      <v-list>
+        <v-list-item v-for="(error, index) in errors" v-bind:key="index">
+          <v-list-item-icon>
+            <v-icon color="red">mdi-alert-circle</v-icon>
+          </v-list-item-icon>
+
+          <v-list-item-content>
+            <v-list-item-title>{{ error }}</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+    </v-card>
     <v-tabs
       v-model="tab"
       background-color="blue lighten-2"
@@ -36,7 +37,7 @@
       <v-tab href="#create">Luo Cup</v-tab>
       <v-tab href="#cups">Cupit</v-tab>
     </v-tabs>
-    <v-tabs-items v-model="tab" style="background: rgba(0,0,0,0.6);">
+    <v-tabs-items v-model="tab" style="background: rgba(0, 0, 0, 0.6)">
       <v-tab-item
         :value="'competitions'"
         v-bind:class="{
@@ -122,8 +123,7 @@
                     </h2>
                     <router-link to="/register-comp">
                       <v-btn tile color="blue lighten-1"
-                        ><i class="material-icons left">add_circle_outline</i
-                        >Luo kilpailu!</v-btn
+                        ><v-icon>mdi-plus-cicle</v-icon>Luo kilpailu!</v-btn
                       >
                     </router-link>
                   </v-col>
@@ -143,8 +143,7 @@
                       Luo Cup ensin
                     </h2>
                     <v-btn tile color="blue lighten-1" @click="tab = 'create'"
-                      ><i class="material-icons left">add_circle_outline</i>Luo
-                      Cup!</v-btn
+                      ><v-icon>mdi-plus-circle</v-icon>Luo Cup!</v-btn
                     >
                   </v-col>
                 </v-row>
@@ -163,11 +162,10 @@
                 <ProgressBarQuery />
               </v-col>
             </div>
-            <v-col v-if="competitions.length" style="margin-top:20px;">
+            <v-col v-if="competitions.length" style="margin-top: 20px">
               <router-link to="/register-comp">
                 <v-btn tile color="blue lighten-1"
-                  ><i class="material-icons left">add_circle_outline</i>Luo uusi
-                  kilpailu!</v-btn
+                  ><v-icon>mdi-plus-circle</v-icon>Luo uusi kilpailu!</v-btn
                 >
               </router-link>
             </v-col>
@@ -234,7 +232,7 @@
         <v-row>
           <v-col>
             <v-btn tile color="primary" @click="saveCup" :loading="loading"
-              ><i class="material-icons left">check</i>Luo Cup</v-btn
+              ><v-icon>mdi-check</v-icon>Luo Cup</v-btn
             >
           </v-col>
         </v-row>
@@ -328,8 +326,7 @@
                   Ei Cuppeja!
                 </h2>
                 <v-btn tile color="blue lighten-1" @click="tab = 'create'"
-                  ><i class="material-icons left">add_circle_outline</i>Luo
-                  Cup!</v-btn
+                  ><v-icon>mdi-plus-circle</v-icon>Luo Cup!</v-btn
                 >
               </v-col>
               <v-col v-else-if="error" class="error"
@@ -350,15 +347,22 @@
         </v-row>
       </v-tab-item>
     </v-tabs-items>
+    <v-snackbar v-model="snackbar" :timeout="timeout">
+      {{ text }}
+
+      <template v-slot:action="{ attrs }">
+        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
   </v-container>
 </template>
 
 <script>
-import Header from "../components/layout/Header";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import CompetitionService from "../CompetitionService";
 import CupService from "../CupService";
-import M from "materialize-css";
 
 export default {
   name: "ContinueComp",
@@ -390,6 +394,9 @@ export default {
       errors: [],
       search_comp: "",
       search_cup: "",
+      snackbar: false,
+      text: "",
+      timeout: 5000,
     };
   },
   watch: {
@@ -399,7 +406,6 @@ export default {
   },
   components: {
     ProgressBarQuery,
-    Header,
   },
   async created() {
     this.loading = true;
@@ -467,7 +473,6 @@ export default {
     if (this.$route.query.tab) {
       this.tab = this.$route.query.tab;
     }
-    M.AutoInit();
     // Focus on top of the page when changing pages
     location.href = "#";
     location.href = "#app";
@@ -493,13 +498,12 @@ export default {
       this.publishing = false;
     },
     // Add error to error array and direct user to it
-    showError: function(error) {
+    showError: function (error) {
       this.errors.push(error);
-      M.toast({ html: error });
       location.href = "#";
       location.href = "#app";
     },
-    pickCompetition: function(competition) {
+    pickCompetition: function (competition) {
       // Pick competition for the app to use
       //NOTE Store competition to vuex, redundant?
       this.$store.state.competition = competition;
@@ -515,7 +519,7 @@ export default {
       // redirect to /overview
       this.$router.push({ path: "/overview" });
     },
-    pickCup: function(cup) {
+    pickCup: function (cup) {
       // Pick cup for the app to use
       // Set cup.id to localstorage for database queries
       localStorage.setItem("cup", cup.id);
@@ -547,7 +551,8 @@ export default {
         try {
           //Submit Cup to database (check 'client\src\CupService.js' and 'server\routes\api\cups.js' to see how this works)
           await CupService.insertCup(cup);
-          M.toast({ html: "Cup lisätty tietokantaan!" });
+          this.text = "Cup lisätty tietokantaan!";
+          this.snackbar = true;
           this.cups = await CupService.getCups({
             user_id: user_id,
           });

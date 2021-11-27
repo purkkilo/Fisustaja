@@ -1,5 +1,5 @@
 <template>
-  <v-card outlined elevation="20">
+  <div style="padding: 30px; overflow: hidden">
     <v-row>
       <v-col>
         <h3 id="comp-state">Pvm. {{ date }}</h3>
@@ -16,8 +16,8 @@
               <h4
                 :class="
                   competition_state === 'Kilpailu päättynyt!'
-                    ? 'fred-text'
-                    : 'green-text'
+                    ? 'red--text'
+                    : 'green--text'
                 "
                 id="date"
               >
@@ -33,7 +33,7 @@
         </v-card>
       </v-col>
     </v-row>
-  </v-card>
+  </div>
 </template>
 
 <script>
@@ -89,7 +89,7 @@ export default {
     clearInterval(this.timer_date);
   },
   methods: {
-    setTime: function() {
+    setTime: function () {
       if (document.getElementById("clock")) {
         // Get time, parse it and change the text of the clock
         const today = new Date();
@@ -105,7 +105,7 @@ export default {
         clearInterval(this.timer_clock);
       }
     },
-    setDate: function() {
+    setDate: function () {
       if (document.getElementById("date")) {
         const today = new Date();
         let day = today.getDate();
@@ -119,7 +119,7 @@ export default {
         clearInterval(this.timer_date);
       }
     },
-    remainingTime: function() {
+    remainingTime: function () {
       if (document.getElementById("comp-left")) {
         if (this.competition) {
           let start_dateTime = this.$moment(this.competition.start_date);
@@ -181,7 +181,7 @@ export default {
         clearInterval(this.timer);
       }
     },
-    checkZeros: function(time) {
+    checkZeros: function (time) {
       if (time < 10) {
         time = "0" + time;
       }

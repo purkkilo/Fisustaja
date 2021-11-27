@@ -2,7 +2,6 @@
   <!-- /admin -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container style="width: 70%">
-    <Header style="margin-bottom:100px" />
     <!-- Tabs -->
     <v-tabs
       v-model="tab"
@@ -19,9 +18,8 @@
       <v-tab href="#users">Käyttäjät</v-tab>
       <v-tab href="#competitions">Kilpailut</v-tab>
       <v-tab href="#feedback">Saatu palaute</v-tab>
-      <v-tab href="#generate">Kilpailun generointi</v-tab>
     </v-tabs>
-    <v-tabs-items v-model="tab" style="background: rgba(0,0,0,0.4);">
+    <v-tabs-items v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
       <v-tab-item
         :value="'overview'"
         v-bind:class="{
@@ -39,8 +37,7 @@
                   rounded
                   color="yellow"
                   @click="$router.push({ path: prevRoute.path })"
-                  ><i class="material-icons left">history</i>Palaa
-                  takaisin</v-btn
+                  ><v-icon>mdi-keyboard-return</v-icon>Palaa takaisin</v-btn
                 >
               </v-col>
             </v-row>
@@ -51,14 +48,16 @@
             </v-row>
             <!-- if this.loading === false, meaning app isn't loading feedback from database, then show this div -->
             <v-row v-if="!loading">
-              <v-col class="inputarea black--text" md="6" offset-md="3">
-                <p v-if="feedback.length" class="flow-text">
-                  <i class="material-icons">feedback</i> Palautetta annettu:
-                  {{ feedback.length }} kpl
-                </p>
-                <p v-else class="flow-text">
-                  <i class="material-icons">feedback</i> Ei palautetta!
-                </p>
+              <v-col md="6" offset-md="3">
+                <v-card elevation="20" :dark="$store.getters.getTheme">
+                  <p v-if="feedback.length" class="flow-text">
+                    <v-icon>mdi-message-alert</v-icon> Palautetta annettu:
+                    {{ feedback.length }} kpl
+                  </p>
+                  <p v-else class="flow-text">
+                    <v-icon>mdi-message-alert</v-icon> Ei palautetta!
+                  </p>
+                </v-card>
               </v-col>
             </v-row>
             <v-row v-else>
@@ -75,14 +74,16 @@
             </v-row>
             <!-- if this.loading_users === false, meaning app isn't loading users, then show this div -->
             <v-row v-if="!loading_users">
-              <v-col class="inputarea black--text" md="6" offset-md="3">
-                <p v-if="users.length" class="flow-text">
-                  <i class="material-icons">account_circle</i> Käyttäjiä
-                  yhteensä: {{ users.length }} kpl
-                </p>
-                <p v-else class="flow-text">
-                  <i class="material-icons">account_circle</i> Ei käyttäjiä!
-                </p>
+              <v-col md="6" offset-md="3">
+                <v-card elevation="20" :dark="$store.getters.getTheme">
+                  <p v-if="users.length" class="flow-text">
+                    <v-icon>mdi-account-circle</v-icon> Käyttäjiä yhteensä:
+                    {{ users.length }} kpl
+                  </p>
+                  <p v-else class="flow-text">
+                    <v-icon>mdi-account-circle</v-icon> Ei käyttäjiä!
+                  </p>
+                </v-card>
               </v-col>
             </v-row>
             <v-row v-else>
@@ -99,18 +100,18 @@
             </v-row>
             <!-- if this.loading_competitions === false, meaning app isn't loading competitions, then show this div -->
             <v-row v-if="!loading_competitions">
-              <v-col class="inputarea black--text" md="6" offset-md="3">
-                <p v-if="all_competitions.length" class="flow-text">
-                  <i class="material-icons">directions_boat</i> Kilpailuja
-                  yhteensä: {{ all_competitions.length }} kpl<br />---> Itse
-                  luotuja {{ competitions.length }}/{{
-                    all_competitions.length
-                  }}
-                  kpl
-                </p>
-                <p v-else class="flow-text">
-                  <i class="material-icons">directions_boat</i> Ei kilpailuja!
-                </p>
+              <v-col md="6" offset-md="3">
+                <v-card elevation="20" :dark="$store.getters.getTheme">
+                  <p v-if="all_competitions.length" class="flow-text">
+                    <v-icon>mdi-ferry</v-icon> Kilpailuja yhteensä:
+                    {{ all_competitions.length }} kpl<br />---> Itse luotuja
+                    {{ competitions.length }}/{{ all_competitions.length }}
+                    kpl
+                  </p>
+                  <p v-else class="flow-text">
+                    <v-icon>mdi-ferry</v-icon> Ei kilpailuja!
+                  </p>
+                </v-card>
               </v-col>
             </v-row>
             <v-row v-else>
@@ -126,15 +127,17 @@
               </v-col>
             </v-row>
             <v-row v-if="!loading_cups">
-              <v-col class="inputarea black--text" md="6" offset-md="3">
-                <p v-if="all_cups.length" class="flow-text">
-                  <i class="material-icons">directions_boat</i> Cuppeja
-                  yhteensä: {{ all_cups.length }} kpl<br />---> Itse luotuja
-                  {{ cups.length }}/{{ all_cups.length }} kpl
-                </p>
-                <p v-else class="flow-text">
-                  <i class="material-icons">directions_boat</i> Ei cuppeja!
-                </p>
+              <v-col md="6" offset-md="3">
+                <v-card elevation="20" :dark="$store.getters.getTheme">
+                  <p v-if="all_cups.length" class="flow-text">
+                    <v-icon color="yellow darken-1">mdi-medal</v-icon> Cuppeja
+                    yhteensä: {{ all_cups.length }} kpl<br />---> Itse luotuja
+                    {{ cups.length }}/{{ all_cups.length }} kpl
+                  </p>
+                  <p v-else class="flow-text">
+                    <v-icon>mdi-ferry</v-icon> Ei cuppeja!
+                  </p>
+                </v-card>
               </v-col>
             </v-row>
             <v-row v-else>
@@ -169,8 +172,7 @@
                   rounded
                   color="yellow"
                   @click="$router.push({ path: prevRoute.path })"
-                  ><i class="material-icons left">history</i>Palaa
-                  takaisin</v-btn
+                  ><v-icon>mdi-keyboard-return</v-icon>Palaa takaisin</v-btn
                 >
               </v-col>
             </v-row>
@@ -219,7 +221,7 @@
                     <v-col
                       v-for="(user, index) in props.items"
                       :key="index"
-                      style="margin-top:20px"
+                      style="margin-top: 20px"
                     >
                       <!-- For every user in this.users array -->
                       <v-menu
@@ -239,12 +241,10 @@
                             :color="user.is_admin ? 'yellow darken-2' : 'green'"
                           >
                             <v-avatar left>
-                              <i v-if="user.is_admin" class="material-icons"
-                                >admin_panel_settings</i
+                              <v-icon v-if="user.is_admin"
+                                >mdi-shield-crown</v-icon
                               >
-                              <i v-else class="material-icons"
-                                >account_circle</i
-                              >
+                              <v-icon v-else>mdi-account</v-icon>
                             </v-avatar>
                             {{ user.name }}
                           </v-chip>
@@ -253,12 +253,10 @@
                           <v-list dark>
                             <v-list-item>
                               <v-list-item-avatar>
-                                <i v-if="user.is_admin" class="material-icons"
-                                  >admin_panel_settings</i
+                                <v-icon v-if="user.is_admin"
+                                  >mdi-shield-crown</v-icon
                                 >
-                                <i v-else class="material-icons"
-                                  >account_circle</i
-                                >
+                                <v-icon v-else>mdi-account</v-icon>
                               </v-list-item-avatar>
                               <v-list-item-content>
                                 <v-list-item-title>{{
@@ -360,7 +358,7 @@
                           </v-list>
                         </v-card>
                       </v-menu>
-                      <v-divider style="margin-top:10px"></v-divider>
+                      <v-divider style="margin-top: 10px"></v-divider>
                     </v-col>
                   </template>
                 </v-data-iterator>
@@ -370,9 +368,9 @@
             <v-row v-else-if="loading_users">
               <v-col md="10" offset-md="1">
                 <v-sheet
-                  :color="
-                    `grey ${$store.getters.getTheme ? 'darken-2' : 'lighten-4'}`
-                  "
+                  :color="`grey ${
+                    $store.getters.getTheme ? 'darken-2' : 'lighten-4'
+                  }`"
                   class="px-3 pt-3 pb-3"
                 >
                   <v-skeleton-loader
@@ -413,8 +411,7 @@
                   rounded
                   color="yellow"
                   @click="$router.push({ path: prevRoute.path })"
-                  ><i class="material-icons left">history</i>Palaa
-                  takaisin</v-btn
+                  ><v-icon>mdi-keyboard-return</v-icon>Palaa takaisin</v-btn
                 >
               </v-col>
             </v-row>
@@ -496,9 +493,9 @@
             <v-row v-else>
               <v-col v-if="loading_competitions" md="10" offset-md="1">
                 <v-sheet
-                  :color="
-                    `grey ${$store.getters.getTheme ? 'darken-2' : 'lighten-4'}`
-                  "
+                  :color="`grey ${
+                    $store.getters.getTheme ? 'darken-2' : 'lighten-4'
+                  }`"
                   class="px-3 pt-3 pb-3"
                 >
                   <v-skeleton-loader
@@ -537,8 +534,7 @@
                   rounded
                   color="yellow"
                   @click="$router.push({ path: prevRoute.path })"
-                  ><i class="material-icons left">history</i>Palaa
-                  takaisin</v-btn
+                  ><v-icon>mdi-keyboard-return</v-icon>Palaa takaisin</v-btn
                 >
               </v-col>
             </v-row>
@@ -558,7 +554,7 @@
                       :dark="$store.getters.getTheme"
                       min-width="200px"
                       max-width="850px"
-                      style="margin-bottom:30px;margin-top:30px"
+                      style="margin-bottom: 30px; margin-top: 30px"
                     >
                       <v-card-title>
                         <v-col md="10" offset-md="1">
@@ -569,7 +565,7 @@
                       </v-card-title>
                       <v-card-text
                         class="headline font-weight-bold"
-                        style="word-break: break-all;"
+                        style="word-break: break-all"
                       >
                         {{ feedback.message }}
                       </v-card-text>
@@ -582,8 +578,7 @@
                             :loading="loading"
                             @click="deleteFeedback(feedback._id)"
                             class="black--text"
-                            ><i class="material-icons left">done_outline</i
-                            >Ratkaise</v-btn
+                            ><v-icon>mdi-check-outline</v-icon>Ratkaise</v-btn
                           >
                         </v-col>
                       </v-card-actions>
@@ -596,9 +591,9 @@
             <v-row v-else>
               <v-col v-if="loading" md="10" offset-md="1">
                 <v-sheet
-                  :color="
-                    `grey ${$store.getters.getTheme ? 'darken-2' : 'lighten-4'}`
-                  "
+                  :color="`grey ${
+                    $store.getters.getTheme ? 'darken-2' : 'lighten-4'
+                  }`"
                   class="px-3 pt-3 pb-3"
                 >
                   <v-skeleton-loader
@@ -620,160 +615,26 @@
           </v-col>
         </v-row>
       </v-tab-item>
-      <v-tab-item
-        :value="'generate'"
-        v-bind:class="{
-          inputarea: !$store.getters.getTheme,
-          'inputarea-dark': $store.getters.getTheme,
-        }"
-      >
-        <v-row>
-          <v-col>
-            <v-row>
-              <v-col v-if="prevRoute">
-                <v-btn
-                  v-if="prevRoute.name"
-                  large
-                  rounded
-                  color="yellow"
-                  @click="$router.push({ path: prevRoute.path })"
-                  ><i class="material-icons left">history</i>Palaa
-                  takaisin</v-btn
-                >
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col>
-                <h1>Kilpailun generointi</h1>
-              </v-col>
-            </v-row>
-            <v-row v-if="cup.name">
-              <v-col md="3">
-                <p
-                  class="center-align flow-text black--text"
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  Valitse Cup
-                </p>
-              </v-col>
-              <v-col class="d-flex" md="6">
-                <v-select
-                  :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
-                  :dark="$store.getters.getTheme"
-                  v-model="cup"
-                  :items="cups"
-                  item-text="select"
-                  item-value="_id"
-                  :hint="`${cup.name} (${cup.year})`"
-                  :disabled="!cup.name"
-                  outlined
-                  return-object
-                  single-line
-                  :loading="loading_cups"
-                ></v-select>
-              </v-col>
-              <v-col md="3">
-                <router-link to="/continue">
-                  <v-btn tile color="green lighten-1"
-                    ><i class="material-icons left">add_circle_outline</i>Luo
-                    uusi cup!</v-btn
-                  >
-                </router-link>
-              </v-col>
-            </v-row>
-            <v-row v-if="cup.name">
-              <v-col md="6" offset-md="3" class="input-fields">
-                <v-text-field
-                  :dark="$store.getters.getTheme"
-                  label="Kilpailijoiden määrä"
-                  v-model="signees_amount"
-                  append-outer-icon="add"
-                  maxlength="6"
-                  @click:append-outer="
-                    signees_amount >= 0
-                      ? signees_amount++
-                      : (signees_amount = 1)
-                  "
-                  prepend-icon="remove"
-                  @click:prepend="
-                    signees_amount >= 1
-                      ? signees_amount--
-                      : (signees_amount = 0)
-                  "
-                  @paste.prevent
-                  :counter="6"
-                  @keypress="isNumber($event, true)"
-                  :rules="number_rules"
-                  :disabled="!cup.name"
-                />
-              </v-col>
-            </v-row>
-            <v-row v-if="cup.name">
-              <v-col md="6" offset-md="3" class="input-fields">
-                <v-col>
-                  <span
-                    class="flow-text"
-                    v-bind:class="{
-                      'white--text': $store.getters.getTheme,
-                    }"
-                    >Onko Tiimikilpailua?</span
-                  >
-                </v-col>
-                <v-col offset-md="4">
-                  <v-radio-group
-                    v-model="team_competition"
-                    row
-                    :disabled="!cup.name"
-                  >
-                    <v-radio label="Kyllä" value="Kyllä"></v-radio>
-                    <v-radio label="Ei" value="Ei"></v-radio>
-                  </v-radio-group>
-                </v-col>
-              </v-col>
-            </v-row>
-            <v-row v-else>
-              <v-col md="6" offset-md="3">
-                <h3
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  Ladataan Cuppeja...
-                </h3>
-                <ProgressBarQuery />
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col>
-                <v-btn
-                  large
-                  rounded
-                  color="green"
-                  :loading="loading_cups"
-                  @click="generateCompetition"
-                  ><i class="material-icons left">history</i>Generoi
-                  kilpailu</v-btn
-                >
-              </v-col>
-            </v-row>
-          </v-col>
-        </v-row>
-      </v-tab-item>
     </v-tabs-items>
+    <v-snackbar v-model="snackbar" :timeout="timeout">
+      {{ text }}
+
+      <template v-slot:action="{ attrs }">
+        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
   </v-container>
 </template>
 
 <script>
 "use strict";
-import M from "materialize-css";
 import FeedbackService from "../FeedbackService";
 import CompetitionService from "../CompetitionService";
 import UserService from "../UserService";
 import CupService from "../CupService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
-import Header from "../components/layout/Header";
 
 export default {
   data() {
@@ -810,6 +671,9 @@ export default {
       search_comp: "",
       search: "",
       prevRoute: null,
+      snackbar: false,
+      text: "",
+      timeout: 5000,
     };
   },
   beforeRouteEnter(to, from, next) {
@@ -819,18 +683,19 @@ export default {
   },
   components: {
     ProgressBarQuery,
-    Header,
   },
   // Called everytime page is opened
   async mounted() {
-    //Init materialize elements
-    M.AutoInit();
     //Check if user is logged in has admin status, update header
     // Focus on top of the page
     location.href = "#";
     location.href = "#app";
     // Show loading progressbars
-    this.loading = this.loading_users = this.loading_competitions = this.loading_cups = true;
+    this.loading =
+      this.loading_users =
+      this.loading_competitions =
+      this.loading_cups =
+        true;
     const user = JSON.parse(localStorage.getItem("user"));
     if (user) {
       this.user_id = user["_id"];
@@ -872,7 +737,8 @@ export default {
         })
         .catch(async (err) => {
           if (err.response.status === 401) {
-            M.toast({ html: "Token expired! Kirjaudu sisään uudelleen" });
+            this.text = "Token expired! Kirjaudu sisään uudelleen";
+            this.snackbar = true;
             await UserService.logoutUser()
               .then(() => {
                 this.$router.push({ path: "/login" });
@@ -881,7 +747,7 @@ export default {
                 console.log(err);
               });
           } else {
-            M.toast({ html: err.response.data });
+            console.log(err.response.data);
           }
         });
     } catch (err) {
@@ -894,27 +760,8 @@ export default {
       if (multiplier === 1) return "green";
       else return "grey";
     },
-    generateCompetition: function() {
-      const user = JSON.parse(localStorage.getItem("user"));
-      const user_id = user["_id"];
-      M.toast({ html: "TODO: Generoi kilpailu!" });
-      console.log("TODO: Generoi kilpailu!");
-      const competition = {
-        user_id: user_id,
-        cup_id: this.cup.id,
-        team_competition: this.team_competition === "Ei" ? false : true,
-        //Kaikki muu generointi, katso alta
-      };
-      console.log("Kilpailu olio:", competition);
-    },
-    /*
-            Kilpailun generointi:
 
-            //Generate signee data on loop to signees array
-            //Generate fish weights and points to every signee to every signee on signees array
-            //When signees array complete, Add competition to database: await CompetitionService.insertCompetition(competition);
-    */
-    fallbackCopyToClipboard: function(text) {
+    fallbackCopyToClipboard: function (text) {
       var textArea = document.createElement("textarea");
       textArea.value = text;
       // Avoid scrolling to bottom
@@ -934,19 +781,21 @@ export default {
 
       document.body.removeChild(textArea);
     },
-    copyToClipboard: function(text, user) {
+    copyToClipboard: function (text, user) {
       // If clipboard not there, create create input and copy it from there using doxument.execCommand("copy");
       if (!navigator.clipboard) {
         this.fallbackCopyToClipboard(text);
         return;
       }
       navigator.clipboard.writeText(text).then(
-        function() {
-          M.toast({ html: `"${text}" kopioitu leikepöydälle` });
+        () => {
+          this.text = `"${text}" kopioitu leikepöydälle`;
+          this.snackbar = true;
         },
-        function(err) {
-          console.error("Async: Could not copy text: ", err);
-          M.toast({ html: `Kopiointi ei onnistunut jostain syystä...` });
+        (err) => {
+          console.log(err);
+          this.text = `Kopiointi ei onnistunut jostain syystä...`;
+          this.snackbar = true;
         }
       );
       user.menu = false;
@@ -983,7 +832,8 @@ export default {
       try {
         //Delete feedback from database (check 'client\src\FeedbackService.js' and 'server\routes\api\feedback.js' to see how this works)
         await FeedbackService.deleteFeedback(id);
-        M.toast({ html: "Palaute ratkaistu!" });
+        this.text = "Palaute ratkaistu!";
+        this.snackbar = true;
         // Get updated list from database
         this.feedback = await FeedbackService.getFeedback();
         this.loading = false;
@@ -991,7 +841,7 @@ export default {
         console.error(err.message);
       }
     },
-    pickCompetition: function(competition) {
+    pickCompetition: function (competition) {
       // Pick competition for the app to use
       //NOTE Store competition to vuex, redundant?
       this.$store.state.competition = competition;
@@ -1011,7 +861,8 @@ export default {
     async deleteCompetition(id, confirmed) {
       // If user clicked "OK" on confirmation box
       if (confirmed) {
-        M.toast({ html: "Poistetaan tietokannasta!" });
+        this.text = "Poistetaan tietokannasta!";
+        this.snackbar = true;
         this.loading_competitions = true;
         try {
           //Delete competition from database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)

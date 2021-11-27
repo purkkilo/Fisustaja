@@ -1,7 +1,5 @@
 <template>
-  <div class="progress">
-    <div class="indeterminate"></div>
-  </div>
+  <v-progress-linear indeterminate color="indigo darken-2"></v-progress-linear>
 </template>
 
 <script>

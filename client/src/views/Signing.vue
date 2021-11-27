@@ -2,12 +2,12 @@
   <!-- /signing -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <div>
-    <Header style="margin-bottom:60px" />
     <v-navigation-drawer permanent>
       <v-card
         class="mx-auto"
         max-width="400"
         tile
+        style="top: 0"
         :dark="$store.getters.getTheme"
       >
         <v-list dense>
@@ -33,23 +33,25 @@
       </v-card>
     </v-navigation-drawer>
     <v-container style="width: 70%">
-      <div id="errordiv" v-if="errors.length">
-        <ul class="collection with-header" style="border:1px solid red;">
-          <li class="collection-header" style="background: rgba(0,0,0,0);">
-            <v-alert type="error">
-              Korjaa seuraavat virheet:
-            </v-alert>
-          </li>
-          <li
-            class="collection-item"
-            id="error"
-            v-for="(error, index) in errors"
-            v-bind:key="index"
-          >
-            <p class="flow-text">{{ index + 1 }}. {{ error }}</p>
-          </li>
-        </ul>
-      </div>
+      <v-card
+        :dark="$store.getters.getTheme"
+        id="errordiv"
+        elevation="20"
+        v-if="errors.length"
+      >
+        <v-alert type="error"> Korjaa seuraavat virheet: </v-alert>
+        <v-list>
+          <v-list-item v-for="(error, index) in errors" v-bind:key="index">
+            <v-list-item-icon>
+              <v-icon color="red">mdi-alert-circle</v-icon>
+            </v-list-item-icon>
+
+            <v-list-item-content>
+              <v-list-item-title>{{ error }}</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </v-card>
 
       <div
         v-bind:class="{
@@ -58,20 +60,21 @@
         }"
       >
         <v-card
-          style="background-color:rgba(0, 0, 0, 0.0);"
+          style="background-color: rgba(0, 0, 0, 0)"
           :dark="$store.getters.getTheme"
         >
           <v-row>
             <v-col cols="12" xs="12" sm="12" md="12">
               <v-row>
                 <v-col md="7">
-                  <h1>Ilmoittautuminen</h1>
+                  <h1 style="margin: 30px">Ilmoittautuminen</h1>
                 </v-col>
                 <v-col md="5">
                   <div class="text-center">
                     <v-dialog v-model="dialog">
                       <template v-slot:activator="{ on, attrs }">
                         <p
+                          style="margin: 10px"
                           v-bind:class="{
                             'black-text': !$store.getters.getTheme,
                             'white-text': $store.getters.getTheme,
@@ -91,10 +94,8 @@
                         </v-btn>
                       </template>
 
-                      <v-card :dark="$store.getters.getTheme">
-                        <v-card-title class="headline"> </v-card-title>
+                      <v-card :dark="$store.getters.getTheme" width="600px">
                         <Timedate />
-
                         <v-card-actions>
                           <v-spacer></v-spacer>
                           <v-btn
@@ -130,7 +131,7 @@
           <v-tab href="#signees">Ilmoittautuneet</v-tab>
         </v-tabs>
 
-        <v-tabs-items v-model="tab" style="background: rgba(0,0,0,0.4);">
+        <v-tabs-items v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
           <!-- Signing tab -->
           <v-tab-item
             v-bind:class="{
@@ -141,7 +142,7 @@
           >
             <v-row v-if="!loading_site">
               <v-col>
-                <v-row style="margin-top:20px;">
+                <v-row style="margin-top: 20px">
                   <v-col md="10" offset-md="1">
                     <p
                       class="flow-text"
@@ -243,7 +244,7 @@
                     </p>
                   </v-col>
 
-                  <v-col md="8" offset-md="2" style="margin-bottom:50px">
+                  <v-col md="8" offset-md="2" style="margin-bottom: 50px">
                     <v-divider class="black"></v-divider>
                   </v-col>
                   <v-row>
@@ -253,8 +254,7 @@
                         tile
                         color="yellow"
                         @click="overwriteSignee(old_info, false)"
-                        ><i class="material-icons left">backspace</i
-                        >Peruuta</v-btn
+                        ><v-icon>mdi-cancel</v-icon>Peruuta</v-btn
                       >
                     </v-col>
                     <v-col order="last">
@@ -263,8 +263,7 @@
                         tile
                         color="green"
                         @click="overwriteSignee(old_info, true)"
-                        ><i class="material-icons left">check</i
-                        >Päällekirjoita</v-btn
+                        ><v-icon>mdi-check</v-icon>Päällekirjoita</v-btn
                       >
                     </v-col>
                   </v-row>
@@ -297,20 +296,19 @@
                     </v-row>
 
                     <v-row>
-                      <v-col md="2" offset-md="2" style="margin-top:20px;">
+                      <v-col md="2" offset-md="2" style="margin-top: 20px">
                         <v-btn large block color="blue" @click="searchFromCup"
-                          ><i class="material-icons left">find_replace</i>Hae
-                          cupista</v-btn
+                          ><v-icon>find_replace</v-icon>Hae cupista</v-btn
                         >
                       </v-col>
 
-                      <v-col md="2" offset-md="2" style="margin-top:20px;">
+                      <v-col md="2" offset-md="2" style="margin-top: 20px">
                         <v-btn
                           large
                           block
                           color="indigo"
                           @click="searchSelected"
-                          ><i class="material-icons left">find_replace</i>Hae
+                          ><v-icon>mdi-magnify</v-icon>Hae
                           ilmoittautuneista</v-btn
                         >
                       </v-col>
@@ -414,31 +412,31 @@
                         </v-col>
                       </v-row>
 
-                      <v-row v-else style="margin:40px">
+                      <v-row v-else style="margin: 40px">
                         <v-row>
-                          <v-col md="4" style="margin-top:20px">
+                          <v-col md="4" style="margin-top: 20px">
                             <v-btn
                               large
                               tile
                               color="red"
                               @click="deleteSignee(false, -1)"
                               :loading="refreshing"
-                              ><i class="material-icons left">delete_forever</i
-                              >Poista Venekunta</v-btn
+                              ><v-icon>mdi-delete</v-icon>Poista
+                              Venekunta</v-btn
                             >
                           </v-col>
-                          <v-col md="4" style="margin-top:20px">
+                          <v-col md="4" style="margin-top: 20px">
                             <v-btn
                               large
                               tile
                               color="yellow"
                               @click="clearInputs"
                               :loading="refreshing"
-                              ><i class="material-icons left">backspace</i>Pyyhi
+                              ><v-icon>backspace-reverse-outline</v-icon>Pyyhi
                               Kentät</v-btn
                             >
                           </v-col>
-                          <v-col md="4" style="margin-top:20px">
+                          <v-col md="4" style="margin-top: 20px">
                             <v-btn
                               large
                               tile
@@ -446,8 +444,7 @@
                               @click="validateInfo"
                               :loading="refreshing"
                               id="sbtn"
-                              ><i class="material-icons right">save_alt</i
-                              >Tallenna</v-btn
+                              ><v-icon>mdi-content-save</v-icon>Tallenna</v-btn
                             >
                           </v-col>
                         </v-row>
@@ -466,7 +463,7 @@
                         </p>
                       </v-col>
                     </v-row>
-                    <v-row>
+                    <v-row style="margin-bottom: 20px">
                       <v-col md="4" offset-md="4">
                         <v-btn
                           v-if="competition_id"
@@ -477,8 +474,7 @@
                           @click="refreshCompetition(competition_id)"
                           class="white--text"
                         >
-                          <i class="material-icons left">update</i>Päivitä
-                          kilpailun tiedot
+                          <v-icon>mdi-update</v-icon>Päivitä kilpailun tiedot
                         </v-btn>
                       </v-col>
                     </v-row>
@@ -505,7 +501,7 @@
           >
             <v-row>
               <v-col>
-                <v-row style="margin-top:20px;">
+                <v-row style="margin-top: 20px">
                   <v-col class="title" offset-md="4" md="4">
                     <p
                       class="flow-text"
@@ -540,15 +536,15 @@
                   </v-col>
                 </v-row>
                 <v-row v-if="selected_id">
-                  <v-col style="margin-top:20px;margin-bottom:20px;">
+                  <v-col style="margin-top: 20px; margin-bottom: 20px">
                     <v-btn large tile color="blue" @click="searchSelected"
-                      ><i class="material-icons left">info</i>Näytä valitun
+                      ><v-icon>mdi-information</v-icon>Näytä valitun
                       ilmoittautumistiedot</v-btn
                     >
                   </v-col>
                 </v-row>
                 <v-row v-else>
-                  <v-col style="margin:20px 50px;">
+                  <v-col style="margin: 20px 50px">
                     <p
                       v-if="signees.length"
                       class="flow-text"
@@ -573,22 +569,28 @@
         </v-tabs-items>
       </div>
     </v-container>
+    <v-snackbar v-model="snackbar" :timeout="timeout">
+      {{ text }}
+
+      <template v-slot:action="{ attrs }">
+        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 <script>
 "use strict";
-import M from "materialize-css";
 import CompetitionService from "../CompetitionService";
 import CupService from "../CupService";
 import Timedate from "../components/layout/Timedate";
-import Header from "../components/layout/Header";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 
 export default {
   name: "Signing",
   components: {
     Timedate,
-    Header,
     ProgressBarQuery,
   },
   data() {
@@ -658,10 +660,12 @@ export default {
           path: "/results",
         },
       ],
+      snackbar: false,
+      text: "",
+      timeout: 5000,
     };
   },
   mounted() {
-    M.AutoInit();
     if (localStorage.getItem("competition") != null) {
       const competition = JSON.parse(localStorage.getItem("competition"));
       this.competition_id = competition["id"];
@@ -684,12 +688,13 @@ export default {
     //clearInterval(this.timer_refresh);
   },
   methods: {
-    changePage: function(route) {
+    changePage: function (route) {
       if (this.$router.currentRoute.path !== route) {
         this.$router.push(route);
         this.drawer = !this.drawer;
       } else {
-        M.toast({ html: "Olet jo tällä sivulla!" });
+        this.text = "Olet jo tällä sivulla!";
+        this.snackbar = true;
       }
     },
     // Fetch competition from database, and update variables
@@ -711,14 +716,14 @@ export default {
             this.boat_number =
               Math.max.apply(
                 Math,
-                this.signees.map(function(o) {
+                this.signees.map(function (o) {
                   return o.boat_number;
                 })
               ) + 1;
             this.id =
               Math.max.apply(
                 Math,
-                this.signees.map(function(o) {
+                this.signees.map(function (o) {
                   return o.id;
                 })
               ) + 1;
@@ -744,7 +749,7 @@ export default {
       this.refreshing = false;
     },
     // Check if input value is number, and only accept numbers to inputs
-    isNumber: function(evt) {
+    isNumber: function (evt) {
       evt = evt ? evt : window.event;
       var charCode = evt.which ? evt.which : evt.keyCode;
       if (
@@ -762,16 +767,16 @@ export default {
       }
     },
     // Capitalize all the words in given string. Takes account all the characters like "-", "'" etc.
-    capitalize_words: function(str) {
+    capitalize_words: function (str) {
       return str.replace(
         /(?:^|\s|['`‘’.-])[^\x60^\x7B-\xDF](?!(\s|$))/g,
-        function(txt) {
+        function (txt) {
           return txt.toUpperCase();
         }
       );
     },
     // Clear all selections and inputs and errors
-    clearInputs: function() {
+    clearInputs: function () {
       this.boat_number = null;
       this.starting_place = null;
       this.captain_name = null;
@@ -783,7 +788,7 @@ export default {
       this.notification = "";
     },
     // Handle overwriting user data based on user answer
-    overwriteSignee: function(signee, overwrite) {
+    overwriteSignee: function (signee, overwrite) {
       overwrite === true
         ? console.log("Overwrite!")
         : console.log("Don't overwrite!");
@@ -820,7 +825,7 @@ export default {
           this.boat_number =
             Math.max.apply(
               Math,
-              this.signees.map(function(o) {
+              this.signees.map(function (o) {
                 return o.boat_number;
               })
             ) + 1;
@@ -834,7 +839,7 @@ export default {
         this.boat_number =
           Math.max.apply(
             Math,
-            this.signees.map(function(o) {
+            this.signees.map(function (o) {
               return o.boat_number;
             })
           ) + 1;
@@ -842,7 +847,7 @@ export default {
       }
     },
     // If user selected from input/table, search from array and assing values to inputs
-    searchSelected: function() {
+    searchSelected: function () {
       this.notification = null;
       this.errors = [];
       // Searched from Signing tab, from button
@@ -938,7 +943,7 @@ export default {
     },
     // Select row from table, if selected --> unselect
     // selected_id bound to selected css class (on App.vue)
-    rowClick: function(item, row) {
+    rowClick: function (item, row) {
       if (item.id == this.selected_id) {
         this.selected_id = null;
         row.select(false);
@@ -953,19 +958,18 @@ export default {
     },
     // Fetch signee from vuex based on boat number
     // Check client\src\store\index.js for implementation
-    searchBoatNumber: function(boat_number) {
+    searchBoatNumber: function (boat_number) {
       return this.$store.getters.getSigneeByBoatNumber(parseInt(boat_number));
     },
     // Fetch signee from vuex based on id
     // Check client\src\store\index.js for implementation
-    searchId: function(id) {
+    searchId: function (id) {
       var search_id = parseInt(id);
       return this.$store.getters.getSigneeById(search_id);
     },
     // Utility function for showing error
-    showError: function(error) {
+    showError: function (error) {
       this.errors.push(error);
-      M.toast({ html: error });
       location.href = "#";
       location.href = "#app";
     },
@@ -1097,13 +1101,12 @@ export default {
             this.boat_number =
               Math.max.apply(
                 Math,
-                this.signees.map(function(o) {
+                this.signees.map(function (o) {
                   return o.boat_number;
                 })
               ) + 1;
-            M.toast({
-              html: `Poistettu (Nro: ${found_signee.boat_number}, Kippari: ${found_signee.captain_name}) Tiedot!`,
-            });
+            this.text = `Poistettu (Nro: ${found_signee.boat_number}, Kippari: ${found_signee.captain_name}) Tiedot!`;
+            this.snackbar = true;
             location.href = "#";
             location.href = "#signing";
           } catch (err) {
@@ -1115,7 +1118,7 @@ export default {
       }
     },
     // TODO serverside input validation
-    validateInfo: function() {
+    validateInfo: function () {
       this.notification = null;
       this.errors = [];
 
@@ -1186,9 +1189,8 @@ export default {
                 this.teams.push(this.team);
                 this.$store.commit("setTeams", this.teams);
               }
-              M.toast({
-                html: `Päivitetty venekunnan (Nro: ${this.new_signee.boat_number}, Kippari: ${this.new_signee.captain_name}) Tiedot!`,
-              });
+              this.text = `Päivitetty venekunnan (Nro: ${this.new_signee.boat_number}, Kippari: ${this.new_signee.captain_name}) Tiedot!`;
+              this.snackbar = true;
               this.clearInputs();
               location.href = "#";
               location.href = "#signing";
@@ -1196,14 +1198,14 @@ export default {
               this.boat_number =
                 Math.max.apply(
                   Math,
-                  this.signees.map(function(o) {
+                  this.signees.map(function (o) {
                     return o.boat_number;
                   })
                 ) + 1;
               this.id =
                 Math.max.apply(
                   Math,
-                  this.signees.map(function(o) {
+                  this.signees.map(function (o) {
                     return o.id;
                   })
                 ) + 1;
@@ -1251,10 +1253,9 @@ export default {
               this.teams.push(this.team);
               this.$store.commit("setTeams", this.teams);
             }
+            this.text = `Venekunta ilmoitettu kisaan! (Nro: ${this.new_signee.boat_number}, Kippari: ${this.new_signee.captain_name})`;
+            this.snackbar = true;
 
-            M.toast({
-              html: `Venekunta ilmoitettu kisaan! (Nro: ${this.new_signee.boat_number}, Kippari: ${this.new_signee.captain_name})`,
-            });
             this.clearInputs();
             location.href = "#";
             location.href = "#signing";
@@ -1262,14 +1263,14 @@ export default {
             this.boat_number =
               Math.max.apply(
                 Math,
-                this.signees.map(function(o) {
+                this.signees.map(function (o) {
                   return o.boat_number;
                 })
               ) + 1;
             this.id =
               Math.max.apply(
                 Math,
-                this.signees.map(function(o) {
+                this.signees.map(function (o) {
                   return o.id;
                 })
               ) + 1;

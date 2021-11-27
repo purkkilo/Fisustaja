@@ -2,14 +2,12 @@
   <!-- /cup-overview -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container
-    style="margin-top:70px;margin-bottom:5px;width: 70%"
+    style="margin-top: 70px; margin-bottom: 5px; width: 70%"
     v-bind:class="{
       'container-transparent': !$store.getters.getTheme,
       'container-transparent-dark': $store.getters.getTheme,
     }"
   >
-    <Header v-if="$store.state.logged_in" />
-    <MainHeader v-else />
     <v-row>
       <v-col md="3" offset-md="8">
         <v-card
@@ -39,31 +37,7 @@
         </v-card>
       </v-col>
     </v-row>
-    <v-row id="errordiv" v-if="errors.length">
-      <ul class="collection with-header" style="border:1px solid red;">
-        <li class="collection-header" style="background: rgba(0,0,0,0);">
-          <v-alert type="error">
-            Korjaa seuraavat virheet:
-          </v-alert>
-        </li>
-        <li
-          class="collection-item"
-          id="error"
-          v-for="(error, index) in errors"
-          v-bind:key="index"
-        >
-          <p
-            class="flow-text"
-            v-bind:class="{
-              'white--text': $store.getters.getTheme,
-            }"
-          >
-            {{ index + 1 }}. {{ error }}
-          </p>
-        </li>
-      </ul>
-    </v-row>
-    <v-row class="section">
+    <v-row>
       <v-col md="6" offset-md="3">
         <h1>Cuppien tuloksia</h1>
       </v-col>
@@ -120,7 +94,7 @@
           "
           :disabled="!selected_cup"
         >
-          <i class="material-icons left">remove_circle</i>Peruuta valinta
+          <v-icon>mdi-cancel</v-icon>Peruuta valinta
         </v-btn>
       </v-col>
     </v-row>
@@ -137,7 +111,7 @@
             inputarea: !$store.getters.getTheme,
             'inputarea-dark': $store.getters.getTheme,
           }"
-          style="padding-top:25px;"
+          style="padding-top: 25px"
         >
           <v-col class="d-flex" md="4">
             <v-select
@@ -170,7 +144,7 @@
               @click="saveAsPDF(`Cupin Kokonaistulokset`)"
               :loading="loading"
             >
-              <i class="material-icons left">picture_as_pdf</i>Lataa pdf
+              <v-icon color="red">mdi-file-pdf-box</v-icon>Lataa pdf
             </v-btn>
           </v-col>
         </v-row>
@@ -243,7 +217,7 @@
                       class="strokeme"
                       v-if="
                         item.cup_results[c].points ===
-                          competitions[index].cup_participation_points
+                        competitions[index].cup_participation_points
                       "
                       >{{ item.cup_results[c].points }}p ({{
                         item.cup_results[c].placement
@@ -251,19 +225,15 @@
                     >
                     <span
                       v-else
-                      :class="
-                        `font-weight-bold text-outline  ${getColor(
-                          item.cup_results[c].placement
-                        )}-text strokeme`
-                      "
+                      :class="`font-weight-bold text-outline  ${getColor(
+                        item.cup_results[c].placement
+                      )}-text strokeme`"
                       >{{ item.cup_results[c].points }}p ({{
                         item.cup_results[c].placement
                       }}.)</span
                     >
                   </div>
-                  <span v-else v-bind:key="c">
-                    -
-                  </span>
+                  <span v-else v-bind:key="c"> - </span>
                 </template>
                 <template v-slot:[`item.final_cup_points`]="{ item }">
                   <span class="indigo-text">{{ item.final_cup_points }}p</span>
@@ -295,11 +265,11 @@
               @click="refreshCup(selected_cup)"
               class="white--text"
             >
-              <i class="material-icons left">update</i>Päivitä cupin tulokset
+              <v-icon>mdi-update</v-icon>Päivitä cupin tulokset
             </v-btn>
           </v-col>
         </v-row>
-        <v-row v-else>
+        <v-row v-else style="margin: 20px">
           <v-col>
             <h2
               v-if="selected_cup && !competitions.length"
@@ -321,7 +291,7 @@
         </v-row>
       </v-col>
     </v-row>
-    <v-row v-else>
+    <v-row v-else style="margin: 20px">
       <v-row>
         <v-col>
           <h2
@@ -335,25 +305,30 @@
         </v-col>
       </v-row>
     </v-row>
+    <v-snackbar v-model="snackbar" :timeout="timeout">
+      {{ text }}
+
+      <template v-slot:action="{ attrs }">
+        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
   </v-container>
 </template>
 <script>
 "use strict";
-import M from "materialize-css";
+
 import CupService from "../CupService";
 import CompetitionService from "../CompetitionService";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-import Header from "../components/layout/Header";
-import MainHeader from "../components/layout/MainHeader";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 
 export default {
   name: "PublicCups",
   components: {
     ProgressBarQuery,
-    Header,
-    MainHeader,
   },
   data() {
     return {
@@ -363,7 +338,6 @@ export default {
       headers: [],
       results: [],
       loading: false,
-      errors: [],
       select_numbers: [],
       header_options: ["Paikkakunta", "Kilpailun nimi"],
       header_selection: "Paikkakunta",
@@ -387,6 +361,9 @@ export default {
           disabled: true,
         },
       ],
+      snackbar: false,
+      text: "",
+      timeout: 5000,
     };
   },
   async mounted() {
@@ -404,21 +381,22 @@ export default {
     location.href = "#app";
   },
   methods: {
-    pickCup: function() {
+    pickCup: function () {
       this.refreshCup(this.selected_cup);
     },
 
-    changePage: function(route) {
+    changePage: function (route) {
       if (this.$router.currentRoute.path !== route) {
         this.$router.push(route);
         this.drawer = !this.drawer;
       } else {
-        M.toast({ html: "Olet jo tällä sivulla!" });
+        this.text = "Olet jo tällä sivulla!";
+        this.snackbar = true;
       }
     },
     // Calculate all the cup points, and limit the number of races taken into account
     // If limit = 4, 4 races with highest points will be calculated, other races will have 5 points where the signee has participated
-    calculateAll: function(competitions, limit) {
+    calculateAll: function (competitions, limit) {
       let all_results = [];
       this.isResults = false;
       competitions.forEach((competition) => {
@@ -496,7 +474,7 @@ export default {
         });
       }
     },
-    limitCompetitions: function(results, limit) {
+    limitCompetitions: function (results, limit) {
       limit = limit < 0 ? 0 : limit; // Make sure limit is at least 1
 
       results.forEach((signee) => {
@@ -517,11 +495,10 @@ export default {
               // If signee's points are less than the limit points from the array
               // check which placement the points would have from array, and pair it with points, the signee.placement isn't accurate anymore if competitions are limited
 
-              signee.cup_results[
-                competition.key_name
-              ].placement = competition.normal_points.find(
-                (result) => result.boat_number === signee.boat_number
-              ).placement;
+              signee.cup_results[competition.key_name].placement =
+                competition.normal_points.find(
+                  (result) => result.boat_number === signee.boat_number
+                ).placement;
 
               if (
                 signee.cup_results[competition.key_name].points <
@@ -557,8 +534,6 @@ export default {
     },
     async refreshCup(cup) {
       this.loading = true;
-      this.errors = [];
-
       // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
       //TODO make a test for this?
       // Update to vuex, Assing variables from vuex (see client/store/index.js)
@@ -585,7 +560,8 @@ export default {
         });
         this.selected_competitions = this.competitions.length;
         this.calculateAll(this.competitions, this.selected_competitions);
-        M.toast({ html: "Tiedot ajantasalla!" });
+        this.text = "Tiedot ajantasalla!";
+        this.snackbar = true;
         this.loading = false;
       } catch (error) {
         this.loading = false;
@@ -602,7 +578,7 @@ export default {
       if (isFinished) return "red";
       else return "primary";
     },
-    replaceAllChars: function(text, obj) {
+    replaceAllChars: function (text, obj) {
       return [...text]
         .map((each) => {
           for (const o in obj) {
@@ -612,7 +588,7 @@ export default {
         })
         .join("");
     },
-    changeHeaders: function() {
+    changeHeaders: function () {
       this.headers = [];
       this.headers.push({
         text: "Sijoitus",
@@ -651,9 +627,9 @@ export default {
             return competition.locality === header.text;
           });
           if (found_headers.length) {
-            let new_header_text = ` ${
-              competition.locality
-            } #${found_headers.length + 1}`;
+            let new_header_text = ` ${competition.locality} #${
+              found_headers.length + 1
+            }`;
             this.headers.push({
               text: new_header_text,
               align: "center",
@@ -687,7 +663,7 @@ export default {
         value: "final_cup_points",
       });
     },
-    pickCompetition: function(competition) {
+    pickCompetition: function (competition) {
       // Pick competition for the app to use
       //NOTE Store competition to vuex, redundant?
       this.$store.state.competition = competition;
@@ -704,20 +680,20 @@ export default {
       this.$router.push({ path: "/overview" });
     },
     // For naming the pdf, replace certain characters
-    replaceAll: function(string, search, replace) {
+    replaceAll: function (string, search, replace) {
       return string.split(search).join(replace);
     },
     // Capitalize all the words in given string. Takes account all the characters like "-", "'" etc.
-    capitalize_words: function(str) {
+    capitalize_words: function (str) {
       return str.replace(
         /(?:^|\s|['`‘’.-])[^\x60^\x7B-\xDF](?!(\s|$))/g,
-        function(txt) {
+        function (txt) {
           return txt.toUpperCase();
         }
       );
     },
     // Parses dictionary/json to array, for pdf autotables
-    dictToArray: function(dict) {
+    dictToArray: function (dict) {
       const temp_arr = Object.entries(dict);
       const arr = [];
 
@@ -744,7 +720,7 @@ export default {
       return arr;
     },
     // Convert the charts and the tables to pdf
-    saveAsPDF: function(table_title) {
+    saveAsPDF: function (table_title) {
       // Format dates for easier reding
       // PDF creation
       let doc;
@@ -770,8 +746,9 @@ export default {
       var finalIndex = index >= 0 ? count - index : index;
       const last_competition = temp_array[finalIndex];
       const start_date = this.$moment(last_competition.start_date);
-      const formatted_date = `${start_date.date()}.${start_date.month() +
-        1}.${start_date.year()}`;
+      const formatted_date = `${start_date.date()}.${
+        start_date.month() + 1
+      }.${start_date.year()}`;
       doc.setFontSize(24);
       doc.text(13, 15, title, { align: "left" });
       doc.line(0, 20, 400, 20);

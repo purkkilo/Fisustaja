@@ -2,7 +2,6 @@
   <!-- /weighting -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <div>
-    <Header style="margin-bottom:60px" />
     <v-navigation-drawer permanent>
       <v-card
         class="mx-auto"
@@ -40,20 +39,21 @@
         }"
       >
         <v-card
-          style="background-color:rgba(0, 0, 0, 0.0);"
+          style="background-color: rgba(0, 0, 0, 0)"
           :dark="$store.getters.getTheme"
         >
           <v-row>
             <v-col cols="12" xs="12" sm="12" md="12">
               <v-row>
                 <v-col md="7">
-                  <h1>Punnitus</h1>
+                  <h1 style="margin: 30px">Punnitus</h1>
                 </v-col>
                 <v-col md="5">
                   <div class="text-center">
                     <v-dialog v-model="dialog">
                       <template v-slot:activator="{ on, attrs }">
                         <p
+                          style="margin: 10px"
                           v-bind:class="{
                             'black-text': !$store.getters.getTheme,
                             'white-text': $store.getters.getTheme,
@@ -73,10 +73,8 @@
                         </v-btn>
                       </template>
 
-                      <v-card :dark="$store.getters.getTheme">
-                        <v-card-title class="headline"> </v-card-title>
+                      <v-card :dark="$store.getters.getTheme" width="600px">
                         <Timedate />
-
                         <v-card-actions>
                           <v-spacer></v-spacer>
                           <v-btn
@@ -112,7 +110,7 @@
           <v-tab href="#situation">Tilannekatsaus</v-tab>
           <v-tab href="#onwater">Vielä vesillä</v-tab>
         </v-tabs>
-        <v-tabs-items v-model="tab" style="background: rgba(0,0,0,0.4);">
+        <v-tabs-items v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
           <!-- "Punnitus" tab -->
           <v-tab-item
             v-bind:class="{
@@ -152,7 +150,7 @@
                         }"
                         md="6"
                         offset-md="3"
-                        style="padding:20px;"
+                        style="padding: 20px"
                       >
                         <v-col>
                           <p
@@ -254,13 +252,13 @@
                               block
                               color="yellow"
                               @click="clearInputs"
-                              ><i class="material-icons left">backspace</i
+                              ><v-icon>mdi-backspace-reverse-outline</v-icon
                               >Peruuta valinta</v-btn
                             >
                           </v-col>
                         </v-row>
                       </v-col>
-                      <v-col md="12" style="margin-bottom:30px">
+                      <v-col md="12" style="margin-bottom: 30px">
                         <v-divider class="black"></v-divider>
                       </v-col>
                       <v-col md="10" offset-md="1">
@@ -269,7 +267,7 @@
                             id="fish_weights"
                             v-if="$store.getters.getCompetitionFishes.length"
                           >
-                            <li style="padding:10px;margin-bottom:10px">
+                            <li style="padding: 10px; margin-bottom: 10px">
                               <v-row v-if="!loading_fish">
                                 <v-col md="3">
                                   <p
@@ -324,7 +322,7 @@
                                     tile
                                     color="green"
                                     @click="saveBiggestFish"
-                                    ><i class="material-icons left">add_box</i
+                                    ><v-icon>mdi-content-save</v-icon
                                     >Tallenna</v-btn
                                   >
                                 </v-col>
@@ -395,8 +393,7 @@
                                         dark
                                         v-bind="attrs"
                                         v-on="on"
-                                        ><i class="material-icons left">add</i
-                                        >Plussaa</v-btn
+                                        ><v-icon>mdi-plus</v-icon>Plussaa</v-btn
                                       >
                                     </template>
                                     <v-card :dark="$store.getters.getTheme">
@@ -440,11 +437,11 @@
                                             <v-text-field
                                               :value="
                                                 parseInt(input.value) +
-                                                  parseInt(
-                                                    input.addition
-                                                      ? input.addition
-                                                      : 0
-                                                  )
+                                                parseInt(
+                                                  input.addition
+                                                    ? input.addition
+                                                    : 0
+                                                )
                                               "
                                               label="Summa"
                                               disabled
@@ -499,9 +496,7 @@
                                 color="red"
                                 @click="saveToDatabase(true)"
                                 :loading="refreshing"
-                                ><i class="material-icons left"
-                                  >delete_forever</i
-                                >Nollaa</v-btn
+                                ><v-icon>mdi-delete</v-icon>Nollaa</v-btn
                               >
                             </v-col>
                             <v-col>
@@ -522,8 +517,7 @@
                                 color="green"
                                 @click="saveToDatabase(false)"
                                 :loading="refreshing"
-                                ><i class="material-icons left">check</i
-                                >Tallenna</v-btn
+                                ><v-icon>mdi-check</v-icon>Tallenna</v-btn
                               >
                             </v-col>
                           </v-row>
@@ -537,8 +531,8 @@
                                 @click="refreshCompetition(competition_id)"
                                 class="white--text"
                               >
-                                <i class="material-icons left">update</i>Päivitä
-                                kilpailun tiedot
+                                <v-icon>mdi-update</v-icon>Päivitä kilpailun
+                                tiedot
                               </v-btn>
                             </v-col>
                           </v-row>
@@ -561,7 +555,7 @@
                   </v-col>
                 </v-row>
                 <v-row v-else>
-                  <v-col style="padding:30px">
+                  <v-col style="padding: 30px">
                     <p
                       class="flow-text"
                       v-bind:class="{ 'white--text': $store.getters.getTheme }"
@@ -593,12 +587,10 @@
             <v-row>
               <v-col>
                 <v-row v-if="result_signees.length">
-                  <v-col md="8" offset-md="2" style="margin-top:20px;">
+                  <v-col md="8" offset-md="2" style="margin-top: 20px">
                     <v-card :dark="$store.getters.getTheme">
                       <v-card-title>
-                        <p class="flow-text">
-                          Tilannekatsaus
-                        </p>
+                        <p class="flow-text">Tilannekatsaus</p>
                         <v-spacer></v-spacer>
                         <v-text-field
                           v-model="search"
@@ -634,11 +626,11 @@
                   <v-col
                     md="8"
                     offset-md="2"
-                    style="margin-top:30px;margin-bottom:30px"
+                    style="margin-top: 30px; margin-bottom: 30px"
                   >
                     <v-btn large tile color="blue" @click="searchSelected"
-                      ><i class="material-icons left">assignment_return</i
-                      >Siirry punnitukseen</v-btn
+                      ><v-icon>mdi-arrow-right</v-icon>Siirry
+                      punnitukseen</v-btn
                     >
                   </v-col>
                 </v-row>
@@ -646,7 +638,7 @@
                   <v-col
                     md="8"
                     offset-md="2"
-                    style="margin-top:30px;margin-bottom:30px"
+                    style="margin-top: 30px; margin-bottom: 30px"
                   >
                     <p
                       v-if="result_signees.length"
@@ -684,7 +676,7 @@
                     md="8"
                     offset-md="2"
                     class="input-fields"
-                    style="margin-top:100px;"
+                    style="margin-top: 100px"
                   >
                     <p v-if="!signees.length" class="flow-text red--text">
                       Kilpailussa ei vielä ilmoittautuneita!
@@ -697,7 +689,7 @@
                     </p>
                   </v-col>
                 </v-row>
-                <v-row v-if="still_on_water.length" style="margin-top:20px">
+                <v-row v-if="still_on_water.length" style="margin-top: 20px">
                   <v-col md="8" offset-md="2">
                     <v-card :dark="$store.getters.getTheme">
                       <v-card-title>
@@ -733,11 +725,11 @@
                   <v-col
                     md="8"
                     offset-md="2"
-                    style="margin-top:30px;margin-bottom:30px"
+                    style="margin-top: 30px; margin-bottom: 30px"
                   >
                     <v-btn large tile color="blue" @click="searchSelected"
-                      ><i class="material-icons left">assignment_return</i
-                      >Siirry punnitukseen</v-btn
+                      ><v-icon>mdi-arrow-right</v-icon>Siirry
+                      punnitukseen</v-btn
                     >
                   </v-col>
                 </v-row>
@@ -745,7 +737,7 @@
                   <v-col
                     md="8"
                     offset-md="2"
-                    style="margin-top:30px;margin-bottom:30px"
+                    style="margin-top: 30px; margin-bottom: 30px"
                   >
                     <p
                       v-if="still_on_water.length"
@@ -763,8 +755,8 @@
                       class="white--text"
                       @click="allFinished"
                       :loading="loading"
-                      ><i class="material-icons left">check_circle_outline</i
-                      >Kaikki saapuneet maaliin</v-btn
+                      ><v-icon>mdi-check-outline</v-icon>Kaikki saapuneet
+                      maaliin</v-btn
                     >
                   </v-col>
                 </v-row>
@@ -774,21 +766,27 @@
         </v-tabs-items>
       </div>
     </v-container>
+    <v-snackbar v-model="snackbar" :timeout="timeout">
+      {{ text }}
+
+      <template v-slot:action="{ attrs }">
+        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 <script>
 "use strict";
-import M from "materialize-css";
 import CompetitionService from "../CompetitionService";
 import Timedate from "../components/layout/Timedate";
-import Header from "../components/layout/Header";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 
 export default {
   name: "Weighting",
   components: {
     Timedate,
-    Header,
     ProgressBarQuery,
   },
   data() {
@@ -865,6 +863,9 @@ export default {
           path: "/results",
         },
       ],
+      snackbar: false,
+      text: "",
+      timeout: 5000,
     };
   },
   computed: {
@@ -907,8 +908,6 @@ export default {
     }
   },
   mounted() {
-    //Init materialize elements
-    M.AutoInit();
     /* eslint-enable no-unused-vars */
     if (!this.competition_id) {
       const competition = JSON.parse(localStorage.getItem("competition"));
@@ -925,12 +924,13 @@ export default {
     //clearInterval(this.timer_refresh);
   },
   methods: {
-    changePage: function(route) {
+    changePage: function (route) {
       if (this.$router.currentRoute.path !== route) {
         this.$router.push(route);
         this.drawer = !this.drawer;
       } else {
-        M.toast({ html: "Olet jo tällä sivulla!" });
+        this.text = "Olet jo tällä sivulla!";
+        this.snackbar = true;
       }
     },
     // Fetch competition from database, and update variables
@@ -1008,13 +1008,14 @@ export default {
         await CompetitionService.updateValues(comp._id, newvalues);
         this.loading = false;
         this.still_on_water = this.$store.getters.getStillOnWaterSignees;
-        M.toast({ html: "Kaikki kilpailijat merkattu maaliin saapuneeksi!" });
+        this.text = "Kaikki kilpailijat merkattu maaliin saapuneeksi!";
+        this.snackbar = true;
       } catch (err) {
         console.log(err.message);
       }
     },
     // Check if input value is number, and only accept numbers to inputs
-    isNumber: function(evt) {
+    isNumber: function (evt) {
       evt = evt ? evt : window.event;
       var charCode = evt.which ? evt.which : evt.keyCode;
       if (
@@ -1033,7 +1034,7 @@ export default {
     },
     // Fetch signee from vuex based on boat number
     // Check client\src\store\index.js for implementation
-    searchBoatNumber: function(boat_number) {
+    searchBoatNumber: function (boat_number) {
       return this.$store.getters.getSigneeByBoatNumber(parseInt(boat_number));
     },
     getColor(placement) {
@@ -1048,7 +1049,7 @@ export default {
     },
     // Select row from table, if selected --> unselect
     // selected_id bound to selected css class (on App.vue)
-    rowClick: function(item, row) {
+    rowClick: function (item, row) {
       if (item.id == this.selected_id) {
         this.selected_id = null;
         this.selected_boat_number = null;
@@ -1064,7 +1065,7 @@ export default {
       }
     },
     // Set input weights for each fish for the signee
-    setInputWeights: function() {
+    setInputWeights: function () {
       // Loop trhough all the competition fishes
       this.inputs.forEach((input) => {
         let fish_name = input.name;
@@ -1081,13 +1082,13 @@ export default {
       });
     },
     // Search signee from database when selected from table
-    searchSelected: function() {
+    searchSelected: function () {
       // Change tab to "Punnitus" and fetch
       this.tab = "weighting";
       this.fetchFromDatabase(this.selected_boat_number);
     },
 
-    fetchFromDatabase: function(boat_number) {
+    fetchFromDatabase: function (boat_number) {
       this.selected_id = null;
       this.selected_boat_number = null;
       // If boat_number_input is empty, boat_number = -1
@@ -1141,7 +1142,8 @@ export default {
         } catch (err) {
           console.log(err.message);
         }
-        M.toast({ html: "Isoin kala tallennettu listaan!" });
+        this.text = "Isoin kala tallennettu listaan!";
+        this.snackbar = true;
       } else {
         console.log("Jokin input tyhjänä:");
       }
@@ -1302,7 +1304,8 @@ export default {
         this.competition_boat = null;
         this.signees = comp.signees;
         this.competition_fishes = this.$store.getters.getCompetitionFishes;
-        this.calculated_total_weights = this.$store.getters.getCompetitionTotalWeights;
+        this.calculated_total_weights =
+          this.$store.getters.getCompetitionTotalWeights;
         this.result_signees = this.$store.getters.getResultSignees;
         this.still_on_water = this.$store.getters.getStillOnWaterSignees;
       } catch (err) {
@@ -1313,7 +1316,7 @@ export default {
       this.searched = false;
     },
     // "Normaalikilpailu" results
-    calculateNormalResults: function(competition) {
+    calculateNormalResults: function (competition) {
       const cup_points_multiplier = competition.cup_points_multiplier;
       let cup_placement_points = competition.cup_placement_points;
       const cup_participation_points = competition.cup_participation_points;
@@ -1448,7 +1451,7 @@ export default {
 
       return output;
     },
-    calculateTeamResults: function() {
+    calculateTeamResults: function () {
       var team_names = [];
       let team_results = [];
       // Get all the team names
@@ -1491,7 +1494,7 @@ export default {
       return team_results;
     },
     // Calculate total weight of all the fishes in competition
-    calculateTotalWeights: function() {
+    calculateTotalWeights: function () {
       let finished_boats = this.$store.getters.getFinishedSignees;
       let competition_fishes = this.$store.getters.getCompetitionFishes;
       let total_weights = 0;
@@ -1518,8 +1521,9 @@ export default {
       };
     },
     // Clear all inputs and selections
-    clearInputs: function() {
-      M.toast({ html: "Pyyhitään inputit ja valinnat..." });
+    clearInputs: function () {
+      this.text = "Pyyhitään inputit ja valinnat...";
+      this.snackbar = true;
       this.inputs.forEach((input) => {
         input.value = null;
       });

@@ -2,7 +2,6 @@
   <!-- /comp-settings -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <div>
-    <Header style="margin-bottom:60px" />
     <v-navigation-drawer permanent>
       <v-card
         class="mx-auto"
@@ -44,13 +43,14 @@
           <v-col cols="12" xs="12" sm="12" md="12">
             <v-row>
               <v-col md="7">
-                <h1>Kilpailun määritykset</h1>
+                <h1 style="margin: 30px">Kilpailun määritykset</h1>
               </v-col>
               <v-col md="5">
                 <div class="text-center">
                   <v-dialog v-model="dialog">
                     <template v-slot:activator="{ on, attrs }">
                       <p
+                        style="margin: 10px"
                         v-bind:class="{
                           'black-text': !$store.getters.getTheme,
                           'white-text': $store.getters.getTheme,
@@ -105,7 +105,7 @@
         >
       </v-tabs>
 
-      <v-tabs-items v-model="tab" style="background: rgba(0,0,0,0.4);">
+      <v-tabs-items v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
         <v-tab-item :value="'show-settings'">
           <!-- if this.loading === false, meaning app isn't loading competition data from database -->
           <v-row
@@ -117,7 +117,7 @@
             }"
           >
             <v-col>
-              <v-row style="margin-top:20px">
+              <v-row style="margin-top: 20px">
                 <v-col md="10" offset-md="1">
                   <v-card
                     :dark="$store.getters.getTheme"
@@ -125,9 +125,7 @@
                     outlined
                   >
                     <v-card-title class="text-center"
-                      ><p class="display-1">
-                        Perustiedot
-                      </p></v-card-title
+                      ><p class="display-1">Perustiedot</p></v-card-title
                     >
                     <v-list outlined elevation="10">
                       <v-list-item>
@@ -301,10 +299,10 @@
                 </v-col>
               </v-row>
               <v-row v-if="!loading">
-                <v-col style="margin-top:20px">
+                <v-col style="margin-top: 20px">
                   <v-btn
                     large
-                    tile
+                    rounded
                     :color="
                       competition.isPublic ? 'grey darken-4' : 'green darken-4'
                     "
@@ -321,10 +319,10 @@
                     </div>
                   </v-btn>
                 </v-col>
-                <v-col style="margin-top:20px">
+                <v-col style="margin-top: 20px">
                   <v-btn
                     large
-                    tile
+                    rounded
                     :color="
                       competition.isFinished ? 'yellow' : 'green darken-3'
                     "
@@ -342,8 +340,8 @@
                   </v-btn>
                 </v-col>
               </v-row>
-              <v-row>
-                <v-col md="3" offset-md="4" style="margin-top:20px">
+              <v-row style="margin-bottom: 20px">
+                <v-col md="3" offset-md="4" style="margin-top: 20px">
                   <v-btn
                     block
                     color="red darken-4"
@@ -377,26 +375,28 @@
               'inputarea-dark': $store.getters.getTheme,
             }"
           >
-            <div id="errordiv" v-if="errors.length">
-              <ul class="collection with-header" style="border:1px solid red;">
-                <li
-                  class="collection-header"
-                  style="background: rgba(0,0,0,0);"
-                >
-                  <v-alert type="error">
-                    Korjaa seuraavat virheet:
-                  </v-alert>
-                </li>
-                <li
-                  class="collection-item"
-                  id="error"
+            <v-card
+              :dark="$store.getters.getTheme"
+              id="errordiv"
+              elevation="20"
+              v-if="errors.length"
+            >
+              <v-alert type="error"> Korjaa seuraavat virheet: </v-alert>
+              <v-list>
+                <v-list-item
                   v-for="(error, index) in errors"
                   v-bind:key="index"
                 >
-                  <p class="flow-text">{{ index + 1 }}. {{ error }}</p>
-                </li>
-              </ul>
-            </div>
+                  <v-list-item-icon>
+                    <v-icon color="red">mdi-alert-circle</v-icon>
+                  </v-list-item-icon>
+
+                  <v-list-item-content>
+                    <v-list-item-title>{{ error }}</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+              </v-list>
+            </v-card>
             <v-row>
               <v-col>
                 <h1>Muuta määrityksiä</h1>
@@ -620,7 +620,7 @@
                   </v-col>
                 </v-row>
 
-                <v-row v-if="competition">
+                <v-row v-if="competition" style="padding: 20px">
                   <v-col cols="12" md="5">
                     <v-row align="center">
                       <v-col>
@@ -636,7 +636,7 @@
                     <v-row align="center">
                       <v-date-picker
                         :dark="$store.getters.getTheme"
-                        style="height:480px"
+                        style="height: 480px"
                         v-model="start_date"
                         full-width
                         elevation="15"
@@ -650,7 +650,7 @@
                     cols="12"
                     md="5"
                     offset-md="2"
-                    style="margin-bottom:50px"
+                    style="margin-bottom: 50px"
                   >
                     <v-row align="center">
                       <v-col>
@@ -666,7 +666,7 @@
                     <v-row>
                       <v-date-picker
                         :dark="$store.getters.getTheme"
-                        style="height:480px"
+                        style="height: 480px"
                         v-model="end_date"
                         full-width
                         elevation="15"
@@ -678,7 +678,7 @@
                   </v-col>
                 </v-row>
 
-                <v-row v-if="competition">
+                <v-row v-if="competition" style="padding: 20px">
                   <v-col cols="12" md="5">
                     <v-row align="center">
                       <v-col>
@@ -733,7 +733,7 @@
                   </v-col>
                 </v-row>
                 <v-row class="fishes_summary">
-                  <v-col md="10" offset-md="1">
+                  <v-col md="12" offset-md="1">
                     <table
                       class="highlight centered responsive-table table_header"
                     >
@@ -748,7 +748,7 @@
                       <tbody>
                         <!-- for every fish in this.fish_specs, show info for that fish -->
                         <tr v-for="(input, index) in inputs" :key="index">
-                          <th style="border:1px solid black;" scope="row">
+                          <th style="border: 1px solid black" scope="row">
                             <v-text-field
                               :dark="$store.getters.getTheme"
                               label="Nimi"
@@ -758,7 +758,7 @@
                               :counter="max_input"
                             />
                           </th>
-                          <td style="border:1px solid black;">
+                          <td style="border: 1px solid black">
                             <v-text-field
                               :dark="$store.getters.getTheme"
                               label="Kerroin"
@@ -783,7 +783,7 @@
                               :disabled="basic_info_validated"
                             />
                           </td>
-                          <td style="border:1px solid black;">
+                          <td style="border: 1px solid black">
                             <v-text-field
                               :dark="$store.getters.getTheme"
                               label="Alamitta (cm)"
@@ -795,19 +795,18 @@
                             />
                           </td>
                           <td
-                            style="border:1px solid black;"
+                            style="border: 1px solid black"
                             v-if="!basic_info_validated"
                           >
                             <v-btn
-                              large
+                              icon
                               color="red darken-4"
                               class="white--text"
                               :disabled="basic_info_validated"
                               @click="
                                 deleteFish(index, input.original_name, false)
                               "
-                              ><i class="material-icons left">remove_circle</i
-                              >Poista</v-btn
+                              ><v-icon>mdi-delete</v-icon></v-btn
                             >
                           </td>
                         </tr>
@@ -828,7 +827,7 @@
                   </v-col>
                 </v-row>
 
-                <v-row v-if="!basic_info_validated">
+                <v-row v-if="!basic_info_validated" style="margin-bottom: 20px">
                   <v-col md="6" v-if="competition">
                     <v-btn large color="yellow" @click="setOriginalValues"
                       ><v-icon color="red darken-2">mdi-cancel</v-icon> Peruuta
@@ -843,15 +842,14 @@
                   </v-col>
                 </v-row>
               </v-col>
-              <v-row v-if="basic_info_validated">
-                <v-col style="margin-top:20px">
+              <v-row v-if="basic_info_validated" style="margin-bottom: 20px">
+                <v-col style="margin-top: 20px">
                   <v-btn
                     large
                     tile
                     color="grey"
                     @click="basic_info_validated = false"
-                    ><i class="material-icons left">settings</i>Muuta
-                    tietoja</v-btn
+                    ><v-icon>mdi-cog-transfer</v-icon>Muuta tietoja</v-btn
                   >
                 </v-col>
               </v-row>
@@ -871,13 +869,20 @@
           </div>
         </v-tab-item>
       </v-tabs-items>
+      <v-snackbar v-model="snackbar" :timeout="timeout">
+        {{ text }}
+
+        <template v-slot:action="{ attrs }">
+          <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
+            Close
+          </v-btn>
+        </template>
+      </v-snackbar>
     </v-container>
   </div>
 </template>
 <script>
 "use strict";
-import M from "materialize-css";
-import Header from "../components/layout/Header";
 import CompetitionService from "../CompetitionService";
 import CupService from "../CupService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
@@ -886,7 +891,6 @@ export default {
   name: "CompSettings",
   components: {
     ProgressBarQuery,
-    Header,
   },
   data() {
     return {
@@ -981,6 +985,9 @@ export default {
           path: "/results",
         },
       ],
+      snackbar: false,
+      text: "",
+      timeout: 5000,
     };
   },
   created() {
@@ -997,12 +1004,13 @@ export default {
   },
   mounted() {},
   methods: {
-    changePage: function(route) {
+    changePage: function (route) {
       if (this.$router.currentRoute.path !== route) {
         this.$router.push(route);
         this.drawer = !this.drawer;
       } else {
-        M.toast({ html: "Olet jo tällä sivulla!" });
+        this.text = "Olet jo tällä sivulla!";
+        this.snackbar = true;
       }
     },
     async publishCompetition(isPublic) {
@@ -1082,10 +1090,12 @@ export default {
           this.fish_specs = this.$store.getters.getCompetitionFishes;
           let temp_start_date = this.$moment(this.competition.start_date);
           let temp_end_date = this.$moment(this.competition.end_date);
-          this.formatted_start_date = `${temp_start_date.date()}.${temp_start_date.month() +
-            1}.${temp_start_date.year()}`;
-          this.formatted_end_date = `${temp_end_date.date()}.${temp_end_date.month() +
-            1}.${temp_end_date.year()}`;
+          this.formatted_start_date = `${temp_start_date.date()}.${
+            temp_start_date.month() + 1
+          }.${temp_start_date.year()}`;
+          this.formatted_end_date = `${temp_end_date.date()}.${
+            temp_end_date.month() + 1
+          }.${temp_end_date.year()}`;
           this.setOriginalValues();
           if (!this.cups.length) {
             this.getCups();
@@ -1099,7 +1109,7 @@ export default {
       this.loading = false;
     },
     //filter other characters out for number inputs
-    isNumber: function(evt, isDate) {
+    isNumber: function (evt, isDate) {
       var charToCheckCode = 46; // --> .
       var charToCheck = ".";
 
@@ -1128,7 +1138,7 @@ export default {
         }
       }
     },
-    addInput: function() {
+    addInput: function () {
       this.inputs.push({
         name: null,
         multiplier: 1,
@@ -1137,7 +1147,7 @@ export default {
         color: this.generateRandomColor(),
       });
     },
-    deleteFish: function(index, fish_name, confirmed) {
+    deleteFish: function (index, fish_name, confirmed) {
       if (confirmed) {
         try {
           this.inputs.splice(index, 1);
@@ -1170,7 +1180,7 @@ export default {
           });
       }
     },
-    setOriginalValues: function() {
+    setOriginalValues: function () {
       this.inputs = [];
       this.fish_specs.forEach((fish) => {
         this.inputs.push({
@@ -1204,19 +1214,18 @@ export default {
     },
     // Generate random colors for the fish chart in Result.vue (since adding fishes is dynamic)
     //TODO look for 8-15 good colors to add/choose from, maybe with color picker next to fish name
-    generateRandomColor: function() {
+    generateRandomColor: function () {
       var randomColor = "#" + Math.floor(Math.random() * 16777215).toString(16);
       return randomColor;
     },
     // Add error to error array and direct user to it
-    showError: function(error) {
+    showError: function (error) {
       this.errors.push(error);
-      M.toast({ html: error });
       location.href = "#";
       location.href = "#app";
     },
     // Check competitions basic information (Perustiedot)
-    checkBasicInformation: function() {
+    checkBasicInformation: function () {
       this.errors = [];
       this.basic_info_validated = false;
       this.validated = false;
@@ -1416,18 +1425,16 @@ export default {
 
                   if (this.competition.normal_weights.length) {
                     // Update signee values on competition.normal_weights
-                    let weight_index = this.competition.normal_weights.findIndex(
-                      (results) => {
+                    let weight_index =
+                      this.competition.normal_weights.findIndex((results) => {
                         return (
                           parseInt(results.boat_number) ===
                           parseInt(signee.boat_number)
                         );
-                      }
-                    );
+                      });
                     if (weight_index > -1) {
-                      let normal_weight = this.competition.normal_weights[
-                        weight_index
-                      ];
+                      let normal_weight =
+                        this.competition.normal_weights[weight_index];
                       // Assing total_points here too
                       normal_weight.total_points = signee.total_points;
                       // If name has changed, replace old key with new one, so only name changes, not the values apart from total_points
@@ -1449,9 +1456,8 @@ export default {
                       }
                     );
                     if (point_index > -1) {
-                      let normal_point = this.competition.normal_points[
-                        point_index
-                      ];
+                      let normal_point =
+                        this.competition.normal_points[point_index];
                       // Assing total_points here too, so no need to calculate points again
                       normal_point.total_points = signee.total_points;
                     }
@@ -1475,17 +1481,15 @@ export default {
           if (input.name !== input.original_name) {
             if (this.competition.biggest_fishes[input.original_name]) {
               delete Object.assign(this.competition.biggest_fishes, {
-                [input.name]: this.competition.biggest_fishes[
-                  input.original_name
-                ],
+                [input.name]:
+                  this.competition.biggest_fishes[input.original_name],
               })[input.original_name];
             }
 
             if (this.competition.biggest_amounts[input.original_name]) {
               delete Object.assign(this.competition.biggest_amounts, {
-                [input.name]: this.competition.biggest_amounts[
-                  input.original_name
-                ],
+                [input.name]:
+                  this.competition.biggest_amounts[input.original_name],
               })[input.original_name];
             }
 
@@ -1522,16 +1526,16 @@ export default {
         console.error(err.message);
       }
       this.loading = false;
-      M.toast({
-        html:
-          "Tiedot päivitetty tietokantaan, sekä tulokset laskettu uusilla arvoilla!",
-      });
+      this.text =
+        "Tiedot päivitetty tietokantaan, sekä tulokset laskettu uusilla arvoilla!";
+      this.snackbar = true;
     },
     // Delete competition
     async deleteCompetition(id, confirmed) {
       // If user clicked "OK" on confirmation box
       if (confirmed) {
-        M.toast({ html: "Poistetaan tietokannasta!" });
+        this.text = "Poistetaan tietokannasta!";
+        this.snackbar = true;
         try {
           //Delete competition from database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
           await CompetitionService.deleteCompetition(id);
@@ -1559,7 +1563,7 @@ export default {
       }
     },
     // "Normaalikilpailu" results
-    calculateNormalResults: function(competition) {
+    calculateNormalResults: function (competition) {
       const cup_points_multiplier = competition.cup_points_multiplier;
       let cup_placement_points = competition.cup_placement_points;
       const cup_participation_points = competition.cup_participation_points;
@@ -1691,7 +1695,7 @@ export default {
 
       return output;
     },
-    calculateTeamResults: function() {
+    calculateTeamResults: function () {
       let signees = this.competition.signees;
       var team_names = [];
       let team_results = [];

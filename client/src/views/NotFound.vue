@@ -1,18 +1,14 @@
 <template>
   <v-container
-    style="margin-top:70px;"
+    style="margin-top: 70px"
     v-bind:class="{
       'container-transparent': !$store.getters.getTheme,
       'container-transparent-dark': $store.getters.getTheme,
     }"
   >
-    <Header v-if="$store.state.logged_in" />
-    <MainHeader v-else />
     <v-row>
       <v-col md="12">
-        <h1 class="text-center">
-          Page not found :thinking:
-        </h1>
+        <h1 class="text-center">Page not found :thinking:</h1>
       </v-col>
     </v-row>
     <v-row>
@@ -28,15 +24,9 @@
 
 <script>
 "use strict";
-import Header from "../components/layout/Header";
-import MainHeader from "../components/layout/MainHeader";
-
 export default {
   name: "Notfound",
-  components: {
-    Header,
-    MainHeader,
-  },
+  components: {},
   data() {
     return {
       prevRoute: null,

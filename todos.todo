@@ -22,8 +22,8 @@ New:
   ☐ Create all fishes category in biggest fishes and biggest amounts
   ☐ Remove errors going to browser console
   ☐ Reimplement api for competitions,cups and feedback (like users)
-  ☐ Replace materialize components with vuetify (toast -> snackbar etc.)
-  ☐ Implement refreshing access tokens
+  ☐ Fix autotable not showing themes? 
+
 
 
 Done:
@@ -55,6 +55,9 @@ Done:
   ✔ Handle timeout response on all Service.js calls on .vue files (Request failed with status code 408 -> Timeout -> Bad internet or api problem); @done(20-08-18 00:09)
   ✔ Move darkmode switch from each table to header or somewhere handy, update it to vuex or user's datatable @done(20-09-01 05:21)
   ✔ Implement competition updating like updating user preferences (check: Header.vue, Userservice.js, users.js) @done(20-09-17 10:35)
+  ✔ Implement refreshing access tokens @done(21-11-27 14:44)
+  ✔ Replace materialize components with vuetify (toast -> snackbar etc.) @done(21-11-27 14:44)
+
 Cancelled:
   ✘ Press Alt+C to mark a todo as cancelled
   

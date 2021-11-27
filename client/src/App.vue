@@ -1,14 +1,12 @@
 <template>
   <!-- Main file for the application -->
   <!-- html and js autoinjects to here (on index.html in server) -->
-  <v-app
-    id="app"
-    style="
-        background: rgba(0,0,0,0.3);"
-  >
+  <v-app id="app" style="background: rgba(0, 0, 0, 0.3)">
     <!-- Sizes your content based upon application components -->
     <v-main>
       <!-- If using vue-router -->
+      <Header v-if="$store.state.logged_in" />
+      <MainHeader v-else />
       <router-view></router-view>
       <v-snackbar v-model="snackbar" :timeout="timeout">
         {{ text }}
@@ -29,7 +27,8 @@
 "use strict";
 import Footer from "./components/layout/Footer";
 import UserService from "./UserService";
-
+import Header from "./components/layout/Header.vue";
+import MainHeader from "./components/layout/MainHeader";
 export default {
   name: "App",
   data() {
@@ -41,6 +40,8 @@ export default {
   },
   components: {
     Footer,
+    Header,
+    MainHeader,
   },
   created() {
     let preferences = JSON.parse(localStorage.getItem("preferences"));
@@ -95,7 +96,7 @@ export default {
           Buffer.from(base64, "base64")
             .toString("ascii")
             .split("")
-            .map(function(c) {
+            .map(function (c) {
               return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
             })
             .join("")
@@ -111,17 +112,6 @@ export default {
 </script>
 
 <style>
-.header {
-  position: fixed; /* fixing the position takes it out of html flow - knows
-                   nothing about where to locate itself except by browser
-                   coordinates */
-  left: 0; /* top left corner should start at leftmost spot */
-  top: 0; /* top left corner should start at topmost spot */
-  width: 100vw; /* take up the full browser width */
-  z-index: 200; /* high z index so other content scrolls underneath */
-  height: 64px; /* define height for content */
-}
-
 .layout {
   display: flex;
   flex-direction: column;
@@ -180,15 +170,6 @@ body {
   padding: 5px;
   color: black;
   border: 2px solid rgb(1, 0, 51);
-}
-
-#app li.collection-item:nth-child(odd) {
-  background: rgb(255, 142, 142) !important;
-  border: 1px solid red;
-}
-#app li.collection-item:nth-child(even) {
-  background: rgb(255, 203, 203) !important;
-  border: 1px solid red;
 }
 
 #app .inputarea {

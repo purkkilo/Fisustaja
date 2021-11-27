@@ -2,7 +2,6 @@
   <!-- /overview -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <div>
-    <Header style="margin-bottom:60px" />
     <v-navigation-drawer permanent>
       <v-card
         class="mx-auto"
@@ -33,39 +32,43 @@
       </v-card>
     </v-navigation-drawer>
     <v-container style="width: 70%">
-      <div id="errordiv" v-if="errors.length">
-        <ul class="collection with-header" style="border:1px solid red;">
-          <li class="collection-header" style="background: rgba(0,0,0,0);">
-            <v-alert type="error">
-              Korjaa seuraavat virheet:
-            </v-alert>
-          </li>
-          <li
-            class="collection-item"
-            id="error"
-            v-for="(error, index) in errors"
-            v-bind:key="index"
-          >
-            <p class="flow-text">{{ index + 1 }}. {{ error }}</p>
-          </li>
-        </ul>
-      </div>
-      <div
+      <v-card
+        :dark="$store.getters.getTheme"
+        id="errordiv"
+        elevation="20"
+        v-if="errors.length"
+      >
+        <v-alert type="error"> Korjaa seuraavat virheet: </v-alert>
+        <v-list>
+          <v-list-item v-for="(error, index) in errors" v-bind:key="index">
+            <v-list-item-icon>
+              <v-icon color="red">mdi-alert-circle</v-icon>
+            </v-list-item-icon>
+
+            <v-list-item-content>
+              <v-list-item-title>{{ error }}</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </v-card>
+      <v-card
+        :dark="$store.getters.getTheme"
         v-if="!loading"
         v-bind:class="{
           'container-transparent': !$store.getters.getTheme,
           'container-transparent-dark': $store.getters.getTheme,
         }"
       >
-        <v-row class="valign-wrapper">
+        <v-row>
           <v-col md="6" offset-md="3">
-            <h1>Yleisnäkymä</h1>
+            <h1 style="margin: 30px">Yleisnäkymä</h1>
           </v-col>
           <v-col md="3">
             <div class="text-center">
               <v-dialog v-model="dialog">
                 <template v-slot:activator="{ on, attrs }">
                   <p
+                    style="margin: 10px"
                     v-bind:class="{
                       'black-text': !$store.getters.getTheme,
                       'white-text': $store.getters.getTheme,
@@ -85,10 +88,8 @@
                   </v-btn>
                 </template>
 
-                <v-card :dark="$store.getters.getTheme">
-                  <v-card-title class="headline"> </v-card-title>
+                <v-card :dark="$store.getters.getTheme" width="600px">
                   <Timedate />
-
                   <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn color="primary" outlined @click="dialog = false">
@@ -101,13 +102,7 @@
           </v-col>
         </v-row>
 
-        <v-row
-          class="section"
-          v-bind:class="{
-            inputarea: !$store.getters.getTheme,
-            'inputarea-dark': $store.getters.getTheme,
-          }"
-        >
+        <v-row style="margin-bottom: 10px">
           <v-col md="8" offset-md="2">
             <v-card :dark="$store.getters.getTheme" elevation="20" outlined>
               <v-card-title class="text-center"
@@ -186,7 +181,7 @@
                     <b>{{ hasNotReturnedPercentage }}%</b>
                     ({{
                       competition.signees.length -
-                        $store.getters.getFinishedSignees.length
+                      $store.getters.getFinishedSignees.length
                     }}
                     / {{ competition.signees.length }})
                   </v-list-item-subtitle>
@@ -234,28 +229,35 @@
             </v-card>
           </v-col>
         </v-row>
-      </div>
+      </v-card>
       <div v-else>
         <h2>Valmistellaan kilpailua...</h2>
         <ProgressBarQuery />
       </div>
     </v-container>
+    <v-snackbar v-model="snackbar" :timeout="timeout">
+      {{ text }}
+
+      <template v-slot:action="{ attrs }">
+        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 <script>
 "use strict";
 import CompetitionService from "../CompetitionService";
 import Timedate from "../components/layout/Timedate";
-import Header from "../components/layout/Header";
+
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
-import M from "materialize-css";
 
 export default {
   name: "Overview",
   components: {
     Timedate,
     ProgressBarQuery,
-    Header,
   },
   data() {
     return {
@@ -295,6 +297,9 @@ export default {
           path: "/results",
         },
       ],
+      snackbar: false,
+      text: "",
+      timeout: 5000,
     };
   },
   created() {
@@ -323,12 +328,13 @@ export default {
     }
   },
   methods: {
-    changePage: function(route) {
+    changePage: function (route) {
       if (this.$router.currentRoute.path !== route) {
         this.$router.push(route);
         this.drawer = !this.drawer;
       } else {
-        M.toast({ html: "Olet jo tällä sivulla!" });
+        this.text = "Olet jo tällä sivulla!";
+        this.snackbar = true;
       }
     },
     // fetch/update competition from database
@@ -350,10 +356,12 @@ export default {
           localStorage.setItem("cup", this.competition.cup_id);
           let start_date = this.$moment(this.competition.start_date);
           let end_date = this.$moment(this.competition.end_date);
-          this.formatted_start_date = `${start_date.date()}.${start_date.month() +
-            1}.${start_date.year()}`;
-          this.formatted_end_date = `${end_date.date()}.${end_date.month() +
-            1}.${end_date.year()}`;
+          this.formatted_start_date = `${start_date.date()}.${
+            start_date.month() + 1
+          }.${start_date.year()}`;
+          this.formatted_end_date = `${end_date.date()}.${
+            end_date.month() + 1
+          }.${end_date.year()}`;
 
           this.hasGottenFishPercentage =
             Math.round(

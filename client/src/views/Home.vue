@@ -1,13 +1,12 @@
 <template>
   <!-- Starting page, / -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <v-container style="margin-top:70px;width: 70%">
-    <Header v-if="$store.state.logged_in" />
-    <MainHeader v-else />
+  <v-container style="width: 70%">
     <v-row>
       <!-- TODO Cool starting page... -->
       <v-col>
         <v-card
+          style="padding: 30px"
           v-bind:class="{
             'container-transparent': !$store.getters.getTheme,
             'container-transparent-dark': $store.getters.getTheme,
@@ -33,7 +32,9 @@
                   src="@/assets/competition.jpg"
                 >
                   <v-card-title class="strokeme"
-                    >Kilpailujen tuloksia</v-card-title
+                    ><div style="background-color: 'red'">
+                      Kilpailujen tuloksia
+                    </div></v-card-title
                   >
                 </v-img>
                 <router-link to="/public-results">
@@ -44,9 +45,7 @@
                     text
                     outlined
                     >Tarkastele
-                    <v-icon :dark="$store.getters.getTheme">
-                      mdi-seal
-                    </v-icon>
+                    <v-icon :dark="$store.getters.getTheme"> mdi-seal </v-icon>
                   </v-btn>
                 </router-link>
               </v-card>
@@ -71,9 +70,7 @@
                       outlined
                     >
                       Tarkastele
-                      <v-icon dark right>
-                        mdi-trophy
-                      </v-icon>
+                      <v-icon dark right> mdi-trophy </v-icon>
                     </v-btn>
                   </router-link>
                   <v-spacer></v-spacer>
@@ -89,15 +86,10 @@
 
 <script>
 "use strict";
-import Header from "../components/layout/Header";
-import MainHeader from "../components/layout/MainHeader";
 
 export default {
   name: "Home",
-  components: {
-    Header,
-    MainHeader,
-  },
+  components: {},
   data() {
     return {
       updateSwitch: this.$store.getters.getTheme,

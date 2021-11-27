@@ -1,6 +1,5 @@
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-import M from "materialize-css";
 // Parses dictionary/json to array, for pdf autotables
 function dictToArray(dict, type) {
   const temp_arr = Object.entries(dict);
@@ -93,11 +92,12 @@ function dictToArray(dict, type) {
 
 // Capitalize all the words in given string. Takes account all the characters like "-", "'" etc.
 function capitalize_words(str) {
-  return str.replace(/(?:^|\s|['`‘’.-])[^\x60^\x7B-\xDF](?!(\s|$))/g, function(
-    txt
-  ) {
-    return txt.toUpperCase();
-  });
+  return str.replace(
+    /(?:^|\s|['`‘’.-])[^\x60^\x7B-\xDF](?!(\s|$))/g,
+    function (txt) {
+      return txt.toUpperCase();
+    }
+  );
 }
 
 // For naming the pdf, replace certain characters
@@ -108,8 +108,9 @@ function replaceAll(string, search, replace) {
 // Returns date in format dd/mm/yyyy as string
 function formatDate(start_date) {
   start_date = this.$moment(start_date);
-  let formatted_date = `${start_date.date()}.${start_date.month() +
-    1}.${start_date.year()}`;
+  let formatted_date = `${start_date.date()}.${
+    start_date.month() + 1
+  }.${start_date.year()}`;
 
   return formatted_date;
 }
@@ -320,12 +321,14 @@ function saveStatsAsPDF(competition_type) {
     ["Ilmoittautuneita yhteensä", `${this.signees.length} kpl`],
     [
       "Saalista saaneita",
-      `${Math.round(
-        (this.$store.getters.getPointSignees.length /
-          this.competition.signees.length) *
-          100 *
-          100
-      ) / 100} % (${this.$store.getters.getPointSignees.length}/${
+      `${
+        Math.round(
+          (this.$store.getters.getPointSignees.length /
+            this.competition.signees.length) *
+            100 *
+            100
+        ) / 100
+      } % (${this.$store.getters.getPointSignees.length}/${
         this.signees.length
       })`,
     ],
@@ -817,12 +820,14 @@ function saveAllAsPDF(tab) {
       ["Ilmoittautuneita yhteensä", `${this.signees.length} kpl`],
       [
         "Saalista saaneita",
-        `${Math.round(
-          (this.$store.getters.getPointSignees.length /
-            this.competition.signees.length) *
-            100 *
-            100
-        ) / 100} % (${this.$store.getters.getPointSignees.length}/${
+        `${
+          Math.round(
+            (this.$store.getters.getPointSignees.length /
+              this.competition.signees.length) *
+              100 *
+              100
+          ) / 100
+        } % (${this.$store.getters.getPointSignees.length}/${
           this.signees.length
         })`,
       ],
@@ -864,7 +869,8 @@ function saveAllAsPDF(tab) {
     // Set charts to be responsive again
     this.onafterprint();
   } else {
-    M.toast({ html: "Kaaviot ei ruudulla, yritetään uudelleen..." });
+    this.text = "Kaaviot ei ruudulla, yritetään uudelleen...";
+    this.snackbar = true;
   }
 }
 

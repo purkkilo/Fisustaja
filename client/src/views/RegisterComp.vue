@@ -1,37 +1,36 @@
 <template>
   <!-- /register-comp -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <div class="container">
-    <Header />
+  <v-container>
     <!-- if errors, show errors -->
-    <div id="errordiv" v-if="errors.length">
-      <ul class="collection with-header" style="border:1px solid red;">
-        <li class="collection-header" style="background: rgba(0,0,0,0);">
-          <v-alert type="error">
-            Korjaa seuraavat virheet:
-          </v-alert>
-        </li>
-        <li
-          class="collection-item"
-          id="error"
-          v-for="(error, index) in errors"
-          v-bind:key="index"
-        >
-          <p class="flow-text">{{ index + 1 }}. {{ error }}</p>
-        </li>
-      </ul>
-    </div>
+    <v-card
+      :dark="$store.getters.getTheme"
+      id="errordiv"
+      elevation="20"
+      v-if="errors.length"
+    >
+      <v-alert type="error"> Korjaa seuraavat virheet: </v-alert>
+      <v-list>
+        <v-list-item v-for="(error, index) in errors" v-bind:key="index">
+          <v-list-item-icon>
+            <v-icon color="red">mdi-alert-circle</v-icon>
+          </v-list-item-icon>
 
-    <div
-      style="margin-top:70px"
+          <v-list-item-content>
+            <v-list-item-title>{{ error }}</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+    </v-card>
+
+    <v-card
+      :dark="$store.getters.getTheme"
       v-bind:class="{
         'container-transparent': !$store.getters.getTheme,
         'container-transparent-dark': $store.getters.getTheme,
       }"
     >
-      <div class="section">
-        <div class="col s12 center-align"><h1>Kilpailun luonti</h1></div>
-      </div>
+      <h1 style="margin: 30px">Kilpailun luonti</h1>
 
       <!-- Tabs -->
       <v-tabs
@@ -57,7 +56,7 @@
         >
       </v-tabs>
 
-      <v-tabs-items v-model="tab" style="background: rgba(1,1,1,0.4);">
+      <v-tabs-items v-model="tab" style="background: rgba(1, 1, 1, 0.4)">
         <!-- "Perustiedot" tab -->
         <v-tab-item
           v-bind:class="{
@@ -69,17 +68,10 @@
           <v-container v-if="!loading">
             <v-row>
               <v-col>
-                <p
-                  class="center-align flow-text"
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  Kilpailun perustiedot
-                </p>
+                <h4>Kilpailun perustiedot</h4>
                 <p
                   v-if="basic_info_validated"
-                  class="flow-text yellow lighten-1 center-align"
+                  class="yellow lighten-1 black--text"
                 >
                   Tiedot lukittuna, paina "Muuta tietoja" jos haluat vielä
                   muokata tietoja
@@ -142,7 +134,7 @@
                       single-line
                     ></v-select>
                   </v-col>
-                  <v-col md="3" style="margin-top:20px">
+                  <v-col md="3" style="margin-top: 20px">
                     <v-btn
                       tile
                       color="green lighten-1"
@@ -152,13 +144,12 @@
                           query: { tab: 'create' },
                         })
                       "
-                      ><i class="material-icons left">add_circle_outline</i>Luo
-                      uusi cup!</v-btn
+                      ><v-icon>mdi-plus-circle</v-icon>Luo uusi cup!</v-btn
                     >
                   </v-col>
                 </v-row>
                 <v-row v-else class="valign-wrapper">
-                  <v-col md="6" offset-md="2" style="margin-top:20px">
+                  <v-col md="6" offset-md="2" style="margin-top: 20px">
                     <p
                       class="flow-text"
                       v-bind:class="{
@@ -170,11 +161,10 @@
                       missään cupissa")
                     </p>
                   </v-col>
-                  <v-col md="2" style="margin-top:20px">
+                  <v-col md="2" style="margin-top: 20px">
                     <router-link to="/continue">
                       <v-btn tile color="blue lighten-1"
-                        ><i class="material-icons left">add_circle_outline</i
-                        >Luo cup!</v-btn
+                        ><v-icon>mdi-plus-circle</v-icon>Luo cup!</v-btn
                       >
                     </router-link>
                   </v-col>
@@ -287,7 +277,10 @@
                   </v-col>
                 </v-row>
 
-                <v-row v-if="cup.name">
+                <v-row
+                  v-if="cup.name"
+                  style="padding: 10px; margin-bottom: 50px"
+                >
                   <v-col cols="12" md="5">
                     <v-row align="center">
                       <span
@@ -301,7 +294,7 @@
                     <v-row align="center">
                       <v-date-picker
                         :dark="$store.getters.getTheme"
-                        style="height:480px"
+                        style="height: 480px"
                         v-model="start_date"
                         full-width
                         elevation="15"
@@ -311,12 +304,7 @@
                       ></v-date-picker>
                     </v-row>
                   </v-col>
-                  <v-col
-                    cols="12"
-                    md="5"
-                    offset-md="2"
-                    style="margin-bottom:50px"
-                  >
+                  <v-col cols="12" md="5" offset-md="2">
                     <v-row align="center">
                       <span
                         class="flow-text col s6"
@@ -329,7 +317,7 @@
                     <v-row>
                       <v-date-picker
                         :dark="$store.getters.getTheme"
-                        style="height:480px"
+                        style="height: 480px"
                         v-model="end_date"
                         full-width
                         elevation="15"
@@ -403,22 +391,23 @@
                       block
                       color="green"
                       @click="checkBasicInformation"
-                      ><i class="material-icons left">check</i>Jatka</v-btn
+                      ><v-icon>mdi-check</v-icon>Jatka</v-btn
                     >
                   </v-col>
                 </v-row>
               </v-col>
-              <v-row v-if="basic_info_validated">
-                <v-col md="6" style="margin-top:20px">
+              <v-row
+                v-if="basic_info_validated"
+                style="margin-bottom: 20px; margin-top: 20px"
+              >
+                <v-col md="6">
                   <v-btn large tile color="grey" @click="disableInputs(false)"
-                    ><i class="material-icons left">settings</i>Muuta
-                    tietoja</v-btn
+                    ><v-icon>mdi-pencil</v-icon>Muuta tietoja</v-btn
                   >
                 </v-col>
-                <v-col md="6" style="margin-top:20px">
+                <v-col md="6">
                   <v-btn large tile color="green" @click="changeTab('fishes')"
-                    ><i class="material-icons right">arrow_forward</i
-                    >Jatka</v-btn
+                    ><v-icon>mdi-check</v-icon>Jatka</v-btn
                   >
                 </v-col>
               </v-row>
@@ -453,7 +442,7 @@
               <v-col>
                 <p
                   v-if="fish_species_validated"
-                  class="flow-text yellow lighten-1 center-align"
+                  class="yellow lighten-1 black--text"
                 >
                   Tiedot lukittuna, paina "Muuta tietoja" jos haluat vielä
                   muokata tietoja
@@ -487,6 +476,7 @@
                       :filter="filter"
                       :hide-no-data="!search"
                       :items="options"
+                      return-object
                       :search-input.sync="search"
                       :disabled="fish_species_validated"
                       hide-selected
@@ -556,7 +546,7 @@
                 </v-row>
               </v-col>
             </v-row>
-            <v-row style="margin-top:50px">
+            <v-row style="margin-top: 50px; margin-bottom: 20px">
               <v-row v-if="!fish_species_validated">
                 <v-col md="6">
                   <v-btn
@@ -564,37 +554,33 @@
                     tile
                     color="blue lighten-2"
                     @click="changeTab('basic-info')"
-                    ><i class="material-icons left">arrow_back</i
-                    >Takaisin</v-btn
+                    ><v-icon>mdi-keyboard-return</v-icon>Takaisin</v-btn
                   >
                 </v-col>
                 <v-col md="6">
                   <v-btn large tile color="green" @click="checkFishSpecies"
-                    ><i class="material-icons left">check</i>Jatka</v-btn
+                    ><v-icon>mdi-check</v-icon>Jatka</v-btn
                   >
                 </v-col>
               </v-row>
-              <v-row v-else>
+              <v-row v-else style="margin-bottom: 20px; margin-top: 20px">
                 <v-col>
                   <v-btn
                     large
                     tile
                     color="blue lighten-2"
                     @click="changeTab('basic-info')"
-                    ><i class="material-icons left">arrow_back</i
-                    >Takaisin</v-btn
+                    ><v-icon>mdi-keyboard-return</v-icon>Takaisin</v-btn
                   >
                 </v-col>
-                <v-col style="margin-top:20px">
+                <v-col>
                   <v-btn large tile color="grey" @click="disableInputs(false)"
-                    ><i class="material-icons left">settings</i>Muuta
-                    tietoja</v-btn
+                    ><v-icon>mdi-pencil</v-icon>Muuta tietoja</v-btn
                   >
                 </v-col>
-                <v-col style="margin-top:20px">
+                <v-col>
                   <v-btn large tile color="green" @click="changeTab('points')"
-                    ><i class="material-icons right">arrow_forward</i
-                    >Jatka</v-btn
+                    ><v-icon>mdi-check</v-icon>Jatka</v-btn
                   >
                 </v-col>
               </v-row>
@@ -623,7 +609,7 @@
                 </p>
                 <p
                   v-if="fish_specs_validated"
-                  class="flow-text yellow lighten-1 center-align"
+                  class="yellow lighten-1 black--text"
                 >
                   Tiedot lukittuna, paina "Muuta tietoja" jos haluat vielä
                   muokata tietoja
@@ -637,7 +623,7 @@
                     class="row"
                     id="fish_spec"
                     v-for="(fish, index) in selected"
-                    :key="fish"
+                    :key="index"
                   >
                     <v-row>
                       <v-col>
@@ -687,46 +673,41 @@
               </v-col>
             </v-row>
 
-            <v-row>
+            <v-row style="margin-bottom: 20px">
               <v-row v-if="selected.length && !validated">
-                <v-col md="6" style="margin-top:20px">
+                <v-col md="6" style="margin-top: 20px">
                   <v-btn
                     large
                     tile
                     color="blue lighten-2"
                     @click="changeTab('fishes')"
-                    ><i class="material-icons left">arrow_back</i
-                    >Takaisin</v-btn
+                    ><v-icon>mdi-keyboard-return</v-icon>Takaisin</v-btn
                   >
                 </v-col>
-                <v-col md="6" style="margin-top:20px">
+                <v-col md="6" style="margin-top: 20px">
                   <v-btn large tile color="green" @click="checkFishSpecs"
-                    ><i class="material-icons left">check</i>Tarkista
-                    tiedot</v-btn
+                    ><v-icon>mdi-check</v-icon>Jatka</v-btn
                   >
                 </v-col>
               </v-row>
-              <v-row v-else>
-                <v-col md="4" style="margin-top:20px">
+              <v-row v-else style="margin-bottom: 20px; margin-top: 20px">
+                <v-col md="4">
                   <v-btn
                     large
                     tile
                     color="blue lighten-2"
                     @click="changeTab('fishes')"
-                    ><i class="material-icons left">arrow_back</i
-                    >Takaisin</v-btn
+                    ><v-icon>mdi-keyboard-return</v-icon>Takaisin</v-btn
                   >
                 </v-col>
-                <v-col md="4" style="margin-top:20px">
+                <v-col md="4">
                   <v-btn large tile color="grey" @click="disableInputs(false)"
-                    ><i class="material-icons left">settings</i>Muuta
-                    tietoja</v-btn
+                    ><v-icon>mdi-pencil</v-icon>Muuta tietoja</v-btn
                   >
                 </v-col>
-                <v-col md="4" style="margin-top:20px">
+                <v-col md="4">
                   <v-btn large tile color="green" @click="changeTab('summary')"
-                    ><i class="material-icons right">arrow_forward</i
-                    >Jatka</v-btn
+                    ><v-icon>mdi-check</v-icon>Jatka</v-btn
                   >
                 </v-col>
               </v-row>
@@ -756,83 +737,93 @@
             </v-row>
             <v-row class="basic_summary">
               <v-col>
-                <table
-                  class="centered responsive-table highlight"
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  <tr>
-                    <th style="border:1px solid black;">
-                      Kilpailu
-                    </th>
-                    <td style="border:1px solid black;" class="center-align">
-                      {{ name }} ({{ locality }})
-                    </td>
-                  </tr>
-                  <tr>
-                    <th style="border:1px solid black;">Cup</th>
-                    <td style="border:1px solid black;" class="center-align">
-                      {{ cup.name }}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th style="border:1px solid black;">
-                      Voittajan Cup sijoittumispisteet
-                    </th>
-                    <td style="border:1px solid black;" class="center-align">
-                      {{ cup_placement_points }}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th style="border:1px solid black;">
-                      Kilpailijoiden Cup osallistumispisteet
-                    </th>
-                    <td style="border:1px solid black;" class="center-align">
-                      {{ cup_participation_points }}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th style="border:1px solid black;">
-                      Kilpailun Cup pistekerroin
-                    </th>
-                    <td style="border:1px solid black;" class="center-align">
-                      {{ cup_points_multiplier }}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th style="border:1px solid black;">
-                      Onko Tiimikilpailua?
-                    </th>
-                    <td style="border:1px solid black;" class="center-align">
-                      {{ team_competition }}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th style="border:1px solid black;">
-                      Aloituspäivä
-                    </th>
-                    <td style="border:1px solid black;" class="center-align">
-                      {{ start_date }}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th style="border:1px solid black;">
-                      Lopetuspäivä
-                    </th>
-                    <td style="border:1px solid black;" class="center-align">
-                      {{ end_date }}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th style="border:1px solid black;">
-                      Kilpailuajankohta
-                    </th>
-                    <td style="border:1px solid black;" class="center-align">
-                      {{ start_time }} - {{ end_time }}
-                    </td>
-                  </tr>
-                </table>
+                <v-list outlined elevation="20" :dark="$store.getters.getTheme">
+                  <v-list-item>
+                    <v-list-item-icon>
+                      <v-icon>mdi-ferry</v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-title>Kilpailu</v-list-item-title>
+                    <v-list-item-subtitle class="blue-text">
+                      <b>{{ name }} ({{ locality }})</b>
+                    </v-list-item-subtitle>
+                  </v-list-item>
+                  <v-divider></v-divider>
+                  <v-list-item>
+                    <v-list-item-icon>
+                      <v-icon color="yellow darken-1">mdi-medal</v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-title>Cup</v-list-item-title>
+                    <v-list-item-subtitle class="blue-text">
+                      <b>{{ cup.name }}</b>
+                    </v-list-item-subtitle>
+                  </v-list-item>
+                  <v-divider></v-divider>
+                  <v-list-item>
+                    <v-list-item-icon>
+                      <v-icon color="green darken-2">mdi-scoreboard</v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-title
+                      >Voittajan Cup sijoittumispisteet</v-list-item-title
+                    >
+                    <v-list-item-subtitle class="blue-text">
+                      <b>{{ cup_placement_points }}</b>
+                    </v-list-item-subtitle>
+                  </v-list-item>
+                  <v-divider></v-divider>
+                  <v-list-item>
+                    <v-list-item-icon>
+                      <v-icon color="green darken-1">mdi-scoreboard</v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-title
+                      >Kilpailijoiden Cup osallistumispisteet
+                    </v-list-item-title>
+                    <v-list-item-subtitle class="blue-text">
+                      <b>{{ cup_participation_points }}</b>
+                    </v-list-item-subtitle>
+                  </v-list-item>
+                  <v-divider></v-divider>
+                  <v-list-item>
+                    <v-list-item-icon>
+                      <v-icon>mdi-close-outline</v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-title
+                      >Kilpailun Cup pistekerroin</v-list-item-title
+                    >
+                    <v-list-item-subtitle class="blue-text">
+                      <b>{{ cup_points_multiplier }}</b>
+                    </v-list-item-subtitle>
+                  </v-list-item>
+                  <v-divider></v-divider>
+                  <v-list-item>
+                    <v-list-item-icon>
+                      <v-icon>mdi-account-multiple-outline</v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-title>Onko Tiimikilpailua?</v-list-item-title>
+                    <v-list-item-subtitle class="blue-text"
+                      >{{ team_competition }}
+                    </v-list-item-subtitle>
+                  </v-list-item>
+                  <v-divider></v-divider>
+                  <v-list-item>
+                    <v-list-item-icon>
+                      <v-icon>mdi-calendar-today</v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-title>Päivämäärä</v-list-item-title>
+                    <v-list-item-subtitle class="blue-text">
+                      <b>{{ start_date }} - {{ end_date }}</b>
+                    </v-list-item-subtitle>
+                  </v-list-item>
+                  <v-divider></v-divider>
+                  <v-list-item>
+                    <v-list-item-icon>
+                      <v-icon>mdi-clock-time-four</v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-title>Kilpailuaika</v-list-item-title>
+                    <v-list-item-subtitle class="blue-text">
+                      <b>{{ start_time }} - {{ end_time }}</b>
+                    </v-list-item-subtitle>
+                  </v-list-item>
+                </v-list>
               </v-col>
             </v-row>
             <v-row>
@@ -848,57 +839,50 @@
             </v-row>
             <v-row class="fishes_summary">
               <v-col md="12">
-                <table
-                  class="highlight centered responsive-table table_header"
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  <thead>
-                    <tr>
-                      <th>Kalalaji</th>
-                      <th>Pistekerroin</th>
-                      <th>Alamitta</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="(fish, index) in completed_fish_specs"
-                      :key="index"
-                    >
-                      <th style="border:1px solid black;" scope="row">
-                        {{ fish.name }}
-                      </th>
-                      <td style="border:1px solid black;">
-                        x {{ fish.multiplier }}
-                      </td>
-                      <td style="border:1px solid black;">
-                        {{ fish.minsize }} cm
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                <v-list outlined elevation="20" :dark="$store.getters.getTheme">
+                  <div
+                    v-for="(fish, index) in completed_fish_specs"
+                    :key="index"
+                  >
+                    <v-list-item>
+                      <v-list-item-title>{{ fish.name }}</v-list-item-title>
+                      <v-divider vertical></v-divider>
+                      <v-list-item-subtitle class="green-text">
+                        <b> x {{ fish.multiplier }}</b>
+                      </v-list-item-subtitle>
+                      <v-divider vertical></v-divider>
+                      <v-list-item-subtitle class="blue-text">
+                        <v-tooltip bottom>
+                          <template v-slot:activator="{ on, attrs }">
+                            <span v-bind="attrs" v-on="on"
+                              ><b>{{ fish.minsize }} cm</b></span
+                            >
+                          </template>
+                          <span>{{ fish.minsize }}</span>
+                        </v-tooltip>
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                  </div>
+                </v-list>
               </v-col>
             </v-row>
-            <v-row>
-              <v-row>
-                <v-col md="5" offset-md="1" style="margin-top:20px">
-                  <v-btn
-                    large
-                    tile
-                    color="blue lighten-2"
-                    @click="changeTab('points')"
-                    ><i class="material-icons left">arrow_back</i
-                    >Takaisin</v-btn
-                  >
-                </v-col>
-                <v-col md="5" v-if="validated" style="margin-top:20px">
-                  <v-btn large tile color="green" @click="submitCompetition"
-                    ><i class="material-icons left">add_circle_outline</i>Luo
-                    kilpailu näillä tiedoilla</v-btn
-                  >
-                </v-col>
-              </v-row>
+
+            <v-row style="margin-top: 20px; margin-bottom: 10px">
+              <v-col md="5" offset-md="1">
+                <v-btn
+                  large
+                  tile
+                  color="blue lighten-2"
+                  @click="changeTab('points')"
+                  ><v-icon>mdi-keyboard-return</v-icon>Takaisin</v-btn
+                >
+              </v-col>
+              <v-col md="5" v-if="validated">
+                <v-btn large tile color="green" @click="submitCompetition"
+                  ><v-icon>mdi-plus-circle</v-icon>Luo kilpailu näillä
+                  tiedoilla</v-btn
+                >
+              </v-col>
             </v-row>
           </v-container>
           <v-container v-else>
@@ -913,24 +897,31 @@
           </v-container>
         </v-tab-item>
       </v-tabs-items>
-    </div>
-  </div>
+    </v-card>
+    <v-snackbar v-model="snackbar" :timeout="timeout">
+      {{ text }}
+
+      <template v-slot:action="{ attrs }">
+        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
+  </v-container>
 </template>
 
 <script>
 "use strict";
-import M from "materialize-css";
+
 import CompetitionService from "../CompetitionService";
 import CupService from "../CupService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
-import Header from "../components/layout/Header";
 import shared from "@/shared";
 
 export default {
   name: "RegisterComp",
   components: {
     ProgressBarQuery,
-    Header,
   },
   data() {
     return {
@@ -1011,22 +1002,27 @@ export default {
         {
           text: "Ahven",
           color: "blue lighten-1",
+          index: 0,
         },
         {
           text: "Hauki",
           color: "red lighten-1",
+          index: 1,
         },
         {
           text: "Kuha",
           color: "green lighten-1",
+          index: 2,
         },
         {
           text: "Lohi",
           color: "purple lighten-1",
+          index: 3,
         },
         {
           text: "Taimen",
           color: "indigo lighten-1",
+          index: 4,
         },
       ],
       editing: null,
@@ -1036,12 +1032,13 @@ export default {
       x: 0,
       search: null,
       y: 0,
+      snackbar: false,
+      text: "",
+      timeout: 5000,
     };
   },
   // Runs everytime this page loads
   mounted() {
-    //Check if user is logged in has admin status, update header
-    M.AutoInit();
     this.getCups();
 
     // Focus on top of the page when changing pages
@@ -1052,7 +1049,7 @@ export default {
     selected(val, prev) {
       if (val.length === prev.length) return;
 
-      this.selected = val.map((v) => {
+      this.selected = val.map((v, i) => {
         if (typeof v === "string") {
           let colorIndex = 0;
           if (this.nonce >= 1) {
@@ -1062,6 +1059,7 @@ export default {
           v = {
             text: v,
             color: this.colors[colorIndex],
+            index: i,
           };
 
           this.options.push(v);
@@ -1073,7 +1071,7 @@ export default {
     },
   },
   methods: {
-    changeTab: function(id) {
+    changeTab: function (id) {
       this.tab = id;
     },
     edit(index, item) {
@@ -1094,10 +1092,8 @@ export default {
       const query = hasValue(queryText);
 
       return (
-        text
-          .toString()
-          .toLowerCase()
-          .indexOf(query.toString().toLowerCase()) > -1
+        text.toString().toLowerCase().indexOf(query.toString().toLowerCase()) >
+        -1
       );
     },
     async getCups() {
@@ -1131,7 +1127,7 @@ export default {
       this.loading = false;
     },
     //filter other characters out for number inputs
-    isNumber: function(evt, isDate) {
+    isNumber: function (evt, isDate) {
       var charToCheckCode = 46; // --> .
       var charToCheck = ".";
 
@@ -1161,14 +1157,13 @@ export default {
       }
     },
     // Add error to error array and direct user to it
-    showError: function(error) {
+    showError: function (error) {
       this.errors.push(error);
-      M.toast({ html: error });
       location.href = "#";
       location.href = "#app";
     },
     // Check competitions basic information (Perustiedot)
-    checkBasicInformation: function() {
+    checkBasicInformation: function () {
       this.errors = [];
       this.basic_info_validated = false;
       this.validated = false;
@@ -1321,7 +1316,7 @@ export default {
       }
     },
     // Check chosen fish species (Kilpailun Kalalajit)
-    checkFishSpecies: function() {
+    checkFishSpecies: function () {
       this.errors = [];
       this.fish_species_validated = false;
       this.validated = false;
@@ -1346,7 +1341,7 @@ export default {
     },
 
     // Validate fish specifications from "Pistekertoimet ja alamitat" tab
-    checkFishSpecs: function() {
+    checkFishSpecs: function () {
       this.completed_fish_specs = [];
       let colors = shared.getRandomColors(this.selected.length);
       this.errors = [];
@@ -1430,7 +1425,7 @@ export default {
             <v-tab href="#points">3. Pistekertoimet ja alamitat</v-tab>
             <v-tab href="#summary">4. Yhteenveto</v-tab>
         */
-    disableInputs: function(disable) {
+    disableInputs: function (disable) {
       if (this.tab === "basic-info") {
         if (disable) {
           this.basic_info_validated = true;
@@ -1477,8 +1472,8 @@ export default {
           locality: this.basic_info.locality,
           cup_name: this.basic_info.cup_name,
           cup_placement_points: this.basic_info.cup_placement_points,
-          cup_placement_points_array: this.basic_info
-            .cup_placement_points_array,
+          cup_placement_points_array:
+            this.basic_info.cup_placement_points_array,
           cup_participation_points: this.basic_info.cup_participation_points,
           cup_points_multiplier: this.basic_info.cup_points_multiplier,
           team_competition: this.basic_info.team_competition,
@@ -1499,7 +1494,8 @@ export default {
         try {
           //Submit competition to database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
           await CompetitionService.insertCompetition(competition);
-          M.toast({ html: "Kilpailu lisätty tietokantaan!" });
+          this.text = "Kilpailu lisätty tietokantaan!";
+          this.snackbar = true;
           this.$router.push({ path: "/continue" });
         } catch (err) {
           this.errors.push(err.message);
