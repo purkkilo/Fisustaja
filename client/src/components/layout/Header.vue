@@ -50,7 +50,9 @@
           </v-list-item-icon>
 
           <v-list-item-content>
-            <v-list-item-title>Kilpailuun</v-list-item-title>
+            <v-list-item-title>{{
+              $store.getters.getCompetition.name
+            }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
 
@@ -63,7 +65,9 @@
           </v-list-item-icon>
 
           <v-list-item-content>
-            <v-list-item-title>Cuppiin</v-list-item-title>
+            <v-list-item-title>{{
+              $store.getters.getCompetition.cup_name
+            }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
 

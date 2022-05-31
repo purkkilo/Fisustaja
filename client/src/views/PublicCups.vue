@@ -98,200 +98,30 @@
         </v-btn>
       </v-col>
     </v-row>
-    <v-row v-if="!loading">
-      <v-col>
-        <v-row v-if="results.length">
-          <v-col>
-            <h1>Cupin kokonaispisteet</h1>
-          </v-col>
-        </v-row>
-        <v-row
-          v-if="results.length"
-          v-bind:class="{
-            inputarea: !$store.getters.getTheme,
-            'inputarea-dark': $store.getters.getTheme,
-          }"
-          style="padding-top: 25px"
-        >
-          <v-col class="d-flex" md="4">
-            <v-select
-              :items="header_options"
-              :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
-              :dark="$store.getters.getTheme"
-              label="Kilpailun otsikko"
-              outlined
-              v-model="header_selection"
-              @input="changeHeaders"
-            ></v-select>
-          </v-col>
-          <v-col class="d-flex" md="4">
-            <v-select
-              :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
-              :dark="$store.getters.getTheme"
-              :items="select_numbers"
-              label="Cup sijoittumispisteisiin vaikuttavien kilpailujen määrä"
-              outlined
-              v-model="selected_competitions"
-              @input="calculateAll(competitions, selected_competitions)"
-            ></v-select>
-          </v-col>
-          <v-col md="4">
-            <v-btn
-              large
-              tile
-              color="green darken-4"
-              class="white--text"
-              @click="saveAsPDF(`Cupin Kokonaistulokset`)"
-              :loading="loading"
-            >
-              <v-icon color="red">mdi-file-pdf-box</v-icon>Lataa pdf
-            </v-btn>
-          </v-col>
-        </v-row>
-        <v-row v-if="results.length && not_finished_count > 0">
-          <v-col>
-            <p
-              class="flow-text"
-              v-bind:class="{
-                'white--text': $store.getters.getTheme,
-              }"
-            >
-              *Punaisella merkityt kilpailut ovat vielä kesken! ({{
-                not_finished_count
-              }}
-              kpl)
-            </p>
-          </v-col>
-        </v-row>
-        <v-row v-if="competitions.length">
-          <v-col>
-            <v-card :dark="$store.getters.getTheme">
-              <v-card-title>
-                <p class="flow-text">Cupin kokonaispisteet</p>
-                <v-spacer></v-spacer>
-                <v-text-field
-                  v-model="search"
-                  append-icon="mdi-magnify"
-                  label="Hae kilpailijaa"
-                  single-line
-                  hide-details
-                ></v-text-field>
-              </v-card-title>
-              <v-data-table
-                id="normal-table"
-                :headers="headers"
-                :items="results"
-                :search="search"
-                :loading="loading"
-              >
-                <template
-                  v-for="(h, index) in headers"
-                  v-slot:[`header.${h.value}`]="{ header }"
-                >
-                  <span
-                    v-if="header.highlight"
-                    :key="index"
-                    class="strokeme"
-                    v-bind:class="{
-                      'red-text': header.isFinished,
-                      'green-text': !header.isFinished,
-                    }"
-                  >
-                    {{ header.text }}
-                  </span>
-                  <span v-else :key="index">{{ header.text }}</span>
-                </template>
-                <template v-slot:[`item.final_placement`]="{ item }">
-                  <v-chip
-                    :outlined="$store.getters.getTheme"
-                    :color="getColor(item.final_placement)"
-                    >{{ item.final_placement }}.</v-chip
-                  >
-                </template>
-                <template
-                  v-for="(c, index) in competitions.length"
-                  v-slot:[`item.cup_results[${c}].points`]="{ item }"
-                >
-                  <div v-if="item.cup_results[c]" v-bind:key="c">
-                    <span
-                      class="strokeme"
-                      v-if="
-                        item.cup_results[c].points ===
-                        competitions[index].cup_participation_points
-                      "
-                      >{{ item.cup_results[c].points }}p ({{
-                        item.cup_results[c].placement
-                      }}.)</span
-                    >
-                    <span
-                      v-else
-                      :class="`font-weight-bold text-outline  ${getColor(
-                        item.cup_results[c].placement
-                      )}-text strokeme`"
-                      >{{ item.cup_results[c].points }}p ({{
-                        item.cup_results[c].placement
-                      }}.)</span
-                    >
-                  </div>
-                  <span v-else v-bind:key="c"> - </span>
-                </template>
-                <template v-slot:[`item.final_cup_points`]="{ item }">
-                  <span class="indigo-text">{{ item.final_cup_points }}p</span>
-                </template>
-              </v-data-table>
-            </v-card>
-          </v-col>
-        </v-row>
-        <v-row v-if="competitions.length && selected_cup">
-          <v-col v-if="loading">
-            <p
-              class="flow-text"
-              v-bind:class="{
-                'white--text': $store.getters.getTheme,
-              }"
-            >
-              Päivitetään tuloksia...
-            </p>
-          </v-col>
-        </v-row>
-        <v-row v-if="competitions.length && selected_cup">
-          <v-col>
-            <v-btn
-              id="updatebtn"
-              large
-              tile
-              :loading="loading"
-              color="blue darken-4"
-              @click="refreshCup(selected_cup)"
-              class="white--text"
-            >
-              <v-icon>mdi-update</v-icon>Päivitä cupin tulokset
-            </v-btn>
-          </v-col>
-        </v-row>
-        <v-row v-else style="margin: 20px">
-          <v-col>
-            <h2
-              v-if="selected_cup && !competitions.length"
-              v-bind:class="{
-                'white--text': $store.getters.getTheme,
-              }"
-            >
-              Cupissa ei vielä kilpailuja!
-            </h2>
-            <h2
-              v-if="!selected_cup"
-              v-bind:class="{
-                'white--text': $store.getters.getTheme,
-              }"
-            >
-              Cuppia ei vielä valittuna!
-            </h2>
-          </v-col>
-        </v-row>
-      </v-col>
-    </v-row>
-    <v-row v-else style="margin: 20px">
+    <cup-points
+      v-if="selected_cup && !loading"
+      :competitions="competitions"
+      :headers="headers"
+      :cup="selected_cup"
+      :isResults="isResults"
+      :loading="loading"
+      :notFinishedCount="notFinishedCount"
+      :results="results"
+      :selectNumbers="selectNumbers"
+      @change="(selection) => changeHeaders(selection)"
+      @refresh="(cup) => refreshCup(cup)"
+      @calculate="
+        (selectedCompetitions) =>
+          calculateAll(competitions, selectedCompetitions)
+      "
+      @save="
+        (selected) => {
+          selectedCompetitions = selected;
+          saveAsPDF(`Tulokset`);
+        }
+      "
+    ></cup-points>
+    <v-row v-if="loading" style="margin: 20px">
       <v-row>
         <v-col>
           <h2
@@ -324,11 +154,13 @@ import CompetitionService from "../CompetitionService";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
+import CupPoints from "../components/CupPoints.vue";
 
 export default {
   name: "PublicCups",
   components: {
     ProgressBarQuery,
+    CupPoints,
   },
   data() {
     return {
@@ -338,14 +170,12 @@ export default {
       headers: [],
       results: [],
       loading: false,
-      select_numbers: [],
-      header_options: ["Paikkakunta", "Kilpailun nimi"],
-      header_selection: "Paikkakunta",
-      selected_competitions: 0,
+      selectNumbers: [],
+      selectedCompetitions: 0,
       selected_cup: null,
       tab: null,
       search: "",
-      not_finished_count: 0,
+      notFinishedCount: 0,
       selectedItem: 1,
       items: [
         {
@@ -364,6 +194,7 @@ export default {
       snackbar: false,
       text: "",
       timeout: 5000,
+      isResults: false,
     };
   },
   async mounted() {
@@ -381,11 +212,11 @@ export default {
     location.href = "#app";
   },
   methods: {
-    pickCup: function () {
+    pickCup() {
       this.refreshCup(this.selected_cup);
     },
 
-    changePage: function (route) {
+    changePage(route) {
       if (this.$router.currentRoute.path !== route) {
         this.$router.push(route);
         this.drawer = !this.drawer;
@@ -396,7 +227,7 @@ export default {
     },
     // Calculate all the cup points, and limit the number of races taken into account
     // If limit = 4, 4 races with highest points will be calculated, other races will have 5 points where the signee has participated
-    calculateAll: function (competitions, limit) {
+    calculateAll(competitions, limit) {
       let all_results = [];
       this.isResults = false;
       competitions.forEach((competition) => {
@@ -456,7 +287,7 @@ export default {
             parseInt(b.cup_results["Total"]) - parseInt(a.cup_results["Total"])
           );
         });
-        this.changeHeaders();
+        this.changeHeaders("Paikkakunta");
 
         let final_placement = 1;
         let last_points = -1;
@@ -474,7 +305,7 @@ export default {
         });
       }
     },
-    limitCompetitions: function (results, limit) {
+    limitCompetitions(results, limit) {
       limit = limit < 0 ? 0 : limit; // Make sure limit is at least 1
 
       results.forEach((signee) => {
@@ -548,7 +379,7 @@ export default {
           return competition.isPublic;
         });
         this.competitions.forEach((competition) => {
-          this.select_numbers.push(counter);
+          this.selectNumbers.push(counter);
           competition.start_date = this.$moment(competition.start_date);
           competition.end_date = this.$moment(competition.end_date);
           // Index for competition
@@ -558,8 +389,8 @@ export default {
         this.competitions.sort((a, b) => {
           return b.start_date.isBefore(a.start_date);
         });
-        this.selected_competitions = this.competitions.length;
-        this.calculateAll(this.competitions, this.selected_competitions);
+        this.selectedCompetitions = this.competitions.length;
+        this.calculateAll(this.competitions, this.selectedCompetitions);
         this.text = "Tiedot ajantasalla!";
         this.snackbar = true;
         this.loading = false;
@@ -578,7 +409,7 @@ export default {
       if (isFinished) return "red";
       else return "primary";
     },
-    replaceAllChars: function (text, obj) {
+    replaceAllChars(text, obj) {
       return [...text]
         .map((each) => {
           for (const o in obj) {
@@ -588,7 +419,7 @@ export default {
         })
         .join("");
     },
-    changeHeaders: function () {
+    changeHeaders(headerSelection) {
       this.headers = [];
       this.headers.push({
         text: "Sijoitus",
@@ -614,14 +445,14 @@ export default {
         highlight: false,
         value: "locality",
       });
-      this.not_finished_count = 0;
+      this.notFinishedCount = 0;
       this.competitions.forEach((competition) => {
         // Keep track if there are unfinished competitions
         if (!competition.isFinished) {
-          this.not_finished_count++;
+          this.notFinishedCount++;
         }
         // Dynamic headers, because competition names change
-        if (this.header_selection === "Paikkakunta") {
+        if (headerSelection === "Paikkakunta") {
           // Check if there are competitions with same locality, if so, add identifier
           let found_headers = this.headers.filter((header) => {
             return competition.locality === header.text;
@@ -720,7 +551,7 @@ export default {
       return arr;
     },
     // Convert the charts and the tables to pdf
-    saveAsPDF: function (table_title) {
+    async saveAsPDF(table_title) {
       // Format dates for easier reding
       // PDF creation
       let doc;
@@ -772,7 +603,7 @@ export default {
         13,
         40,
         table_title +
-          ` (${this.selected_competitions}/${this.competitions.length} parasta kilpailua otettu huomioon)`,
+          ` (${this.selectedCompetitions}/${this.competitions.length} parasta kilpailua otettu huomioon)`,
         { align: "left" }
       );
       this.headers.forEach((header) => {
@@ -788,11 +619,13 @@ export default {
           overflow: "linebreak",
           halign: "justify",
           fontSize: "8",
-          lineColor: "100",
-          lineWidth: ".25",
+          lineColor: 100,
+          lineWidth: 0.25,
         },
-        columnStyles: { text: { cellwidth: "auto" } },
-        headStyles: { text: { cellwidth: "wrap" } },
+        columnStyles: { cellwidth: "auto" },
+        headStyles: {
+          cellwidth: "wrap",
+        },
         theme: "striped",
         pageBreak: "auto",
         tableWidth: "auto",
@@ -801,13 +634,13 @@ export default {
       });
 
       // Save the pdf
-      doc.save(
-        `${this.selected_cup.year}_${this.replaceAll(
-          "Cup",
-          " ",
-          ""
-        )}_${this.replaceAll(this.capitalize_words(table_title), " ", "")}.pdf`
-      );
+      const fileName = `${this.selected_cup.year}_${this.replaceAll(
+        "Cup",
+        " ",
+        ""
+      )}_${this.replaceAll(this.capitalize_words(table_title), " ", "")}.pdf`;
+      const { default: shared } = await import("../shared");
+      shared.openPdfOnNewTab(doc, fileName);
     },
   },
 };

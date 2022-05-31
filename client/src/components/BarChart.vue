@@ -1,7 +1,6 @@
 <script>
 import { Bar, mixins } from "vue-chartjs";
 const { reactiveProp } = mixins;
-import "chartjs-plugin-labels";
 export default {
   props: ["title"],
   extends: Bar,
@@ -22,7 +21,7 @@ export default {
           },
           label: (tooltipItem, data) => {
             let sum = data.datasets[tooltipItem.datasetIndex].data.reduce(
-              function(a, b) {
+              function (a, b) {
                 return a + b;
               },
               0
@@ -56,7 +55,7 @@ export default {
       },
       plugins: {
         labels: {
-          render: function(args) {
+          render: function (args) {
             // args will be something like:
             // { label: 'Label', value: 123, percentage: 50, index: 0, dataset: {...} }
             // return object if it is image

@@ -13,8 +13,8 @@
           <v-icon>mdi-keyboard-return</v-icon>Takaisin kilpailuun
         </v-btn>
       </v-col>
-      <v-col md="6">
-        <h1>Cupin Yleisnäkymä</h1>
+      <v-col md="6" v-if="cup">
+        <h1>{{ cup.name }}, {{ cup.year }}</h1>
       </v-col>
       <v-col md="3"> </v-col>
     </v-row>
@@ -56,16 +56,7 @@
           </v-col>
         </v-row>
         <v-row v-else>
-          <v-col v-if="cup">
-            <h1
-              v-bind:class="{
-                'white--text': $store.getters.getTheme,
-              }"
-            >
-              {{ cup.name }}, {{ cup.year }}
-            </h1>
-          </v-col>
-          <v-col v-else>
+          <v-col v-if="!cup">
             <p
               class="flow-text"
               v-bind:class="{
@@ -76,7 +67,7 @@
             </p>
           </v-col>
         </v-row>
-        <v-row v-if="competitions.length">
+        <v-row v-if="competitions.length" style="margin-top: 50px">
           <v-col md="4" offset-md="4">
             <v-select
               :dark="$store.getters.getTheme"
@@ -99,13 +90,13 @@
                     'white--text': $store.getters.getTheme,
                   }"
                 >
-                  Kilpailut
+                  {{ selected }}
                 </p>
                 <v-spacer></v-spacer>
                 <v-text-field
                   v-model="search_comp"
                   append-icon="mdi-magnify"
-                  label="Hae kilpailua"
+                  label="Hae taulukosta"
                   single-line
                   hide-details
                 ></v-text-field>
@@ -313,8 +304,11 @@
             </v-card>
           </v-col>
         </v-row>
-        <v-row v-if="competitions.length">
-          <v-col style="margin-top: 20px">
+        <v-row
+          v-if="competitions.length"
+          style="margin-top: 10px; margin-bottom: 10px"
+        >
+          <v-col>
             <v-btn
               tile
               color="blue lighten-1"
@@ -323,7 +317,7 @@
               ><v-icon>mdi-plus-circle</v-icon>Luo uusi kilpailu!</v-btn
             >
           </v-col>
-          <v-col style="margin-top: 20px">
+          <v-col>
             <v-btn
               @click="saveAsPDF(`Ilmoittautuneet`)"
               large
@@ -334,7 +328,7 @@
               kilpailijoista</v-btn
             >
           </v-col>
-          <v-col style="margin-top: 20px">
+          <v-col>
             <v-btn
               large
               tile
@@ -397,210 +391,27 @@
           'container-transparent-dark': $store.getters.getTheme,
         }"
       >
-        <v-row>
-          <v-col>
-            <v-row v-if="results.length">
-              <v-col>
-                <h1
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  Cupin kokonaispisteet
-                </h1>
-              </v-col>
-            </v-row>
-            <v-row
-              v-if="results.length"
-              v-bind:class="{
-                inputarea: !$store.getters.getTheme,
-                'inputarea-dark': $store.getters.getTheme,
-              }"
-              style="padding-top: 25px"
-            >
-              <v-col class="d-flex" md="4">
-                <v-select
-                  :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
-                  :dark="$store.getters.getTheme"
-                  :items="header_options"
-                  label="Kilpailun otsikko"
-                  outlined
-                  v-model="header_selection"
-                  @input="changeHeaders"
-                ></v-select>
-              </v-col>
-              <v-col class="d-flex" md="4">
-                <v-select
-                  :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
-                  :dark="$store.getters.getTheme"
-                  :items="select_numbers"
-                  label="Cup sijoittumispisteisiin vaikuttavien kilpailujen määrä"
-                  outlined
-                  v-model="selected_competitions"
-                  @input="calculateAll(competitions, selected_competitions)"
-                ></v-select>
-              </v-col>
-              <v-col md="4">
-                <v-btn
-                  large
-                  outlined
-                  :dark="$store.getters.getTheme"
-                  @click="saveAsPDF(`Tulokset`)"
-                  :loading="loading"
-                >
-                  <v-icon color="red">mdi-file-pdf-outline</v-icon> Lataa pdf
-                </v-btn>
-              </v-col>
-            </v-row>
-            <v-row v-if="results.length && not_finished_count > 0">
-              <v-col>
-                <p
-                  class="flow-text"
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  *Punaisella merkityt kilpailut ovat vielä kesken! ({{
-                    not_finished_count
-                  }}
-                  kpl)
-                </p>
-              </v-col>
-            </v-row>
-            <v-row v-if="isResults">
-              <v-col>
-                <v-card :dark="$store.getters.getTheme">
-                  <v-card-title>
-                    <p class="flow-text">Cupin kokonaispisteet</p>
-                    <v-spacer></v-spacer>
-                    <v-text-field
-                      v-model="search"
-                      append-icon="mdi-magnify"
-                      label="Hae kilpailijaa"
-                      single-line
-                      hide-details
-                    ></v-text-field>
-                  </v-card-title>
-                  <v-data-table
-                    id="normal-table"
-                    :headers="headers"
-                    :items="results"
-                    :search="search"
-                    :loading="loading"
-                  >
-                    <template
-                      v-for="(h, index) in headers"
-                      v-slot:[`header.${h.value}`]="{ header }"
-                    >
-                      <span
-                        v-if="header.highlight"
-                        :key="index"
-                        class="strokeme"
-                        v-bind:class="{
-                          'red-text': header.isFinished,
-                          'green-text': !header.isFinished,
-                        }"
-                      >
-                        {{ header.text }}
-                      </span>
-                      <span v-else :key="index">{{ header.text }}</span>
-                    </template>
-                    <template v-slot:[`item.final_placement`]="{ item }">
-                      <v-chip
-                        :outlined="$store.getters.getTheme"
-                        :color="getColor(item.final_placement)"
-                        >{{ item.final_placement }}.</v-chip
-                      >
-                    </template>
-                    <template
-                      v-for="(c, index) in competitions.length"
-                      v-slot:[`item.cup_results[${c}].points`]="{ item }"
-                    >
-                      <div v-if="item.cup_results[c]" v-bind:key="c">
-                        <span
-                          class="strokeme"
-                          v-if="
-                            item.cup_results[c].points ===
-                            competitions[index].cup_participation_points
-                          "
-                          >{{ item.cup_results[c].points }}p ({{
-                            item.cup_results[c].placement
-                          }}.)</span
-                        >
-                        <span
-                          class="strokeme"
-                          v-else
-                          :class="`font-weight-bold text-outline  ${getColor(
-                            item.cup_results[c].placement
-                          )}-text`"
-                          >{{ item.cup_results[c].points }}p ({{
-                            item.cup_results[c].placement
-                          }}.)</span
-                        >
-                      </div>
-                      <span v-else v-bind:key="c"> - </span>
-                    </template>
-                    <template v-slot:[`item.final_cup_points`]="{ item }">
-                      <span class="indigo-text"
-                        >{{ item.final_cup_points }}p</span
-                      >
-                    </template>
-                  </v-data-table>
-                </v-card>
-              </v-col>
-            </v-row>
-            <v-row v-else>
-              <v-col>
-                <h2
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  Kilpailuissa ei vielä tuloksia!
-                </h2>
-              </v-col>
-            </v-row>
-            <v-row v-if="competitions.length && cup">
-              <v-col v-if="loading">
-                <p
-                  class="flow-text"
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  Päivitetään tuloksia...
-                </p>
-              </v-col>
-            </v-row>
-            <v-row v-if="competitions.length && cup">
-              <v-col>
-                <v-btn
-                  id="updatebtn"
-                  large
-                  tile
-                  :loading="loading"
-                  :disabled="!isResults"
-                  color="blue darken-4"
-                  @click="refreshCup(cup.id)"
-                  class="white--text"
-                >
-                  <v-icon>mdi-update</v-icon>Päivitä cupin tulokset
-                </v-btn>
-              </v-col>
-            </v-row>
-            <v-row v-else>
-              <v-col>
-                <h2
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  Ei kilpailuja rekisteröitynä!
-                </h2>
-              </v-col>
-            </v-row>
-          </v-col>
-        </v-row>
+        <cup-points
+          :competitions="competitions"
+          :results="results"
+          :isResults="isResults"
+          :loading="loading"
+          :selectNumbers="selectNumbers"
+          :headers="headers"
+          :cup="cup"
+          @change="(selection) => changeHeaders(selection)"
+          @refresh="(cup) => refreshCup(cup._id)"
+          @calculate="
+            (selectedCompetitions) =>
+              calculateAll(competitions, selectedCompetitions)
+          "
+          @save="
+            (selected) => {
+              selectedCompetitions = selected;
+              saveAsPDF(`Tulokset`);
+            }
+          "
+        ></cup-points>
       </v-tab-item>
       <v-tab-item
         :value="'stats'"
@@ -820,7 +631,7 @@
             <v-row v-if="cup"
               ><v-col offset-md="4" md="5">
                 <v-card :dark="$store.getters.getTheme">
-                  <v-card-title>
+                  <v-card-title v-if="cup.signees">
                     <v-icon color="blue darken-2">mdi-account-group</v-icon>
                     Yhteensä ilmoittautuneita {{ cup.signees.length }} kpl
                   </v-card-title>
@@ -876,18 +687,19 @@
 </template>
 <script>
 "use strict";
-
 import CupService from "../CupService";
 import CompetitionService from "../CompetitionService";
-import jsPDF from "jspdf";
 import "jspdf-autotable";
 import BarChart from "@/components/BarChart";
 import shared from "../shared";
+import CupPoints from "../components/CupPoints.vue";
+import jsPDF from "jspdf";
 export default {
   name: "CupOverview",
   components: {
     ProgressBarQuery: () => import("../components/layout/ProgressBarQuery"),
     BarChart,
+    CupPoints,
   },
   data() {
     return {
@@ -954,19 +766,13 @@ export default {
         { text: "Paino", value: "weight" },
       ],
       results: [],
-      isResults: false,
       loading: false,
       publishing: false,
       updating: false,
-      select_numbers: [],
-      header_options: ["Paikkakunta", "Kilpailun nimi"],
-      header_selection: "Paikkakunta",
-      selected_competitions: 0,
+      selectNumbers: [],
       tab: null,
       stats_tab: null,
-      search: "",
       search_comp: "",
-      not_finished_count: 0,
       competition: null,
       error: null,
       errors: [],
@@ -979,6 +785,7 @@ export default {
       snackbar: false,
       text: "",
       timeout: 5000,
+      isResults: false,
     };
   },
   created() {},
@@ -1096,7 +903,7 @@ export default {
 
         for (const fish in competition.biggest_fishes) {
           let fishes = competition.biggest_fishes[fish].sort(
-            sortBy("weight", false)
+            shared.sortBy("weight", false)
           );
           if (fishes[0].weight > 0) {
             all_biggest_fishes.push({
@@ -1111,7 +918,7 @@ export default {
 
         for (const fish in competition.biggest_amounts) {
           let fishes = competition.biggest_amounts[fish].sort(
-            sortBy("weight", false)
+            shared.sortBy("weight", false)
           );
           if (fishes[0].weight > 0) {
             all_biggest_amounts.push({
@@ -1126,7 +933,7 @@ export default {
       });
 
       // Data for Kalasaaliit tab
-      this.cup_fishes_total = all_fishes.sort(sortBy("weights", false));
+      this.cup_fishes_total = all_fishes.sort(shared.sortBy("weights", false));
       this.cup_fishes_total.forEach((fish) => {
         all_labels.push(fish.name);
         all_data.push(fish.weights);
@@ -1143,7 +950,7 @@ export default {
       };
 
       this.cup_fishes_competition = this.cup_fishes_competition.sort(
-        sortBy("weights", false)
+        shared.sortBy("weights", false)
       );
       this.cup_fishes_competition.forEach((fish) => {
         competition_labels.push(`${fish.name} (${fish.comp_name})`);
@@ -1162,7 +969,7 @@ export default {
 
       // Data for Suurimmat kalat tab
       this.cup_biggest_fishes = all_biggest_fishes.sort(
-        sortBy("weight", false)
+        shared.sortBy("weight", false)
       );
       this.cup_biggest_fishes.forEach((item) => {
         all_biggest_fishes_labels.push(
@@ -1185,7 +992,7 @@ export default {
 
       // Data for Suurimmat kalat tab
       this.cup_biggest_amounts = all_biggest_amounts.sort(
-        sortBy("weight", false)
+        shared.sortBy("weight", false)
       );
       this.cup_biggest_amounts.forEach((item) => {
         all_biggest_amounts_labels.push(
@@ -1207,7 +1014,7 @@ export default {
       };
 
       // Data for Kilpailijat tab
-      this.cup_signees = all_signees.sort(sortBy("signees", false));
+      this.cup_signees = all_signees.sort(shared.sortBy("signees", false));
       this.cup_signees.forEach((item) => {
         all_signees_labels.push(item.comp_name);
         all_signees_data.push(item.signees);
@@ -1240,20 +1047,20 @@ export default {
         if (!new_captain_name) {
           this.errors.push("Kipparin nimi puuttuu!");
         } else {
-          signee.captain_name = this.capitalize_words(signee.captain_name);
+          signee.captain_name = shared.capitalize_words(signee.captain_name);
         }
 
         if (!new_temp_captain_name) {
           new_temp_captain_name = signee.temp_captain_name = "-";
         } else {
-          signee.temp_captain_name = this.capitalize_words(
+          signee.temp_captain_name = shared.capitalize_words(
             signee.temp_captain_name
           );
         }
         if (!new_locality) {
           this.errors.push("Seura/Paikkakunta puuttuu!");
         } else {
-          signee.locality = this.capitalize_words(signee.locality);
+          signee.locality = shared.capitalize_words(signee.locality);
         }
         // No errors left
         if (!this.errors.length) {
@@ -1279,10 +1086,7 @@ export default {
             await CupService.updateValues(this.cup._id, newvalues)
               .then(() => {
                 // Update names to "points" table
-                this.calculateAll(
-                  this.competitions,
-                  this.selected_competitions
-                );
+                this.calculateAll(this.competitions, this.selectedCompetitions);
                 this.$set(this.dialog_signee, signee.boat_number, false);
                 this.text = "Kilpailijan tiedot päivitetty!";
                 this.snackbar = true;
@@ -1309,21 +1113,80 @@ export default {
         this.$set(this.dialog_signee, signee.boat_number, false);
       }
     },
-    // Capitalize all the words in given string. Takes account all the characters like "-", "'" etc.
-    capitalize_words: function (str) {
-      return str.replace(
-        /(?:^|\s|['`‘’.-])[^\x60^\x7B-\xDF](?!(\s|$))/g,
-        function (txt) {
-          return txt.toUpperCase();
+
+    async refreshCup(cup_id) {
+      this.loading = true;
+      try {
+        //Get competition from database (check 'client\src\CupService.js' and 'server\routes\api\cups.js' to see how this works)
+        let cup = await CupService.getCups({
+          _id: cup_id,
+        });
+        // IF competition found from database
+        if (cup) {
+          // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
+          //TODO make a test for this?
+          this.cup = cup;
+          // Update to vuex, Assing variables from vuex (see client/store/index.js)
+          this.$store.commit("refreshCup", this.cup);
+          try {
+            this.competitions = await CompetitionService.getCompetitions({
+              cup_id: cup_id,
+            });
+            // Convert dates to moment objects
+            let counter = 1;
+            this.competitions.forEach((competition) => {
+              this.selectNumbers.push(counter);
+              competition.start_date = this.$moment(competition.start_date);
+              competition.end_date = this.$moment(competition.end_date);
+              // Index for competition
+              competition.key_name = counter;
+              counter++;
+            });
+            this.competitions.sort((a, b) => {
+              return b.start_date.isBefore(a.start_date);
+            });
+            this.signees = this.cup.signees.sort(
+              shared.sortBy("boat_number", true)
+            );
+            this.signees.forEach((signee) => {
+              signee.dialog = false;
+            });
+            this.selectedCompetitions = this.competitions.length;
+            this.calculateAll(this.competitions, this.selectedCompetitions);
+            this.selectTableData();
+            this.calculateCupStatistics();
+            this.text = "Tiedot ajantasalla!";
+            this.snackbar = true;
+          } catch (error) {
+            console.error(error);
+          }
         }
+      } catch (err) {
+        console.log(err.message);
+      }
+      this.loading = false;
+    },
+    pickCompetition: function (competition) {
+      // Pick competition for the app to use
+      //NOTE Store competition to vuex, redundant?
+      this.$store.state.competition = competition;
+      // Set competition._id to localstorage for database queries
+      localStorage.setItem(
+        "competition",
+        JSON.stringify({
+          id: competition._id,
+          start_date: competition.start_date,
+          end_date: competition.end_date,
+        })
       );
+      // redirect to /overview
+      this.$router.push({ path: "/overview" });
     },
     // Calculate all the cup points, and limit the number of races taken into account
     // If limit = 4, 4 races with highest points will be calculated, other races will have 5 points where the signee has participated
-    calculateAll: function (competitions, limit) {
+    calculateAll(competitions, limit) {
       let all_results = [];
       this.isResults = false;
-      this.limiting = true;
       competitions.forEach((competition) => {
         // Dynamic headers, because competition names change
         //If there are any results in the competition
@@ -1382,7 +1245,7 @@ export default {
             parseInt(b.cup_results["Total"]) - parseInt(a.cup_results["Total"])
           );
         });
-        this.changeHeaders();
+        this.changeHeaders("Paikkakunta");
 
         let final_placement = 1;
         let last_points = -1;
@@ -1398,10 +1261,84 @@ export default {
           signee.final_cup_points = signee.cup_results["Total"];
           final_placement++;
         });
-        this.limiting = false;
       }
     },
-    limitCompetitions: function (results, limit) {
+    changeHeaders(headerSelection) {
+      this.headers = [];
+      this.headers.push({
+        text: "Sijoitus",
+        highlight: false,
+        align: "center",
+        value: "final_placement",
+      });
+      this.headers.push({
+        text: "Kilp. Nro",
+        align: "center",
+        highlight: false,
+        value: "boat_number",
+      });
+      this.headers.push({
+        text: "Kippari",
+        align: "center",
+        highlight: false,
+        value: "captain_name",
+      });
+      this.headers.push({
+        text: "Paikkakunta",
+        align: "center",
+        highlight: false,
+        value: "locality",
+      });
+      this.notFinishedCount = 0;
+      this.competitions.forEach((competition) => {
+        // Keep track if there are unfinished competitions
+        if (!competition.isFinished) {
+          this.notFinishedCount++;
+        }
+        // Dynamic headers, because competition names change
+        if (headerSelection === "Paikkakunta") {
+          // Check if there are competitions with same locality, if so, add identifier
+          let found_headers = this.headers.filter((header) => {
+            return competition.locality === header.text;
+          });
+          if (found_headers.length) {
+            let new_header_text = ` ${competition.locality} #${
+              found_headers.length + 1
+            }`;
+            this.headers.push({
+              text: new_header_text,
+              align: "center",
+              highlight: true,
+              isFinished: !competition.isFinished,
+              value: `cup_results[${competition.key_name}].points`,
+            });
+          } else {
+            this.headers.push({
+              text: competition.locality,
+              align: "center",
+              highlight: true,
+              isFinished: !competition.isFinished,
+              value: `cup_results[${competition.key_name}].points`,
+            });
+          }
+        } else {
+          this.headers.push({
+            text: competition.name,
+            align: "center",
+            highlight: true,
+            isFinished: !competition.isFinished,
+            value: `cup_results[${competition.key_name}].points`,
+          });
+        }
+      });
+      this.headers.push({
+        text: "Yhteensä",
+        align: "center",
+        highlight: false,
+        value: "final_cup_points",
+      });
+    },
+    limitCompetitions(results, limit) {
       limit = limit < 0 ? 0 : limit; // Make sure limit is at least 1
 
       results.forEach((signee) => {
@@ -1459,227 +1396,9 @@ export default {
       // Return sorted results
       return results;
     },
-    async refreshCup(cup_id) {
-      this.loading = true;
-      try {
-        //Get competition from database (check 'client\src\CupService.js' and 'server\routes\api\cups.js' to see how this works)
-        let cup = await CupService.getCups({
-          _id: cup_id,
-        });
-        // IF competition found from database
-        if (cup) {
-          // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
-          //TODO make a test for this?
-          this.cup = cup;
-          // Update to vuex, Assing variables from vuex (see client/store/index.js)
-          this.$store.commit("refreshCup", this.cup);
-          try {
-            this.competitions = await CompetitionService.getCompetitions({
-              cup_id: cup_id,
-            });
-            // Convert dates to moment objects
-            let counter = 1;
-            this.competitions.forEach((competition) => {
-              this.select_numbers.push(counter);
-              competition.start_date = this.$moment(competition.start_date);
-              competition.end_date = this.$moment(competition.end_date);
-              // Index for competition
-              competition.key_name = counter;
-              counter++;
-            });
-            this.competitions.sort((a, b) => {
-              return b.start_date.isBefore(a.start_date);
-            });
-            this.signees = this.cup.signees.sort(sortBy("boat_number", true));
-            this.signees.forEach((signee) => {
-              signee.dialog = false;
-            });
-            this.selected_competitions = this.competitions.length;
-            this.calculateAll(this.competitions, this.selected_competitions);
-            this.selectTableData();
-            this.calculateCupStatistics();
-            this.text = "Tiedot ajantasalla!";
-            this.snackbar = true;
-          } catch (error) {
-            console.error(error);
-          }
-        }
-      } catch (err) {
-        console.log(err.message);
-      }
-      this.loading = false;
-    },
-    pickCompetition: function (competition) {
-      // Pick competition for the app to use
-      //NOTE Store competition to vuex, redundant?
-      this.$store.state.competition = competition;
-      // Set competition._id to localstorage for database queries
-      localStorage.setItem(
-        "competition",
-        JSON.stringify({
-          id: competition._id,
-          start_date: competition.start_date,
-          end_date: competition.end_date,
-        })
-      );
-      // redirect to /overview
-      this.$router.push({ path: "/overview" });
-    },
-    getColor(placement) {
-      if (placement > 30) return "red";
-      if (placement > 20) return "orange";
-      else if (placement > 5) return "yellow";
-      else return "green";
-    },
-    getMultiplierColor(multiplier) {
-      if (multiplier > 1) return "red";
-      if (multiplier === 1) return "green";
-      else return "grey";
-    },
-    replaceAllChars: function (text, obj) {
-      return [...text]
-        .map((each) => {
-          for (const o in obj) {
-            each == o ? (each = obj[o]) : o;
-          }
-          return each;
-        })
-        .join("");
-    },
-    changeHeaders: function () {
-      this.headers = [];
-      this.headers.push({
-        text: "Sijoitus",
-        highlight: false,
-        align: "center",
-        value: "final_placement",
-      });
-      this.headers.push({
-        text: "Kilp. Nro",
-        align: "center",
-        highlight: false,
-        value: "boat_number",
-      });
-      this.headers.push({
-        text: "Kippari",
-        align: "center",
-        highlight: false,
-        value: "captain_name",
-      });
-      this.headers.push({
-        text: "Paikkakunta",
-        align: "center",
-        highlight: false,
-        value: "locality",
-      });
-      this.not_finished_count = 0;
-      this.competitions.forEach((competition) => {
-        // Keep track if there are unfinished competitions
-        if (!competition.isFinished) {
-          this.not_finished_count++;
-        }
-        // Dynamic headers, because competition names change
-        if (this.header_selection === "Paikkakunta") {
-          // Check if there are competitions with same locality, if so, add identifier
-          let found_headers = this.headers.filter((header) => {
-            return competition.locality === header.text;
-          });
-          if (found_headers.length) {
-            let new_header_text = ` ${competition.locality} #${
-              found_headers.length + 1
-            }`;
-            this.headers.push({
-              text: new_header_text,
-              align: "center",
-              highlight: true,
-              isFinished: !competition.isFinished,
-              value: `cup_results[${competition.key_name}].points`,
-            });
-          } else {
-            this.headers.push({
-              text: competition.locality,
-              align: "center",
-              highlight: true,
-              isFinished: !competition.isFinished,
-              value: `cup_results[${competition.key_name}].points`,
-            });
-          }
-        } else {
-          this.headers.push({
-            text: competition.name,
-            align: "center",
-            highlight: true,
-            isFinished: !competition.isFinished,
-            value: `cup_results[${competition.key_name}].points`,
-          });
-        }
-      });
-      this.headers.push({
-        text: "Yhteensä",
-        align: "center",
-        highlight: false,
-        value: "final_cup_points",
-      });
-    },
-    // For naming the pdf, replace certain characters
-    replaceAll: function (string, search, replace) {
-      return string.split(search).join(replace);
-    },
-    dictToArray: function (dict, type) {
-      const temp_arr = Object.entries(dict);
-      const arr = [];
-      let boat_number = 1;
-      let missing_numbers = false;
-      temp_arr.forEach((element) => {
-        let values = Object.values(element[1]);
-        if (type === 1) {
-          values[0] = String(values[11]) + ".";
-          let cup_results = values[9];
-          values[1] = "(" + String(values[1]) + ")";
-          values[3] = values[4];
-          let counter = 4;
-          this.competitions.forEach((competition) => {
-            if (cup_results[competition.key_name]) {
-              values[counter] = `${
-                cup_results[competition.key_name].points
-              }p (${cup_results[competition.key_name].placement}.)`;
-            } else {
-              values[counter] = "-";
-            }
-            counter++;
-          });
-          values[counter] = `${cup_results["Total"]}p`;
-        }
-        if (type === 2) {
-          if (values[0] > boat_number) {
-            // values[0] is bigger than the next boat_number should be, so there is a gap
-            missing_numbers = true;
-            for (let i of range(boat_number, values[0])) {
-              // When the i reaches the value boat_number should be, add the next real row
-              if (i === values[0]) {
-                values[0] = String(values[0]);
-                missing_numbers = false;
-                // Else just push empty rows until then
-              } else {
-                boat_number++;
-                arr.push([String(i) + "*", "", "", ""]);
-              }
-            }
-          } else {
-            values[0] = String(values[0]);
-          }
-        }
 
-        // If there are gaps in boat_numbers --> 1, 2, 4, 5, 7, etc.
-        if (!missing_numbers) {
-          boat_number++;
-          arr.push(values);
-        }
-      });
-      return arr;
-    },
     // Convert the charts and the tables to pdf
-    saveAsPDF: function (table_title) {
+    saveAsPDF(table_title) {
       // Format dates for easier reding
       // PDF creation
       let doc;
@@ -1738,7 +1457,7 @@ export default {
           13,
           40,
           table_title +
-            ` (${this.selected_competitions}/${this.competitions.length} parasta kilpailua otettu huomioon)`,
+            ` (${this.selectedCompetitions}/${this.competitions.length} parasta kilpailua otettu huomioon)`,
           { align: "left" }
         );
         this.headers.forEach((header) => {
@@ -1763,12 +1482,14 @@ export default {
         );
         */
         columns = ["Kilp. numero", "Kippari", "Varakippari", "Paikkakunta"];
-        this.signees = this.cup.signees.sort(sortBy("boat_number", true));
+        this.signees = this.cup.signees.sort(
+          shared.sortBy("boat_number", true)
+        );
         rows = this.dictToArray(this.signees, 2);
         /* eslint-disable no-unused-vars */
         // Just add some empty rows for new signees
         let last_number = Number(rows[rows.length - 1][0]) + 1;
-        for (let i of range(last_number, last_number + 6)) {
+        for (let i of shared.range(last_number, last_number + 6)) {
           rows.push([" ", "", "", ""]);
         }
         /* eslint-enable no-unused-vars */
@@ -1782,8 +1503,8 @@ export default {
           overflow: "linebreak",
           halign: "justify",
           fontSize: "8",
-          lineColor: "100",
-          lineWidth: ".25",
+          lineColor: 100,
+          lineWidth: 0.25,
         },
         columnStyles: { text: { cellwidth: "auto" } },
         headStyles: { text: { cellwidth: "wrap" } },
@@ -1793,33 +1514,72 @@ export default {
         startY: startY,
         margin: { top: 20 },
       });
-
-      // Save the pdf
-
-      doc.save(
-        `${this.cup.year}_${this.replaceAll("Cup", " ", "")}_${this.replaceAll(
-          this.capitalize_words(table_title),
-          " ",
-          ""
-        )}.pdf`
-      );
+      const fileName = `${this.cup.year}_${shared.replaceAll(
+        "Cup",
+        " ",
+        ""
+      )}_${shared.replaceAll(
+        shared.capitalize_words(table_title),
+        " ",
+        ""
+      )}.pdf`;
+      shared.openPdfOnNewTab(doc, fileName);
     },
+
+    dictToArray: function (dict, type) {
+      const temp_arr = Object.entries(dict);
+      const arr = [];
+      let boat_number = 1;
+      let missing_numbers = false;
+      temp_arr.forEach((element) => {
+        let values = Object.values(element[1]);
+        if (type === 1) {
+          values[0] = String(values[11]) + ".";
+          let cup_results = values[9];
+          values[1] = "(" + String(values[1]) + ")";
+          values[3] = values[4];
+          let counter = 4;
+          this.competitions.forEach((competition) => {
+            if (cup_results[competition.key_name]) {
+              values[counter] = `${
+                cup_results[competition.key_name].points
+              }p (${cup_results[competition.key_name].placement}.)`;
+            } else {
+              values[counter] = "-";
+            }
+            counter++;
+          });
+          values[counter] = `${cup_results["Total"]}p`;
+        }
+        if (type === 2) {
+          if (values[0] > boat_number) {
+            // values[0] is bigger than the next boat_number should be, so there is a gap
+            missing_numbers = true;
+            for (let i of shared.range(boat_number, values[0])) {
+              // When the i reaches the value boat_number should be, add the next real row
+              if (i === values[0]) {
+                values[0] = String(values[0]);
+                missing_numbers = false;
+                // Else just push empty rows until then
+              } else {
+                boat_number++;
+                arr.push([String(i) + "*", "", "", ""]);
+              }
+            }
+          } else {
+            values[0] = String(values[0]);
+          }
+        }
+
+        // If there are gaps in boat_numbers --> 1, 2, 4, 5, 7, etc.
+        if (!missing_numbers) {
+          boat_number++;
+          arr.push(values);
+        }
+      });
+      return arr;
+    },
+    getMultiplierColor: shared.getMultiplierColor,
   },
 };
-
-function sortBy(field, isAscending) {
-  return function (a, b) {
-    if (isAscending) {
-      return (b[field] < a[field]) - (b[field] > a[field]);
-    } else {
-      return (b[field] > a[field]) - (b[field] < a[field]);
-    }
-  };
-}
-
-function* range(start, end) {
-  yield start;
-  if (start === end) return;
-  yield* range(start + 1, end);
-}
 </script>

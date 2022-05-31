@@ -8,7 +8,6 @@ Nested:
 
 Todos:
 New:
-  ☐ Add titles for charts in pdf
   ☐ Input validation! (Serverside, more on clientside too) @started(20-05-26 12:06) @high @today
   ☐ Comment all the files... @started(20-05-26 12:11) @low
   ☐ Add demo accounts
@@ -20,9 +19,8 @@ New:
   ☐ Implement ability to create own point system (custom cup_placement_points_array)
   ☐ Add internatialization @low https://www.freecodecamp.org/news/how-to-add-internationalization-to-a-vue-application-d9cfdcabb03b/
   ☐ Create all fishes category in biggest fishes and biggest amounts
-  ☐ Remove errors going to browser console
   ☐ Reimplement api for competitions,cups and feedback (like users)
-  ☐ Fix autotable not showing themes? 
+  ☐ Create component for competition (to be used in public-results, and in results when conducting a competition)
 
 
 

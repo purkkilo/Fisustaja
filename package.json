@@ -5,12 +5,14 @@
   "main": "main.js",
   "scripts": {
     "start": "node server/index.js",
-    "dev": "nodemon server/index.js"
+    "dev": "nodemon server/index.js",
+    "dev-with-frontend": "concurrently \" cd server && nodemon index.js\" \"cd client && npm run serve\""
   },
   "author": "Jori Kosonen",
   "license": "ISC",
   "devDependencies": {
-    "nodemon": "^2.0.4"
+    "nodemon": "^2.0.4",
+    "concurrently": "^7.2.1"
   },
   "dependencies": {
     "bcrypt": "^5.0.0",

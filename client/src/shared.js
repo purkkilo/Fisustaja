@@ -100,6 +100,17 @@ function capitalize_words(str) {
   );
 }
 
+function replaceAllChars(text, obj) {
+  return [...text]
+    .map((each) => {
+      for (const o in obj) {
+        each == o ? (each = obj[o]) : o;
+      }
+      return each;
+    })
+    .join("");
+}
+
 // For naming the pdf, replace certain characters
 function replaceAll(string, search, replace) {
   return string.split(search).join(replace);
@@ -227,8 +238,8 @@ function saveAsPDF(competition_type, table_id) {
       rowPageBreak: "avoid",
       halign: "justify",
       fontSize: "8",
-      lineColor: "100",
-      lineWidth: ".25",
+      lineColor: 100,
+      lineWidth: 0.25,
     },
     columnStyles: { text: { cellwidth: "auto" } },
     theme: "striped",
@@ -238,13 +249,14 @@ function saveAsPDF(competition_type, table_id) {
     margin: { top: 20 },
   });
   // Save the pdf
-  doc.save(
-    `${this.$moment(this.competition.start_date).year()}_${this.replaceAll(
-      this.competition.name,
-      " ",
-      ""
-    )}_${pdf_competition_type}.pdf`
-  );
+  const fileName = `${this.$moment(
+    this.competition.start_date
+  ).year()}_${this.replaceAll(
+    this.competition.name,
+    " ",
+    ""
+  )}_${pdf_competition_type}.pdf`;
+  openPdfOnNewTab(doc, fileName);
   // Set charts to be responsive again
   this.onafterprint();
 }
@@ -300,10 +312,10 @@ function saveStatsAsPDF(competition_type) {
       rowPageBreak: "avoid",
       halign: "justify",
       fontSize: "8",
-      lineColor: "100",
-      lineWidth: ".25",
+      lineColor: 100,
+      lineWidth: 0.25,
     },
-    columnStyles: { text: { cellwidth: "auto" } },
+    columnStyles: { cellwidth: "auto" },
     theme: "striped",
     pageBreak: "auto",
     tableWidth: "auto",
@@ -342,8 +354,8 @@ function saveStatsAsPDF(competition_type) {
       rowPageBreak: "avoid",
       halign: "justify",
       fontSize: "8",
-      lineColor: "100",
-      lineWidth: ".25",
+      lineColor: 100,
+      lineWidth: 0.25,
     },
     columnStyles: { text: { cellwidth: "auto" } },
     theme: "striped",
@@ -353,15 +365,15 @@ function saveStatsAsPDF(competition_type) {
     startY: doc.autoTable.previous.finalY + 25,
   });
 
-  // Save to pdf
-  doc.save(
-    `${this.$moment(this.competition.start_date).year()}_${this.replaceAll(
-      this.competition.name,
-      " ",
-      ""
-    )}_${this.replaceAll(this.capitalize_words(competition_type), " ", "")}.pdf`
-  );
-
+  // Save the pdf
+  const fileName = `${this.$moment(
+    this.competition.start_date
+  ).year()}_${this.replaceAll(
+    this.competition.name,
+    " ",
+    ""
+  )}_${this.replaceAll(this.capitalize_words(competition_type), " ", "")}.pdf`;
+  openPdfOnNewTab(doc, fileName);
   // Set charts to be responsive again
   this.onafterprint();
 }
@@ -422,8 +434,8 @@ function saveAllAsPDF(tab) {
         rowPageBreak: "avoid",
         halign: "justify",
         fontSize: "8",
-        lineColor: "100",
-        lineWidth: ".25",
+        lineColor: 100,
+        lineWidth: 0.25,
       },
       columnStyles: { text: { cellwidth: "auto" } },
       theme: "striped",
@@ -461,8 +473,8 @@ function saveAllAsPDF(tab) {
         rowPageBreak: "avoid",
         halign: "justify",
         fontSize: "8",
-        lineColor: "100",
-        lineWidth: ".25",
+        lineColor: 100,
+        lineWidth: 0.25,
       },
       columnStyles: { text: { cellwidth: "auto" } },
       theme: "striped",
@@ -509,8 +521,8 @@ function saveAllAsPDF(tab) {
           rowPageBreak: "avoid",
           halign: "justify",
           fontSize: "8",
-          lineColor: "100",
-          lineWidth: ".25",
+          lineColor: 100,
+          lineWidth: 0.25,
         },
         columnStyles: { text: { cellwidth: "auto" } },
         theme: "striped",
@@ -569,8 +581,8 @@ function saveAllAsPDF(tab) {
             rowPageBreak: "avoid",
             halign: "justify",
             fontSize: "8",
-            lineColor: "100",
-            lineWidth: ".25",
+            lineColor: 100,
+            lineWidth: 0.25,
           },
           columnStyles: { text: { cellwidth: "auto" } },
           theme: "striped",
@@ -629,8 +641,8 @@ function saveAllAsPDF(tab) {
             rowPageBreak: "avoid",
             halign: "justify",
             fontSize: "8",
-            lineColor: "100",
-            lineWidth: ".25",
+            lineColor: 100,
+            lineWidth: 0.25,
           },
           columnStyles: { text: { cellwidth: "auto" } },
           theme: "striped",
@@ -694,10 +706,10 @@ function saveAllAsPDF(tab) {
           rowPageBreak: "avoid",
           halign: "justify",
           fontSize: "8",
-          lineColor: "100",
-          lineWidth: ".25",
+          lineColor: 100,
+          lineWidth: 0.25,
         },
-        columnStyles: { text: { cellwidth: "auto" } },
+        columnStyles: { cellwidth: "auto" },
         theme: "striped",
         pageBreak: "auto",
         tableWidth: "auto",
@@ -731,8 +743,8 @@ function saveAllAsPDF(tab) {
           rowPageBreak: "avoid",
           halign: "justify",
           fontSize: "8",
-          lineColor: "100",
-          lineWidth: ".25",
+          lineColor: 100,
+          lineWidth: 0.25,
         },
         columnStyles: { text: { cellwidth: "auto" } },
         theme: "striped",
@@ -799,8 +811,8 @@ function saveAllAsPDF(tab) {
         rowPageBreak: "avoid",
         halign: "justify",
         fontSize: "8",
-        lineColor: "100",
-        lineWidth: ".25",
+        lineColor: 100,
+        lineWidth: 0.25,
       },
       columnStyles: { text: { cellwidth: "auto" } },
       theme: "striped",
@@ -841,8 +853,8 @@ function saveAllAsPDF(tab) {
         rowPageBreak: "avoid",
         halign: "justify",
         fontSize: "8",
-        lineColor: "100",
-        lineWidth: ".25",
+        lineColor: 100,
+        lineWidth: 0.25,
       },
       columnStyles: { text: { cellwidth: "auto" } },
       theme: "striped",
@@ -863,9 +875,12 @@ function saveAllAsPDF(tab) {
   // Save to pdf
   if (charts_loaded) {
     this.tab = current_tab;
-    doc.save(
-      `${year}_${this.replaceAll(this.competition.name, " ", "")}Tulokset.pdf`
-    );
+    const fileName = `${year}_${this.replaceAll(
+      this.competition.name,
+      " ",
+      ""
+    )}Tulokset.pdf`;
+    openPdfOnNewTab(doc, fileName);
     // Set charts to be responsive again
     this.onafterprint();
   } else {
@@ -910,6 +925,13 @@ function getColor(placement) {
   else if (placement > 5) return "yellow";
   else return "green";
 }
+
+function getMultiplierColor(multiplier) {
+  if (multiplier > 1) return "red";
+  if (multiplier === 1) return "green";
+  else return "grey";
+}
+
 function getColorPoints(points) {
   if (points > 5) return "primary darken-2";
   else return "red";
@@ -1083,21 +1105,57 @@ function getRandomColors(totalNumber) {
   return colors;
 }
 
+function openPdfOnNewTab(doc, fileName) {
+  // https://stackoverflow.com/questions/17739816/how-to-open-generated-pdf-using-jspdf-in-new-window
+  // Save the pdf
+  // IE doesn't allow using a blob object directly as link href
+  // instead it is necessary to use msSaveOrOpenBlob
+  if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+    window.navigator.msSaveOrOpenBlob(doc.output("blob"), fileName);
+  } else {
+    // For other browsers:
+    window.open(
+      URL.createObjectURL(doc.output("blob")),
+      "_blank",
+      "height=auto,width=auto,scrollbars=yes,location=yes"
+    );
+
+    // For Firefox it is necessary to delay revoking the ObjectURL
+    setTimeout(() => {
+      window.URL.revokeObjectURL(doc.output("bloburl"));
+    }, 100);
+  }
+}
+
+function sortBy(field, isAscending) {
+  return function (a, b) {
+    if (isAscending) {
+      return (b[field] < a[field]) - (b[field] > a[field]);
+    } else {
+      return (b[field] > a[field]) - (b[field] < a[field]);
+    }
+  };
+}
+
 export default {
-  onafterprint: onafterprint,
-  onbeforeprint: onbeforeprint,
-  saveAllAsPDF: saveAllAsPDF,
-  saveStatsAsPDF: saveStatsAsPDF,
-  saveAsPDF: saveAsPDF,
-  dictToArray: dictToArray,
-  capitalize_words: capitalize_words,
-  replaceAll: replaceAll,
-  formatDate: formatDate,
-  range: range,
-  getColorPoints: getColorPoints,
-  getColor: getColor,
-  drawCharts: drawCharts,
-  sortDict: sortDict,
-  HSVtoRGB: HSVtoRGB,
-  getRandomColors: getRandomColors,
+  onafterprint,
+  onbeforeprint,
+  saveAllAsPDF,
+  saveStatsAsPDF,
+  saveAsPDF,
+  dictToArray,
+  capitalize_words,
+  replaceAll,
+  formatDate,
+  range,
+  getColorPoints,
+  getMultiplierColor,
+  getColor,
+  drawCharts,
+  sortDict,
+  HSVtoRGB,
+  getRandomColors,
+  openPdfOnNewTab,
+  sortBy,
+  replaceAllChars,
 };

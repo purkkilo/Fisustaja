@@ -157,7 +157,7 @@ const routes = [
     path: "/404",
     // route level code-splitting
     component: () => import("@/views/NotFound.vue"),
-    meta: { title: "Energiahoyla - Not Found" },
+    meta: { title: "Not Found" },
   },
   {
     path: "*",
