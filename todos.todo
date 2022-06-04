@@ -13,7 +13,7 @@ New:
   ☐ Add demo accounts
   ☐ Add tests! Vuetify can also be used for unit testing, add testing
   ☐ Add qr code possibility to signing/weighting (rfid)
-  ☐ Add possibility to get weights from usb
+  ☐ Add possibility to get weights via usb from weighting thing
   ☐ Also Fix warning from entrypoint app being too large (optimize somehow)
   ☐ Profile page? @low 
   ☐ Implement ability to create own point system (custom cup_placement_points_array)
@@ -21,6 +21,7 @@ New:
   ☐ Create all fishes category in biggest fishes and biggest amounts
   ☐ Reimplement api for competitions,cups and feedback (like users)
   ☐ Create component for competition (to be used in public-results, and in results when conducting a competition)
+  ☐ Create option separate table for competitions in cup overview and reference them with numbers in pistetilanne table (so you can fit more than 5 comps in a page)
 
 
 

@@ -2,35 +2,6 @@
   <!-- /results -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <div>
-    <v-navigation-drawer permanent>
-      <v-card
-        class="mx-auto"
-        max-width="400"
-        tile
-        :dark="$store.getters.getTheme"
-      >
-        <v-list dense>
-          <p>Navigointi</p>
-          <v-list-item-group v-model="selectedItem" color="primary">
-            <v-divider></v-divider>
-            <div v-for="(item, i) in items" :key="i">
-              <v-list-item
-                @click="changePage(item.path)"
-                :disabled="$router.currentRoute.path === item.path"
-              >
-                <v-list-item-icon>
-                  <v-icon v-text="item.icon"></v-icon>
-                </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title v-text="item.text"></v-list-item-title>
-                </v-list-item-content>
-              </v-list-item>
-              <v-divider></v-divider>
-            </div>
-          </v-list-item-group>
-        </v-list>
-      </v-card>
-    </v-navigation-drawer>
     <v-container style="width: 70%">
       <div
         v-bind:class="{
@@ -99,14 +70,7 @@
         </v-row>
 
         <v-row style="margin-top: 30px">
-          <v-col
-            md="4"
-            offset-md="4"
-            v-bind:class="{
-              inputarea: !$store.getters.getTheme,
-              'inputarea-dark': $store.getters.getTheme,
-            }"
-          >
+          <v-col md="4" offset-md="4">
             <v-switch
               :dark="$store.getters.getTheme"
               :loading="loading"
@@ -912,14 +876,6 @@
                     <p v-else class="flow-text">
                       Suurimmat kalasaaliit ({{ selected_biggest_amount }})
                     </p>
-                    <v-spacer></v-spacer>
-                    <v-switch
-                      v-model="$store.getters.getTheme"
-                      class="black--text"
-                      color="indigo darken-3"
-                      append-icon="mdi-weather-night"
-                      prepend-icon="mdi-weather-sunny"
-                    ></v-switch>
                     <v-spacer></v-spacer>
                     <v-text-field
                       v-model="search_amounts"

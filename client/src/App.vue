@@ -133,6 +133,7 @@ export default {
 body {
   display: flex;
   flex-direction: column;
+  /*background: url("https://i.imgur.com/uLrR7M1.png");*/
   background: url("https://i.imgur.com/uLrR7M1.png");
   background-repeat: no-repeat;
   background-attachment: fixed;

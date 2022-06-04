@@ -33,8 +33,7 @@
       center-active
     >
       <v-tabs-slider color="blue darken-4"></v-tabs-slider>
-      <v-tab href="#competitions">Kaikki kilpailut</v-tab>
-      <v-tab href="#create">Luo Cup</v-tab>
+      <v-tab href="#competitions">Kilpailut</v-tab>
       <v-tab href="#cups">Cupit</v-tab>
     </v-tabs>
     <v-tabs-items v-model="tab" style="background: rgba(0, 0, 0, 0.6)">
@@ -173,71 +172,6 @@
         </v-row>
       </v-tab-item>
       <v-tab-item
-        :value="'create'"
-        v-bind:class="{
-          'container-transparent': !$store.getters.getTheme,
-          'container-transparent-dark': $store.getters.getTheme,
-        }"
-      >
-        <v-row>
-          <v-col>
-            <h1>Luo Cup</h1>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col md="8" offset-md="2" class="input-fields">
-            <v-text-field
-              :dark="$store.getters.getTheme"
-              label="Cupin nimi"
-              v-model="name"
-              :maxlength="40"
-              :loading="loading"
-              :counter="40"
-            />
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col md="6" offset-md="3" class="input-fields">
-            <v-menu
-              ref="menu"
-              :close-on-content-click="false"
-              v-model="menu"
-              :nudge-right="40"
-              transition="scale-transition"
-              offset-y
-              min-width="290px"
-            >
-              <template v-slot:activator="{ on, attrs }">
-                <v-text-field
-                  :dark="$store.getters.getTheme"
-                  v-model="year"
-                  label="Vuosi"
-                  prepend-icon="event"
-                  readonly
-                  v-bind="attrs"
-                  v-on="on"
-                ></v-text-field>
-              </template>
-              <v-date-picker
-                ref="picker"
-                v-model="year"
-                @input="saveYear"
-                min="2000-01-01"
-                reactive
-                no-title
-              ></v-date-picker>
-            </v-menu>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col>
-            <v-btn tile color="primary" @click="saveCup" :loading="loading"
-              ><v-icon>mdi-check</v-icon>Luo Cup</v-btn
-            >
-          </v-col>
-        </v-row>
-      </v-tab-item>
-      <v-tab-item
         :value="'cups'"
         v-bind:class="{
           'container-transparent': !$store.getters.getTheme,
@@ -317,19 +251,7 @@
               </v-card>
             </div>
             <v-row v-else>
-              <v-col v-if="!loading">
-                <h2
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  Ei Cuppeja!
-                </h2>
-                <v-btn tile color="blue lighten-1" @click="tab = 'create'"
-                  ><v-icon>mdi-plus-circle</v-icon>Luo Cup!</v-btn
-                >
-              </v-col>
-              <v-col v-else-if="error" class="error"
+              <v-col v-if="error" class="error"
                 ><h2>{{ error }}</h2></v-col
               >
               <v-col v-else>
@@ -343,6 +265,90 @@
                 <ProgressBarQuery />
               </v-col>
             </v-row>
+          </v-col>
+        </v-row>
+        <v-row style="margin-bottom: 20px">
+          <v-col>
+            <div class="text-center">
+              <v-dialog v-model="createCupDialog" width="700">
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn color="blue lighten-2" dark v-bind="attrs" v-on="on">
+                    <v-icon>mdi-plus-circle</v-icon>Luo uusi cup!
+                  </v-btn>
+                </template>
+
+                <v-card :dark="$store.getters.getTheme">
+                  <v-card-title> Luo Cup </v-card-title>
+
+                  <v-row>
+                    <v-col md="8" offset-md="2" class="input-fields">
+                      <v-text-field
+                        :dark="$store.getters.getTheme"
+                        label="Cupin nimi"
+                        v-model="name"
+                        :maxlength="40"
+                        :loading="loading"
+                        :counter="40"
+                      />
+                    </v-col>
+                  </v-row>
+                  <v-row>
+                    <v-col md="6" offset-md="3" class="input-fields">
+                      <v-menu
+                        ref="menu"
+                        :close-on-content-click="false"
+                        v-model="menu"
+                        :nudge-right="40"
+                        transition="scale-transition"
+                        offset-y
+                        min-width="290px"
+                      >
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-text-field
+                            :dark="$store.getters.getTheme"
+                            v-model="year"
+                            label="Vuosi"
+                            prepend-icon="event"
+                            readonly
+                            v-bind="attrs"
+                            v-on="on"
+                          ></v-text-field>
+                        </template>
+                        <v-date-picker
+                          ref="picker"
+                          v-model="year"
+                          @input="saveYear"
+                          min="2000-01-01"
+                          reactive
+                          no-title
+                        ></v-date-picker>
+                      </v-menu>
+                    </v-col>
+                  </v-row>
+                  <v-row>
+                    <v-col>
+                      <v-btn
+                        tile
+                        color="primary"
+                        @click="saveCup"
+                        :loading="loading"
+                        ><v-icon>mdi-check</v-icon>Luo Cup</v-btn
+                      >
+                    </v-col>
+                  </v-row>
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                      color="primary"
+                      text
+                      @click="createCupDialog = false"
+                    >
+                      Peruuta
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+            </div>
           </v-col>
         </v-row>
       </v-tab-item>
@@ -397,6 +403,7 @@ export default {
       snackbar: false,
       text: "",
       timeout: 5000,
+      createCupDialog: false,
     };
   },
   watch: {
@@ -565,6 +572,7 @@ export default {
         }
       }
       this.loading = false;
+      this.createCupDialog = false;
     },
   },
 };

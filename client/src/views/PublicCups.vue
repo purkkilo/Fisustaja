@@ -284,7 +284,7 @@ export default {
         // Sort the array based on total cup points
         this.results = all_results.sort(function compare(a, b) {
           return (
-            parseInt(b.cup_results["Total"]) - parseInt(a.cup_results["Total"])
+            parseInt(b.cup_results["total"]) - parseInt(a.cup_results["total"])
           );
         });
         this.changeHeaders("Paikkakunta");
@@ -293,14 +293,14 @@ export default {
         let last_points = -1;
         let last_placement = -1;
         this.results.forEach((signee) => {
-          if (last_points === signee.cup_results["Total"]) {
+          if (last_points === signee.cup_results["total"]) {
             signee.final_placement = last_placement;
           } else {
             signee.final_placement = final_placement;
-            last_points = signee.cup_results["Total"];
+            last_points = signee.cup_results["total"];
             last_placement = signee.final_placement;
           }
-          signee.final_cup_points = signee.cup_results["Total"];
+          signee.final_cup_points = signee.cup_results["total"];
           final_placement++;
         });
       }
@@ -317,7 +317,7 @@ export default {
             return parseInt(b) - parseInt(a);
           });
           // Initialize total points to 0
-          signee.cup_results["Total"] = 0;
+          signee.cup_results["total"] = 0;
           let counter = 0; // counter for competitions that have same points as the limit
           // Check each competition
           this.competitions.forEach((competition) => {
@@ -357,7 +357,7 @@ export default {
 
         // Add all the limited points to total points
         signee.cup_results.forEach((element) => {
-          signee.cup_results["Total"] += element.points;
+          signee.cup_results["total"] += element.points;
         });
       });
       // Return sorted results
@@ -545,7 +545,7 @@ export default {
           }
           counter++;
         });
-        values[counter] = `${cup_results["Total"]}p`;
+        values[counter] = `${cup_results["total"]}p`;
         arr.push(values);
       });
       return arr;
