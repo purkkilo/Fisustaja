@@ -2,6 +2,36 @@
   <!-- /results -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <div>
+    <v-navigation-drawer permanent>
+      <v-card
+        class="mx-auto"
+        max-width="400"
+        tile
+        style="top: 0"
+        :dark="$store.getters.getTheme"
+      >
+        <v-list dense>
+          <p>Navigointi</p>
+          <v-list-item-group v-model="selectedItem" color="primary">
+            <v-divider></v-divider>
+            <div v-for="(item, i) in items" :key="i">
+              <v-list-item
+                @click="changePage(item.path)"
+                :disabled="$router.currentRoute.path === item.path"
+              >
+                <v-list-item-icon>
+                  <v-icon v-text="item.icon"></v-icon>
+                </v-list-item-icon>
+                <v-list-item-content>
+                  <v-list-item-title v-text="item.text"></v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+              <v-divider></v-divider>
+            </div>
+          </v-list-item-group>
+        </v-list>
+      </v-card>
+    </v-navigation-drawer>
     <v-container style="width: 70%">
       <div
         v-bind:class="{

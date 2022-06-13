@@ -70,8 +70,8 @@
                       </v-btn>
                     </template>
 
-                    <v-card :dark="$store.getters.getTheme">
-                      <v-card-title class="headline"> </v-card-title>
+                    <v-card :dark="$store.getters.getTheme" width="600px">
+                      <Timedate />
                       <v-card-actions>
                         <v-spacer></v-spacer>
                         <v-btn color="primary" outlined @click="dialog = false">
@@ -886,11 +886,13 @@
 import CompetitionService from "../CompetitionService";
 import CupService from "../CupService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
+import Timedate from "@/components/layout/Timedate";
 
 export default {
   name: "CompSettings",
   components: {
     ProgressBarQuery,
+    Timedate,
   },
   data() {
     return {
