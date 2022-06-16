@@ -165,15 +165,22 @@
                   ></v-checkbox>
                   <v-checkbox
                     v-model="selected_print"
+                    :disabled="!biggest_amounts_results.length"
+                    label="Suurimmat kalat ja kalasaaliit (Kalalajit samassa taulukossa)"
+                    color="indigo darken-3"
+                    value="all_biggest"
+                  ></v-checkbox>
+                  <v-checkbox
+                    v-model="selected_print"
                     :disabled="!biggest_fishes_results.length"
-                    label="Suurimmat yksittäiset kalat"
+                    label="Suurimmat yksittäiset kalat (Kalalajeittain taulukossa)"
                     color="indigo darken-3"
                     value="biggest_fishes"
                   ></v-checkbox>
                   <v-checkbox
                     v-model="selected_print"
                     :disabled="!biggest_amounts_results.length"
-                    label="Suurimmat kalasaaliit"
+                    label="Suurimmat kalasaaliit (Kalalajeittain taulukossa)"
                     color="indigo darken-3"
                     value="biggest_amounts"
                   ></v-checkbox>
@@ -183,7 +190,7 @@
                       !biggest_amounts_results.length &&
                       !biggest_amounts_results.length
                     "
-                    label="Suurimmat yksittäiset kalat / kalasaaliit (Voittajat)"
+                    label="Suurimmat yksittäiset kalat / kalasaaliit (Voittajat eritelty)"
                     color="indigo darken-3"
                     value="biggest_winners"
                   ></v-checkbox>
@@ -1136,6 +1143,13 @@ export default {
         { text: "Kippari", value: "captain_name" },
         { text: "Paino", value: "weight" },
       ],
+      all_fishes_headers: [
+        { text: "Sijoitus", value: "placement" },
+        { text: "Kilp. numero", value: "boat_number" },
+        { text: "Kippari", value: "captain_name" },
+        { text: "Kala", value: "fish" },
+        { text: "Paino", value: "weight" },
+      ],
       biggest_headers: [
         { text: "Sijoitus", value: "placement" },
         { text: "Kilp. numero", value: "boat_number" },
@@ -1303,6 +1317,8 @@ export default {
           this.calculated_fish_weights = this.competition.fishes;
 
           let temp_fish_names = this.$store.getters.getCompetitionFishes;
+          this.fish_names.push("Kaikki");
+          this.fish_amount_names.push("Kaikki");
           this.fish_names.push("Voittajat");
           this.fish_amount_names.push("Voittajat");
           temp_fish_names.forEach((fish) => {
@@ -1405,30 +1421,61 @@ export default {
       }
     },
     // Calculate "Suurimmat Kalat"
-    calculateBiggestFishes: function () {
+    calculateBiggestFishes() {
       let fishes = this.biggest_fishes;
       let placement = 1;
       this.results_found_fishes = null;
 
       // Check v-select value, don't allow it to go null because it shows error
       if (!this.selected_biggest_fish) {
-        this.selected_biggest_fish = "Voittajat";
+        this.selected_biggest_fish = "Kaikki";
       }
       if (this.selected_biggest_fish === "Voittajat") {
         this.biggest_fishes_headers = this.winner_headers;
         this.biggest_fishes,
           (this.biggest_fishes_results = this.sortDict(fishes));
+      } else if (this.selected_biggest_fish === "Kaikki") {
+        this.biggest_fishes_headers = this.all_fishes_headers;
+        // If v-select (this.selected_biggest_fish) not "Voittajat", get fish related results and sort them
+        // based on the v-select fish name
+        let fish_results = [];
+        for (const fish of Object.keys(fishes)) {
+          fishes[fish].forEach((result) => {
+            result.fish = fish;
+            fish_results.push(result);
+          });
+        }
+
+        if (fish_results.length) {
+          fish_results.sort((a, b) => {
+            return parseInt(b.weight) - parseInt(a.weight);
+          });
+          this.results_found_amounts = "";
+        } else {
+          this.results_found_fishes = "- Ei tuloksia";
+        }
+
+        let last_weight = -1;
+        let last_placement = -1;
+        this.biggest_fishes_results = fish_results;
+        this.biggest_fishes_results.forEach((result) => {
+          if (last_weight === result.weight) {
+            result.placement = last_placement;
+          } else {
+            result.placement = last_placement = placement;
+            last_weight = result.weight;
+          }
+          placement++;
+        });
       } else {
         this.biggest_fishes_headers = this.biggest_headers;
         // If v-select (this.selected_biggest_fish) not "Voittajat", get fish related results and sort them
         // based on the v-select fish name
         let fish_results = [];
         if (fishes[this.selected_biggest_fish]) {
-          fish_results = fishes[this.selected_biggest_fish].sort(
-            function compare(a, b) {
-              return parseInt(b.weight) - parseInt(a.weight);
-            }
-          );
+          fish_results = fishes[this.selected_biggest_fish].sort((a, b) => {
+            return parseInt(b.weight) - parseInt(a.weight);
+          });
           this.results_found_amounts = "";
         } else {
           this.results_found_fishes = "- Ei tuloksia";
@@ -1449,26 +1496,69 @@ export default {
     },
     // Calculate "Suurimmat kalasaaliit", works exactly like the calculateBiggestFishes
     //TODO make these 2 to one function
-    calculateBiggestAmounts: function () {
+    calculateBiggestAmounts() {
       let fishes = this.biggest_amounts;
       let placement = 1;
       this.results_found_amount = "";
       if (!this.selected_biggest_amount) {
-        this.selected_biggest_amount = "Voittajat";
+        this.selected_biggest_amount = "Kaikki";
       }
       if (this.selected_biggest_amount === "Voittajat") {
         this.biggest_amounts_headers = this.winner_headers;
         this.biggest_amounts,
           (this.biggest_amounts_results = this.sortDict(fishes));
+      } else if (this.selected_biggest_amount === "Kaikki") {
+        this.biggest_amounts_headers = this.all_fishes_headers;
+        // If v-select (this.selected_biggest_fish) not "Voittajat", get fish related results and sort them
+        // based on the v-select fish name
+        let fish_results = [];
+        for (const fish of Object.keys(fishes)) {
+          fishes[fish].forEach((result) => {
+            result.fish = fish;
+            let previous = fish_results.find(
+              (r) => r.boat_number === result.boat_number
+            );
+            if (previous) {
+              if (previous.weight < result.weight) {
+                previous = {
+                  ...result,
+                  fish: fish,
+                };
+              }
+            } else {
+              fish_results.push(result);
+            }
+          });
+        }
+
+        if (fish_results.length) {
+          fish_results.sort((a, b) => {
+            return parseInt(b.weight) - parseInt(a.weight);
+          });
+          this.results_found_amounts = "";
+        } else {
+          this.results_found_amount = "- Ei tuloksia";
+        }
+
+        let last_weight = -1;
+        let last_placement = -1;
+        this.biggest_amounts_results = fish_results;
+        this.biggest_amounts_results.forEach((result) => {
+          if (last_weight === result.weight) {
+            result.placement = last_placement;
+          } else {
+            result.placement = last_placement = placement;
+            last_weight = result.weight;
+          }
+          placement++;
+        });
       } else {
         this.biggest_amounts_headers = this.biggest_headers;
         let fish_results = [];
         if (fishes[this.selected_biggest_amount]) {
-          fish_results = fishes[this.selected_biggest_amount].sort(
-            function compare(a, b) {
-              return parseInt(b.weight) - parseInt(a.weight);
-            }
-          );
+          fish_results = fishes[this.selected_biggest_amount].sort((a, b) => {
+            return parseInt(b.weight) - parseInt(a.weight);
+          });
           fish_results = fish_results.filter(
             (result) => parseInt(result.weight) > 0
           );

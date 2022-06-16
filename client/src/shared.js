@@ -29,7 +29,9 @@ function dictToArray(dict, type) {
     }
     // Suurimmat kalat, suurimmat kalasaaliit
     if (type === 3) {
-      let temp_placement = values[3];
+      let temp_placement = isNaN(values[values.length - 1])
+        ? values[values.length - 2]
+        : values[values.length - 1];
       let temp_bnumber = values[0];
       let temp_captain = values[1];
       let temp_points = values[2].toLocaleString() + " g";
@@ -63,13 +65,13 @@ function dictToArray(dict, type) {
       let b_number = values[1];
       let captain = values[3];
       let temp_captain = values[4];
-      let startin_place = values[2];
+      let starting_place = values[2];
       let locality = values[5];
       let team = values[6];
       values[0] = "(" + String(b_number) + ")";
       values[1] = captain;
       values[2] = temp_captain;
-      values[3] = startin_place;
+      values[3] = starting_place;
       values[4] = locality;
       values[5] = team;
     }
@@ -85,6 +87,23 @@ function dictToArray(dict, type) {
       values[3] =
         String(Math.round((fish_weights / 1000 + Number.EPSILON) * 100) / 100) +
         " kg";
+    }
+    // Suurimmat kalat, suurimmat kalasaaliit (Kaikki)
+    if (type === 8) {
+      let temp_placement = isNaN(values[values.length - 1])
+        ? values[values.length - 2]
+        : values[values.length - 1];
+      let temp_bnumber = values[0];
+      let temp_captain = values[1];
+      let temp_fish = isNaN(values[values.length - 1])
+        ? values[values.length - 1]
+        : values[values.length - 2];
+      let temp_points = values[2].toLocaleString() + " g";
+      values[0] = String(temp_placement) + ".";
+      values[1] = "(" + String(temp_bnumber) + ")";
+      values[2] = temp_captain;
+      values[3] = temp_fish;
+      values[4] = temp_points;
     }
     arr.push(values);
   });
@@ -208,6 +227,9 @@ function saveAsPDF(competition_type, table_id) {
     if (this.selected_biggest_fish === "Voittajat") {
       columns = ["Kalalaji", "Veneen nro", "Kippari", "Paino"];
       rows = this.dictToArray(this.biggest_fishes_results, 4);
+    } else if (this.selected_biggest_fish === "Kaikki") {
+      columns = ["Sijoitus", "Veneen nro", "Kippari", "Kala", "Paino"];
+      rows = this.dictToArray(this.biggest_fishes_results, 8);
     } else {
       columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino"];
       rows = this.dictToArray(this.biggest_fishes_results, 3);
@@ -220,6 +242,9 @@ function saveAsPDF(competition_type, table_id) {
     if (this.selected_biggest_amount === "Voittajat") {
       columns = ["Kalalaji", "Veneen nro", "Kippari", "Paino"];
       rows = this.dictToArray(this.biggest_amounts_results, 4);
+    } else if (this.selected_biggest_amount === "Kaikki") {
+      columns = ["Sijoitus", "Veneen nro", "Kippari", "Kala", "Paino"];
+      rows = this.dictToArray(this.biggest_amounts_results, 8);
     } else {
       columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino"];
       rows = this.dictToArray(this.biggest_amounts_results, 3);
@@ -531,12 +556,112 @@ function saveAllAsPDF(tab) {
     }
   }
 
+  // Suurimmat kalat/kalasaaliit (Kaikki) to pdf if it's inclued in this.selected_print array
+  if (this.selected_print.includes("all_biggest")) {
+    // If there is content before, start from new page
+    if (
+      this.selected_print.includes("normal") ||
+      this.selected_print.includes("team")
+    ) {
+      doc.addPage();
+    }
+    // Suurimmat Kalat  (Kaikki)
+    // Select these for calculations
+    this.selected_biggest_fish = this.selected_biggest_amount = "Kaikki";
+    columns = ["Sijoitus", "Veneen nro", "Kippari", "Kala", "Paino"];
+    // Calculate data
+    this.calculateBiggestFishes();
+    this.calculateBiggestAmounts();
+    // If there are any results, add title
+    if (
+      this.biggest_fishes_results.length ||
+      this.biggest_amounts_results.length
+    ) {
+      doc.setFontSize(24);
+      doc.text(10, 10, title, { align: "left" });
+      doc.setFontSize(14);
+      doc.text(10, 20, this.competition.cup_name, { align: "left" });
+      doc.text(10, 30, time, { align: "left" });
+      doc.line(0, 35, 400, 35);
+      doc.setFontSize(18);
+    }
+
+    // If there are biggest fishes
+    if (this.biggest_fishes_results.length) {
+      rows = this.dictToArray(this.biggest_fishes_results, 8);
+      doc.text(
+        100,
+        50,
+        "Suurimmat kalat" + ` (${this.selected_biggest_fish})`,
+        { align: "center" }
+      );
+      // Table generated in code
+      doc.autoTable({
+        head: [columns],
+        body: rows,
+        styles: {
+          overflow: "linebreak",
+          cellWidth: "wrap",
+          rowPageBreak: "avoid",
+          halign: "justify",
+          fontSize: "8",
+          lineColor: 100,
+          lineWidth: 0.25,
+        },
+        columnStyles: { cellwidth: "auto" },
+        theme: "striped",
+        pageBreak: "auto",
+        tableWidth: "auto",
+        margin: { top: 20 },
+        startY: 55,
+      });
+      // Keep track of y coordinate
+      start_coord = doc.autoTable.previous.finalY + 25;
+    } else {
+      // If no biggest fishes, biggest amounts table starts from 50 instead
+      start_coord = 50;
+    }
+
+    //Suurimmat kalasaaliit (Kaikki)
+    // If there are any amounts --> if someone has gotten any fish
+    if (this.biggest_amounts_results.length) {
+      rows = this.dictToArray(this.biggest_amounts_results, 8);
+      doc.text(
+        100,
+        start_coord,
+        "Suurimmat kalasaaliit" + ` (${this.selected_biggest_fish})`,
+        { align: "center" }
+      );
+      // Table generated in code
+      doc.autoTable({
+        head: [columns],
+        body: rows,
+        styles: {
+          overflow: "linebreak",
+          cellWidth: "wrap",
+          rowPageBreak: "avoid",
+          halign: "justify",
+          fontSize: "8",
+          lineColor: 100,
+          lineWidth: 0.25,
+        },
+        columnStyles: { text: { cellwidth: "auto" } },
+        theme: "striped",
+        pageBreak: "auto",
+        tableWidth: "auto",
+        margin: { top: 20 },
+        startY: start_coord + 5,
+      });
+    }
+  }
+
   //"Suurimmat kalat" to pdf if it's inclued in this.selected_print array
   if (this.selected_print.includes("biggest_fishes")) {
     // If there is content before, start from new page
     if (
       this.selected_print.includes("normal") ||
-      this.selected_print.includes("team")
+      this.selected_print.includes("team") ||
+      this.selected_print.includes("all_biggest")
     ) {
       doc.addPage();
     }
@@ -599,7 +724,8 @@ function saveAllAsPDF(tab) {
     if (
       this.selected_print.includes("normal") ||
       this.selected_print.includes("team") ||
-      this.selected_print.includes("biggest_fishes")
+      this.selected_print.includes("biggest_fishes") ||
+      this.selected_print.includes("all_biggest")
     ) {
       doc.addPage();
     }
@@ -659,7 +785,8 @@ function saveAllAsPDF(tab) {
       this.selected_print.includes("normal") ||
       this.selected_print.includes("team") ||
       this.selected_print.includes("biggest_fishes") ||
-      this.selected_print.includes("biggest_amounts")
+      this.selected_print.includes("biggest_amounts") ||
+      this.selected_print.includes("all_biggest")
     ) {
       doc.addPage();
     }
@@ -952,11 +1079,11 @@ function drawCharts() {
   signee_data.push(no_points_signees);
   this.fishes_chart_title = "Kaloja saatu yhteensä";
   this.fishes_chart_data = {
-    labels: this.table_fish_names, // Fish names
+    labels: this.table_fish_names,
     datasets: [
       {
         label: "Paino",
-        backgroundColor: colors, // Colors
+        backgroundColor: colors,
         data: temp_weights, // Weights
       },
     ],
@@ -968,7 +1095,7 @@ function drawCharts() {
     datasets: [
       {
         label: "Lukumäärä",
-        backgroundColor: ["#7fbf7f", "#ff7f7f"], // Green and red
+        backgroundColor: ["#7fbf7f", "#ff7f7f"],
         data: signee_data, // Data
       },
     ],
