@@ -1316,14 +1316,13 @@ export default {
       this.searched = false;
     },
     // "Normaalikilpailu" results
-    calculateNormalResults: function (competition) {
-      const cup_points_multiplier = competition.cup_points_multiplier;
-      let cup_placement_points = competition.cup_placement_points;
+    calculateNormalResults(competition) {
+      const placement_points = competition.cup_placement_points_array;
+      let cup_placement_points = placement_points[0];
       const cup_participation_points = competition.cup_participation_points;
-      let last_points = 0;
+      let last_points = null;
       let tied_competitors = 0;
       let placement = 1;
-      let counter = 0;
       let cup_points_total;
 
       let normal_points = [];
@@ -1339,20 +1338,9 @@ export default {
       // Placements and points now saved in every competition to cup_placement_points_array, based on placement fetch from there?
       this.signees.forEach((signee) => {
         cup_points_total = 0;
-        // First competitor
-        if (!normal_points.length) {
-          // If no points --> no placement points
-          if (signee.total_points == 0) {
-            cup_placement_points = 0;
-          }
-          // Formula for cup points calculations, cup_points_multiplier only scales the placement points
+        if (!last_points) {
           last_points = signee.total_points;
-          cup_points_total =
-            cup_placement_points * cup_points_multiplier +
-            cup_participation_points;
-        }
-        // After first competitor
-        else {
+        } else {
           // If competitor has same points as last competitor
           if (signee.total_points == last_points) {
             placement -= 1; // Keep the same placing (adds 1 later)
@@ -1365,47 +1353,23 @@ export default {
 
           // If no points --> no placement points
           if (signee.total_points == 0) {
-            cup_placement_points = 0;
             // if there is a tie on points, increment tied competitors
             if (signee.total_points === last_points) {
               tied_competitors += 1;
             }
           }
-
-          // For the first 6 competitors, deduct 2 points, after the first 5 deductions, deduct 1
-          // tied_competitors makes sure that ties are taken into account
-          if (counter <= 5) {
-            // If there are no ties
-            if (
-              signee.total_points !== last_points &&
-              signee.total_points > 0
-            ) {
-              cup_placement_points -= 2 * (tied_competitors + 1);
-              tied_competitors = 0;
-            }
-          } else if (cup_placement_points <= 0) {
-            // make sure points won't go negative
-            cup_placement_points = 0;
-            tied_competitors = 0;
-          } else {
-            // If the points differ from last competitor, deduct placement points
-            if (signee.total_points !== last_points) {
-              //Normal point calculation
-              cup_placement_points -= 1 * (tied_competitors + 1);
-              tied_competitors = 0;
-            }
-          }
         }
 
-        // Calculate total cup points, cup points multiplier only scales the placement points
-        if (cup_placement_points > 0) {
-          cup_points_total =
-            cup_placement_points * cup_points_multiplier +
-            cup_participation_points;
+        // Find the placement points according to the placement
+        let p = placement_points.find((e) => e.placement === placement);
+        // If placement isn't found (placement > than provided placements), or points = 0 (no points from competition)
+        if (!p || signee.total_points === 0) {
+          cup_placement_points = 0;
         } else {
-          cup_points_total = cup_participation_points;
+          cup_placement_points = p.points * competition.cup_points_multiplier;
         }
-
+        // Calculate total cup points, cup points multiplier only scales the placement points
+        cup_points_total = cup_placement_points + cup_participation_points;
         //For showing cup points, "Pisteet" on v-select
         normal_points.push({
           placement: placement,
@@ -1414,12 +1378,10 @@ export default {
           temp_captain_name: signee.temp_captain_name,
           locality: signee.locality,
           total_points: signee.total_points.toLocaleString(),
-          cup_placement_points: cup_placement_points * cup_points_multiplier,
+          cup_placement_points: cup_placement_points,
           cup_participation_points: cup_participation_points,
           cup_points_total: cup_points_total,
         });
-
-        counter++;
 
         //For showing fish weights, "Kalat" on v-select
         let temp_dict = {};

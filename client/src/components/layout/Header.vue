@@ -43,7 +43,11 @@
         </v-list-item>
 
         <v-divider></v-divider>
-
+        <v-list-item v-if="isCompetitionSet">
+          <v-list-item-content>
+            <p class="text-center">Kilpailu/Cup navigointi</p>
+          </v-list-item-content>
+        </v-list-item>
         <v-list-item v-if="isCompetitionSet" @click="changePage('/overview')">
           <v-list-item-icon>
             <v-icon>directions_boat</v-icon>
@@ -70,7 +74,7 @@
             }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-
+        <v-divider></v-divider>
         <v-list-item
           v-for="item in items"
           :key="item.title"

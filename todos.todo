@@ -8,20 +8,15 @@ Nested:
 
 Todos:
 New:
-  ☐ Input validation! (Serverside, more on clientside too) @started(20-05-26 12:06) @high @today
   ☐ Comment all the files... @started(20-05-26 12:11) @low
-  ☐ Add demo accounts
+  ☐ Also Fix warning from entrypoint app being too large (optimize somehow) @low
+  ☐ Add internatialization @low https://www.freecodecamp.org/news/how-to-add-internationalization-to-a-vue-application-d9cfdcabb03b/
   ☐ Add tests! Vuetify can also be used for unit testing, add testing
   ☐ Add qr code possibility to signing/weighting (rfid)
   ☐ Add possibility to get weights via usb from weighting thing
-  ☐ Also Fix warning from entrypoint app being too large (optimize somehow)
-  ☐ Profile page? @low 
-  ☐ Implement ability to create own point system (custom cup_placement_points_array)
-  ☐ Add internatialization @low https://www.freecodecamp.org/news/how-to-add-internationalization-to-a-vue-application-d9cfdcabb03b/
   ☐ Create all fishes category in biggest fishes and biggest amounts
-  ☐ Reimplement api for competitions,cups and feedback (like users)
-  ☐ Create component for competition (to be used in public-results, and in results when conducting a competition)
-  ☐ Create option separate table for competitions in cup overview and reference them with numbers in pistetilanne table (so you can fit more than 5 comps in a page)
+  ☐ Reimplement api for competitions, cups and feedback (like users)
+  ☐ Make reusable components out of components that are used in many pages
 
 
 
@@ -56,6 +51,7 @@ Done:
   ✔ Implement competition updating like updating user preferences (check: Header.vue, Userservice.js, users.js) @done(20-09-17 10:35)
   ✔ Implement refreshing access tokens @done(21-11-27 14:44)
   ✔ Replace materialize components with vuetify (toast -> snackbar etc.) @done(21-11-27 14:44)
+  ✔ Implement ability to create own point system (custom cup_placement_points_array) @done(22-06-15 01:20)
 
 Cancelled:
   ✘ Press Alt+C to mark a todo as cancelled

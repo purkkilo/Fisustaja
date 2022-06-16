@@ -11,6 +11,7 @@ function dictToArray(dict, type) {
       values[0] = String(values[0]) + ".";
       values[1] = "(" + String(values[1]) + ")";
       values[5] = values[5].toLocaleString() + " p";
+      values[6] = values[values.length - 1] + " p";
     }
     // Normaalikilpailu, kalat
     if (type === 2) {
@@ -162,9 +163,7 @@ function saveAsPDF(competition_type, table_id) {
         "Varakippari",
         "Paikkakunta",
         "Tulos",
-        "Sij. pisteet",
-        "Osal. pisteet",
-        "Yht.",
+        "Cup pisteet",
       ];
       // Format dictionary/json to format that autotable understands (arrays in arrays);
       rows = this.dictToArray(this.normal_points, 1);
@@ -454,9 +453,7 @@ function saveAllAsPDF(tab) {
       "Varakippari",
       "Paikkakunta",
       "Tulos",
-      "Sij. pisteet",
-      "Osal. pisteet",
-      "Yht.",
+      "Cup pisteet",
     ];
     // Format dictionary/json to format that autotable understands (arrays in arrays);
     rows = this.dictToArray(this.normal_points, 1);
@@ -920,10 +917,9 @@ function* range(start, end) {
 }
 
 function getColor(placement) {
-  if (placement > 30) return "red";
-  if (placement > 20) return "orange";
-  else if (placement > 5) return "yellow";
-  else return "green";
+  if (placement === 1) return "yellow";
+  else if (placement > 1 && placement < 10) return "green";
+  else return "orange";
 }
 
 function getMultiplierColor(multiplier) {

@@ -272,7 +272,13 @@
             <div class="text-center">
               <v-dialog v-model="createCupDialog" width="700">
                 <template v-slot:activator="{ on, attrs }">
-                  <v-btn color="blue lighten-2" dark v-bind="attrs" v-on="on">
+                  <v-btn
+                    color="blue lighten-2"
+                    dark
+                    v-bind="attrs"
+                    v-on="on"
+                    :disabled="loading"
+                  >
                     <v-icon>mdi-plus-circle</v-icon>Luo uusi cup!
                   </v-btn>
                 </template>

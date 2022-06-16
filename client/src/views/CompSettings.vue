@@ -109,7 +109,7 @@
         <v-tab-item :value="'show-settings'">
           <!-- if this.loading === false, meaning app isn't loading competition data from database -->
           <v-row
-            v-if="!loading"
+            v-if="!loading && competition"
             id="settings-info"
             v-bind:class="{
               inputarea: !$store.getters.getTheme,
@@ -187,16 +187,37 @@
                       <v-divider></v-divider>
                       <v-list-item>
                         <v-list-item-icon>
-                          <v-icon color="green"
-                            >mdi-format-list-numbered</v-icon
-                          >
+                          <v-icon color="green">mdi-clipboard-check</v-icon>
                         </v-list-item-icon>
-                        <v-list-item-title
-                          >Voittajan Cup sijoittumispisteet</v-list-item-title
-                        >
-                        <v-list-item-subtitle class="blue-text">
-                          <b>{{ competition.cup_placement_points }}</b>
-                        </v-list-item-subtitle>
+                        <v-list-item-content>
+                          <v-list-item-title
+                            >Kilpailun sijoittumispisteet</v-list-item-title
+                          >
+                          <v-list
+                            :dark="$store.getters.getTheme"
+                            elevation="20"
+                            outlined
+                            style="max-height: 400px; overflow-y: auto"
+                          >
+                            <div
+                              v-for="(p, index) in placement_points_array"
+                              :key="index"
+                              style="margin-top: 20px"
+                            >
+                              <v-list-item>
+                                <v-row align="center">
+                                  <v-col>
+                                    <h3>#{{ p.placement }}</h3>
+                                  </v-col>
+                                  <v-col>
+                                    <p>{{ p.points }}p</p>
+                                  </v-col>
+                                </v-row>
+                              </v-list-item>
+                              <v-divider></v-divider>
+                            </div>
+                          </v-list>
+                        </v-list-item-content>
                       </v-list-item>
                       <v-divider></v-divider>
                       <v-list-item>
@@ -511,31 +532,93 @@
                     ></v-select>
                   </v-col>
                 </v-row>
-                <v-row v-if="competition">
-                  <v-col md="6" offset-md="3" class="input-fields">
-                    <v-text-field
+                <v-row v-if="competition" justify="center">
+                  <v-col md="3">
+                    <h2
+                      class="center-align"
+                      v-bind:class="{
+                        'white--text': $store.getters.getTheme,
+                      }"
+                    >
+                      Kilpailun sijoittumispisteet
+                    </h2>
+                    <v-list
                       :dark="$store.getters.getTheme"
-                      label="Kilpailun voittajan cup sijoittumispisteet"
-                      v-model="cup_placement_points"
-                      append-outer-icon="add"
-                      maxlength="6"
-                      @click:append-outer="
-                        cup_placement_points >= 0
-                          ? cup_placement_points++
-                          : (cup_placement_points = 1)
-                      "
-                      prepend-icon="remove"
-                      @click:prepend="
-                        cup_placement_points >= 1
-                          ? cup_placement_points--
-                          : (cup_placement_points = 0)
-                      "
-                      @paste.prevent
-                      :counter="6"
-                      @keypress="isNumber($event, true)"
-                      :rules="number_rules"
-                      :disabled="basic_info_validated"
-                    />
+                      elevation="20"
+                      outlined
+                      style="max-height: 400px; overflow-y: auto"
+                    >
+                      <div
+                        v-for="(p, index) in placement_points_array"
+                        :key="index"
+                        style="margin-top: 20px"
+                      >
+                        <v-list-item>
+                          <v-row align="center">
+                            <v-col>
+                              <h3>#{{ p.placement }}</h3>
+                            </v-col>
+                            <v-col>
+                              <v-text-field
+                                :dark="$store.getters.getTheme"
+                                label="Pisteet"
+                                v-model="p.points"
+                                :rules="number_rules"
+                                :disabled="basic_info_validated || !editPoints"
+                                @blur="sortPlacements"
+                              />
+                            </v-col>
+                            <v-col v-if="editPoints"
+                              ><v-btn
+                                @click="removePlacement(index)"
+                                color="red"
+                              >
+                                <v-icon>mdi-delete</v-icon>
+                              </v-btn>
+                            </v-col>
+                          </v-row>
+                        </v-list-item>
+                        <v-divider></v-divider>
+                      </div>
+                    </v-list>
+                    <v-row v-if="editPoints">
+                      <v-col>
+                        <v-btn color="green" @click="addPlacement"
+                          ><v-icon>mdi-plus</v-icon>Lisää pistesija</v-btn
+                        >
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col v-if="editPoints">
+                        <v-btn block color="yellow" @click="cancelPoints"
+                          ><v-icon>mdi-cancel</v-icon>Peruuta</v-btn
+                        >
+                      </v-col>
+                      <v-col>
+                        <v-btn
+                          block
+                          :color="editPoints ? 'green darken-2' : 'grey'"
+                          @click="confirmPoints"
+                          :disabled="basic_info_validated"
+                          ><v-icon>mdi-check</v-icon
+                          >{{ editPoints ? "Valmis" : "Muokkaa" }}</v-btn
+                        >
+                      </v-col>
+                    </v-row>
+                  </v-col>
+                  <v-col cols="2" v-if="editPoints">
+                    <div style="margin-top: 200px">
+                      <p
+                        class="center-align flow-text"
+                        v-bind:class="{
+                          'white--text': $store.getters.getTheme,
+                        }"
+                      >
+                        Palauta alkuperäiset pisteet:<br />#1 = 30, #2 = 28, #3
+                        = 26...
+                      </p>
+                      <v-btn color="red" @click="resetPoints">Palauta</v-btn>
+                    </div>
                   </v-col>
                 </v-row>
 
@@ -732,8 +815,8 @@
                     </v-row>
                   </v-col>
                 </v-row>
-                <v-row class="fishes_summary">
-                  <v-col md="12" offset-md="1">
+                <v-row class="fishes_summary" justify="center" align="center">
+                  <v-col cols="6">
                     <table
                       class="highlight centered responsive-table table_header"
                     >
@@ -887,6 +970,7 @@ import CompetitionService from "../CompetitionService";
 import CupService from "../CupService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import Timedate from "@/components/layout/Timedate";
+import constants from "@/constants";
 
 export default {
   name: "CompSettings",
@@ -903,7 +987,6 @@ export default {
       competition: null,
       name: null,
       locality: null,
-      cup_placement_points: null,
       cup_participation_points: null,
       cup_points_multiplier: null,
       team_competition: null,
@@ -931,34 +1014,8 @@ export default {
         (value) => (value || "") >= 0 || "Numeron pitää olla positiivinen!",
       ],
       max_input: 40,
-      placement_points_array: [
-        { points: 35, placement: 1 },
-        { points: 33, placement: 2 },
-        { points: 31, placement: 3 },
-        { points: 29, placement: 4 },
-        { points: 27, placement: 5 },
-        { points: 25, placement: 6 },
-        { points: 24, placement: 7 },
-        { points: 23, placement: 8 },
-        { points: 22, placement: 9 },
-        { points: 21, placement: 10 },
-        { points: 20, placement: 11 },
-        { points: 19, placement: 12 },
-        { points: 18, placement: 13 },
-        { points: 17, placement: 14 },
-        { points: 16, placement: 15 },
-        { points: 15, placement: 16 },
-        { points: 14, placement: 17 },
-        { points: 13, placement: 18 },
-        { points: 12, placement: 19 },
-        { points: 11, placement: 20 },
-        { points: 10, placement: 21 },
-        { points: 9, placement: 22 },
-        { points: 8, placement: 23 },
-        { points: 7, placement: 24 },
-        { points: 6, placement: 25 },
-        { points: 5, placement: 26 },
-      ],
+      placement_points_array: [],
+      temp_placement_points_array: [],
       selectedItem: 1,
       items: [
         {
@@ -990,6 +1047,7 @@ export default {
       snackbar: false,
       text: "",
       timeout: 5000,
+      editPoints: false,
     };
   },
   created() {
@@ -1003,10 +1061,52 @@ export default {
     // Focus on top of the page when changing pages
     location.href = "#";
     location.href = "#app";
+    this.placement_points_array = JSON.parse(
+      JSON.stringify(constants.placement_points)
+    );
   },
   mounted() {},
   methods: {
-    changePage: function (route) {
+    addPlacement() {
+      const lastItem =
+        this.placement_points_array[this.placement_points_array.length - 1];
+      this.placement_points_array.push({
+        points: lastItem.points > 1 ? lastItem.points - 1 : 1,
+        placement: lastItem.placement + 1,
+      });
+    },
+    removePlacement(index) {
+      this.placement_points_array.splice(index, 1);
+    },
+    sortPlacements() {
+      this.placement_points_array.sort((a, b) => b.points - a.points);
+      this.savePlacements();
+    },
+    savePlacements() {
+      this.placement_points_array.forEach((p, index) => {
+        p.placement = index + 1;
+      });
+    },
+    cancelPoints() {
+      this.editPoints = !this.editPoints;
+      this.placement_points_array = JSON.parse(
+        JSON.stringify(this.temp_placement_points_array)
+      );
+    },
+    confirmPoints() {
+      this.savePlacements();
+      this.editPoints = !this.editPoints;
+      this.temp_placement_points_array = JSON.parse(
+        JSON.stringify(this.placement_points_array)
+      );
+    },
+    resetPoints() {
+      this.placement_points_array = JSON.parse(
+        JSON.stringify(constants.placement_points)
+      );
+      this.editPoints = !this.editPoints;
+    },
+    changePage(route) {
       if (this.$router.currentRoute.path !== route) {
         this.$router.push(route);
         this.drawer = !this.drawer;
@@ -1087,6 +1187,9 @@ export default {
           // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
           //TODO make a test for this?
           this.competition = competition;
+          this.placement_points_array = [
+            ...this.competition.cup_placement_points_array,
+          ];
           // Update to vuex, Assing variables from vuex (see client/store/index.js)
           this.$store.commit("refreshCompetition", competition);
           this.fish_specs = this.$store.getters.getCompetitionFishes;
@@ -1199,7 +1302,6 @@ export default {
       this.name = this.competition.name;
       this.locality = this.competition.locality;
       this.cup_participation_points = this.competition.cup_participation_points;
-      this.cup_placement_points = this.competition.cup_placement_points;
       this.cup_points_multiplier = this.competition.cup_points_multiplier;
       this.team_competition = this.competition.team_competition
         ? "Kyllä"
@@ -1265,10 +1367,8 @@ export default {
       if (!this.cup.id) {
         this.showError("Cuppia ei valittuna!");
       }
-      if (!this.cup_placement_points) {
-        this.showError(
-          "Määritä kilpailun voittajalle Cup sijoittumispisteet (Voittaja saa pisteet: Sijoittumispisteet + Osallistumispisteet)!"
-        );
+      if (!this.placement_points_array.length) {
+        this.showError("Lisää osallistumispisteet kiljailijoille");
       }
       if (!this.cup_participation_points) {
         this.showError("Määritä kilpailun Cup osallistumispisteet!");
@@ -1363,9 +1463,6 @@ export default {
         this.competition.cup_name = this.cup.name;
         this.competition.name = this.name;
         this.competition.locality = this.locality;
-        this.competition.cup_placement_points = Number(
-          this.cup_placement_points
-        );
         this.competition.cup_participation_points = Number(
           this.cup_participation_points
         );
@@ -1381,11 +1478,7 @@ export default {
           this.placement_points_array.forEach((placement_point) => {
             temp_placement_points.push({
               placement: temp_placement,
-              points:
-                (placement_point.points -
-                  this.competition.cup_participation_points) *
-                  this.cup_points_multiplier +
-                this.competition.cup_participation_points,
+              points: placement_point.points * this.cup_points_multiplier,
             });
             temp_placement++;
           });
@@ -1441,7 +1534,6 @@ export default {
                       normal_weight.total_points = signee.total_points;
                       // If name has changed, replace old key with new one, so only name changes, not the values apart from total_points
                       if (input.name !== input.original_name) {
-                        console.log(input.name, input.original_name);
                         delete Object.assign(normal_weight, {
                           [input.name]: normal_weight[input.original_name],
                         })[input.original_name];
@@ -1566,13 +1658,12 @@ export default {
     },
     // "Normaalikilpailu" results
     calculateNormalResults: function (competition) {
-      const cup_points_multiplier = competition.cup_points_multiplier;
-      let cup_placement_points = competition.cup_placement_points;
+      const placement_points = competition.cup_placement_points_array;
+      let cup_placement_points = placement_points[0];
       const cup_participation_points = competition.cup_participation_points;
       let last_points = 0;
       let tied_competitors = 0;
       let placement = 1;
-      let counter = 0;
       let cup_points_total;
 
       let normal_points = [];
@@ -1585,20 +1676,9 @@ export default {
       //TODO rework the structure, seems more complex than it should be
       signees.forEach((signee) => {
         cup_points_total = 0;
-        // First competitor
-        if (!normal_points.length) {
-          // If no points --> no placement points
-          if (signee.total_points == 0) {
-            cup_placement_points = 0;
-          }
-          // Formula for cup points calculations, cup_points_multiplier only scales the placement points
+        if (!last_points) {
           last_points = signee.total_points;
-          cup_points_total =
-            cup_placement_points * cup_points_multiplier +
-            cup_participation_points;
-        }
-        // After first competitor
-        else {
+        } else {
           // If competitor has same points as last competitor
           if (signee.total_points == last_points) {
             placement -= 1; // Keep the same placing (adds 1 later)
@@ -1611,46 +1691,22 @@ export default {
 
           // If no points --> no placement points
           if (signee.total_points == 0) {
-            cup_placement_points = 0;
             // if there is a tie on points, increment tied competitors
             if (signee.total_points === last_points) {
               tied_competitors += 1;
             }
           }
-
-          // For the first 6 competitors, deduct 2 points, after the first 5 deductions, deduct 1
-          // tied_competitors makes sure that ties are taken into account
-          if (counter <= 5) {
-            // If there are no ties
-            if (
-              signee.total_points !== last_points &&
-              signee.total_points > 0
-            ) {
-              cup_placement_points -= 2 * (tied_competitors + 1);
-              tied_competitors = 0;
-            }
-          } else if (cup_placement_points <= 0) {
-            // make sure points won't go negative
-            cup_placement_points = 0;
-            tied_competitors = 0;
-          } else {
-            // If the points differ from last competitor, deduct placement points
-            if (signee.total_points !== last_points) {
-              //Normal point calculation
-              cup_placement_points -= 1 * (tied_competitors + 1);
-              tied_competitors = 0;
-            }
-          }
         }
-
-        // Calculate total cup points, cup points multiplier only scales the placement points
-        if (cup_placement_points > 0) {
-          cup_points_total =
-            cup_placement_points * cup_points_multiplier +
-            cup_participation_points;
+        // Find the placement points according to the placement
+        let p = placement_points.find((e) => e.placement === placement);
+        // If placement isn't found (placement > than provided placements), or points = 0 (no points from competition)
+        if (!p || signee.total_points === 0) {
+          cup_placement_points = 0;
         } else {
-          cup_points_total = cup_participation_points;
+          cup_placement_points = p.points * competition.cup_points_multiplier;
         }
+        // Calculate total cup points, cup points multiplier only scales the placement points
+        cup_points_total = cup_placement_points + cup_participation_points;
 
         //For showing cup points, "Pisteet" on v-select
         normal_points.push({
@@ -1660,12 +1716,10 @@ export default {
           temp_captain_name: signee.temp_captain_name,
           locality: signee.locality,
           total_points: signee.total_points.toLocaleString(),
-          cup_placement_points: cup_placement_points * cup_points_multiplier,
+          cup_placement_points: cup_placement_points,
           cup_participation_points: cup_participation_points,
           cup_points_total: cup_points_total,
         });
-
-        counter++;
 
         //For showing fish weights, "Kalat" on v-select
         let temp_dict = {};

@@ -169,31 +169,80 @@
                     </router-link>
                   </v-col>
                 </v-row>
-                <v-row v-if="cup.name">
-                  <v-col md="6" offset-md="3" class="input-fields">
-                    <v-text-field
+                <v-row v-if="cup.name" justify="center">
+                  <v-col md="3">
+                    <h2>Kilpailun sijoittumispisteet</h2>
+                    <v-list
                       :dark="$store.getters.getTheme"
-                      label="Kilpailun voittajan cup sijoittumispisteet"
-                      v-model="cup_placement_points"
-                      append-outer-icon="add"
-                      maxlength="6"
-                      @click:append-outer="
-                        cup_placement_points >= 0
-                          ? cup_placement_points++
-                          : (cup_placement_points = 1)
-                      "
-                      prepend-icon="remove"
-                      @click:prepend="
-                        cup_placement_points >= 1
-                          ? cup_placement_points--
-                          : (cup_placement_points = 0)
-                      "
-                      @paste.prevent
-                      :counter="6"
-                      @keypress="isNumber($event, true)"
-                      :rules="number_rules"
-                      :disabled="basic_info_validated"
-                    />
+                      elevation="20"
+                      outlined
+                      style="max-height: 400px; overflow-y: auto"
+                    >
+                      <div
+                        v-for="(p, index) in placement_points_array"
+                        :key="index"
+                        style="margin-top: 20px"
+                      >
+                        <v-list-item>
+                          <v-row align="center">
+                            <v-col>
+                              <h3>#{{ p.placement }}</h3>
+                            </v-col>
+                            <v-col>
+                              <v-text-field
+                                :dark="$store.getters.getTheme"
+                                label="Pisteet"
+                                v-model="p.points"
+                                :rules="number_rules"
+                                :disabled="basic_info_validated || !editPoints"
+                                @blur="sortPlacements"
+                              />
+                            </v-col>
+                            <v-col v-if="editPoints"
+                              ><v-btn
+                                @click="removePlacement(index)"
+                                color="red"
+                              >
+                                <v-icon>mdi-delete</v-icon>
+                              </v-btn>
+                            </v-col>
+                          </v-row>
+                        </v-list-item>
+                        <v-divider></v-divider>
+                      </div>
+                    </v-list>
+                    <v-row v-if="editPoints">
+                      <v-col>
+                        <v-btn color="green" @click="addPlacement"
+                          ><v-icon>mdi-plus</v-icon>Lisää pistesija</v-btn
+                        >
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col v-if="editPoints">
+                        <v-btn block color="yellow" @click="cancelPoints"
+                          ><v-icon>mdi-cancel</v-icon>Peruuta</v-btn
+                        >
+                      </v-col>
+                      <v-col>
+                        <v-btn
+                          block
+                          :color="editPoints ? 'green darken-2' : 'grey'"
+                          @click="confirmPoints"
+                          ><v-icon>mdi-check</v-icon
+                          >{{ editPoints ? "Valmis" : "Muokkaa" }}</v-btn
+                        >
+                      </v-col>
+                    </v-row>
+                  </v-col>
+                  <v-col cols="2" v-if="editPoints">
+                    <div style="margin-top: 200px">
+                      <p>
+                        Palauta alkuperäiset pisteet:<br />#1 = 30, #2 = 28, #3
+                        = 26...
+                      </p>
+                      <v-btn color="red" @click="resetPoints">Palauta</v-btn>
+                    </div>
                   </v-col>
                 </v-row>
 
@@ -760,14 +809,37 @@
                   <v-divider></v-divider>
                   <v-list-item>
                     <v-list-item-icon>
-                      <v-icon color="green darken-2">mdi-scoreboard</v-icon>
+                      <v-icon color="green">mdi-clipboard-check</v-icon>
                     </v-list-item-icon>
-                    <v-list-item-title
-                      >Voittajan Cup sijoittumispisteet</v-list-item-title
-                    >
-                    <v-list-item-subtitle class="blue-text">
-                      <b>{{ cup_placement_points }}</b>
-                    </v-list-item-subtitle>
+                    <v-list-item-content>
+                      <v-list-item-title
+                        >Kilpailun sijoittumispisteet</v-list-item-title
+                      >
+                      <v-list
+                        :dark="$store.getters.getTheme"
+                        elevation="20"
+                        outlined
+                        style="max-height: 400px; overflow-y: auto"
+                      >
+                        <div
+                          v-for="(p, index) in placement_points_array"
+                          :key="index"
+                          style="margin-top: 20px"
+                        >
+                          <v-list-item>
+                            <v-row align="center">
+                              <v-col>
+                                <h3>#{{ p.placement }}</h3>
+                              </v-col>
+                              <v-col>
+                                <p>{{ p.points }}p</p>
+                              </v-col>
+                            </v-row>
+                          </v-list-item>
+                          <v-divider></v-divider>
+                        </div>
+                      </v-list>
+                    </v-list-item-content>
                   </v-list-item>
                   <v-divider></v-divider>
                   <v-list-item>
@@ -917,6 +989,7 @@ import CompetitionService from "../CompetitionService";
 import CupService from "../CupService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import shared from "@/shared";
+import constants from "@/constants";
 
 export default {
   name: "RegisterComp",
@@ -933,7 +1006,6 @@ export default {
       locality: null,
       cups: [],
       cup: {},
-      cup_placement_points: 30,
       cup_participation_points: 5,
       cup_points_multiplier: 1.0,
       team_competition: "Ei",
@@ -960,34 +1032,8 @@ export default {
         (value) => !isNaN(value || "") || "Ei ole numero!",
         (value) => (value || "") >= 0 || "Numeron pitää olla positiivinen!",
       ],
-      placement_points_array: [
-        { points: 35, placement: 1 },
-        { points: 33, placement: 2 },
-        { points: 31, placement: 3 },
-        { points: 29, placement: 4 },
-        { points: 27, placement: 5 },
-        { points: 25, placement: 6 },
-        { points: 24, placement: 7 },
-        { points: 23, placement: 8 },
-        { points: 22, placement: 9 },
-        { points: 21, placement: 10 },
-        { points: 20, placement: 11 },
-        { points: 19, placement: 12 },
-        { points: 18, placement: 13 },
-        { points: 17, placement: 14 },
-        { points: 16, placement: 15 },
-        { points: 15, placement: 16 },
-        { points: 14, placement: 17 },
-        { points: 13, placement: 18 },
-        { points: 12, placement: 19 },
-        { points: 11, placement: 20 },
-        { points: 10, placement: 21 },
-        { points: 9, placement: 22 },
-        { points: 8, placement: 23 },
-        { points: 7, placement: 24 },
-        { points: 6, placement: 25 },
-        { points: 5, placement: 26 },
-      ],
+      placement_points_array: [],
+      temp_placement_points_array: [],
       activator: null,
       attach: null,
       colors: [
@@ -1035,6 +1081,7 @@ export default {
       snackbar: false,
       text: "",
       timeout: 5000,
+      editPoints: false,
     };
   },
   // Runs everytime this page loads
@@ -1044,6 +1091,9 @@ export default {
     // Focus on top of the page when changing pages
     location.href = "#";
     location.href = "#app";
+    this.placement_points_array = JSON.parse(
+      JSON.stringify(constants.placement_points)
+    );
   },
   watch: {
     selected(val, prev) {
@@ -1071,7 +1121,46 @@ export default {
     },
   },
   methods: {
-    changeTab: function (id) {
+    addPlacement() {
+      const lastItem =
+        this.placement_points_array[this.placement_points_array.length - 1];
+      this.placement_points_array.push({
+        points: lastItem.points > 1 ? lastItem.points - 1 : 1,
+        placement: lastItem.placement + 1,
+      });
+    },
+    removePlacement(index) {
+      this.placement_points_array.splice(index, 1);
+    },
+    sortPlacements() {
+      this.placement_points_array.sort((a, b) => b.points - a.points);
+      this.savePlacements();
+    },
+    savePlacements() {
+      this.placement_points_array.forEach((p, index) => {
+        p.placement = index + 1;
+      });
+    },
+    cancelPoints() {
+      this.editPoints = !this.editPoints;
+      this.placement_points_array = JSON.parse(
+        JSON.stringify(this.temp_placement_points_array)
+      );
+    },
+    confirmPoints() {
+      this.savePlacements();
+      this.editPoints = !this.editPoints;
+      this.temp_placement_points_array = JSON.parse(
+        JSON.stringify(this.placement_points_array)
+      );
+    },
+    resetPoints() {
+      this.placement_points_array = JSON.parse(
+        JSON.stringify(constants.placement_points)
+      );
+      this.editPoints = !this.editPoints;
+    },
+    changeTab(id) {
       this.tab = id;
     },
     edit(index, item) {
@@ -1201,11 +1290,6 @@ export default {
       if (!this.cup.id) {
         this.showError("Cuppia ei valittuna!");
       }
-      if (!this.cup_placement_points) {
-        this.showError(
-          "Määritä kilpailun voittajalle Cup sijoittumispisteet (Voittaja saa pisteet: Sijoittumispisteet + Osallistumispisteet)!"
-        );
-      }
       if (!this.cup_participation_points) {
         this.showError("Määritä kilpailun Cup osallistumispisteet!");
       }
@@ -1282,10 +1366,7 @@ export default {
           this.placement_points_array.forEach((placement_point) => {
             temp_placement_points.push({
               placement: temp_placement,
-              points:
-                (placement_point.points - this.cup_participation_points) *
-                  this.cup_points_multiplier +
-                this.cup_participation_points,
+              points: placement_point.points * this.cup_points_multiplier,
             });
             temp_placement++;
           });
@@ -1298,7 +1379,6 @@ export default {
           name: this.name,
           locality: this.locality,
           cup_name: this.cup.name,
-          cup_placement_points: Number(this.cup_placement_points),
           cup_participation_points: Number(this.cup_participation_points),
           cup_placement_points_array: temp_placement_points,
           cup_points_multiplier: Number(this.cup_points_multiplier),
@@ -1316,7 +1396,7 @@ export default {
       }
     },
     // Check chosen fish species (Kilpailun Kalalajit)
-    checkFishSpecies: function () {
+    checkFishSpecies() {
       this.errors = [];
       this.fish_species_validated = false;
       this.validated = false;
@@ -1471,7 +1551,6 @@ export default {
           name: this.basic_info.name,
           locality: this.basic_info.locality,
           cup_name: this.basic_info.cup_name,
-          cup_placement_points: this.basic_info.cup_placement_points,
           cup_placement_points_array:
             this.basic_info.cup_placement_points_array,
           cup_participation_points: this.basic_info.cup_participation_points,

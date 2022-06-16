@@ -592,10 +592,26 @@
                           >
                         </template>
                         <template v-slot:[`item.cup_points_total`]="{ item }">
-                          <v-chip
-                            :color="getColorPoints(item.cup_points_total)"
-                            >{{ item.cup_points_total }}</v-chip
-                          >
+                          <v-tooltip bottom color="primary">
+                            <template v-slot:activator="{ on, attrs }">
+                              <v-chip
+                                v-bind="attrs"
+                                v-on="on"
+                                :color="getColorPoints(item.cup_points_total)"
+                                >{{ item.cup_points_total }} p</v-chip
+                              >
+                            </template>
+                            <span>
+                              <b
+                                >Sijoittumispisteet + Osallistumispisteet = Cup
+                                pisteet</b
+                              >
+                              <br />
+                              {{ item.cup_placement_points }} +
+                              {{ item.cup_participation_points }} =
+                              {{ item.cup_points_total }}
+                            </span>
+                          </v-tooltip>
                         </template>
                       </v-data-table>
                     </v-card>
@@ -1059,9 +1075,7 @@ export default {
         { text: "Varakippari", value: "temp_captain_name" },
         { text: "Paikkakunta", value: "locality" },
         { text: "Tulos", value: "total_points" },
-        { text: "Cup sij. pisteet", value: "cup_placement_points" },
-        { text: "Cup osal. pisteet", value: "cup_participation_points" },
-        { text: "Yht.", value: "cup_points_total" },
+        { text: "Cup pisteet", value: "cup_points_total" },
       ],
       signee_headers: [],
       team_headers: [

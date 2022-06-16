@@ -905,14 +905,16 @@ export default {
           let fishes = competition.biggest_fishes[fish].sort(
             shared.sortBy("weight", false)
           );
-          if (fishes[0].weight > 0) {
-            all_biggest_fishes.push({
-              boat_number: fishes[0].boat_number,
-              captain_name: fishes[0].captain_name,
-              comp_name: competition.name,
-              fish_name: fish,
-              weight: fishes[0].weight,
-            });
+          if (fishes.length) {
+            if (fishes[0].weight > 0) {
+              all_biggest_fishes.push({
+                boat_number: fishes[0].boat_number,
+                captain_name: fishes[0].captain_name,
+                comp_name: competition.name,
+                fish_name: fish,
+                weight: fishes[0].weight,
+              });
+            }
           }
         }
 
@@ -920,14 +922,17 @@ export default {
           let fishes = competition.biggest_amounts[fish].sort(
             shared.sortBy("weight", false)
           );
-          if (fishes[0].weight > 0) {
-            all_biggest_amounts.push({
-              boat_number: fishes[0].boat_number,
-              captain_name: fishes[0].captain_name,
-              comp_name: competition.name,
-              fish_name: fish,
-              weight: fishes[0].weight,
-            });
+
+          if (fishes.length) {
+            if (fishes[0].weight > 0) {
+              all_biggest_amounts.push({
+                boat_number: fishes[0].boat_number,
+                captain_name: fishes[0].captain_name,
+                comp_name: competition.name,
+                fish_name: fish,
+                weight: fishes[0].weight,
+              });
+            }
           }
         }
       });
@@ -1473,14 +1478,7 @@ export default {
         }
         doc.text(13, 30, sub_title, { align: "left" });
         doc.setFontSize(8);
-        /*
-        doc.text(
-          100,
-          30,
-          "*Tyhjät rivit = numerolla ei vielä cupissa käytyjä kilpailuja",
-          { align: "center" }
-        );
-        */
+
         columns = ["Kilp. numero", "Kippari", "Varakippari", "Paikkakunta"];
         this.signees = this.cup.signees.sort(
           shared.sortBy("boat_number", true)
@@ -1488,9 +1486,19 @@ export default {
         rows = this.dictToArray(this.signees, 2);
         /* eslint-disable no-unused-vars */
         // Just add some empty rows for new signees
-        let last_number = Number(rows[rows.length - 1][0]) + 1;
-        for (let i of shared.range(last_number, last_number + 6)) {
-          rows.push([" ", "", "", ""]);
+        if (rows.length) {
+          let last_number = Number(rows[rows.length - 1][0]) + 1;
+          for (let i of shared.range(last_number, last_number + 6)) {
+            rows.push([i, "", "", ""]);
+          }
+        } else {
+          // If no signees, just add 20 empty rows
+          for (let i of shared.range(1, 20)) {
+            rows.push([i, "", "", ""]);
+            doc.text(13, 35, "Cupissa ei vielä ilmoittautuneita", {
+              align: "left",
+            });
+          }
         }
         /* eslint-enable no-unused-vars */
         startY = 37;
