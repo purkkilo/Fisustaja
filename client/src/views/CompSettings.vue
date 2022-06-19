@@ -828,8 +828,9 @@
                           <th v-if="!basic_info_validated">Poista?</th>
                         </tr>
                       </thead>
-                      <tbody>
-                        <!-- for every fish in this.fish_specs, show info for that fish -->
+
+                      <!-- for every fish in this.fish_specs, show info for that fish -->
+                      <draggable v-model="inputs" tag="tbody">
                         <tr v-for="(input, index) in inputs" :key="index">
                           <th style="border: 1px solid black" scope="row">
                             <v-text-field
@@ -893,9 +894,23 @@
                             >
                           </td>
                         </tr>
-                      </tbody>
+                      </draggable>
                     </table>
                   </v-col>
+                </v-row>
+                <v-row v-if="!basic_info_validated">
+                  <v-col
+                    ><b>
+                      <p
+                        v-bind:class="{
+                          'white--text': $store.getters.getTheme,
+                        }"
+                      >
+                        Siirrä taulukon riviä hiirellä muuttaaksesi paikkaa
+                        taulukossa
+                      </p></b
+                    ></v-col
+                  >
                 </v-row>
                 <v-row v-if="!basic_info_validated">
                   <v-col>
@@ -971,12 +986,14 @@ import CupService from "../CupService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import Timedate from "@/components/layout/Timedate";
 import constants from "@/constants";
+import draggable from "vuedraggable";
 
 export default {
   name: "CompSettings",
   components: {
     ProgressBarQuery,
     Timedate,
+    draggable,
   },
   data() {
     return {
@@ -1243,8 +1260,9 @@ export default {
         }
       }
     },
-    addInput: function () {
+    addInput() {
       this.inputs.push({
+        index: this.inputs.length,
         name: null,
         multiplier: 1,
         minsize: 0,
@@ -1285,10 +1303,11 @@ export default {
           });
       }
     },
-    setOriginalValues: function () {
+    setOriginalValues() {
       this.inputs = [];
-      this.fish_specs.forEach((fish) => {
+      this.fish_specs.forEach((fish, index) => {
         this.inputs.push({
+          index: index,
           name: fish.name,
           multiplier: parseInt(fish.multiplier),
           minsize: fish.minsize,
@@ -1593,7 +1612,6 @@ export default {
             input.original_minsize = input.minsize;
           }
         });
-
         //Update to database, calculate current standings and points in case multipliers have been changed
         this.competition.fishes = this.fish_specs = this.inputs;
         let normal_results = this.calculateNormalResults(this.competition);

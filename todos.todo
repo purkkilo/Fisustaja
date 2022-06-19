@@ -14,7 +14,6 @@ New:
   ☐ Add tests! Vuetify can also be used for unit testing, add testing
   ☐ Add qr code possibility to signing/weighting (rfid)
   ☐ Add possibility to get weights via usb from weighting thing
-  ☐ Create all fishes category in biggest fishes and biggest amounts
   ☐ Reimplement api for competitions, cups and feedback (like users)
   ☐ Make reusable components out of components that are used in many pages
 
@@ -52,6 +51,7 @@ Done:
   ✔ Implement refreshing access tokens @done(21-11-27 14:44)
   ✔ Replace materialize components with vuetify (toast -> snackbar etc.) @done(21-11-27 14:44)
   ✔ Implement ability to create own point system (custom cup_placement_points_array) @done(22-06-15 01:20)
+  ✔ Create all fishes category in biggest fishes and biggest amounts @done(22-06-17 01:59)
 
 Cancelled:
   ✘ Press Alt+C to mark a todo as cancelled

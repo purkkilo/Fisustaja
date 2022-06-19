@@ -1,12 +1,13 @@
 {
   "name": "fisujs",
-  "version": "0.0.1",
-  "description": "desktop app for fisustaja",
+  "version": "0.2.0",
+  "description": "web app for fisustaja",
   "main": "main.js",
   "scripts": {
     "start": "node server/index.js",
-    "dev": "nodemon server/index.js",
-    "dev-with-frontend": "concurrently \" cd server && nodemon index.js\" \"cd client && npm run serve\""
+    "server": "nodemon server/index.js",
+    "dev": "concurrently \" cd server && nodemon index.js\" \"cd client && npm run serve\"",
+    "build": "cd client && npm run build"
   },
   "author": "Jori Kosonen",
   "license": "ISC",
