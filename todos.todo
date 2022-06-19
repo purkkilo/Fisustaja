@@ -16,7 +16,7 @@ New:
   ☐ Add possibility to get weights via usb from weighting thing
   ☐ Reimplement api for competitions, cups and feedback (like users)
   ☐ Make reusable components out of components that are used in many pages
-
+  ☐ Update to heroku after pushing to git: git push heroku master
 
 
 Done:

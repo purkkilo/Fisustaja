@@ -1,6 +1,9 @@
 {
   "name": "fisujs",
   "version": "0.2.0",
+  "engines": {
+    "node": "16.x"
+  },
   "description": "web app for fisustaja",
   "main": "main.js",
   "scripts": {
