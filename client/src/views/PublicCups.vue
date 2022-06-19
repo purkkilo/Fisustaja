@@ -114,6 +114,11 @@
         (selectedCompetitions) =>
           calculateAll(competitions, selectedCompetitions)
       "
+      @pdfchange="
+        (showInfoInPdf) => {
+          this.showInfoInPdf = showInfoInPdf;
+        }
+      "
       @save="
         (selected) => {
           selectedCompetitions = selected;
@@ -195,6 +200,7 @@ export default {
       text: "",
       timeout: 5000,
       isResults: false,
+      showInfoInPdf: true,
     };
   },
   async mounted() {
@@ -399,12 +405,6 @@ export default {
         console.error(error);
       }
     },
-    getColor(placement) {
-      if (placement > 30) return "red";
-      if (placement > 20) return "orange";
-      else if (placement > 5) return "yellow";
-      else return "green";
-    },
     getCompetitionFinishedColor(isFinished) {
       if (isFinished) return "red";
       else return "primary";
@@ -599,13 +599,15 @@ export default {
         sub_title = `Tilanne ${formatted_date}, ${last_competition.name} (${last_competition.locality}) jälkeen (${unfinished_competitions} kpl kilpailuja kesken)`;
       }
       doc.text(13, 30, sub_title, { align: "left" });
-      doc.text(
-        13,
-        40,
-        table_title +
-          ` (${this.selectedCompetitions}/${this.competitions.length} parasta kilpailua otettu huomioon)`,
-        { align: "left" }
-      );
+      if (this.showInfoInPdf) {
+        doc.text(
+          13,
+          40,
+          table_title +
+            ` (${this.selectedCompetitions}/${this.competitions.length} parasta kilpailua otettu huomioon)`,
+          { align: "left" }
+        );
+      }
       this.headers.forEach((header) => {
         columns.push(header.text);
       });

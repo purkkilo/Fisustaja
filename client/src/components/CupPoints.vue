@@ -32,8 +32,25 @@
             @click="$emit('save', selectedCompetitions)"
             :loading="loading"
           >
-            <v-icon color="red">mdi-file-pdf-outline</v-icon> Lataa pdf
+            <v-icon color="red">mdi-file-pdf-box</v-icon> Lataa pdf
           </v-btn>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col>
+          <v-card
+            :dark="$store.getters.getTheme"
+            style="padding: 5px 5px 0px 20%"
+            elevation="20"
+          >
+            <v-checkbox
+              v-model="showInfoInPdf"
+              label="Näytä pdf:ssä kuinka monta parasta kilpailua otettu huomioon pisteissä"
+              :disabled="!competitions.length"
+              color="indigo darken-3"
+              @change="$emit('pdfchange', showInfoInPdf)"
+            ></v-checkbox>
+          </v-card>
         </v-col>
       </v-row>
       <v-row v-if="results.length && notFinishedCount > 0">
@@ -158,7 +175,7 @@
           </p>
         </v-col>
       </v-row>
-      <v-row v-if="competitions.length && cup">
+      <v-row v-if="competitions.length && cup" style="margin-bottom: 20px">
         <v-col>
           <v-btn
             id="updatebtn"
@@ -208,6 +225,7 @@ export default {
       headerSelection: "Paikkakunta",
       selectedCompetitions: this.competitions.length,
       search: "",
+      showInfoInPdf: true,
     };
   },
   methods: {

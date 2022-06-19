@@ -405,6 +405,11 @@
             (selectedCompetitions) =>
               calculateAll(competitions, selectedCompetitions)
           "
+          @pdfchange="
+            (showInfoInPdf) => {
+              this.showInfoInPdf = showInfoInPdf;
+            }
+          "
           @save="
             (selected) => {
               selectedCompetitions = selected;
@@ -786,6 +791,7 @@ export default {
       text: "",
       timeout: 5000,
       isResults: false,
+      showInfoInPdf: true,
     };
   },
   created() {},
@@ -812,10 +818,10 @@ export default {
         //TODO update only this one variable (competition.normal_points) to database, not the whole competition
         this.$store.state.cup = this.cup;
         this.publishing = true;
-        const newvalues = {
+        const newValues = {
           $set: { isPublic: this.cup.isPublic },
         };
-        await CupService.updateValues(this.cup.id, newvalues);
+        await CupService.updateValues(this.cup._id, newValues);
       } catch (err) {
         console.error(err.message);
       }
@@ -1458,13 +1464,16 @@ export default {
           sub_title = `Tilanne ${formatted_date}, ${last_competition_string}  (${unfinished_competitions} kpl kilpailuja kesken)`;
         }
         doc.text(13, 30, sub_title, { align: "left" });
-        doc.text(
-          13,
-          40,
-          table_title +
-            ` (${this.selectedCompetitions}/${this.competitions.length} parasta kilpailua otettu huomioon)`,
-          { align: "left" }
-        );
+        if (this.showInfoInPdf) {
+          doc.text(
+            13,
+            40,
+            table_title +
+              ` (${this.selectedCompetitions}/${this.competitions.length} parasta kilpailua otettu huomioon)`,
+            { align: "left" }
+          );
+        }
+
         this.headers.forEach((header) => {
           columns.push(header.text);
         });

@@ -1045,7 +1045,7 @@ function* range(start, end) {
 
 function getColor(placement) {
   if (placement === 1) return "yellow";
-  else if (placement > 1 && placement < 10) return "green";
+  else if (placement > 1 && placement <= 10) return "green";
   else return "orange";
 }
 
