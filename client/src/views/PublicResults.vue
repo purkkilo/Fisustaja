@@ -1156,7 +1156,7 @@ export default {
     this.drawCharts = shared.drawCharts;
     this.sortDict = shared.sortDict;
     this.onafterprint = shared.onafterprint;
-    this.onbeforeprint = shared.onbeforeprint;
+    this.onBeforePrint = shared.onBeforePrint;
   },
   async mounted() {
     /* eslint-disable no-unused-vars */
@@ -1199,7 +1199,7 @@ export default {
       this.dialog = false;
       this.saveAllAsPDF(this.tab);
     },
-    changePage: function (route) {
+    changePage(route) {
       if (this.$router.currentRoute.path !== route) {
         this.$router.push(route);
         this.drawer = !this.drawer;
@@ -1221,7 +1221,7 @@ export default {
 
       // Check v-select value, don't allow it to go null because it shows error
       if (!this.selected_biggest_fish) {
-        this.selected_biggest_fish = "Kaikki";
+        this.selected_biggest_fish = "Voittajat";
       }
       if (this.selected_biggest_fish === "Voittajat") {
         this.biggest_fishes_headers = this.winner_headers;
@@ -1296,7 +1296,7 @@ export default {
       let placement = 1;
       this.results_found_amount = "";
       if (!this.selected_biggest_amount) {
-        this.selected_biggest_amount = "Kaikki";
+        this.selected_biggest_amount = "Voittajat";
       }
       if (this.selected_biggest_amount === "Voittajat") {
         this.biggest_amounts_headers = this.winner_headers;
@@ -1479,10 +1479,11 @@ export default {
           this.calculated_fish_weights = this.competition.fishes;
           this.selected_normal = "Pisteet";
           let temp_fish_names = this.$store.getters.getCompetitionFishes;
-          this.fish_names.push("Kaikki");
-          this.fish_amount_names.push("Kaikki");
           this.fish_names.push("Voittajat");
           this.fish_amount_names.push("Voittajat");
+          this.fish_names.push("Kaikki");
+          this.fish_amount_names.push("Kaikki");
+
           temp_fish_names.forEach((fish) => {
             this.fish_names.push(fish.name);
             this.fish_amount_names.push(fish.name);

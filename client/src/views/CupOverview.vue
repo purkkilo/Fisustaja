@@ -1412,12 +1412,7 @@ export default {
     saveAsPDF(table_title) {
       // Format dates for easier reding
       // PDF creation
-      let doc;
-      if (this.competitions.length > 4 && table_title === "Tulokset") {
-        doc = new jsPDF("landscape");
-      } else {
-        doc = new jsPDF();
-      }
+      let doc = new jsPDF({ orientation: "landscape" });
 
       // Title
       const title = `${this.cup.name} (${this.cup.year})`;

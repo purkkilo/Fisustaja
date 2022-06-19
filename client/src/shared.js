@@ -1,5 +1,15 @@
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+
+function addTitle(doc, title, cup, time) {
+  doc.setFontSize(24);
+  doc.text(10, 10, title, { align: "left" });
+  doc.setFontSize(14);
+  doc.text(10, 20, cup, { align: "left" });
+  doc.text(10, 30, time, { align: "left" });
+  doc.line(0, 35, 400, 35);
+}
+
 // Parses dictionary/json to array, for pdf autotables
 function dictToArray(dict, type) {
   const temp_arr = Object.entries(dict);
@@ -71,8 +81,8 @@ function dictToArray(dict, type) {
       values[0] = "(" + String(b_number) + ")";
       values[1] = captain;
       values[2] = temp_captain;
-      values[3] = starting_place;
-      values[4] = locality;
+      values[3] = locality;
+      values[4] = starting_place;
       values[5] = team;
     }
     //Kalalajien info
@@ -147,7 +157,7 @@ function formatDate(start_date) {
 }
 // Convert the charts and the tables to pdf
 function saveAsPDF(competition_type, table_id) {
-  this.onbeforeprint();
+  this.onBeforePrint();
   // Format dates for easier reding
   let temp_start_date = this.formatDate(this.competition.start_date);
   let temp_end_date = this.formatDate(this.competition.end_date);
@@ -155,7 +165,7 @@ function saveAsPDF(competition_type, table_id) {
   let columns;
   let pdf_competition_type;
   // PDF creation
-  let doc = new jsPDF();
+  let doc = new jsPDF({ orientation: "landscape" });
   // Title
   const title = `${this.competition.name}`;
   const date =
@@ -163,12 +173,7 @@ function saveAsPDF(competition_type, table_id) {
       ? String(temp_start_date)
       : `${temp_start_date} - ${temp_end_date}`;
   const time = `${date}, Klo. ${this.competition.start_time} - ${this.competition.end_time}`;
-  doc.setFontSize(24);
-  doc.text(10, 10, title, { align: "left" });
-  doc.setFontSize(14);
-  doc.text(10, 20, this.competition.cup_name, { align: "left" });
-  doc.text(10, 30, time, { align: "left" });
-  doc.line(0, 35, 400, 35);
+  addTitle(doc, title, this.competition.cup_name, time);
   doc.setFontSize(20);
 
   if (table_id === "#normal-table") {
@@ -252,7 +257,10 @@ function saveAsPDF(competition_type, table_id) {
   }
 
   // Table, based on given table_id, and table title based on competition_type
-  doc.text(100, 50, competition_type, { align: "center" });
+  //doc.text(100, 50, competition_type, { align: "left" });
+  doc.text(competition_type, doc.internal.pageSize.getWidth() / 2, 50, {
+    align: "center",
+  });
   doc.autoTable({
     head: [columns],
     body: rows,
@@ -286,12 +294,12 @@ function saveAsPDF(competition_type, table_id) {
 }
 
 function saveStatsAsPDF(competition_type) {
-  this.onbeforeprint();
+  this.onBeforePrint();
   // Format dates for easier reding
   let temp_start_date = this.formatDate(this.competition.start_date);
   let temp_end_date = this.formatDate(this.competition.end_date);
 
-  let doc = new jsPDF();
+  let doc = new jsPDF({ orientation: "landscape" });
 
   // Title
   const title = `${this.competition.name}`;
@@ -300,12 +308,7 @@ function saveStatsAsPDF(competition_type) {
       ? String(temp_start_date)
       : `${temp_start_date} - ${temp_end_date}`;
   const time = `${date}, Klo. ${this.competition.start_time} - ${this.competition.end_time}`;
-  doc.setFontSize(24);
-  doc.text(10, 10, title, { align: "left" });
-  doc.setFontSize(14);
-  doc.text(10, 20, this.competition.cup_name, { align: "left" });
-  doc.text(10, 30, time, { align: "left" });
-  doc.line(0, 35, 400, 35);
+  addTitle(doc, title, this.competition.cup_name, time);
   doc.setFontSize(18);
 
   // "Tilastot"
@@ -316,9 +319,14 @@ function saveStatsAsPDF(competition_type) {
   var signeeImg = document
     .getElementById("signee_chart")
     .toDataURL("image/png", 1.0);
-  doc.addImage(fishesImg, "PNG", -30, 40, 180, 90);
-  doc.addImage(signeeImg, "PNG", 70, 40, 180, 90);
-  doc.text(100, 145, "Kalalajien määritykset", { align: "center" });
+  doc.addImage(fishesImg, "PNG", 0, 40, 180, 90);
+  doc.addImage(signeeImg, "PNG", 140, 40, 180, 90);
+  doc.text(
+    "Kalalajien määritykset",
+    doc.internal.pageSize.getWidth() / 2,
+    145,
+    { align: "center" }
+  );
   // Generate table
   let rows = this.dictToArray(this.calculated_fish_weights, 7);
   let temp =
@@ -347,9 +355,14 @@ function saveStatsAsPDF(competition_type) {
     margin: { top: 20 },
   });
 
-  doc.text(100, doc.autoTable.previous.finalY + 20, "Yleisiä tilastoja", {
-    align: "center",
-  });
+  doc.text(
+    "Yleisiä tilastoja",
+    doc.internal.pageSize.getWidth() / 2,
+    doc.autoTable.previous.finalY + 20,
+    {
+      align: "center",
+    }
+  );
 
   columns = ["", ""];
   rows = [
@@ -403,7 +416,7 @@ function saveStatsAsPDF(competition_type) {
 }
 // Saves all the chosen tables to pdf
 function saveAllAsPDF(tab) {
-  this.onbeforeprint();
+  this.onBeforePrint();
   let current_tab = tab;
   let charts_loaded = true;
   let temp_selected_biggest_fish = this.selected_biggest_fish;
@@ -414,7 +427,7 @@ function saveAllAsPDF(tab) {
   let temp_end_date = this.formatDate(this.competition.end_date);
   let year = this.$moment(this.competition.start_date).year();
 
-  let doc = new jsPDF();
+  let doc = new jsPDF({ orientation: "landscape" });
 
   // Title
   const title = `${this.competition.name}`;
@@ -423,12 +436,7 @@ function saveAllAsPDF(tab) {
       ? String(temp_start_date)
       : `${temp_start_date} - ${temp_end_date}`;
   const time = `${date}, Klo. ${this.competition.start_time} - ${this.competition.end_time}`;
-  doc.setFontSize(24);
-  doc.text(10, 10, title, { align: "left" });
-  doc.setFontSize(14);
-  doc.text(10, 20, this.competition.cup_name, { align: "left" });
-  doc.text(10, 30, time, { align: "left" });
-  doc.line(0, 35, 400, 35);
+  addTitle(doc, title, this.competition.cup_name, time);
   doc.setFontSize(18);
   // start_coord needed to keep track of y coordinates for tables (if there are no results -> no table drawn to pdf -> varying coordinates)
   let start_coord;
@@ -443,11 +451,15 @@ function saveAllAsPDF(tab) {
       columns.push(name);
     });
     columns.push("Tulos");
-
     rows = this.dictToArray(this.normal_weights, 2);
-    doc.text(100, 50, "Normaalikilpailun tulokset (Kalat)", {
-      align: "center",
-    });
+    doc.text(
+      "Normaalikilpailun tulokset (Kalat)",
+      doc.internal.pageSize.getWidth() / 2,
+      50,
+      {
+        align: "center",
+      }
+    );
     // Table generated in code
     doc.autoTable({
       head: [columns],
@@ -471,6 +483,8 @@ function saveAllAsPDF(tab) {
 
     // Other tables are generated in code so no need to wait for rendering to html
     doc.addPage();
+    addTitle(doc, title, this.competition.cup_name, time);
+    doc.setFontSize(18);
     columns = [
       "Sijoitus",
       "Nro.",
@@ -482,9 +496,14 @@ function saveAllAsPDF(tab) {
     ];
     // Format dictionary/json to format that autotable understands (arrays in arrays);
     rows = this.dictToArray(this.normal_points, 1);
-    doc.text(100, 10, "Normaalikilpailun tulokset (Pisteet)", {
-      align: "center",
-    });
+    doc.text(
+      "Normaalikilpailun tulokset (Pisteet)",
+      doc.internal.pageSize.getWidth() / 2,
+      50,
+      {
+        align: "center",
+      }
+    );
     // Table generated in code
     doc.autoTable({
       head: [columns],
@@ -502,8 +521,8 @@ function saveAllAsPDF(tab) {
       theme: "striped",
       pageBreak: "auto",
       tableWidth: "auto",
-      startY: 20,
       margin: { top: 20 },
+      startY: 60,
     });
   }
 
@@ -513,12 +532,7 @@ function saveAllAsPDF(tab) {
     if (this.selected_print.includes("normal")) {
       doc.addPage();
     }
-    doc.setFontSize(24);
-    doc.text(10, 10, title, { align: "left" });
-    doc.setFontSize(14);
-    doc.text(10, 20, this.competition.cup_name, { align: "left" });
-    doc.text(10, 30, time, { align: "left" });
-    doc.line(0, 35, 400, 35);
+    addTitle(doc, title, this.competition.cup_name, time);
     doc.setFontSize(18);
     doc.text(100, 50, "Tiimikilpailun tulokset", { align: "center" });
     // Add results, if there are any
@@ -577,12 +591,7 @@ function saveAllAsPDF(tab) {
       this.biggest_fishes_results.length ||
       this.biggest_amounts_results.length
     ) {
-      doc.setFontSize(24);
-      doc.text(10, 10, title, { align: "left" });
-      doc.setFontSize(14);
-      doc.text(10, 20, this.competition.cup_name, { align: "left" });
-      doc.text(10, 30, time, { align: "left" });
-      doc.line(0, 35, 400, 35);
+      addTitle(doc, title, this.competition.cup_name, time);
       doc.setFontSize(18);
     }
 
@@ -590,9 +599,9 @@ function saveAllAsPDF(tab) {
     if (this.biggest_fishes_results.length) {
       rows = this.dictToArray(this.biggest_fishes_results, 8);
       doc.text(
-        100,
-        50,
         "Suurimmat kalat" + ` (${this.selected_biggest_fish})`,
+        doc.internal.pageSize.getWidth() / 2,
+        50,
         { align: "center" }
       );
       // Table generated in code
@@ -627,9 +636,9 @@ function saveAllAsPDF(tab) {
     if (this.biggest_amounts_results.length) {
       rows = this.dictToArray(this.biggest_amounts_results, 8);
       doc.text(
-        100,
-        start_coord,
         "Suurimmat kalasaaliit" + ` (${this.selected_biggest_fish})`,
+        doc.internal.pageSize.getWidth() / 2,
+        start_coord,
         { align: "center" }
       );
       // Table generated in code
@@ -678,21 +687,21 @@ function saveAllAsPDF(tab) {
         if (counter > 0) {
           doc.addPage();
         }
-        doc.setFontSize(24);
-        doc.text(10, 10, title, { align: "left" });
-        doc.setFontSize(14);
-        doc.text(10, 20, this.competition.cup_name, { align: "left" });
-        doc.text(10, 30, time, { align: "left" });
-        doc.line(0, 35, 400, 35);
+        addTitle(doc, title, this.competition.cup_name, time);
         doc.setFontSize(18);
         start_coord = 50;
 
         columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino"];
         rows = this.dictToArray(this.biggest_fishes_results, 3);
 
-        doc.text(100, start_coord, "Suurimmat kalat" + ` (${name})`, {
-          align: "center",
-        });
+        doc.text(
+          "Suurimmat kalat" + ` (${name})`,
+          doc.internal.pageSize.getWidth() / 2,
+          start_coord,
+          {
+            align: "center",
+          }
+        );
 
         doc.autoTable({
           head: [columns],
@@ -741,19 +750,19 @@ function saveAllAsPDF(tab) {
         if (counter > 0) {
           doc.addPage();
         }
-        doc.setFontSize(24);
-        doc.text(10, 10, title, { align: "left" });
-        doc.setFontSize(14);
-        doc.text(10, 20, this.competition.cup_name, { align: "left" });
-        doc.text(10, 30, time, { align: "left" });
-        doc.line(0, 35, 400, 35);
+        addTitle(doc, title, this.competition.cup_name, time);
         doc.setFontSize(18);
         start_coord = 50;
         columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino"];
         rows = this.dictToArray(this.biggest_amounts[name], 3);
-        doc.text(100, start_coord, "Suurimmat kalasaaliit" + ` (${name})`, {
-          align: "center",
-        });
+        doc.text(
+          "Suurimmat kalasaaliit" + ` (${name})`,
+          doc.internal.pageSize.getWidth() / 2,
+          start_coord,
+          {
+            align: "center",
+          }
+        );
 
         doc.autoTable({
           head: [columns],
@@ -802,12 +811,7 @@ function saveAllAsPDF(tab) {
       this.biggest_fishes_results.length ||
       this.biggest_amounts_results.length
     ) {
-      doc.setFontSize(24);
-      doc.text(10, 10, title, { align: "left" });
-      doc.setFontSize(14);
-      doc.text(10, 20, this.competition.cup_name, { align: "left" });
-      doc.text(10, 30, time, { align: "left" });
-      doc.line(0, 35, 400, 35);
+      addTitle(doc, title, this.competition.cup_name, time);
       doc.setFontSize(18);
     }
 
@@ -815,9 +819,9 @@ function saveAllAsPDF(tab) {
     if (this.biggest_fishes_results.length) {
       rows = this.dictToArray(this.biggest_fishes_results, 4);
       doc.text(
-        100,
-        50,
         "Suurimmat kalat" + ` (${this.selected_biggest_fish})`,
+        doc.internal.pageSize.getWidth() / 2,
+        50,
         { align: "center" }
       );
       // Table generated in code
@@ -852,9 +856,9 @@ function saveAllAsPDF(tab) {
     if (this.biggest_amounts_results.length) {
       rows = this.dictToArray(this.biggest_amounts_results, 4);
       doc.text(
-        100,
-        start_coord,
         "Suurimmat kalasaaliit" + ` (${this.selected_biggest_fish})`,
+        doc.internal.pageSize.getWidth() / 2,
+        start_coord,
         { align: "center" }
       );
       // Table generated in code
@@ -891,12 +895,7 @@ function saveAllAsPDF(tab) {
     ) {
       doc.addPage();
     }
-    doc.setFontSize(24);
-    doc.text(10, 10, title, { align: "left" });
-    doc.setFontSize(14);
-    doc.text(10, 20, this.competition.cup_name, { align: "left" });
-    doc.text(10, 30, time, { align: "left" });
-    doc.line(0, 35, 400, 35);
+    addTitle(doc, title, this.competition.cup_name, time);
     doc.setFontSize(18);
     // "Tilastot"
     // Resize charts to be better looking on a pdf
@@ -907,15 +906,20 @@ function saveAllAsPDF(tab) {
       .getElementById("signee_chart")
       .toDataURL("image/png", 1.0);
     try {
-      doc.addImage(fishesImg, "PNG", -30, 40, 180, 90);
-      doc.addImage(signeeImg, "PNG", 70, 40, 180, 90);
+      doc.addImage(fishesImg, "PNG", 0, 40, 180, 90);
+      doc.addImage(signeeImg, "PNG", 140, 40, 180, 90);
     } catch (err) {
       charts_loaded = false;
       this.tab = "stats";
       // Try again after 1 sec
       setTimeout(() => this.saveAllAsPDF(current_tab), 1000);
     }
-    doc.text(100, 165, "Kalalajien määritykset", { align: "center" });
+    doc.text(
+      "Kalalajien määritykset",
+      doc.internal.pageSize.getWidth() / 2,
+      165,
+      { align: "center" }
+    );
     // Table generated straight from html
     rows = this.dictToArray(this.calculated_fish_weights, 7);
     let temp =
@@ -946,9 +950,14 @@ function saveAllAsPDF(tab) {
       margin: { top: 20 },
     });
 
-    doc.text(100, doc.autoTable.previous.finalY + 20, "Yleisiä tilastoja", {
-      align: "center",
-    });
+    doc.text(
+      "Yleisiä tilastoja",
+      doc.internal.pageSize.getWidth() / 2,
+      doc.autoTable.previous.finalY + 20,
+      {
+        align: "center",
+      }
+    );
     // Generate table
     columns = ["", ""];
     rows = [
@@ -1013,13 +1022,13 @@ function saveAllAsPDF(tab) {
   }
 }
 
-function onbeforeprint() {
+function onBeforePrint() {
   const Chart = require("chart.js");
   for (var id in Chart.instances) {
     let chart = Chart.instances[id];
     // Resize charts to fit pdf nicely
-    chart.canvas.parentNode.style.height = "800px";
-    chart.canvas.parentNode.style.width = "1600px";
+    chart.canvas.parentNode.style.height = "400px";
+    chart.canvas.parentNode.style.width = "800px";
     chart.resize();
   }
 }
@@ -1262,7 +1271,7 @@ function sortBy(field, isAscending) {
 
 export default {
   onafterprint,
-  onbeforeprint,
+  onBeforePrint,
   saveAllAsPDF,
   saveStatsAsPDF,
   saveAsPDF,

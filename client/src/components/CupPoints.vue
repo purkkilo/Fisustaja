@@ -40,7 +40,7 @@
         <v-col>
           <v-card
             :dark="$store.getters.getTheme"
-            style="padding: 5px 5px 0px 20%"
+            style="padding: 5px 5px 0px 20px"
             elevation="20"
           >
             <v-checkbox

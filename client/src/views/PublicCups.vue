@@ -554,12 +554,7 @@ export default {
     async saveAsPDF(table_title) {
       // Format dates for easier reding
       // PDF creation
-      let doc;
-      if (this.competitions.length > 4) {
-        doc = new jsPDF("landscape");
-      } else {
-        doc = new jsPDF();
-      }
+      let doc = new jsPDF({ orientation: "landscape" });
 
       // Title
       const title = `${this.selected_cup.name} (${this.selected_cup.year})`;
