@@ -114,14 +114,11 @@
         (selectedCompetitions) =>
           calculateAll(competitions, selectedCompetitions)
       "
-      @pdfchange="
-        (showInfoInPdf) => {
-          this.showInfoInPdf = showInfoInPdf;
-        }
-      "
       @save="
-        (selected) => {
-          selectedCompetitions = selected;
+        (options) => {
+          selectedCompetitions = options.selectedCompetitions;
+          isLandscape = options.isLandscape;
+          showInfoInPdf = options.showInfoInPdf;
           saveAsPDF(`Tulokset`);
         }
       "
@@ -169,6 +166,8 @@ export default {
   },
   data() {
     return {
+      dialog: false,
+      isLandscape: false,
       cup: null,
       cups: [],
       competitions: [],
@@ -554,7 +553,9 @@ export default {
     async saveAsPDF(table_title) {
       // Format dates for easier reding
       // PDF creation
-      let doc = new jsPDF({ orientation: "landscape" });
+      let doc = new jsPDF({
+        orientation: this.isLandscape ? "landscape" : "portrait",
+      });
 
       // Title
       const title = `${this.selected_cup.name} (${this.selected_cup.year})`;

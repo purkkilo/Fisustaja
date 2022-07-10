@@ -156,7 +156,7 @@ function formatDate(start_date) {
   return formatted_date;
 }
 // Convert the charts and the tables to pdf
-function saveAsPDF(competition_type, table_id) {
+function saveAsPDF(competition_type, table_id, orientation = "portrait") {
   this.onBeforePrint();
   // Format dates for easier reding
   let temp_start_date = this.formatDate(this.competition.start_date);
@@ -165,7 +165,7 @@ function saveAsPDF(competition_type, table_id) {
   let columns;
   let pdf_competition_type;
   // PDF creation
-  let doc = new jsPDF({ orientation: "landscape" });
+  let doc = new jsPDF({ orientation: orientation });
   // Title
   const title = `${this.competition.name}`;
   const date =
@@ -293,13 +293,13 @@ function saveAsPDF(competition_type, table_id) {
   this.onafterprint();
 }
 
-function saveStatsAsPDF(competition_type) {
+function saveStatsAsPDF(competition_type, orientation = "portrait") {
   this.onBeforePrint();
   // Format dates for easier reding
   let temp_start_date = this.formatDate(this.competition.start_date);
   let temp_end_date = this.formatDate(this.competition.end_date);
 
-  let doc = new jsPDF({ orientation: "landscape" });
+  let doc = new jsPDF({ orientation: orientation });
 
   // Title
   const title = `${this.competition.name}`;
@@ -319,8 +319,15 @@ function saveStatsAsPDF(competition_type) {
   var signeeImg = document
     .getElementById("signee_chart")
     .toDataURL("image/png", 1.0);
-  doc.addImage(fishesImg, "PNG", 0, 40, 180, 90);
-  doc.addImage(signeeImg, "PNG", 140, 40, 180, 90);
+
+  if (orientation === "landscape") {
+    doc.addImage(fishesImg, "PNG", 0, 40, 180, 90);
+    doc.addImage(signeeImg, "PNG", 140, 40, 180, 90);
+  } else {
+    doc.addImage(fishesImg, "PNG", -5, 40, 160, 80);
+    doc.addImage(signeeImg, "PNG", 90, 60, 160, 80);
+  }
+
   doc.text(
     "Kalalajien määritykset",
     doc.internal.pageSize.getWidth() / 2,
@@ -415,7 +422,7 @@ function saveStatsAsPDF(competition_type) {
   this.onafterprint();
 }
 // Saves all the chosen tables to pdf
-function saveAllAsPDF(tab) {
+function saveAllAsPDF(tab, orientation = "portrait") {
   this.onBeforePrint();
   let current_tab = tab;
   let charts_loaded = true;
@@ -427,7 +434,7 @@ function saveAllAsPDF(tab) {
   let temp_end_date = this.formatDate(this.competition.end_date);
   let year = this.$moment(this.competition.start_date).year();
 
-  let doc = new jsPDF({ orientation: "landscape" });
+  let doc = new jsPDF({ orientation: orientation });
 
   // Title
   const title = `${this.competition.name}`;
@@ -906,8 +913,13 @@ function saveAllAsPDF(tab) {
       .getElementById("signee_chart")
       .toDataURL("image/png", 1.0);
     try {
-      doc.addImage(fishesImg, "PNG", 0, 40, 180, 90);
-      doc.addImage(signeeImg, "PNG", 140, 40, 180, 90);
+      if (orientation === "landscape") {
+        doc.addImage(fishesImg, "PNG", 0, 40, 180, 90);
+        doc.addImage(signeeImg, "PNG", 140, 40, 180, 90);
+      } else {
+        doc.addImage(fishesImg, "PNG", -5, 40, 160, 80);
+        doc.addImage(signeeImg, "PNG", 90, 60, 160, 80);
+      }
     } catch (err) {
       charts_loaded = false;
       this.tab = "stats";

@@ -9,6 +9,36 @@
     }"
   >
     <v-row>
+      <v-dialog v-model="pdfDialog" width="500">
+        <v-card :dark="$store.getters.getTheme">
+          <v-card-title> Pdf Asetukset </v-card-title>
+          <v-card-text>
+            <v-checkbox
+              label="Pfd Vaakatasossa"
+              v-model="isLandscape"
+            ></v-checkbox>
+          </v-card-text>
+
+          <v-divider></v-divider>
+
+          <v-card-actions>
+            <v-btn color="yellow" text @click="pdfDialog = false">
+              Peruuta
+            </v-btn>
+            <v-spacer></v-spacer>
+            <v-btn
+              color="primary"
+              text
+              @click="
+                pdfDialog = false;
+                pdfWrapper();
+              "
+            >
+              Lataa
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
       <v-col md="3" offset-md="8">
         <v-card
           class="mx-auto"
@@ -122,6 +152,13 @@
                 </v-btn>
               </template>
               <v-card :dark="$store.getters.getTheme">
+                <v-card-text style="margin-top: 20px">
+                  <h1>PDF Asetukset</h1>
+                  <v-checkbox
+                    label="Pfd Vaakatasossa"
+                    v-model="isLandscape"
+                  ></v-checkbox
+                ></v-card-text>
                 <v-card-title>Valitse mitä lataus sisältää</v-card-title>
                 <v-divider></v-divider>
                 <v-card-text style="height: 300px; width: 100%">
@@ -269,7 +306,10 @@
                   outlined
                   :dark="$store.getters.getTheme"
                   :loading="loading_competition"
-                  @click="saveStatsAsPDF(`Tilastoja`)"
+                  @click="
+                    pdf = 'Tilastoja';
+                    pdfDialog = true;
+                  "
                   :disabled="!biggest_amounts_results.length"
                   style="margin-bottom: 20px"
                 >
@@ -542,10 +582,8 @@
                       :dark="$store.getters.getTheme"
                       :loading="loading_competition"
                       @click="
-                        saveAsPDF(
-                          `Normaalikilpailun tulokset (${selected_normal})`,
-                          '#normal-table'
-                        )
+                        pdf = '#normal-table';
+                        pdfDialog = true;
                       "
                     >
                       <v-icon color="red">mdi-file-pdf-box</v-icon>
@@ -666,7 +704,10 @@
                   outlined
                   :dark="$store.getters.getTheme"
                   :loading="loading_competition"
-                  @click="saveAsPDF(`Tiimikilpailun tulokset`, '#team-table')"
+                  @click="
+                    pdf = '#team-table';
+                    pdfDialog = true;
+                  "
                 >
                   <v-icon color="red">mdi-file-pdf-box</v-icon> Lataa pdf
                 </v-btn>
@@ -768,10 +809,8 @@
                   :dark="$store.getters.getTheme"
                   :loading="loading_competition"
                   @click="
-                    saveAsPDF(
-                      `Suurimmat kalat (${selected_biggest_fish})`,
-                      '#biggest-fishes-table'
-                    )
+                    pdf = '#biggest-fishes-table';
+                    pdfDialog = true;
                   "
                 >
                   <v-icon color="red">mdi-file-pdf-box</v-icon> Lataa pdf
@@ -871,10 +910,8 @@
                   :dark="$store.getters.getTheme"
                   :loading="loading_competition"
                   @click="
-                    saveAsPDF(
-                      `Suurimmat kalat (${selected_biggest_amount})`,
-                      '#biggest-amounts-table'
-                    )
+                    pdf = '#biggest-amounts-table';
+                    pdfDialog = true;
                   "
                   :disabled="!biggest_amounts_results.length"
                 >
@@ -1043,6 +1080,9 @@ export default {
   },
   data() {
     return {
+      pdfDialog: false,
+      pdf: null,
+      isLandscape: false,
       competitions: [],
       competition: null,
       selected_competition: null,
@@ -1195,9 +1235,50 @@ export default {
   },
 
   methods: {
+    pdfWrapper() {
+      if (this.pdf === "Tilastoja") {
+        this.saveStatsAsPDF(
+          this.pdf,
+          this.isLandscape ? "landscape" : "portrait"
+        );
+      }
+      if (this.pdf === "#normal-table") {
+        this.saveAsPDF(
+          `Normaalikilpailun tulokset (${this.selected_normal})`,
+          this.pdf,
+          this.isLandscape ? "landscape" : "portrait"
+        );
+      }
+      if (this.pdf === "#team-table") {
+        this.saveAsPDF(
+          `Tiimikilpailun tulokset`,
+          "#team-table",
+          this.isLandscape ? "landscape" : "portrait"
+        );
+      }
+      if (this.pdf === "#biggest-fishes-table") {
+        this.saveAsPDF(
+          `Suurimmat kalat (${this.selected_biggest_fish})`,
+          "#biggest-fishes-table",
+          this.isLandscape ? "landscape" : "portrait"
+        );
+      }
+      if (this.pdf === "#biggest-amounts-table") {
+        this.saveAsPDF(
+          `Suurimmat kalat (${this.selected_biggest_amount})`,
+          "#biggest-amounts-table",
+          this.isLandscape ? "landscape" : "portrait"
+        );
+      }
+    },
     choosePrints() {
       this.dialog = false;
-      this.saveAllAsPDF(this.tab);
+      if (this.selected_print.length) {
+        this.saveAllAsPDF(
+          this.tab,
+          this.isLandscape ? "landscape" : "portrait"
+        );
+      }
     },
     changePage(route) {
       if (this.$router.currentRoute.path !== route) {

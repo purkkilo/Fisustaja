@@ -2,6 +2,27 @@
   <!-- /cup-overview -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container style="width: 70%">
+    <v-dialog v-model="dialog" width="500">
+      <v-card :dark="$store.getters.getTheme">
+        <v-card-title> Pdf Asetukset </v-card-title>
+        <v-card-text>
+          <v-checkbox
+            label="Pfd Vaakatasossa"
+            v-model="isLandscape"
+          ></v-checkbox>
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-btn color="yellow" text @click="dialog = false"> Peruuta </v-btn>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" text @click="saveAsPDF(`Ilmoittautuneet`)">
+            Lataa
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-row class="valign-wrapper">
       <v-col md="3">
         <v-btn
@@ -319,7 +340,7 @@
           </v-col>
           <v-col>
             <v-btn
-              @click="saveAsPDF(`Ilmoittautuneet`)"
+              @click="dialog = true"
               large
               outlined
               :dark="$store.getters.getTheme"
@@ -405,14 +426,11 @@
             (selectedCompetitions) =>
               calculateAll(competitions, selectedCompetitions)
           "
-          @pdfchange="
-            (showInfoInPdf) => {
-              this.showInfoInPdf = showInfoInPdf;
-            }
-          "
           @save="
-            (selected) => {
-              selectedCompetitions = selected;
+            (options) => {
+              selectedCompetitions = options.selectedCompetitions;
+              isLandscape = options.isLandscape;
+              showInfoInPdf = options.showInfoInPdf;
               saveAsPDF(`Tulokset`);
             }
           "
@@ -708,6 +726,8 @@ export default {
   },
   data() {
     return {
+      dialog: false,
+      isLandscape: false,
       dialog_clock: false,
       dialog_signee: {},
       cup: null,
@@ -1412,7 +1432,9 @@ export default {
     saveAsPDF(table_title) {
       // Format dates for easier reding
       // PDF creation
-      let doc = new jsPDF({ orientation: "landscape" });
+      let doc = new jsPDF({
+        orientation: this.isLandscape ? "landscape" : "portrait",
+      });
 
       // Title
       const title = `${this.cup.name} (${this.cup.year})`;
@@ -1535,6 +1557,7 @@ export default {
         " ",
         ""
       )}.pdf`;
+      this.dialog = false;
       shared.openPdfOnNewTab(doc, fileName);
     },
 

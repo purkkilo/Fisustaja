@@ -1,5 +1,44 @@
 <template>
   <v-row>
+    <v-dialog v-model="dialog" width="500">
+      <v-card :dark="$store.getters.getTheme">
+        <v-card-title> Pdf Asetukset </v-card-title>
+        <v-card-text>
+          <v-checkbox
+            label="Pfd Vaakatasossa"
+            v-model="isLandscape"
+            :disabled="!competitions.length"
+          ></v-checkbox>
+          <v-checkbox
+            v-model="showInfoInPdf"
+            label="Näytä pdf:ssä kuinka monta parasta kilpailua otettu huomioon pisteissä"
+            :disabled="!competitions.length"
+            color="indigo darken-3"
+          ></v-checkbox>
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-btn color="yellow" text @click="dialog = false"> Peruuta </v-btn>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="primary"
+            text
+            @click="
+              dialog = false;
+              $emit('save', {
+                selectedCompetitions: selectedCompetitions,
+                isLandscape: isLandscape,
+                showInfoInPdf: showInfoInPdf,
+              });
+            "
+          >
+            Lataa
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-col>
       <v-row v-if="results.length" style="margin-top: 50px; padding-left: 50px">
         <v-col class="d-flex" md="4">
@@ -29,30 +68,14 @@
             large
             outlined
             :dark="$store.getters.getTheme"
-            @click="$emit('save', selectedCompetitions)"
+            @click="dialog = true"
             :loading="loading"
           >
             <v-icon color="red">mdi-file-pdf-box</v-icon> Lataa pdf
           </v-btn>
         </v-col>
       </v-row>
-      <v-row>
-        <v-col>
-          <v-card
-            :dark="$store.getters.getTheme"
-            style="padding: 5px 5px 0px 20px"
-            elevation="20"
-          >
-            <v-checkbox
-              v-model="showInfoInPdf"
-              label="Näytä pdf:ssä kuinka monta parasta kilpailua otettu huomioon pisteissä"
-              :disabled="!competitions.length"
-              color="indigo darken-3"
-              @change="$emit('pdfchange', showInfoInPdf)"
-            ></v-checkbox>
-          </v-card>
-        </v-col>
-      </v-row>
+
       <v-row v-if="results.length && notFinishedCount > 0">
         <v-col>
           <p
@@ -226,6 +249,8 @@ export default {
       selectedCompetitions: this.competitions.length,
       search: "",
       showInfoInPdf: true,
+      isLandscape: false,
+      dialog: false,
     };
   },
   methods: {
