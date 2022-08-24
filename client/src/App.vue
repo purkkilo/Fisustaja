@@ -134,7 +134,13 @@ body {
   display: flex;
   flex-direction: column;
   /*background: url("https://i.imgur.com/uLrR7M1.png");*/
-  background: url("https://i.imgur.com/uLrR7M1.png");
+  background: rgb(2, 0, 36);
+  background: linear-gradient(
+    135deg,
+    rgba(2, 0, 36, 1) 0%,
+    rgba(0, 0, 105, 1) 14%,
+    rgba(0, 212, 255, 1) 100%
+  );
   background-repeat: no-repeat;
   background-attachment: fixed;
   background-size: cover;

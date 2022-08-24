@@ -3,81 +3,43 @@
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container style="width: 70%">
     <v-row>
-      <!-- TODO Cool starting page... -->
+      <v-col align-self="center">
+        <v-row align="center">
+          <v-col>
+            <v-avatar size="200">
+              <img alt="user" src="https://i.imgur.com/2WcI49A.png" />
+            </v-avatar>
+          </v-col>
+        </v-row>
+        <v-row align="center">
+          <v-col>
+            <h1 class="ml-3">Fisustaja</h1>
+            <p class="white--text"></p>
+          </v-col>
+        </v-row>
+      </v-col>
+
       <v-col>
         <v-card
-          style="padding: 30px"
-          v-bind:class="{
-            'container-transparent': !$store.getters.getTheme,
-            'container-transparent-dark': $store.getters.getTheme,
-          }"
+          v-for="(link, i) in links"
+          :key="i"
+          :dark="$store.getters.getTheme"
+          tile
+          outlined
+          style="background: transparent; margin-top: 100px"
         >
-          <v-row>
-            <v-col>
-              <h1 class="ml-3">
-                Fisustaja
-                <v-avatar size="56">
-                  <img alt="user" src="https://i.imgur.com/2WcI49A.png" />
-                </v-avatar>
-              </h1>
-            </v-col>
-          </v-row>
+          <v-card-title
+            >{{ link.text }}<v-spacer></v-spacer>
+            <v-icon x-large right> {{ link.icon }}</v-icon></v-card-title
+          >
 
-          <v-row>
-            <v-col md="6">
-              <v-card :dark="$store.getters.getTheme">
-                <v-img
-                  class="white--text align-end"
-                  height="400px"
-                  src="@/assets/competition.jpg"
-                >
-                  <v-card-title class="strokeme"
-                    ><div style="background-color: 'red'">
-                      Kilpailujen tuloksia
-                    </div></v-card-title
-                  >
-                </v-img>
-                <router-link to="/public-results">
-                  <v-btn
-                    class="ma-2"
-                    color="primary"
-                    :dark="$store.getters.getTheme"
-                    text
-                    outlined
-                    >Tarkastele
-                    <v-icon :dark="$store.getters.getTheme"> mdi-seal </v-icon>
-                  </v-btn>
-                </router-link>
-              </v-card>
-            </v-col>
-            <v-col md="6">
-              <v-card :dark="$store.getters.getTheme">
-                <v-img
-                  class="white--text align-end"
-                  height="400px"
-                  src="@/assets/cup.jpg"
-                >
-                  <v-card-title class="strokeme">Cuppien tuloksia</v-card-title>
-                </v-img>
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <router-link to="/public-cups">
-                    <v-btn
-                      class="ma-2"
-                      color="green darken-4"
-                      dark
-                      text
-                      outlined
-                    >
-                      Tarkastele
-                      <v-icon dark right> mdi-trophy </v-icon>
-                    </v-btn>
-                  </router-link>
-                  <v-spacer></v-spacer>
-                </v-card-actions>
-              </v-card>
-            </v-col>
-          </v-row>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <router-link :to="link.path">
+              <v-btn text outlined> Siirry </v-btn>
+            </router-link>
+            <v-spacer></v-spacer>
+          </v-card-actions>
         </v-card>
       </v-col>
     </v-row>
@@ -95,11 +57,19 @@ export default {
       updateSwitch: this.$store.getters.getTheme,
       items: [
         {
-          text: "Järjestä yksittäisiä kalastuskilpailuja",
-          icon: "military_tech",
+          text: "Cuppien tuloksia",
+          icon: "mdi-trophy",
+          path: "/public-cups",
+          image: "@/assets/cup.jpg",
         },
-        { text: "Hallinnoi cuppia", icon: "emoji_events" },
+        {
+          text: "Kilpailujen tuloksia ",
+          icon: "mdi-seal",
+          path: "/public-results",
+          image: "@/assets/competition.jpg",
+        },
       ],
+      links: [],
     };
   },
   watch: {
@@ -119,10 +89,20 @@ export default {
     localStorage.removeItem("competition");
     this.$store.commit("refreshCup", null);
     localStorage.removeItem("cup");
-
     // Focus on top of the page when changing pages
     location.href = "#";
     location.href = "#app";
+    this.links = this.items;
+    if (this.$store.state.logged_in) {
+      this.links = [
+        ...this.items,
+        {
+          text: "Dashboard",
+          icon: "mdi-view-dashboard",
+          path: "/dashboard",
+        },
+      ];
+    }
   },
   methods: {},
 };
