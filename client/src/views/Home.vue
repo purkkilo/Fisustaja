@@ -70,12 +70,27 @@ export default {
         },
       ],
       links: [],
+      logged_in: false,
     };
   },
   watch: {
     updateSwitch(newValue) {
       //called whenever isDark switch changes
       this.$store.state.isDark = newValue;
+    },
+    "$store.state.logged_in"(newValue) {
+      if (newValue) {
+        this.links = [
+          ...this.items,
+          {
+            text: "Dashboard",
+            icon: "mdi-view-dashboard",
+            path: "/dashboard",
+          },
+        ];
+      } else {
+        this.links = this.items;
+      }
     },
   },
   computed: {
