@@ -506,21 +506,63 @@
                           </v-row>
                           <v-row v-if="!loading">
                             <v-col>
-                              <v-card :dark="$store.getters.getTheme">
-                                <v-card-title
-                                  >Punnituksen yhteenveto</v-card-title
-                                >
-                                <h1>
-                                  Yhteispaino
-                                  {{ getBoatTotalWeights().toLocaleString() }}g
-                                </h1>
-                                <h1>
-                                  Yhteispisteet
-                                  {{ getBoatTotalPoints().toLocaleString() }}p
-                                </h1>
-                                <h1>
-                                  {{ getBoatPlacing() }}
-                                </h1>
+                              <v-card
+                                :dark="$store.getters.getTheme"
+                                outlined
+                                tile
+                              >
+                                <v-card-title>Yhteenveto</v-card-title>
+                                <v-list>
+                                  <v-list-item>
+                                    <v-list-item-icon>
+                                      <v-icon>mdi-weight-gram</v-icon>
+                                    </v-list-item-icon>
+                                    <v-list-item-content>
+                                      <v-list-item-title>
+                                        <h3>
+                                          {{
+                                            getBoatTotalWeights().toLocaleString()
+                                          }}
+                                          g
+                                        </h3>
+                                      </v-list-item-title>
+                                      <v-list-item-subtitle>
+                                        Yhteispaino
+                                      </v-list-item-subtitle>
+                                    </v-list-item-content>
+                                  </v-list-item>
+                                  <v-list-item>
+                                    <v-list-item-icon>
+                                      <v-icon>mdi-counter</v-icon>
+                                    </v-list-item-icon>
+                                    <v-list-item-content>
+                                      <v-list-item-title>
+                                        <h3>
+                                          {{
+                                            getBoatTotalPoints().toLocaleString()
+                                          }}
+                                          p
+                                        </h3>
+                                      </v-list-item-title>
+                                      <v-list-item-subtitle>
+                                        Yhteispisteet
+                                      </v-list-item-subtitle>
+                                    </v-list-item-content>
+                                  </v-list-item>
+                                  <v-list-item>
+                                    <v-list-item-icon>
+                                      <v-icon>mdi-pound-box</v-icon>
+                                    </v-list-item-icon>
+                                    <v-list-item-content>
+                                      <v-list-item-title>
+                                        <h3>#{{ getBoatPlacing() }}</h3>
+                                      </v-list-item-title>
+                                      <v-list-item-subtitle>
+                                        Sijoitus
+                                      </v-list-item-subtitle>
+                                    </v-list-item-content>
+                                  </v-list-item>
+                                </v-list>
                               </v-card>
                             </v-col>
                           </v-row>
@@ -983,7 +1025,7 @@ export default {
     },
     getBoatPlacing() {
       if (this.sortedCompetition.length === 0) {
-        return "Ei vielä tuloksia";
+        return 1;
       }
       let points = this.getBoatTotalPoints();
       let index = this.bisect(points, this.sortedCompetition);
@@ -1003,7 +1045,7 @@ export default {
           return true;
         });
       }
-      return "Sijoitus #" + placement;
+      return placement;
     },
     bisect(value, array) {
       let idx;
