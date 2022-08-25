@@ -1,7 +1,7 @@
 <template>
   <!-- Main file for the application -->
   <!-- html and js autoinjects to here (on index.html in server) -->
-  <v-app id="app" style="background: rgba(0, 0, 0, 0.1)">
+  <v-app id="app" style="background: rgba(0, 0, 0, 0)">
     <!-- Sizes your content based upon application components -->
     <v-main>
       <!-- If using vue-router -->

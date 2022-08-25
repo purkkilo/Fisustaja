@@ -1,152 +1,133 @@
 <template>
   <!-- /cup-overview -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <v-container
-    style="margin-top: 70px; margin-bottom: 5px; width: 70%"
-    v-bind:class="{
-      'container-transparent': !$store.getters.getTheme,
-      'container-transparent-dark': $store.getters.getTheme,
-    }"
-  >
-    <v-row>
-      <v-col md="3" offset-md="8">
-        <v-card
-          class="mx-auto"
-          max-width="400"
-          tile
-          :dark="$store.getters.getTheme"
-        >
-          <v-list dense>
-            <p>Navigointi</p>
-            <v-list-item-group v-model="selectedItem" color="primary">
-              <v-list-item
-                v-for="(item, i) in items"
-                :key="i"
-                @click="changePage(item.path)"
-                :disabled="item.disabled"
-              >
-                <v-list-item-icon>
-                  <v-icon v-text="item.icon"></v-icon>
-                </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title v-text="item.text"></v-list-item-title>
-                </v-list-item-content>
-              </v-list-item>
-            </v-list-item-group>
-          </v-list>
-        </v-card>
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col md="6" offset-md="3">
-        <h1>Cuppien tuloksia</h1>
-      </v-col>
-    </v-row>
-    <v-row v-if="cups.length" class="scroll_table">
-      <v-col md="4" offset-md="4">
-        <!-- TODO add v-autocompelete, but so that it popsup the keyboad on mobile only when pressing search button? -->
-        <v-select
-          :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
-          :dark="$store.getters.getTheme"
-          v-model="selected_cup"
-          :items="cups"
-          item-text="select"
-          item-value="_id"
-          label="Valitse näytettävä Cup"
-          outlined
-          @input="pickCup"
-          return-object
-          single-line
-        ></v-select>
-      </v-col>
-    </v-row>
-    <v-row v-else>
-      <v-col v-if="!loading">
-        <h2
-          v-bind:class="{
-            'white--text': $store.getters.getTheme,
-          }"
-        >
-          Haetaan cuppeja...
-        </h2>
-        <ProgressBarQuery />
-      </v-col>
-      <v-col v-else>
-        <h2
-          v-bind:class="{
-            'white--text': $store.getters.getTheme,
-          }"
-        >
-          Ei cuppeja saatavilla :(
-        </h2>
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col>
-        <v-btn
-          large
-          tile
-          color="yellow"
-          @click="
-            selected_cup = null;
-            competitions = [];
-            results = [];
+  <div>
+    <PublicNavigation></PublicNavigation>
+    <v-container
+      v-bind:class="{
+        mobile: $vuetify.breakpoint.width < 800,
+        browser: $vuetify.breakpoint.width >= 800,
+        wide: $vuetify.breakpoint.width >= 1200,
+      }"
+    >
+      <v-card
+        style="background: transparent"
+        elevation="10"
+        outlined
+        :dark="$store.getters.getTheme"
+      >
+        <v-row>
+          <v-col md="6" offset-md="3">
+            <h1>Cuppien tuloksia</h1>
+          </v-col>
+        </v-row>
+        <v-row v-if="cups.length" class="scroll_table">
+          <v-col md="4" offset-md="4">
+            <!-- TODO add v-autocompelete, but so that it popsup the keyboad on mobile only when pressing search button? -->
+            <v-select
+              :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
+              :dark="$store.getters.getTheme"
+              v-model="selected_cup"
+              :items="cups"
+              item-text="select"
+              item-value="_id"
+              label="Valitse näytettävä Cup"
+              outlined
+              @input="pickCup"
+              return-object
+              single-line
+            ></v-select>
+          </v-col>
+        </v-row>
+        <v-row v-else>
+          <v-col v-if="!loading">
+            <h2
+              v-bind:class="{
+                'white--text': $store.getters.getTheme,
+              }"
+            >
+              Haetaan cuppeja...
+            </h2>
+            <ProgressBarQuery />
+          </v-col>
+          <v-col v-else>
+            <h2
+              v-bind:class="{
+                'white--text': $store.getters.getTheme,
+              }"
+            >
+              Ei cuppeja saatavilla :(
+            </h2>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col>
+            <v-btn
+              large
+              outlined
+              color="yellow"
+              @click="
+                selected_cup = null;
+                competitions = [];
+                results = [];
+              "
+              :disabled="!selected_cup"
+            >
+              <v-icon>mdi-cancel</v-icon>Peruuta valinta
+            </v-btn>
+          </v-col>
+        </v-row>
+        <cup-points
+          v-if="selected_cup && !loading"
+          :competitions="competitions"
+          :headers="headers"
+          :cup="selected_cup"
+          :isResults="isResults"
+          :loading="loading"
+          :notFinishedCount="notFinishedCount"
+          :results="results"
+          :selectNumbers="selectNumbers"
+          @change="(selection) => changeHeaders(selection)"
+          @refresh="(cup) => refreshCup(cup)"
+          @calculate="
+            (selectedCompetitions) =>
+              calculateAll(competitions, selectedCompetitions)
           "
-          :disabled="!selected_cup"
-        >
-          <v-icon>mdi-cancel</v-icon>Peruuta valinta
-        </v-btn>
-      </v-col>
-    </v-row>
-    <cup-points
-      v-if="selected_cup && !loading"
-      :competitions="competitions"
-      :headers="headers"
-      :cup="selected_cup"
-      :isResults="isResults"
-      :loading="loading"
-      :notFinishedCount="notFinishedCount"
-      :results="results"
-      :selectNumbers="selectNumbers"
-      @change="(selection) => changeHeaders(selection)"
-      @refresh="(cup) => refreshCup(cup)"
-      @calculate="
-        (selectedCompetitions) =>
-          calculateAll(competitions, selectedCompetitions)
-      "
-      @save="
-        (options) => {
-          selectedCompetitions = options.selectedCompetitions;
-          isLandscape = options.isLandscape;
-          showInfoInPdf = options.showInfoInPdf;
-          saveAsPDF(`Tulokset`);
-        }
-      "
-    ></cup-points>
-    <v-row v-if="loading" style="margin: 20px">
-      <v-row>
-        <v-col>
-          <h2
-            v-bind:class="{
-              'white--text': $store.getters.getTheme,
-            }"
-          >
-            Haetaan cupin kilpailuja...
-          </h2>
-          <ProgressBarQuery />
-        </v-col>
-      </v-row>
-    </v-row>
-    <v-snackbar v-model="snackbar" :timeout="timeout">
-      {{ text }}
+          @save="
+            (options) => {
+              selectedCompetitions = options.selectedCompetitions;
+              isLandscape = options.isLandscape;
+              showInfoInPdf = options.showInfoInPdf;
+              saveAsPDF(`Tulokset`);
+            }
+          "
+        ></cup-points>
+        <v-row v-if="loading" style="margin: 20px">
+          <v-row>
+            <v-col>
+              <h2
+                v-bind:class="{
+                  'white--text': $store.getters.getTheme,
+                }"
+              >
+                Haetaan cupin kilpailuja...
+              </h2>
+              <ProgressBarQuery />
+            </v-col>
+          </v-row>
+        </v-row>
+        <v-snackbar v-model="snackbar" :timeout="timeout">
+          {{ text }}
 
-      <template v-slot:action="{ attrs }">
-        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
-          Close
-        </v-btn>
-      </template>
-    </v-snackbar>
-  </v-container>
+          <template v-slot:action="{ attrs }">
+            <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
+              Close
+            </v-btn>
+          </template>
+        </v-snackbar>
+      </v-card>
+    </v-container>
+  </div>
 </template>
 <script>
 "use strict";
@@ -156,6 +137,7 @@ import CompetitionService from "../CompetitionService";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
+import PublicNavigation from "../components/layout/PublicNavigation.vue";
 import CupPoints from "../components/CupPoints.vue";
 
 export default {
@@ -163,6 +145,7 @@ export default {
   components: {
     ProgressBarQuery,
     CupPoints,
+    PublicNavigation,
   },
   data() {
     return {

@@ -1,88 +1,89 @@
 <template>
   <!-- /login -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <v-container>
-    <v-row>
-      <v-col>
-        <v-card
-          max-width="800px"
-          style="padding: 30px; margin: auto"
-          :dark="$store.getters.getTheme"
-          v-bind:class="{
-            'container-transparent': !$store.getters.getTheme,
-            'container-transparent-dark': $store.getters.getTheme,
-          }"
-        >
-          <!-- if there are errors, show this div -->
-          <v-card
-            :dark="$store.getters.getTheme"
-            id="errordiv"
-            elevation="20"
-            v-if="errors.length"
-          >
-            <v-alert type="error"> Korjaa seuraavat virheet: </v-alert>
-            <v-list>
-              <v-list-item v-for="(error, index) in errors" v-bind:key="index">
-                <v-list-item-icon>
-                  <v-icon color="red">mdi-alert-circle</v-icon>
-                </v-list-item-icon>
+  <v-container
+    v-bind:class="{
+      mobile: $vuetify.breakpoint.width < 800,
+      browser: $vuetify.breakpoint.width >= 800,
+      wide: $vuetify.breakpoint.width >= 1200,
+    }"
+  >
+    <v-card
+      style="background: transparent; padding: 20px"
+      elevation="10"
+      outlined
+      :dark="$store.getters.getTheme"
+    >
+      <!-- if there are errors, show this div -->
+      <v-card
+        :dark="$store.getters.getTheme"
+        id="errordiv"
+        elevation="20"
+        v-if="errors.length"
+      >
+        <v-alert type="error"> Korjaa seuraavat virheet: </v-alert>
+        <v-list>
+          <v-list-item v-for="(error, index) in errors" v-bind:key="index">
+            <v-list-item-icon>
+              <v-icon color="red">mdi-alert-circle</v-icon>
+            </v-list-item-icon>
 
-                <v-list-item-content>
-                  <v-list-item-title>{{ error }}</v-list-item-title>
-                </v-list-item-content>
-              </v-list-item>
-            </v-list>
-          </v-card>
-          <h1 style="margin: 50px">Login</h1>
-          <form>
-            <v-row>
-              <v-col md="8" offset-md="2" class="input-fields">
-                <v-text-field
-                  :dark="$store.getters.getTheme"
-                  id="name"
-                  label="Käyttäjänimi"
-                  v-model="name"
-                  maxlength="40"
-                  :loading="loading"
-                  :counter="40"
-                />
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col md="8" offset-md="2" class="input-fields">
-                <v-text-field
-                  :dark="$store.getters.getTheme"
-                  label="Salasana"
-                  id="password"
-                  v-model="password"
-                  type="password"
-                  maxlength="40"
-                  :loading="loading"
-                  :counter="40"
-                />
-              </v-col>
-            </v-row>
-            <v-row v-if="loading">
-              <ProgressBarQuery style="margin-bottom: 20px" />
-            </v-row>
-            <v-row v-else>
-              <v-col>
-                <v-btn
-                  id="sbtn"
-                  large
-                  tile
-                  color="blue darken-4"
-                  class="white--text"
-                  @click="handleSubmit"
-                >
-                  <v-icon>mdi-login</v-icon>Kirjaudu
-                </v-btn>
-              </v-col>
-            </v-row>
-          </form>
-        </v-card>
-      </v-col>
-    </v-row>
+            <v-list-item-content>
+              <v-list-item-title>{{ error }}</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </v-card>
+      <h1 style="margin: 50px">Login</h1>
+      <form>
+        <v-row>
+          <v-col md="8" offset-md="2" class="input-fields">
+            <v-text-field
+              :dark="$store.getters.getTheme"
+              id="name"
+              label="Käyttäjänimi"
+              v-model="name"
+              maxlength="40"
+              :loading="loading"
+              :counter="40"
+            />
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col md="8" offset-md="2" class="input-fields">
+            <v-text-field
+              :dark="$store.getters.getTheme"
+              label="Salasana"
+              id="password"
+              v-model="password"
+              type="password"
+              maxlength="40"
+              :loading="loading"
+              :counter="40"
+            />
+          </v-col>
+        </v-row>
+        <v-row v-if="loading">
+          <ProgressBarQuery style="margin-bottom: 20px" />
+        </v-row>
+        <v-row v-else>
+          <v-col>
+            <v-btn
+              id="sbtn"
+              large
+              tile
+              outlined
+              color="white"
+              class="white--text"
+              @click="handleSubmit"
+            >
+              <v-icon>mdi-login</v-icon>Kirjaudu
+            </v-btn>
+          </v-col>
+        </v-row>
+      </form>
+    </v-card>
+
     <v-snackbar v-model="snackbar" :timeout="timeout">
       {{ text }}
 

@@ -1,7 +1,13 @@
 <template>
   <!-- /admin -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <v-container style="width: 70%">
+  <v-container
+    v-bind:class="{
+      mobile: $vuetify.breakpoint.width < 800,
+      browser: $vuetify.breakpoint.width >= 800,
+      wide: $vuetify.breakpoint.width >= 1200,
+    }"
+  >
     <!-- Tabs -->
     <v-tabs
       v-model="tab"

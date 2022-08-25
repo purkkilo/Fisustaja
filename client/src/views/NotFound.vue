@@ -1,24 +1,31 @@
 <template>
   <v-container
-    style="margin-top: 70px"
     v-bind:class="{
-      'container-transparent': !$store.getters.getTheme,
-      'container-transparent-dark': $store.getters.getTheme,
+      mobile: $vuetify.breakpoint.width < 800,
+      browser: $vuetify.breakpoint.width >= 800,
+      wide: $vuetify.breakpoint.width >= 1200,
     }"
   >
-    <v-row>
-      <v-col md="12">
-        <h1 class="text-center">Page not found :thinking:</h1>
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col class="text-center">
-        <h3>Takaisin kotisivulle</h3>
-        <v-btn outlined color="red" @click="$router.push({ path: '/' })"
-          ><v-icon>mdi-home</v-icon></v-btn
-        >
-      </v-col>
-    </v-row>
+    <v-card
+      style="background: transparent; padding: 20px"
+      elevation="10"
+      outlined
+      :dark="$store.getters.getTheme"
+    >
+      <v-row>
+        <v-col md="12">
+          <h1 class="text-center">Sivua ei löytynyt</h1>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col class="text-center">
+          <h3>Takaisin kotisivulle</h3>
+          <v-btn outlined color="red" @click="$router.push({ path: '/' })"
+            ><v-icon>mdi-home</v-icon></v-btn
+          >
+        </v-col>
+      </v-row>
+    </v-card>
   </v-container>
 </template>
 

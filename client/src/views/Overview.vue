@@ -2,36 +2,22 @@
   <!-- /overview -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <div>
-    <v-navigation-drawer permanent>
-      <v-card
-        class="mx-auto"
-        max-width="400"
-        tile
-        :dark="$store.getters.getTheme"
-      >
-        <v-list dense>
-          <p>Navigointi</p>
-          <v-list-item-group v-model="selectedItem" color="primary">
-            <v-divider></v-divider>
-            <div v-for="(item, i) in items" :key="i">
-              <v-list-item
-                @click="changePage(item.path)"
-                :disabled="$router.currentRoute.path === item.path"
-              >
-                <v-list-item-icon>
-                  <v-icon v-text="item.icon"></v-icon>
-                </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title v-text="item.text"></v-list-item-title>
-                </v-list-item-content>
-              </v-list-item>
-              <v-divider></v-divider>
-            </div>
-          </v-list-item-group>
-        </v-list>
-      </v-card>
-    </v-navigation-drawer>
-    <v-container style="width: 70%">
+    <v-row>
+      <v-col>
+        <CompetitionNavigation></CompetitionNavigation>
+      </v-col>
+      <v-col>
+        <Timedate />
+      </v-col>
+    </v-row>
+
+    <v-container
+      v-bind:class="{
+        mobile: $vuetify.breakpoint.width < 800,
+        browser: $vuetify.breakpoint.width >= 800,
+        wide: $vuetify.breakpoint.width >= 1200,
+      }"
+    >
       <v-card
         :dark="$store.getters.getTheme"
         id="errordiv"
@@ -52,58 +38,20 @@
         </v-list>
       </v-card>
       <v-card
-        :dark="$store.getters.getTheme"
         v-if="!loading"
-        v-bind:class="{
-          'container-transparent': !$store.getters.getTheme,
-          'container-transparent-dark': $store.getters.getTheme,
-        }"
+        style="background: transparent"
+        elevation="10"
+        outlined
+        :dark="$store.getters.getTheme"
       >
-        <v-row>
-          <v-col md="6" offset-md="3">
+        <v-row align="center">
+          <v-col>
             <h1 style="margin: 30px">Yleisnäkymä</h1>
-          </v-col>
-          <v-col md="3">
-            <div class="text-center">
-              <v-dialog v-model="dialog">
-                <template v-slot:activator="{ on, attrs }">
-                  <p
-                    style="margin: 10px"
-                    v-bind:class="{
-                      'black-text': !$store.getters.getTheme,
-                      'white-text': $store.getters.getTheme,
-                    }"
-                  >
-                    Kello/Kilpailuaika
-                  </p>
-                  <v-btn
-                    text
-                    outlined
-                    color="red darken-4"
-                    dark
-                    v-bind="attrs"
-                    v-on="on"
-                  >
-                    <v-icon>mdi-timer</v-icon>
-                  </v-btn>
-                </template>
-
-                <v-card :dark="$store.getters.getTheme" width="600px">
-                  <Timedate />
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn color="primary" outlined @click="dialog = false">
-                      Sulje
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-            </div>
           </v-col>
         </v-row>
 
-        <v-row style="margin-bottom: 10px">
-          <v-col md="8" offset-md="2">
+        <v-row>
+          <v-col>
             <v-card :dark="$store.getters.getTheme" elevation="20" outlined>
               <v-card-title class="text-center"
                 ><p class="display-1">
@@ -231,26 +179,28 @@
         </v-row>
       </v-card>
       <div v-else>
-        <h2>Valmistellaan kilpailua...</h2>
-        <ProgressBarQuery />
+        <v-row>
+          <v-col>
+            <v-card
+              style="background: transparent; text-align: center"
+              elevation="2"
+              outlined
+              :dark="$store.getters.getTheme"
+            >
+              <h1 class="text-center">Valmistellaan kilpailua...</h1>
+              <ProgressBarQuery />
+            </v-card>
+          </v-col>
+        </v-row>
       </div>
     </v-container>
-    <v-snackbar v-model="snackbar" :timeout="timeout">
-      {{ text }}
-
-      <template v-slot:action="{ attrs }">
-        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
-          Close
-        </v-btn>
-      </template>
-    </v-snackbar>
   </div>
 </template>
 <script>
 "use strict";
 import CompetitionService from "../CompetitionService";
 import Timedate from "../components/layout/Timedate";
-
+import CompetitionNavigation from "../components/layout/CompetitionNavigation.vue";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 
 export default {
@@ -258,6 +208,7 @@ export default {
   components: {
     Timedate,
     ProgressBarQuery,
+    CompetitionNavigation,
   },
   data() {
     return {
@@ -297,9 +248,6 @@ export default {
           path: "/results",
         },
       ],
-      snackbar: false,
-      text: "",
-      timeout: 5000,
     };
   },
   created() {
@@ -328,15 +276,6 @@ export default {
     }
   },
   methods: {
-    changePage: function (route) {
-      if (this.$router.currentRoute.path !== route) {
-        this.$router.push(route);
-        this.drawer = !this.drawer;
-      } else {
-        this.text = "Olet jo tällä sivulla!";
-        this.snackbar = true;
-      }
-    },
     // fetch/update competition from database
     async refreshCompetition(competition_id) {
       this.loading = true;

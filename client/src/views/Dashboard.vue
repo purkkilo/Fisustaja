@@ -1,72 +1,80 @@
 <template>
   <!-- /dashboard-->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <v-container style="width: 70%">
-    <v-row
-      v-bind:class="{
-        'container-transparent': !$store.getters.getTheme,
-        'container-transparent-dark': $store.getters.getTheme,
-      }"
+  <v-container
+    v-bind:class="{
+      mobile: $vuetify.breakpoint.width < 800,
+      browser: $vuetify.breakpoint.width >= 800,
+      wide: $vuetify.breakpoint.width >= 1200,
+    }"
+  >
+    <v-card
+      style="background: transparent; padding: 20px"
+      elevation="10"
+      outlined
+      :dark="$store.getters.getTheme"
     >
-      <v-col>
-        <v-row>
-          <v-col>
-            <h1>Dashboard</h1>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col>
-            <!-- if user is found on localstorage (this.user is not null/false) -->
-            <div v-if="user">
-              <p
-                class="flow-text"
-                v-bind:class="{
-                  'white--text': $store.getters.getTheme,
-                }"
-              >
-                <b>{{ user.name }}</b>
-              </p>
-              <p
-                class="flow-text"
-                v-bind:class="{
-                  'white--text': $store.getters.getTheme,
-                }"
-              >
-                <b>{{ user.email }}</b>
-              </p>
-              <p
-                class="flow-text"
-                v-bind:class="{
-                  'white--text': $store.getters.getTheme,
-                }"
-              >
-                <b>Tili luotu: {{ created }}</b>
-              </p>
-            </div>
+      <v-row>
+        <v-col>
+          <v-row>
+            <v-col>
+              <h1>Dashboard</h1>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col>
+              <!-- if user is found on localstorage (this.user is not null/false) -->
+              <div v-if="user">
+                <p
+                  class="flow-text"
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  <b>{{ user.name }}</b>
+                </p>
+                <p
+                  class="flow-text"
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  <b>{{ user.email }}</b>
+                </p>
+                <p
+                  class="flow-text"
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  <b>Tili luotu: {{ created }}</b>
+                </p>
+              </div>
 
-            <v-divider></v-divider>
+              <v-divider></v-divider>
 
-            <v-row>
-              <v-col md="6" style="margin-top: 20px">
-                <router-link to="/register-comp">
-                  <v-btn large tile color="blue lighten-1"
-                    ><v-icon>mdi-plus-circle</v-icon>Uusi kilpailu</v-btn
-                  >
-                </router-link>
-              </v-col>
+              <v-row>
+                <v-col md="6" style="margin-top: 20px">
+                  <router-link to="/register-comp">
+                    <v-btn large tile outlined color="blue lighten-1"
+                      ><v-icon>mdi-plus-circle</v-icon>Uusi kilpailu</v-btn
+                    >
+                  </router-link>
+                </v-col>
 
-              <v-col md="6" style="margin-top: 20px">
-                <router-link to="/continue">
-                  <v-btn large tile color="green lighten-1"
-                    ><v-icon>mdi-play-circle</v-icon>Jatka kilpailua</v-btn
-                  >
-                </router-link>
-              </v-col>
-            </v-row>
-          </v-col>
-        </v-row>
-      </v-col>
-    </v-row>
+                <v-col md="6" style="margin-top: 20px">
+                  <router-link to="/continue">
+                    <v-btn large tile outlined color="green lighten-1"
+                      ><v-icon>mdi-play-circle</v-icon>Jatka kilpailua</v-btn
+                    >
+                  </router-link>
+                </v-col>
+              </v-row>
+            </v-col>
+          </v-row>
+        </v-col>
+      </v-row>
+    </v-card>
   </v-container>
 </template>
 

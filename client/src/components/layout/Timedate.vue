@@ -1,38 +1,55 @@
 <template>
-  <div style="padding: 30px; overflow: hidden">
-    <v-row>
-      <v-col>
-        <h3 id="comp-state">Pvm. {{ date }}</h3>
-      </v-col>
-      <v-col>
-        <h3 id="clock">Klo. {{ clock }}</h3>
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col>
-        <v-card outlined>
-          <v-row>
-            <v-col cols="12" xs="6" sm="6" md="3" offset-md="2">
-              <h4
-                :class="
-                  competition_state === 'Kilpailu päättynyt!'
-                    ? 'red--text'
-                    : 'green--text'
-                "
-                id="date"
-              >
-                {{ competition_state }}
-              </h4>
-            </v-col>
-            <v-col cols="12" xs="6" sm="6" md="6">
-              <h4 class="green-text" id="comp-left" v-if="competitionChosen">
-                {{ timer_string }}
-              </h4>
-            </v-col>
-          </v-row>
-        </v-card>
-      </v-col>
-    </v-row>
+  <div style="padding: 15px">
+    <v-card
+      style="background: transparent"
+      elevation="5"
+      outlined
+      :dark="$store.getters.getTheme"
+    >
+      <v-row>
+        <v-col>
+          <h2 class="white--text" id="comp-state">Pvm. {{ date }}</h2>
+        </v-col>
+        <v-col>
+          <h2 class="white--text" id="clock">Klo. {{ clock }}</h2>
+        </v-col>
+      </v-row>
+    </v-card>
+
+    <v-card
+      style="background: transparent"
+      elevation="5"
+      outlined
+      :dark="$store.getters.getTheme"
+    >
+      <v-row align="center">
+        <v-col cols="12" xs="6" sm="6" md="3" offset-md="2">
+          <h3
+            :class="
+              competition_state === 'Kilpailu päättynyt!'
+                ? 'red--text'
+                : 'green--text'
+            "
+            id="date"
+          >
+            {{ competition_state }}
+          </h3>
+        </v-col>
+        <v-col cols="12" xs="6" sm="6" md="6">
+          <h2
+            :class="
+              competition_state === 'Kilpailu päättynyt!'
+                ? 'red--text'
+                : 'green--text'
+            "
+            id="comp-left"
+            v-if="competitionChosen"
+          >
+            {{ timer_string }}
+          </h2>
+        </v-col>
+      </v-row>
+    </v-card>
   </div>
 </template>
 

@@ -2,852 +2,777 @@
   <!-- /weighting -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <div>
-    <v-navigation-drawer permanent>
+    <v-row>
+      <v-col>
+        <CompetitionNavigation></CompetitionNavigation>
+      </v-col>
+      <v-col>
+        <Timedate />
+      </v-col>
+    </v-row>
+
+    <v-container
+      v-bind:class="{
+        mobile: $vuetify.breakpoint.width < 800,
+        browser: $vuetify.breakpoint.width >= 800,
+        wide: $vuetify.breakpoint.width >= 1200,
+      }"
+    >
       <v-card
-        class="mx-auto"
-        max-width="400"
-        tile
+        style="background: transparent"
+        elevation="10"
+        outlined
         :dark="$store.getters.getTheme"
       >
-        <v-list dense>
-          <p>Navigointi</p>
-          <v-list-item-group v-model="selectedItem" color="primary">
-            <v-divider></v-divider>
-            <div v-for="(item, i) in items" :key="i">
-              <v-list-item
-                @click="changePage(item.path)"
-                :disabled="$router.currentRoute.path === item.path"
-              >
-                <v-list-item-icon>
-                  <v-icon v-text="item.icon"></v-icon>
-                </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title v-text="item.text"></v-list-item-title>
-                </v-list-item-content>
-              </v-list-item>
-              <v-divider></v-divider>
-            </div>
-          </v-list-item-group>
-        </v-list>
+        <v-row>
+          <v-col cols="12" xs="12" sm="12" md="12">
+            <v-row justfify="center">
+              <v-col>
+                <h1 style="margin: 30px">Punnitus</h1>
+              </v-col>
+            </v-row>
+          </v-col>
+        </v-row>
       </v-card>
-    </v-navigation-drawer>
-    <v-container style="width: 70%">
-      <div
-        v-bind:class="{
-          'container-transparent': !$store.getters.getTheme,
-          'container-transparent-dark': $store.getters.getTheme,
-        }"
+
+      <!-- Tabs -->
+      <v-tabs
+        v-model="tab"
+        background-color="blue lighten-2"
+        color="blue darken-4"
+        grow
+        show-arrows
+        next-icon="mdi-arrow-right-bold-box-outline"
+        prev-icon="mdi-arrow-left-bold-box-outline"
+        center-active
       >
-        <v-card
-          style="background-color: rgba(0, 0, 0, 0)"
-          :dark="$store.getters.getTheme"
+        <v-tabs-slider color="blue darken-4"></v-tabs-slider>
+        <v-tab href="#weighting">Punnitus</v-tab>
+        <v-tab href="#situation">Tilannekatsaus</v-tab>
+        <v-tab href="#onwater">Vielä vesillä</v-tab>
+      </v-tabs>
+      <v-tabs-items v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
+        <!-- "Punnitus" tab -->
+        <v-tab-item
+          v-bind:class="{
+            inputarea: !$store.getters.getTheme,
+            'inputarea-dark': $store.getters.getTheme,
+          }"
+          :value="'weighting'"
         >
-          <v-row>
-            <v-col cols="12" xs="12" sm="12" md="12">
-              <v-row>
-                <v-col md="7">
-                  <h1 style="margin: 30px">Punnitus</h1>
-                </v-col>
-                <v-col md="5">
-                  <div class="text-center">
-                    <v-dialog v-model="dialog">
-                      <template v-slot:activator="{ on, attrs }">
+          <v-row v-if="!loading_site">
+            <v-col>
+              <v-row v-if="signees.length">
+                <v-col>
+                  <v-row v-if="notification" style="margin-top: 20px">
+                    <v-col>
+                      <v-alert type="success">
+                        {{ notification }}
+                      </v-alert>
+                    </v-col>
+                  </v-row>
+                  <v-row v-if="!loading" style="margin-top: 20px">
+                    <v-col
+                      v-bind:class="{
+                        'grey darken-4': $store.getters.getTheme,
+                        'input-fields': !$store.getters.getTheme,
+                      }"
+                      md="6"
+                      offset-md="3"
+                      style="padding: 20px"
+                    >
+                      <v-col>
                         <p
-                          style="margin: 10px"
+                          class="flow-text"
                           v-bind:class="{
-                            'black-text': !$store.getters.getTheme,
-                            'white-text': $store.getters.getTheme,
+                            'white--text': $store.getters.getTheme,
                           }"
                         >
-                          Kello/Kilpailuaika
+                          Venekunta
                         </p>
-                        <v-btn
-                          text
-                          outlined
-                          color="red darken-4"
-                          dark
-                          v-bind="attrs"
-                          v-on="on"
-                        >
-                          <v-icon>mdi-timer</v-icon>
-                        </v-btn>
-                      </template>
-
-                      <v-card :dark="$store.getters.getTheme" width="600px">
-                        <Timedate />
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                            color="primary"
-                            outlined
-                            @click="dialog = false"
-                          >
-                            Sulje
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
-                  </div>
-                </v-col>
-              </v-row>
-            </v-col>
-          </v-row>
-        </v-card>
-
-        <!-- Tabs -->
-        <v-tabs
-          v-model="tab"
-          background-color="blue lighten-2"
-          color="blue darken-4"
-          grow
-          show-arrows
-          next-icon="mdi-arrow-right-bold-box-outline"
-          prev-icon="mdi-arrow-left-bold-box-outline"
-          center-active
-        >
-          <v-tabs-slider color="blue darken-4"></v-tabs-slider>
-          <v-tab href="#weighting">Punnitus</v-tab>
-          <v-tab href="#situation">Tilannekatsaus</v-tab>
-          <v-tab href="#onwater">Vielä vesillä</v-tab>
-        </v-tabs>
-        <v-tabs-items v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
-          <!-- "Punnitus" tab -->
-          <v-tab-item
-            v-bind:class="{
-              inputarea: !$store.getters.getTheme,
-              'inputarea-dark': $store.getters.getTheme,
-            }"
-            :value="'weighting'"
-          >
-            <v-row v-if="!loading_site">
-              <v-col>
-                <v-row v-if="signees.length">
-                  <v-col>
-                    <v-row v-if="notification" style="margin-top: 20px">
-                      <v-col>
-                        <v-alert type="success">
-                          {{ notification }}
-                        </v-alert>
                       </v-col>
-                    </v-row>
-                    <v-row v-if="!loading" style="margin-top: 20px">
-                      <v-col
-                        v-bind:class="{
-                          'grey darken-4': $store.getters.getTheme,
-                          'input-fields': !$store.getters.getTheme,
-                        }"
-                        md="6"
-                        offset-md="3"
-                        style="padding: 20px"
-                      >
-                        <v-col>
-                          <p
-                            class="flow-text"
-                            v-bind:class="{
-                              'white--text': $store.getters.getTheme,
-                            }"
-                          >
-                            Venekunta
-                          </p>
-                        </v-col>
-                        <v-col class="d-flex">
-                          <v-autocomplete
-                            :menu-props="
-                              $store.getters.getTheme ? 'dark' : 'light'
-                            "
-                            :dark="$store.getters.getTheme"
-                            v-model="boat_number_input"
-                            :items="sortedArray"
-                            item-text="select"
-                            label="Valitse tai hae venekunta"
-                            :hint="
-                              boat_number_input['boat_number'] !== undefined
-                                ? `(${boat_number_input.boat_number})
+                      <v-col class="d-flex">
+                        <v-autocomplete
+                          :menu-props="
+                            $store.getters.getTheme ? 'dark' : 'light'
+                          "
+                          :dark="$store.getters.getTheme"
+                          v-model="boat_number_input"
+                          :items="sortedArray"
+                          item-text="select"
+                          label="Valitse tai hae venekunta"
+                          :hint="
+                            boat_number_input['boat_number'] !== undefined
+                              ? `(${boat_number_input.boat_number})
                           ${boat_number_input.captain_name},
                           ${boat_number_input.temp_captain_name}`
-                                : `Valitse tai hae venekunta`
-                            "
-                            :disabled="loading_site"
-                            outlined
-                            return-object
-                            single-line
-                            @input="
-                              fetchFromDatabase(
-                                boat_number_input
-                                  ? boat_number_input.boat_number
-                                  : -1
-                              )
-                            "
-                          >
-                            <template v-slot:item="data">
-                              <template v-if="typeof data.item !== 'object'">
-                                <v-list-item-icon>
-                                  <v-icon
-                                    v-if="data.item.returned"
-                                    color="green"
-                                    >mdi-checkbox-marked-circle</v-icon
-                                  >
-                                  <v-icon v-else color="yellow"
-                                    >mdi-progress-question</v-icon
-                                  >
-                                </v-list-item-icon>
-                                <v-list-item-content
-                                  v-text="data.item"
-                                ></v-list-item-content>
-                              </template>
-                              <template v-else>
-                                <v-list-item-icon>
-                                  <v-icon
-                                    v-if="data.item.returned"
-                                    color="green"
-                                    >mdi-checkbox-marked-circle</v-icon
-                                  >
-                                  <v-icon v-else color="yellow darken-2"
-                                    >mdi-account-question</v-icon
-                                  >
-                                </v-list-item-icon>
-                                <v-list-item-content>
-                                  <v-list-item-title
-                                    v-html="data.item.boat_number"
-                                  ></v-list-item-title>
-                                  <v-list-item-subtitle
-                                    v-html="data.item.captain_name"
-                                  ></v-list-item-subtitle>
-                                </v-list-item-content>
-                              </template>
+                              : `Valitse tai hae venekunta`
+                          "
+                          :disabled="loading_site"
+                          outlined
+                          return-object
+                          single-line
+                          @input="
+                            fetchFromDatabase(
+                              boat_number_input
+                                ? boat_number_input.boat_number
+                                : -1
+                            )
+                          "
+                        >
+                          <template v-slot:item="data">
+                            <template v-if="typeof data.item !== 'object'">
+                              <v-list-item-icon>
+                                <v-icon v-if="data.item.returned" color="green"
+                                  >mdi-checkbox-marked-circle</v-icon
+                                >
+                                <v-icon v-else color="yellow"
+                                  >mdi-progress-question</v-icon
+                                >
+                              </v-list-item-icon>
+                              <v-list-item-content
+                                v-text="data.item"
+                              ></v-list-item-content>
                             </template>
-                          </v-autocomplete>
-                        </v-col>
+                            <template v-else>
+                              <v-list-item-icon>
+                                <v-icon v-if="data.item.returned" color="green"
+                                  >mdi-checkbox-marked-circle</v-icon
+                                >
+                                <v-icon v-else color="yellow darken-2"
+                                  >mdi-account-question</v-icon
+                                >
+                              </v-list-item-icon>
+                              <v-list-item-content>
+                                <v-list-item-title
+                                  v-html="data.item.boat_number"
+                                ></v-list-item-title>
+                                <v-list-item-subtitle
+                                  v-html="data.item.captain_name"
+                                ></v-list-item-subtitle>
+                              </v-list-item-content>
+                            </template>
+                          </template>
+                        </v-autocomplete>
                       </v-col>
-                    </v-row>
-                    <v-row v-if="!competition_boat">
-                      <v-col>
-                        <v-alert v-if="loading" type="info"> </v-alert>
-                        <v-alert v-if="!searched" type="warning">
-                          Venekuntaa ei valittuna
-                        </v-alert>
-                        <v-alert v-else type="error">
-                          Numerolla ei löytynyt venekuntaa tietokannasta!
-                        </v-alert>
-                      </v-col>
-                    </v-row>
-                    <v-row v-if="competition_boat">
-                      <v-col>
-                        <v-row v-if="!loading" style="margin-top: 30px">
-                          <v-col offset="4" cols="4">
-                            <v-btn
-                              large
-                              block
-                              color="yellow"
-                              @click="clearInputs"
-                              ><v-icon>mdi-backspace-reverse-outline</v-icon
-                              >Peruuta valinta</v-btn
-                            >
-                          </v-col>
-                        </v-row>
-                        <v-row>
-                          <v-col>
-                            <v-divider class="black"></v-divider>
-                          </v-col>
-                        </v-row>
-
-                        <v-col md="10" offset-md="1">
-                          <ul
-                            id="fish_weights"
-                            v-if="$store.getters.getCompetitionFishes.length"
-                            style="list-style-type: none"
+                    </v-col>
+                  </v-row>
+                  <v-row v-if="!competition_boat">
+                    <v-col>
+                      <v-alert v-if="loading" type="info"> </v-alert>
+                      <v-alert v-if="!searched" type="warning">
+                        Venekuntaa ei valittuna
+                      </v-alert>
+                      <v-alert v-else type="error">
+                        Numerolla ei löytynyt venekuntaa tietokannasta!
+                      </v-alert>
+                    </v-col>
+                  </v-row>
+                  <v-row v-if="competition_boat">
+                    <v-col>
+                      <v-row v-if="!loading" style="margin-top: 30px">
+                        <v-col offset="4" cols="4">
+                          <v-btn large block color="yellow" @click="clearInputs"
+                            ><v-icon>mdi-backspace-reverse-outline</v-icon
+                            >Peruuta valinta</v-btn
                           >
-                            <li style="padding: 10px; margin-bottom: 10px">
-                              <v-btn
-                                @click="
-                                  isBiggestFishVisible = !isBiggestFishVisible
-                                "
-                                color="primary"
-                                ><v-icon>{{
-                                  isBiggestFishVisible
-                                    ? "mdi-eye-off"
-                                    : "mdi-eye"
-                                }}</v-icon
-                                >{{
-                                  isBiggestFishVisible
-                                    ? "Piilota"
-                                    : "Punnitse yksittäinen kala"
-                                }}</v-btn
-                              >
-                              <v-row
-                                v-if="loading_fish"
-                                style="margin-top: 20px"
-                              >
-                                <v-col>
-                                  <p
-                                    class="flow-text"
-                                    v-bind:class="{
-                                      'white--text': $store.getters.getTheme,
-                                    }"
-                                  >
-                                    Lisätään kala tietokantaan...
-                                  </p>
-                                  <ProgressBarQuery />
-                                </v-col>
-                              </v-row>
-                              <v-row
-                                v-if="!loading_fish && isBiggestFishVisible"
-                                style="margin-top: 20px"
-                              >
-                                <v-col md="3">
-                                  <p
-                                    class="flow-text"
-                                    v-bind:class="{
-                                      'white--text': $store.getters.getTheme,
-                                    }"
-                                  >
-                                    Suurin kala?
-                                  </p>
-                                </v-col>
-                                <v-col md="4">
-                                  <v-select
-                                    outlined
-                                    class="flow-text"
-                                    label="Valitse kalalaji painamalla"
-                                    v-model="selected_fish"
-                                    item-text="name"
-                                    :items="competition_fishes"
-                                    :dark="$store.getters.getTheme"
-                                  >
-                                    <template v-slot:selection="data">
-                                      <v-chip
-                                        color="primary"
-                                        close
-                                        @click:close="selected_fish = null"
-                                      >
-                                        {{ data.item.name }}
-                                      </v-chip>
-                                    </template>
-                                  </v-select>
-                                </v-col>
-                                <v-col class="input-fields" md="3">
-                                  <v-text-field
-                                    :dark="$store.getters.getTheme"
-                                    label="Paino grammoina"
-                                    v-model="biggest_fish"
-                                    type="number"
-                                    @paste.prevent
-                                    @keypress="isNumber($event)"
-                                    value="0"
-                                    step="50"
-                                    min="0"
-                                    :rules="number_rules"
-                                    :loading="loading_fish"
-                                  />
-                                </v-col>
-                                <v-col md="2">
-                                  <v-btn
-                                    v-if="selected_fish && biggest_fish"
-                                    large
-                                    tile
-                                    color="green"
-                                    @click="saveBiggestFish"
-                                    ><v-icon>mdi-content-save</v-icon
-                                    >Tallenna</v-btn
-                                  >
-                                </v-col>
-                              </v-row>
-                            </li>
-                            <li
-                              v-for="(input, index) in inputs"
-                              :key="index"
-                              style="padding-top: 10px; padding-bottom: 20px"
+                        </v-col>
+                      </v-row>
+                      <v-row>
+                        <v-col>
+                          <v-divider class="black"></v-divider>
+                        </v-col>
+                      </v-row>
+
+                      <v-col md="10" offset-md="1">
+                        <ul
+                          id="fish_weights"
+                          v-if="$store.getters.getCompetitionFishes.length"
+                          style="list-style-type: none"
+                        >
+                          <li style="padding: 10px; margin-bottom: 10px">
+                            <v-btn
+                              @click="
+                                isBiggestFishVisible = !isBiggestFishVisible
+                              "
+                              color="primary"
+                              ><v-icon>{{
+                                isBiggestFishVisible ? "mdi-eye-off" : "mdi-eye"
+                              }}</v-icon
+                              >{{
+                                isBiggestFishVisible
+                                  ? "Piilota"
+                                  : "Punnitse yksittäinen kala"
+                              }}</v-btn
                             >
-                              <v-row>
-                                <v-col md="12">
-                                  <v-divider class="black"></v-divider>
-                                </v-col>
-                              </v-row>
-                              <v-row align="center" justify="center">
-                                <v-col md="6">
-                                  <span
-                                    class="flow-text"
-                                    v-bind:class="{
-                                      'white--text': $store.getters.getTheme,
-                                    }"
-                                  >
-                                    {{ index + 1 }}.
-                                  </span>
-                                  <span
-                                    class="flow-text"
-                                    v-bind:class="{
-                                      'white--text': $store.getters.getTheme,
-                                    }"
-                                  >
-                                    {{ input.name }}
-                                  </span>
-                                </v-col>
-                                <v-col md="4" class="input-fields">
-                                  <v-text-field
-                                    :dark="$store.getters.getTheme"
-                                    label="Paino grammoina"
-                                    v-model="input.value"
-                                    type="number"
-                                    @paste.prevent
-                                    @keypress="isNumber($event)"
-                                    value="0"
-                                    step="50"
-                                    min="0"
-                                    :rules="number_rules"
-                                    :loading="loading_fish"
-                                  />
-                                </v-col>
-                                <v-col md="2">
-                                  <v-dialog
-                                    v-model="input.dialog"
-                                    persistent
-                                    max-width="600px"
-                                  >
-                                    <template v-slot:activator="{ on, attrs }">
-                                      <v-btn
-                                        color="primary"
-                                        dark
-                                        v-bind="attrs"
-                                        v-on="on"
-                                        ><v-icon>mdi-plus</v-icon>Plussaa</v-btn
+                            <v-row v-if="loading_fish" style="margin-top: 20px">
+                              <v-col>
+                                <p
+                                  class="flow-text"
+                                  v-bind:class="{
+                                    'white--text': $store.getters.getTheme,
+                                  }"
+                                >
+                                  Lisätään kala tietokantaan...
+                                </p>
+                                <ProgressBarQuery />
+                              </v-col>
+                            </v-row>
+                            <v-row
+                              v-if="!loading_fish && isBiggestFishVisible"
+                              style="margin-top: 20px"
+                            >
+                              <v-col md="3">
+                                <p
+                                  class="flow-text"
+                                  v-bind:class="{
+                                    'white--text': $store.getters.getTheme,
+                                  }"
+                                >
+                                  Suurin kala?
+                                </p>
+                              </v-col>
+                              <v-col md="4">
+                                <v-select
+                                  outlined
+                                  class="flow-text"
+                                  label="Valitse kalalaji painamalla"
+                                  v-model="selected_fish"
+                                  item-text="name"
+                                  :items="competition_fishes"
+                                  :dark="$store.getters.getTheme"
+                                >
+                                  <template v-slot:selection="data">
+                                    <v-chip
+                                      color="primary"
+                                      close
+                                      @click:close="selected_fish = null"
+                                    >
+                                      {{ data.item.name }}
+                                    </v-chip>
+                                  </template>
+                                </v-select>
+                              </v-col>
+                              <v-col class="input-fields" md="3">
+                                <v-text-field
+                                  :dark="$store.getters.getTheme"
+                                  label="Paino grammoina"
+                                  v-model="biggest_fish"
+                                  type="number"
+                                  @paste.prevent
+                                  @keypress="isNumber($event)"
+                                  value="0"
+                                  step="50"
+                                  min="0"
+                                  :rules="number_rules"
+                                  :loading="loading_fish"
+                                />
+                              </v-col>
+                              <v-col md="2">
+                                <v-btn
+                                  v-if="selected_fish && biggest_fish"
+                                  large
+                                  tile
+                                  color="green"
+                                  @click="saveBiggestFish"
+                                  ><v-icon>mdi-content-save</v-icon
+                                  >Tallenna</v-btn
+                                >
+                              </v-col>
+                            </v-row>
+                          </li>
+                          <li
+                            v-for="(input, index) in inputs"
+                            :key="index"
+                            style="padding-top: 10px; padding-bottom: 20px"
+                          >
+                            <v-row>
+                              <v-col md="12">
+                                <v-divider class="black"></v-divider>
+                              </v-col>
+                            </v-row>
+                            <v-row align="center" justify="center">
+                              <v-col md="6">
+                                <span
+                                  class="flow-text"
+                                  v-bind:class="{
+                                    'white--text': $store.getters.getTheme,
+                                  }"
+                                >
+                                  {{ index + 1 }}.
+                                </span>
+                                <span
+                                  class="flow-text"
+                                  v-bind:class="{
+                                    'white--text': $store.getters.getTheme,
+                                  }"
+                                >
+                                  {{ input.name }}
+                                </span>
+                              </v-col>
+                              <v-col md="4" class="input-fields">
+                                <v-text-field
+                                  :dark="$store.getters.getTheme"
+                                  label="Paino grammoina"
+                                  v-model="input.value"
+                                  type="number"
+                                  @paste.prevent
+                                  @keypress="isNumber($event)"
+                                  value="0"
+                                  step="50"
+                                  min="0"
+                                  :rules="number_rules"
+                                  :loading="loading_fish"
+                                />
+                              </v-col>
+                              <v-col md="2">
+                                <v-dialog
+                                  v-model="input.dialog"
+                                  persistent
+                                  max-width="600px"
+                                >
+                                  <template v-slot:activator="{ on, attrs }">
+                                    <v-btn
+                                      color="primary"
+                                      dark
+                                      v-bind="attrs"
+                                      v-on="on"
+                                      ><v-icon>mdi-plus</v-icon>Plussaa</v-btn
+                                    >
+                                  </template>
+                                  <v-card :dark="$store.getters.getTheme">
+                                    <v-card-title>
+                                      <span class="headline"
+                                        >Yhteenlaske summat</span
                                       >
-                                    </template>
-                                    <v-card :dark="$store.getters.getTheme">
-                                      <v-card-title>
-                                        <span class="headline"
-                                          >Yhteenlaske summat</span
+                                    </v-card-title>
+                                    <v-card-text>
+                                      <v-row>
+                                        <v-col md="6" offset-md="3">
+                                          <v-text-field
+                                            class="title"
+                                            label="Alkuperäinen arvo"
+                                            :value="input.value"
+                                            disabled
+                                          ></v-text-field>
+                                        </v-col>
+                                      </v-row>
+                                      <v-row>
+                                        <v-col md="6 " offset-md="3">
+                                          <v-text-field
+                                            v-model="input.addition"
+                                            label="Lisättävä arvo"
+                                            type="number"
+                                            @paste.prevent
+                                            @keypress="isNumber($event)"
+                                            step="50"
+                                            min="0"
+                                            single-line
+                                            outlined
+                                          ></v-text-field>
+                                        </v-col>
+                                      </v-row>
+                                      <v-row>
+                                        <v-col
+                                          md="6"
+                                          offset-md="3"
+                                          class="title red--text"
                                         >
-                                      </v-card-title>
-                                      <v-card-text>
-                                        <v-row>
-                                          <v-col md="6" offset-md="3">
-                                            <v-text-field
-                                              class="title"
-                                              label="Alkuperäinen arvo"
-                                              :value="input.value"
-                                              disabled
-                                            ></v-text-field>
-                                          </v-col>
-                                        </v-row>
-                                        <v-row>
-                                          <v-col md="6 " offset-md="3">
-                                            <v-text-field
-                                              v-model="input.addition"
-                                              label="Lisättävä arvo"
-                                              type="number"
-                                              @paste.prevent
-                                              @keypress="isNumber($event)"
-                                              step="50"
-                                              min="0"
-                                              single-line
-                                              outlined
-                                            ></v-text-field>
-                                          </v-col>
-                                        </v-row>
-                                        <v-row>
-                                          <v-col
-                                            md="6"
-                                            offset-md="3"
-                                            class="title red--text"
-                                          >
-                                            <v-text-field
-                                              :value="
-                                                parseInt(input.value) +
-                                                parseInt(
-                                                  input.addition
-                                                    ? input.addition
-                                                    : 0
-                                                )
-                                              "
-                                              label="Summa"
-                                              disabled
-                                            ></v-text-field>
-                                          </v-col>
-                                        </v-row>
-                                      </v-card-text>
-                                      <v-card-actions>
-                                        <v-spacer></v-spacer>
-                                        <v-btn
-                                          outlined
-                                          color="red darken-1"
-                                          @click="
-                                            input.addition = null;
-                                            input.dialog = false;
-                                          "
-                                          >Peruuta</v-btn
-                                        >
-                                        <v-btn
-                                          outlined
-                                          color="green darken-1"
-                                          @click="
-                                            input.value =
+                                          <v-text-field
+                                            :value="
                                               parseInt(input.value) +
                                               parseInt(
                                                 input.addition
                                                   ? input.addition
                                                   : 0
-                                              );
-                                            input.dialog = false;
-                                            input.addition = 0;
-                                          "
-                                          >Tallenna</v-btn
-                                        >
-                                      </v-card-actions>
-                                    </v-card>
-                                  </v-dialog>
-                                </v-col>
-                              </v-row>
-                            </li>
-                          </ul>
-                          <v-row>
-                            <v-col md="12">
-                              <v-divider class="black"></v-divider>
-                            </v-col>
-                          </v-row>
-                          <v-row v-if="!loading">
-                            <v-col>
-                              <v-card
-                                :dark="$store.getters.getTheme"
-                                outlined
-                                tile
-                              >
-                                <v-card-title>Yhteenveto</v-card-title>
-                                <v-list>
-                                  <v-list-item>
-                                    <v-list-item-icon>
-                                      <v-icon>mdi-weight-gram</v-icon>
-                                    </v-list-item-icon>
-                                    <v-list-item-content>
-                                      <v-list-item-title>
-                                        <h3>
-                                          {{
-                                            getBoatTotalWeights().toLocaleString()
-                                          }}
-                                          g
-                                        </h3>
-                                      </v-list-item-title>
-                                      <v-list-item-subtitle>
-                                        Yhteispaino
-                                      </v-list-item-subtitle>
-                                    </v-list-item-content>
-                                  </v-list-item>
-                                  <v-list-item>
-                                    <v-list-item-icon>
-                                      <v-icon>mdi-counter</v-icon>
-                                    </v-list-item-icon>
-                                    <v-list-item-content>
-                                      <v-list-item-title>
-                                        <h3>
-                                          {{
-                                            getBoatTotalPoints().toLocaleString()
-                                          }}
-                                          p
-                                        </h3>
-                                      </v-list-item-title>
-                                      <v-list-item-subtitle>
-                                        Yhteispisteet
-                                      </v-list-item-subtitle>
-                                    </v-list-item-content>
-                                  </v-list-item>
-                                  <v-list-item>
-                                    <v-list-item-icon>
-                                      <v-icon>mdi-pound-box</v-icon>
-                                    </v-list-item-icon>
-                                    <v-list-item-content>
-                                      <v-list-item-title>
-                                        <h3>#{{ getBoatPlacing() }}</h3>
-                                      </v-list-item-title>
-                                      <v-list-item-subtitle>
-                                        Sijoitus
-                                      </v-list-item-subtitle>
-                                    </v-list-item-content>
-                                  </v-list-item>
-                                </v-list>
-                              </v-card>
-                            </v-col>
-                          </v-row>
-                          <v-row>
-                            <v-col md="12">
-                              <v-divider class="black"></v-divider>
-                            </v-col>
-                          </v-row>
-                          <v-row v-if="!loading">
-                            <v-col>
-                              <v-btn
-                                large
-                                tile
-                                color="red"
-                                @click="saveToDatabase(true)"
-                                :loading="refreshing"
-                                ><v-icon>mdi-delete</v-icon>Nollaa</v-btn
-                              >
-                            </v-col>
-                            <v-col>
-                              <p
-                                class="flow-text"
-                                v-if="refreshing"
-                                v-bind:class="{
-                                  'white--text': $store.getters.getTheme,
-                                }"
-                              >
-                                Synkronoidaan tietokannan kanssa...
-                              </p>
-                            </v-col>
-                            <v-col>
-                              <v-btn
-                                large
-                                tile
-                                color="green"
-                                @click="saveToDatabase(false)"
-                                :loading="refreshing"
-                                ><v-icon>mdi-check</v-icon>Tallenna</v-btn
-                              >
-                            </v-col>
-                          </v-row>
-                          <v-row v-if="!loading" style="margin-bottom: 20px">
-                            <v-col>
-                              <v-btn
-                                id="updatebtn"
-                                large
-                                tile
-                                color="blue darken-4"
-                                @click="refreshCompetition(competition_id)"
-                                class="white--text"
-                              >
-                                <v-icon>mdi-update</v-icon>Päivitä kilpailun
-                                tiedot
-                              </v-btn>
-                            </v-col>
-                          </v-row>
-                          <v-row v-else>
-                            <v-col>
-                              <p
-                                class="flow-text"
-                                v-bind:class="{
-                                  'white--text': $store.getters.getTheme,
-                                }"
-                              >
-                                Päivitetään tiedot tietokantaan...
-                              </p>
-                              <ProgressBarQuery />
-                            </v-col>
-                          </v-row>
-                        </v-col>
+                                              )
+                                            "
+                                            label="Summa"
+                                            disabled
+                                          ></v-text-field>
+                                        </v-col>
+                                      </v-row>
+                                    </v-card-text>
+                                    <v-card-actions>
+                                      <v-spacer></v-spacer>
+                                      <v-btn
+                                        outlined
+                                        color="red darken-1"
+                                        @click="
+                                          input.addition = null;
+                                          input.dialog = false;
+                                        "
+                                        >Peruuta</v-btn
+                                      >
+                                      <v-btn
+                                        outlined
+                                        color="green darken-1"
+                                        @click="
+                                          input.value =
+                                            parseInt(input.value) +
+                                            parseInt(
+                                              input.addition
+                                                ? input.addition
+                                                : 0
+                                            );
+                                          input.dialog = false;
+                                          input.addition = 0;
+                                        "
+                                        >Tallenna</v-btn
+                                      >
+                                    </v-card-actions>
+                                  </v-card>
+                                </v-dialog>
+                              </v-col>
+                            </v-row>
+                          </li>
+                        </ul>
+                        <v-row>
+                          <v-col md="12">
+                            <v-divider class="black"></v-divider>
+                          </v-col>
+                        </v-row>
+                        <v-row v-if="!loading">
+                          <v-col>
+                            <v-card
+                              :dark="$store.getters.getTheme"
+                              outlined
+                              tile
+                            >
+                              <v-card-title>Yhteenveto</v-card-title>
+                              <v-list>
+                                <v-list-item>
+                                  <v-list-item-icon>
+                                    <v-icon>mdi-weight-gram</v-icon>
+                                  </v-list-item-icon>
+                                  <v-list-item-content>
+                                    <v-list-item-title>
+                                      <h3>
+                                        {{
+                                          getBoatTotalWeights().toLocaleString()
+                                        }}
+                                        g
+                                      </h3>
+                                    </v-list-item-title>
+                                    <v-list-item-subtitle>
+                                      Yhteispaino
+                                    </v-list-item-subtitle>
+                                  </v-list-item-content>
+                                </v-list-item>
+                                <v-list-item>
+                                  <v-list-item-icon>
+                                    <v-icon>mdi-counter</v-icon>
+                                  </v-list-item-icon>
+                                  <v-list-item-content>
+                                    <v-list-item-title>
+                                      <h3>
+                                        {{
+                                          getBoatTotalPoints().toLocaleString()
+                                        }}
+                                        p
+                                      </h3>
+                                    </v-list-item-title>
+                                    <v-list-item-subtitle>
+                                      Yhteispisteet
+                                    </v-list-item-subtitle>
+                                  </v-list-item-content>
+                                </v-list-item>
+                                <v-list-item>
+                                  <v-list-item-icon>
+                                    <v-icon>mdi-pound-box</v-icon>
+                                  </v-list-item-icon>
+                                  <v-list-item-content>
+                                    <v-list-item-title>
+                                      <h3>#{{ getBoatPlacing() }}</h3>
+                                    </v-list-item-title>
+                                    <v-list-item-subtitle>
+                                      Sijoitus
+                                    </v-list-item-subtitle>
+                                  </v-list-item-content>
+                                </v-list-item>
+                              </v-list>
+                            </v-card>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col md="12">
+                            <v-divider class="black"></v-divider>
+                          </v-col>
+                        </v-row>
+                        <v-row v-if="!loading">
+                          <v-col>
+                            <v-btn
+                              large
+                              tile
+                              color="red"
+                              @click="saveToDatabase(true)"
+                              :loading="refreshing"
+                              ><v-icon>mdi-delete</v-icon>Nollaa</v-btn
+                            >
+                          </v-col>
+                          <v-col>
+                            <p
+                              class="flow-text"
+                              v-if="refreshing"
+                              v-bind:class="{
+                                'white--text': $store.getters.getTheme,
+                              }"
+                            >
+                              Synkronoidaan tietokannan kanssa...
+                            </p>
+                          </v-col>
+                          <v-col>
+                            <v-btn
+                              large
+                              tile
+                              color="green"
+                              @click="saveToDatabase(false)"
+                              :loading="refreshing"
+                              ><v-icon>mdi-check</v-icon>Tallenna</v-btn
+                            >
+                          </v-col>
+                        </v-row>
+                        <v-row v-if="!loading" style="margin-bottom: 20px">
+                          <v-col>
+                            <v-btn
+                              id="updatebtn"
+                              large
+                              tile
+                              color="blue darken-4"
+                              @click="refreshCompetition(competition_id)"
+                              class="white--text"
+                            >
+                              <v-icon>mdi-update</v-icon>Päivitä kilpailun
+                              tiedot
+                            </v-btn>
+                          </v-col>
+                        </v-row>
+                        <v-row v-else>
+                          <v-col>
+                            <p
+                              class="flow-text"
+                              v-bind:class="{
+                                'white--text': $store.getters.getTheme,
+                              }"
+                            >
+                              Päivitetään tiedot tietokantaan...
+                            </p>
+                            <ProgressBarQuery />
+                          </v-col>
+                        </v-row>
                       </v-col>
-                    </v-row>
-                  </v-col>
-                </v-row>
-                <v-row v-else>
-                  <v-col style="padding: 30px">
-                    <p
-                      class="flow-text"
-                      v-bind:class="{ 'white--text': $store.getters.getTheme }"
-                    >
-                      Kilpailussa ei vielä ilmoittautuneita!
-                    </p>
-                  </v-col>
-                </v-row>
-              </v-col>
-            </v-row>
-            <v-row v-else>
-              <v-col>
-                <h2 v-bind:class="{ 'white--text': $store.getters.getTheme }">
-                  Haetaan veneitä...
-                </h2>
-                <ProgressBarQuery />
-              </v-col>
-            </v-row>
-          </v-tab-item>
+                    </v-col>
+                  </v-row>
+                </v-col>
+              </v-row>
+              <v-row v-else>
+                <v-col style="padding: 30px">
+                  <p
+                    class="flow-text"
+                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
+                  >
+                    Kilpailussa ei vielä ilmoittautuneita!
+                  </p>
+                </v-col>
+              </v-row>
+            </v-col>
+          </v-row>
+          <v-row v-else>
+            <v-col>
+              <h2 v-bind:class="{ 'white--text': $store.getters.getTheme }">
+                Haetaan veneitä...
+              </h2>
+              <ProgressBarQuery />
+            </v-col>
+          </v-row>
+        </v-tab-item>
 
-          <!-- "Tilannekatsaus" tab -->
-          <v-tab-item
-            v-bind:class="{
-              inputarea: !$store.getters.getTheme,
-              'inputarea-dark': $store.getters.getTheme,
-            }"
-            :value="'situation'"
-          >
-            <v-row>
-              <v-col>
-                <v-row v-if="result_signees.length">
-                  <v-col md="8" offset-md="2" style="margin-top: 20px">
-                    <v-card :dark="$store.getters.getTheme">
-                      <v-card-title>
-                        <p class="flow-text">Tilannekatsaus</p>
-                        <v-spacer></v-spacer>
-                        <v-text-field
-                          v-model="search"
-                          append-icon="mdi-magnify"
-                          label="Hae kilpailijaa"
-                          single-line
-                          hide-details
-                        ></v-text-field>
-                      </v-card-title>
-                      <v-data-table
-                        @click:row="rowClick"
-                        :headers="headers"
-                        :items="sortedCompetition"
-                        :search="search"
-                      >
-                        <template v-slot:[`item.placement`]="{ item }">
-                          <v-chip
-                            :outlined="$store.getters.getTheme"
-                            :color="getColor(item.placement)"
-                            >{{ item.placement }}.</v-chip
-                          >
-                        </template>
-                        <template v-slot:[`item.total_points`]="{ item }">
-                          <v-chip :color="getColorPoints(item.total_points)"
-                            >{{ item.total_points.toLocaleString() }} p</v-chip
-                          >
-                        </template>
-                      </v-data-table>
-                    </v-card>
-                  </v-col>
-                </v-row>
-                <v-row v-if="selected_id && result_signees.length">
-                  <v-col
-                    md="8"
-                    offset-md="2"
-                    style="margin-top: 30px; margin-bottom: 30px"
+        <!-- "Tilannekatsaus" tab -->
+        <v-tab-item
+          v-bind:class="{
+            inputarea: !$store.getters.getTheme,
+            'inputarea-dark': $store.getters.getTheme,
+          }"
+          :value="'situation'"
+        >
+          <v-row>
+            <v-col>
+              <v-row v-if="result_signees.length">
+                <v-col md="8" offset-md="2" style="margin-top: 20px">
+                  <v-card :dark="$store.getters.getTheme">
+                    <v-card-title>
+                      <p class="flow-text">Tilannekatsaus</p>
+                      <v-spacer></v-spacer>
+                      <v-text-field
+                        v-model="search"
+                        append-icon="mdi-magnify"
+                        label="Hae kilpailijaa"
+                        single-line
+                        hide-details
+                      ></v-text-field>
+                    </v-card-title>
+                    <v-data-table
+                      @click:row="rowClick"
+                      :headers="headers"
+                      :items="sortedCompetition"
+                      :search="search"
+                    >
+                      <template v-slot:[`item.placement`]="{ item }">
+                        <v-chip
+                          :outlined="$store.getters.getTheme"
+                          :color="getColor(item.placement)"
+                          >{{ item.placement }}.</v-chip
+                        >
+                      </template>
+                      <template v-slot:[`item.total_points`]="{ item }">
+                        <v-chip :color="getColorPoints(item.total_points)"
+                          >{{ item.total_points.toLocaleString() }} p</v-chip
+                        >
+                      </template>
+                    </v-data-table>
+                  </v-card>
+                </v-col>
+              </v-row>
+              <v-row v-if="selected_id && result_signees.length">
+                <v-col
+                  md="8"
+                  offset-md="2"
+                  style="margin-top: 30px; margin-bottom: 30px"
+                >
+                  <v-btn large tile color="blue" @click="searchSelected"
+                    ><v-icon>mdi-arrow-right</v-icon>Siirry punnitukseen</v-btn
                   >
-                    <v-btn large tile color="blue" @click="searchSelected"
-                      ><v-icon>mdi-arrow-right</v-icon>Siirry
-                      punnitukseen</v-btn
-                    >
-                  </v-col>
-                </v-row>
-                <v-row v-else>
-                  <v-col
-                    md="8"
-                    offset-md="2"
-                    style="margin-top: 30px; margin-bottom: 30px"
+                </v-col>
+              </v-row>
+              <v-row v-else>
+                <v-col
+                  md="8"
+                  offset-md="2"
+                  style="margin-top: 30px; margin-bottom: 30px"
+                >
+                  <p
+                    v-if="result_signees.length"
+                    class="flow-text"
+                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
                   >
-                    <p
-                      v-if="result_signees.length"
-                      class="flow-text"
-                      v-bind:class="{ 'white--text': $store.getters.getTheme }"
-                    >
-                      Voit siirtyä punnitukseen myös klikkaamalla haluamaasi
-                      riviä taulukosta ja painamalla ilmestyvää nappulaa
-                    </p>
-                    <p
-                      v-else
-                      class="flow-text"
-                      v-bind:class="{ 'white--text': $store.getters.getTheme }"
-                    >
-                      Ei vielä tuloksia!
-                    </p>
-                  </v-col>
-                </v-row>
-              </v-col>
-            </v-row>
-          </v-tab-item>
+                    Voit siirtyä punnitukseen myös klikkaamalla haluamaasi riviä
+                    taulukosta ja painamalla ilmestyvää nappulaa
+                  </p>
+                  <p
+                    v-else
+                    class="flow-text"
+                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
+                  >
+                    Ei vielä tuloksia!
+                  </p>
+                </v-col>
+              </v-row>
+            </v-col>
+          </v-row>
+        </v-tab-item>
 
-          <!-- "Vielä vesillä" tab -->
-          <v-tab-item
-            v-bind:class="{
-              inputarea: !$store.getters.getTheme,
-              'inputarea-dark': $store.getters.getTheme,
-            }"
-            :value="'onwater'"
-          >
-            <v-row>
-              <v-col>
-                <v-row v-if="!signees.length || !still_on_water.length">
-                  <v-col
-                    md="8"
-                    offset-md="2"
-                    class="input-fields"
-                    style="margin-top: 100px"
+        <!-- "Vielä vesillä" tab -->
+        <v-tab-item
+          v-bind:class="{
+            inputarea: !$store.getters.getTheme,
+            'inputarea-dark': $store.getters.getTheme,
+          }"
+          :value="'onwater'"
+        >
+          <v-row>
+            <v-col>
+              <v-row v-if="!signees.length || !still_on_water.length">
+                <v-col
+                  md="8"
+                  offset-md="2"
+                  class="input-fields"
+                  style="margin-top: 100px"
+                >
+                  <p v-if="!signees.length" class="flow-text red--text">
+                    Kilpailussa ei vielä ilmoittautuneita!
+                  </p>
+                  <p
+                    v-if="!still_on_water.length && signees.length"
+                    class="flow-text green--text"
                   >
-                    <p v-if="!signees.length" class="flow-text red--text">
-                      Kilpailussa ei vielä ilmoittautuneita!
-                    </p>
-                    <p
-                      v-if="!still_on_water.length && signees.length"
-                      class="flow-text green--text"
+                    Kaikki venekunnat palanneet maaliin!
+                  </p>
+                </v-col>
+              </v-row>
+              <v-row v-if="still_on_water.length" style="margin-top: 20px">
+                <v-col md="8" offset-md="2">
+                  <v-card :dark="$store.getters.getTheme">
+                    <v-card-title>
+                      <p class="flow-text">
+                        Venekunnat, jotka ovat vielä vesillä
+                      </p>
+                      <v-spacer></v-spacer>
+                      <v-text-field
+                        v-model="search_on_water"
+                        append-icon="mdi-magnify"
+                        label="Hae kilpailijaa"
+                        single-line
+                        hide-details
+                      ></v-text-field>
+                      ></v-card-title
                     >
-                      Kaikki venekunnat palanneet maaliin!
-                    </p>
-                  </v-col>
-                </v-row>
-                <v-row v-if="still_on_water.length" style="margin-top: 20px">
-                  <v-col md="8" offset-md="2">
-                    <v-card :dark="$store.getters.getTheme">
-                      <v-card-title>
-                        <p class="flow-text">
-                          Venekunnat, jotka ovat vielä vesillä
-                        </p>
-                        <v-spacer></v-spacer>
-                        <v-text-field
-                          v-model="search_on_water"
-                          append-icon="mdi-magnify"
-                          label="Hae kilpailijaa"
-                          single-line
-                          hide-details
-                        ></v-text-field>
-                        ></v-card-title
-                      >
 
-                      <v-data-table
-                        @click:row="rowClick"
-                        :headers="headers_on_water"
-                        :items="still_on_water"
-                        :search="search_on_water"
-                        :loading="loading"
-                      >
-                        <template v-slot:[`item.boat_number`]="{ item }">
-                          <v-chip>{{ item.boat_number }}.</v-chip>
-                        </template>
-                      </v-data-table>
-                    </v-card>
-                  </v-col>
-                </v-row>
-                <v-row v-if="selected_id && still_on_water.length">
-                  <v-col
-                    md="8"
-                    offset-md="2"
-                    style="margin-top: 30px; margin-bottom: 30px"
-                  >
-                    <v-btn large tile color="blue" @click="searchSelected"
-                      ><v-icon>mdi-arrow-right</v-icon>Siirry
-                      punnitukseen</v-btn
-                    >
-                  </v-col>
-                </v-row>
-                <v-row v-else>
-                  <v-col
-                    md="8"
-                    offset-md="2"
-                    style="margin-top: 30px; margin-bottom: 30px"
-                  >
-                    <p
-                      v-if="still_on_water.length"
-                      class="flow-text"
-                      v-bind:class="{ 'white--text': $store.getters.getTheme }"
-                    >
-                      Voit siirtyä punnitukseen myös klikkaamalla haluamaasi
-                      riviä taulukosta ja painamalla ilmestyvää nappulaa
-                    </p>
-                    <v-btn
-                      v-if="still_on_water.length"
-                      large
-                      tile
-                      color="grey darken-4"
-                      class="white--text"
-                      @click="allFinished"
+                    <v-data-table
+                      @click:row="rowClick"
+                      :headers="headers_on_water"
+                      :items="still_on_water"
+                      :search="search_on_water"
                       :loading="loading"
-                      ><v-icon>mdi-check-outline</v-icon>Kaikki saapuneet
-                      maaliin</v-btn
                     >
-                  </v-col>
-                </v-row>
-              </v-col>
-            </v-row>
-          </v-tab-item>
-        </v-tabs-items>
-      </div>
+                      <template v-slot:[`item.boat_number`]="{ item }">
+                        <v-chip>{{ item.boat_number }}.</v-chip>
+                      </template>
+                    </v-data-table>
+                  </v-card>
+                </v-col>
+              </v-row>
+              <v-row v-if="selected_id && still_on_water.length">
+                <v-col
+                  md="8"
+                  offset-md="2"
+                  style="margin-top: 30px; margin-bottom: 30px"
+                >
+                  <v-btn large tile color="blue" @click="searchSelected"
+                    ><v-icon>mdi-arrow-right</v-icon>Siirry punnitukseen</v-btn
+                  >
+                </v-col>
+              </v-row>
+              <v-row v-else>
+                <v-col
+                  md="8"
+                  offset-md="2"
+                  style="margin-top: 30px; margin-bottom: 30px"
+                >
+                  <p
+                    v-if="still_on_water.length"
+                    class="flow-text"
+                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
+                  >
+                    Voit siirtyä punnitukseen myös klikkaamalla haluamaasi riviä
+                    taulukosta ja painamalla ilmestyvää nappulaa
+                  </p>
+                  <v-btn
+                    v-if="still_on_water.length"
+                    large
+                    tile
+                    color="grey darken-4"
+                    class="white--text"
+                    @click="allFinished"
+                    :loading="loading"
+                    ><v-icon>mdi-check-outline</v-icon>Kaikki saapuneet
+                    maaliin</v-btn
+                  >
+                </v-col>
+              </v-row>
+            </v-col>
+          </v-row>
+        </v-tab-item>
+      </v-tabs-items>
     </v-container>
     <v-snackbar v-model="snackbar" :timeout="timeout">
       {{ text }}
@@ -864,6 +789,7 @@
 "use strict";
 import CompetitionService from "../CompetitionService";
 import Timedate from "../components/layout/Timedate";
+import CompetitionNavigation from "../components/layout/CompetitionNavigation.vue";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 
 export default {
@@ -871,6 +797,7 @@ export default {
   components: {
     Timedate,
     ProgressBarQuery,
+    CompetitionNavigation,
   },
   data() {
     return {

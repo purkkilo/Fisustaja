@@ -67,6 +67,7 @@
           <v-btn
             large
             outlined
+            color="red lighten-2"
             :dark="$store.getters.getTheme"
             @click="dialog = true"
             :loading="loading"
@@ -156,7 +157,7 @@
                     v-else
                     :class="[
                       'font-weight-bold',
-                      `${getColor(item.cup_results[c].placement)}--text`,
+                      getColor(item.cup_results[c].placement) + '--text',
                       'strokeme',
                     ]"
                     >{{ item.cup_results[c].points }}p ({{

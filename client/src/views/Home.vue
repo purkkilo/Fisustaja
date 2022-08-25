@@ -1,7 +1,13 @@
 <template>
   <!-- Starting page, / -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <v-container style="width: 70%">
+  <v-container
+    v-bind:class="{
+      mobile: $vuetify.breakpoint.width < 800,
+      browser: $vuetify.breakpoint.width >= 800,
+      wide: $vuetify.breakpoint.width >= 1200,
+    }"
+  >
     <v-row>
       <v-col align-self="center">
         <v-row align="center">
@@ -20,27 +26,31 @@
       </v-col>
 
       <v-col>
-        <v-card
-          v-for="(link, i) in links"
-          :key="i"
-          :dark="$store.getters.getTheme"
-          tile
-          outlined
-          style="background: transparent; margin-top: 100px"
-        >
-          <v-card-title
-            >{{ link.text }}<v-spacer></v-spacer>
-            <v-icon x-large right> {{ link.icon }}</v-icon></v-card-title
-          >
+        <div v-for="(link, i) in links" :key="i">
+          <v-hover v-slot="{ hover }">
+            <v-card
+              :key="i"
+              :dark="$store.getters.getTheme"
+              tile
+              outlined
+              :elevation="hover ? 10 : 2"
+              style="background: transparent; margin-top: 100px"
+            >
+              <v-card-title
+                >{{ link.text }}<v-spacer></v-spacer>
+                <v-icon x-large right> {{ link.icon }}</v-icon></v-card-title
+              >
 
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <router-link :to="link.path">
-              <v-btn text outlined> Siirry </v-btn>
-            </router-link>
-            <v-spacer></v-spacer>
-          </v-card-actions>
-        </v-card>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <router-link :to="link.path">
+                  <v-btn text outlined> Siirry </v-btn>
+                </router-link>
+                <v-spacer></v-spacer>
+              </v-card-actions>
+            </v-card>
+          </v-hover>
+        </div>
       </v-col>
     </v-row>
   </v-container>

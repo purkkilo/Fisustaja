@@ -6,7 +6,7 @@
       :dark="isDark"
       v-bind:class="{
         'grey darken-4': $store.getters.getTheme,
-        'blue lighten-2': !$store.getters.getTheme,
+        'primary lighten-1': !$store.getters.getTheme,
       }"
     >
       <v-app-bar-nav-icon @click="drawer = true"></v-app-bar-nav-icon>
@@ -27,7 +27,7 @@
       :dark="$store.getters.getTheme"
       v-bind:class="{
         'grey darken-4': $store.getters.getTheme,
-        'blue lighten-2': !$store.getters.getTheme,
+        'primary lighten-1': !$store.getters.getTheme,
       }"
     >
       <v-list dense nav class="py-0">

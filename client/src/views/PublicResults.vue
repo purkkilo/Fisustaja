@@ -1,612 +1,753 @@
 <template>
   <!-- /public-results -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <v-container
-    style="margin-top: 70px; margin-bottom: 5px; width: 70%"
-    v-bind:class="{
-      'container-transparent': !$store.getters.getTheme,
-      'container-transparent-dark': $store.getters.getTheme,
-    }"
-  >
-    <v-row>
-      <v-dialog v-model="pdfDialog" width="500">
-        <v-card :dark="$store.getters.getTheme">
-          <v-card-title> Pdf Asetukset </v-card-title>
-          <v-card-text>
-            <v-checkbox
-              label="Pfd Vaakatasossa"
-              v-model="isLandscape"
-            ></v-checkbox>
-          </v-card-text>
+  <div>
+    <PublicNavigation></PublicNavigation>
 
-          <v-divider></v-divider>
+    <v-container
+      v-bind:class="{
+        mobile: $vuetify.breakpoint.width < 800,
+        browser: $vuetify.breakpoint.width >= 800,
+        wide: $vuetify.breakpoint.width >= 1200,
+      }"
+    >
+      <v-card
+        style="background: transparent"
+        elevation="10"
+        outlined
+        :dark="$store.getters.getTheme"
+      >
+        <v-row>
+          <v-dialog v-model="pdfDialog" width="500">
+            <v-card :dark="$store.getters.getTheme">
+              <v-card-title> Pdf Asetukset </v-card-title>
+              <v-card-text>
+                <v-checkbox
+                  label="Pfd Vaakatasossa"
+                  v-model="isLandscape"
+                ></v-checkbox>
+              </v-card-text>
 
-          <v-card-actions>
-            <v-btn color="yellow" text @click="pdfDialog = false">
-              Peruuta
-            </v-btn>
-            <v-spacer></v-spacer>
-            <v-btn
-              color="primary"
-              text
-              @click="
-                pdfDialog = false;
-                pdfWrapper();
-              "
-            >
-              Lataa
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-      <v-col md="3" offset-md="8">
-        <v-card
-          class="mx-auto"
-          max-width="400"
-          tile
-          :dark="$store.getters.getTheme"
-        >
-          <v-list dense>
-            <p>Navigointi</p>
-            <v-list-item-group v-model="selectedItem" color="primary">
-              <v-list-item
-                v-for="(item, i) in items"
-                :key="i"
-                @click="changePage(item.path)"
-                :disabled="item.disabled"
-              >
-                <v-list-item-icon>
-                  <v-icon v-text="item.icon"></v-icon>
-                </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title v-text="item.text"></v-list-item-title>
-                </v-list-item-content>
-              </v-list-item>
-            </v-list-item-group>
-          </v-list>
-        </v-card>
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col>
-        <v-row>
-          <v-col md="6" offset-md="3">
-            <h1>Kilpailujen tuloksia</h1>
-          </v-col>
-        </v-row>
-        <v-row v-if="competitions.length" class="scroll_table">
-          <v-col md="6" offset-md="3">
-            <!-- TODO add v-autocompelete, but so that it popsup the keyboad on mobile only when pressing search button? -->
-            <v-select
-              :dark="$store.getters.getTheme"
-              :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
-              v-model="selected_competition"
-              :items="competitions"
-              item-text="select"
-              item-value="_id"
-              label="Valitse näytettävä kilpailu"
-              :loading="loading"
-              outlined
-              @input="pickCompetition"
-              return-object
-              single-line
-            >
-              <template v-slot:item="data">
-                <v-list-item-icon>
-                  <v-icon v-if="data.item.isFinished" color="green"
-                    >mdi-trophy</v-icon
-                  >
-                  <v-icon v-else color="yellow">mdi-trophy</v-icon>
-                </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title
-                    v-html="data.item.name + ', ' + data.item.locality"
-                  ></v-list-item-title>
-                  <v-list-item-subtitle
-                    class="green--text"
-                    v-html="
-                      data.item.cup_name +
-                      ' (' +
-                      $moment(data.item.start_date).format('YYYY') +
-                      ')'
-                    "
-                  ></v-list-item-subtitle>
-                  <v-list-item-subtitle
-                    class="blue--text"
-                    v-html="$moment(data.item.start_date).format('DD.MM.YYYY')"
-                  ></v-list-item-subtitle>
-                  <v-list-item-subtitle v-if="!data.item.isFinished"
-                    >Kesken!</v-list-item-subtitle
-                  >
-                </v-list-item-content>
-              </template>
-            </v-select>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col md="3" offset-md="4" style="margin-bottom: 20px">
-            <v-btn
-              large
-              tile
-              color="yellow"
-              @click="cancelSelection"
-              :disabled="!competition"
-            >
-              <v-icon>mdi-cancel</v-icon>Peruuta valinta
-            </v-btn>
-          </v-col>
-          <v-col md="3" offset-md="1">
-            <v-dialog v-model="dialog" scrollable max-width="300px">
-              <template v-slot:activator="{ on, attrs }">
-                <v-btn
-                  v-bind="attrs"
-                  v-on="on"
-                  :dark="$store.getters.getTheme"
-                  large
-                  outlined
-                  :loading="loading_competition"
-                  :disabled="!biggest_amounts_results.length || !competition"
-                >
-                  <v-icon color="red">mdi-file-pdf-box</v-icon> Lataa kaikki
-                  tulokset
+              <v-divider></v-divider>
+
+              <v-card-actions>
+                <v-btn color="yellow" text @click="pdfDialog = false">
+                  Peruuta
                 </v-btn>
-              </template>
-              <v-card :dark="$store.getters.getTheme">
-                <v-card-text style="margin-top: 20px">
-                  <h1>PDF Asetukset</h1>
-                  <v-checkbox
-                    label="Pfd Vaakatasossa"
-                    v-model="isLandscape"
-                  ></v-checkbox
-                ></v-card-text>
-                <v-card-title>Valitse mitä lataus sisältää</v-card-title>
-                <v-divider></v-divider>
-                <v-card-text style="height: 300px; width: 100%">
-                  <v-checkbox
-                    v-model="selected_print"
-                    label="Tilastoja"
-                    :disabled="!biggest_amounts_results.length"
-                    color="indigo darken-3"
-                    value="stats"
-                  ></v-checkbox>
-                  <v-checkbox
-                    v-model="selected_print"
-                    :disabled="!biggest_amounts_results.length"
-                    label="Normaalikilpailun tulokset"
-                    color="indigo darken-3"
-                    value="normal"
-                  ></v-checkbox>
-                  <v-checkbox
-                    v-if="isTeamCompetition"
-                    :disabled="!team_results.length"
-                    v-model="selected_print"
-                    label="Tiimikilpailun tulokset"
-                    color="indigo darken-3"
-                    value="team"
-                  ></v-checkbox>
-                  <v-checkbox
-                    v-model="selected_print"
-                    :disabled="!biggest_amounts_results.length"
-                    label="Suurimmat kalat ja kalasaaliit (Kaikki kalat samassa taulukossa)"
-                    color="indigo darken-3"
-                    value="all_biggest"
-                  ></v-checkbox>
-                  <v-checkbox
-                    v-model="selected_print"
-                    :disabled="!biggest_fishes_results.length"
-                    label="Suurimmat yksittäiset kalat (Kalalajeittain taulukossa)"
-                    color="indigo darken-3"
-                    value="biggest_fishes"
-                  ></v-checkbox>
-                  <v-checkbox
-                    v-model="selected_print"
-                    :disabled="!biggest_amounts_results.length"
-                    label="Suurimmat kalasaaliit (Kalalajeittain taulukossa)"
-                    color="indigo darken-3"
-                    value="biggest_amounts"
-                  ></v-checkbox>
-                  <v-checkbox
-                    v-model="selected_print"
-                    :disabled="
-                      !biggest_amounts_results.length &&
-                      !biggest_amounts_results.length
-                    "
-                    label="Suurimmat yksittäiset kalat / kalasaaliit (Voittajat)"
-                    color="indigo darken-3"
-                    value="biggest_winners"
-                  ></v-checkbox>
-                </v-card-text>
-                <v-divider></v-divider>
-                <v-card-actions>
-                  <v-col>
-                    <v-btn
-                      outlined
-                      color="red darken-4"
-                      text
-                      @click="dialog = false"
-                      >Sulje</v-btn
-                    >
-                  </v-col>
-                  <v-col>
-                    <v-btn
-                      outlined
-                      color="green darken-4"
-                      text
-                      @click="choosePrints"
-                      >Lataa</v-btn
-                    >
-                  </v-col>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
-          </v-col>
+                <v-spacer></v-spacer>
+                <v-btn
+                  color="primary"
+                  text
+                  @click="
+                    pdfDialog = false;
+                    pdfWrapper();
+                  "
+                >
+                  Lataa
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
         </v-row>
-        <!-- Tabs -->
-        <v-tabs
-          v-model="tab"
-          background-color="blue lighten-2"
-          color="blue darken-4"
-          grow
-          show-arrows
-          next-icon="mdi-arrow-right-bold-box-outline"
-          prev-icon="mdi-arrow-left-bold-box-outline"
-          center-active
-        >
-          <v-tabs-slider color="blue darken-4"></v-tabs-slider>
-          <v-tab href="#stats">Tilastoja</v-tab>
-          <v-tab href="#normal-competition" :disabled="!selected_competition"
-            >Normaalikilpailu</v-tab
-          >
-          <v-tab
-            v-if="isTeamCompetition"
-            href="#team-competition"
-            :disabled="!selected_competition"
-            >Tiimikilpailu</v-tab
-          >
-          <v-tab v-else href="#team-competition" disabled
-            >Ei Tiimikilpailua</v-tab
-          >
-          <v-tab href="#biggest-fishes" :disabled="!selected_competition"
-            >Suurimmat Kalat</v-tab
-          >
-          <v-tab href="#biggest-fish-amounts" :disabled="!selected_competition"
-            >Suurimmat Kalasaaliit</v-tab
-          >
-        </v-tabs>
-        <v-row v-if="loading" style="margin: 50px">
+        <v-row>
           <v-col>
-            <h2
-              v-bind:class="{
-                'white--text': $store.getters.getTheme,
-              }"
-            >
-              Haetaan kilpailuja...
-            </h2>
-            <ProgressBarQuery />
-          </v-col>
-        </v-row>
-        <v-tabs-items
-          v-model="tab"
-          style="background: rgba(0, 0, 0, 0.4)"
-          v-if="!loading && selected_competition"
-        >
-          <!-- Tilastoja -->
-          <v-tab-item
-            v-bind:class="{
-              inputarea: !$store.getters.getTheme,
-              'inputarea-dark': $store.getters.getTheme,
-            }"
-            :value="'stats'"
-          >
-            <!-- Save as pdf button, is disabled if there are no results -->
-            <v-row style="padding-top: 50px">
-              <v-col md="3" offset-md="8">
+            <v-row>
+              <v-col md="6" offset-md="3">
+                <h1>Kilpailujen tuloksia</h1>
+              </v-col>
+            </v-row>
+            <v-row v-if="competitions.length" class="scroll_table">
+              <v-col md="6" offset-md="3">
+                <!-- TODO add v-autocompelete, but so that it popsup the keyboad on mobile only when pressing search button? -->
+                <v-select
+                  :dark="$store.getters.getTheme"
+                  :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
+                  v-model="selected_competition"
+                  :items="competitions"
+                  item-text="select"
+                  item-value="_id"
+                  label="Valitse näytettävä kilpailu"
+                  :loading="loading"
+                  outlined
+                  @input="pickCompetition"
+                  return-object
+                  single-line
+                >
+                  <template v-slot:item="data">
+                    <v-list-item-icon>
+                      <v-icon v-if="data.item.isFinished" color="green"
+                        >mdi-trophy</v-icon
+                      >
+                      <v-icon v-else color="yellow">mdi-trophy</v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-content>
+                      <v-list-item-title
+                        v-html="data.item.name + ', ' + data.item.locality"
+                      ></v-list-item-title>
+                      <v-list-item-subtitle
+                        class="green--text"
+                        v-html="
+                          data.item.cup_name +
+                          ' (' +
+                          $moment(data.item.start_date).format('YYYY') +
+                          ')'
+                        "
+                      ></v-list-item-subtitle>
+                      <v-list-item-subtitle
+                        class="blue--text"
+                        v-html="
+                          $moment(data.item.start_date).format('DD.MM.YYYY')
+                        "
+                      ></v-list-item-subtitle>
+                      <v-list-item-subtitle v-if="!data.item.isFinished"
+                        >Kesken!</v-list-item-subtitle
+                      >
+                    </v-list-item-content>
+                  </template>
+                </v-select>
+              </v-col>
+            </v-row>
+            <v-row align="center" justify="center" style="margin-bottom: 20px">
+              <v-col>
                 <v-btn
                   large
                   outlined
-                  :dark="$store.getters.getTheme"
-                  :loading="loading_competition"
-                  @click="
-                    pdf = 'Tilastoja';
-                    pdfDialog = true;
-                  "
-                  :disabled="!biggest_amounts_results.length"
-                  style="margin-bottom: 20px"
+                  color="yellow"
+                  @click="cancelSelection"
+                  :disabled="!competition"
+                  class="black--text"
                 >
-                  <v-icon color="red">mdi-file-pdf-box</v-icon> Lataa pdf</v-btn
-                >
+                  <v-icon>mdi-cancel</v-icon>Peruuta valinta
+                </v-btn>
               </v-col>
-            </v-row>
-            <v-row v-if="competition">
               <v-col>
-                <v-row
-                  style="min-height: 400px"
-                  v-if="competition.normal_points.length"
-                >
-                  <v-col
-                    sm="12"
-                    md="5"
-                    offset-md="1"
-                    style="margin-bottom: 50px"
-                  >
-                    <div v-if="fishes_chart_data">
-                      <v-hover v-slot="{ hover }">
-                        <v-card
-                          :dark="$store.getters.getTheme"
-                          :elevation="hover ? 20 : 5"
-                          :class="{ 'on-hover': hover }"
-                          style="padding: 20px"
-                        >
-                          <v-card-title
-                            ><h4 class="headline mb-1">
-                              {{ fishes_chart_title }}
-                            </h4></v-card-title
-                          >
-                          <doughnut-chart
-                            :chart-data="fishes_chart_data"
-                            chart-id="fishes_chart"
-                            v-bind:title="fishes_chart_title"
-                          />
-                        </v-card>
-                      </v-hover>
-                    </div>
-                  </v-col>
-                  <v-col sm="12" md="5">
-                    <div v-if="signee_chart_data">
-                      <v-hover v-slot="{ hover }">
-                        <v-card
-                          :dark="$store.getters.getTheme"
-                          :elevation="hover ? 20 : 5"
-                          :class="{ 'on-hover': hover }"
-                          style="padding: 20px"
-                        >
-                          <v-card-title
-                            ><h4 class="headline mb-1">
-                              {{ signee_chart_title }}
-                            </h4></v-card-title
-                          >
-                          <pie-chart
-                            :chart-data="signee_chart_data"
-                            chart-id="signee_chart"
-                            v-bind:title="signee_chart_title"
-                          />
-                        </v-card>
-                      </v-hover>
-                    </div>
-                  </v-col>
-                </v-row>
-                <v-row v-else>
-                  <v-col md="12">
-                    <p
-                      class="flow-text"
-                      v-bind:class="{
-                        'white--text': $store.getters.getTheme,
-                      }"
-                    >
-                      Ei tuloksia, vielä...
-                    </p>
-                  </v-col>
-                </v-row>
-              </v-col>
-            </v-row>
-            <v-row v-if="competition">
-              <v-col md="8" offset-md="2">
-                <v-hover v-slot="{ hover }">
-                  <v-card
-                    :dark="$store.getters.getTheme"
-                    :elevation="hover ? 20 : 5"
-                    :class="{ 'on-hover': hover }"
-                    style="padding: 20px"
-                  >
-                    <v-row>
-                      <v-col>
-                        <v-card
-                          :dark="$store.getters.getTheme"
-                          elevation="20"
-                          outlined
-                        >
-                          <v-card-title class="text-center"
-                            ><p class="display-1">
-                              Kalalajien määritykset
-                            </p></v-card-title
-                          >
-                          <v-list outlined elevation="10">
-                            <div
-                              v-for="(fish, index) in calculated_fish_weights"
-                              :key="index"
-                            >
-                              <v-list-item>
-                                <v-list-item-title>{{
-                                  fish.name
-                                }}</v-list-item-title>
-                                <v-divider vertical></v-divider>
-                                <v-list-item-subtitle class="green-text">
-                                  <b> x {{ fish.multiplier }}</b>
-                                </v-list-item-subtitle>
-                                <v-divider vertical></v-divider>
-                                <v-list-item-subtitle class="blue-text">
-                                  <v-tooltip bottom>
-                                    <template v-slot:activator="{ on, attrs }">
-                                      <span v-bind="attrs" v-on="on"
-                                        ><b>{{ fish.minsize }} cm</b></span
-                                      >
-                                    </template>
-                                    <span>{{ fish.minsize }}</span>
-                                  </v-tooltip>
-                                </v-list-item-subtitle>
-                                <v-divider vertical></v-divider>
-                                <v-list-item-subtitle class="green-text">
-                                  {{
-                                    fish.weights
-                                      ? Math.round(
-                                          (fish.weights / 1000 +
-                                            Number.EPSILON) *
-                                            100
-                                        ) / 100
-                                      : 0
-                                  }}
-                                  kg
-                                </v-list-item-subtitle>
-                              </v-list-item>
-                              <v-divider></v-divider>
-                            </div>
-                            <v-list-item>
-                              <v-list-item-title>
-                                Saalista yhteensä
-                              </v-list-item-title>
-                              <v-list-item-subtitle>
-                                <h4 class="green-text">
-                                  <b
-                                    >{{
-                                      Math.round(
-                                        (calculated_total_weights / 1000 +
-                                          Number.EPSILON) *
-                                          100
-                                      ) / 100
-                                    }}
-                                    kg</b
-                                  >
-                                </h4></v-list-item-subtitle
-                              >
-                            </v-list-item>
-                          </v-list>
-                        </v-card>
-                      </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col>
-                        <v-card
-                          :dark="$store.getters.getTheme"
-                          elevation="20"
-                          outlined
-                        >
-                          <v-card-title class="text-center"
-                            ><p class="display-1">
-                              Yleisiä tilastoja
-                            </p></v-card-title
-                          >
-                          <v-list outlined elevation="10">
-                            <v-list-item>
-                              <v-list-item-title
-                                >Cup pistekerroin</v-list-item-title
-                              >
-                              <v-divider vertical></v-divider>
-                              <v-list-item-subtitle class="green-text">
-                                <b>x {{ competition.cup_points_multiplier }}</b>
-                              </v-list-item-subtitle>
-                            </v-list-item>
-                            <v-divider></v-divider>
-                            <v-list-item>
-                              <v-list-item-title>
-                                <b>Ilmoittautuneita yhteensä</b>
-                              </v-list-item-title>
-                              <v-divider vertical></v-divider>
-                              <v-list-item-subtitle class="green-text">
-                                <b>{{ signees.length }}</b> venettä
-                              </v-list-item-subtitle>
-                            </v-list-item>
-                            <v-divider></v-divider>
-                            <v-list-item>
-                              <v-list-item-title>
-                                <b>Saalista saaneita</b>
-                              </v-list-item-title>
-                              <v-divider vertical></v-divider>
-                              <v-list-item-subtitle
-                                v-if="$store.getters.getPointSignees.length"
-                                class="green-text"
-                              >
-                                <b
-                                  >{{
-                                    Math.round(
-                                      ($store.getters.getPointSignees.length /
-                                        competition.signees.length) *
-                                        100 *
-                                        100
-                                    ) / 100
-                                  }}% ({{
-                                    $store.getters.getPointSignees.length
-                                  }}
-                                  / {{ signees.length }})</b
-                                >
-                              </v-list-item-subtitle>
-                              <v-list-item-subtitle class="red-text" v-else
-                                ><b>0% (0/0)</b></v-list-item-subtitle
-                              >
-                            </v-list-item>
-                          </v-list>
-                        </v-card>
-                      </v-col>
-                    </v-row>
-                  </v-card>
-                </v-hover>
-              </v-col>
-            </v-row>
-          </v-tab-item>
-          <!-- Normaalikilpailu -->
-          <v-tab-item
-            v-bind:class="{
-              inputarea: !$store.getters.getTheme,
-              'inputarea-dark': $store.getters.getTheme,
-            }"
-            :value="'normal-competition'"
-          >
-            <v-row>
-              <v-col
-                md="10"
-                offset-md="1"
-                style="padding-top: 50px; padding-bottom: 20px"
-              >
-                <v-row>
-                  <v-col md="4" offset-md="4">
-                    <v-select
+                <v-dialog v-model="dialog" scrollable max-width="300px">
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      v-bind="attrs"
+                      v-on="on"
                       :dark="$store.getters.getTheme"
-                      :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
-                      label="Valitse näytettävät tulokset"
+                      large
+                      color="red lighten-2"
                       outlined
-                      :items="normal_options"
-                      @input="switchNormalResults"
-                      v-model="selected_normal"
-                    />
-                  </v-col>
-                  <v-col
-                    v-if="
-                      normal_points.length ||
-                      (signees.length && selected_normal === 'Ilmoittautuneet')
-                    "
-                    md="3"
-                    offset-md="1"
-                  >
+                      :loading="loading_competition"
+                      :disabled="
+                        !biggest_amounts_results.length || !competition
+                      "
+                    >
+                      <v-icon color="red">mdi-file-pdf-box</v-icon> Lataa kaikki
+                      tulokset
+                    </v-btn>
+                  </template>
+                  <v-card :dark="$store.getters.getTheme">
+                    <v-card-text style="margin-top: 20px">
+                      <h1>PDF Asetukset</h1>
+                      <v-checkbox
+                        label="Pfd Vaakatasossa"
+                        v-model="isLandscape"
+                      ></v-checkbox
+                    ></v-card-text>
+                    <v-card-title>Valitse mitä lataus sisältää</v-card-title>
+                    <v-divider></v-divider>
+                    <v-card-text style="height: 300px; width: 100%">
+                      <v-checkbox
+                        v-model="selected_print"
+                        label="Tilastoja"
+                        :disabled="!biggest_amounts_results.length"
+                        color="indigo darken-3"
+                        value="stats"
+                      ></v-checkbox>
+                      <v-checkbox
+                        v-model="selected_print"
+                        :disabled="!biggest_amounts_results.length"
+                        label="Normaalikilpailun tulokset"
+                        color="indigo darken-3"
+                        value="normal"
+                      ></v-checkbox>
+                      <v-checkbox
+                        v-if="isTeamCompetition"
+                        :disabled="!team_results.length"
+                        v-model="selected_print"
+                        label="Tiimikilpailun tulokset"
+                        color="indigo darken-3"
+                        value="team"
+                      ></v-checkbox>
+                      <v-checkbox
+                        v-model="selected_print"
+                        :disabled="!biggest_amounts_results.length"
+                        label="Suurimmat kalat ja kalasaaliit (Kaikki kalat samassa taulukossa)"
+                        color="indigo darken-3"
+                        value="all_biggest"
+                      ></v-checkbox>
+                      <v-checkbox
+                        v-model="selected_print"
+                        :disabled="!biggest_fishes_results.length"
+                        label="Suurimmat yksittäiset kalat (Kalalajeittain taulukossa)"
+                        color="indigo darken-3"
+                        value="biggest_fishes"
+                      ></v-checkbox>
+                      <v-checkbox
+                        v-model="selected_print"
+                        :disabled="!biggest_amounts_results.length"
+                        label="Suurimmat kalasaaliit (Kalalajeittain taulukossa)"
+                        color="indigo darken-3"
+                        value="biggest_amounts"
+                      ></v-checkbox>
+                      <v-checkbox
+                        v-model="selected_print"
+                        :disabled="
+                          !biggest_amounts_results.length &&
+                          !biggest_amounts_results.length
+                        "
+                        label="Suurimmat yksittäiset kalat / kalasaaliit (Voittajat)"
+                        color="indigo darken-3"
+                        value="biggest_winners"
+                      ></v-checkbox>
+                    </v-card-text>
+                    <v-divider></v-divider>
+                    <v-card-actions>
+                      <v-col>
+                        <v-btn
+                          outlined
+                          color="red darken-4"
+                          text
+                          @click="dialog = false"
+                          >Sulje</v-btn
+                        >
+                      </v-col>
+                      <v-col>
+                        <v-btn
+                          outlined
+                          color="green darken-4"
+                          text
+                          @click="choosePrints"
+                          >Lataa</v-btn
+                        >
+                      </v-col>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+              </v-col>
+            </v-row>
+            <!-- Tabs -->
+            <v-tabs
+              v-model="tab"
+              background-color="blue lighten-2"
+              color="blue darken-4"
+              grow
+              show-arrows
+              next-icon="mdi-arrow-right-bold-box-outline"
+              prev-icon="mdi-arrow-left-bold-box-outline"
+              center-active
+            >
+              <v-tabs-slider color="blue darken-4"></v-tabs-slider>
+              <v-tab href="#stats">Tilastoja</v-tab>
+              <v-tab
+                href="#normal-competition"
+                :disabled="!selected_competition"
+                >Normaalikilpailu</v-tab
+              >
+              <v-tab
+                v-if="isTeamCompetition"
+                href="#team-competition"
+                :disabled="!selected_competition"
+                >Tiimikilpailu</v-tab
+              >
+              <v-tab v-else href="#team-competition" disabled
+                >Ei Tiimikilpailua</v-tab
+              >
+              <v-tab href="#biggest-fishes" :disabled="!selected_competition"
+                >Suurimmat Kalat</v-tab
+              >
+              <v-tab
+                href="#biggest-fish-amounts"
+                :disabled="!selected_competition"
+                >Suurimmat Kalasaaliit</v-tab
+              >
+            </v-tabs>
+            <v-row v-if="loading" style="margin: 50px">
+              <v-col>
+                <h2
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Haetaan kilpailuja...
+                </h2>
+                <ProgressBarQuery />
+              </v-col>
+            </v-row>
+            <v-tabs-items
+              v-model="tab"
+              style="background: rgba(0, 0, 0, 0.4)"
+              v-if="!loading && selected_competition"
+            >
+              <!-- Tilastoja -->
+              <v-tab-item
+                v-bind:class="{
+                  inputarea: !$store.getters.getTheme,
+                  'inputarea-dark': $store.getters.getTheme,
+                }"
+                :value="'stats'"
+              >
+                <!-- Save as pdf button, is disabled if there are no results -->
+                <v-row style="padding-top: 50px">
+                  <v-col md="3" offset-md="8">
                     <v-btn
                       large
                       outlined
+                      color="red lighten-2"
                       :dark="$store.getters.getTheme"
                       :loading="loading_competition"
                       @click="
-                        pdf = '#normal-table';
+                        pdf = 'Tilastoja';
+                        pdfDialog = true;
+                      "
+                      :disabled="!biggest_amounts_results.length"
+                      style="margin-bottom: 20px"
+                    >
+                      <v-icon color="red">mdi-file-pdf-box</v-icon> Lataa
+                      pdf</v-btn
+                    >
+                  </v-col>
+                </v-row>
+                <v-row v-if="competition">
+                  <v-col>
+                    <v-row
+                      style="min-height: 400px"
+                      v-if="competition.normal_points.length"
+                    >
+                      <v-col
+                        sm="12"
+                        md="5"
+                        offset-md="1"
+                        style="margin-bottom: 50px"
+                      >
+                        <div v-if="fishes_chart_data">
+                          <v-hover v-slot="{ hover }">
+                            <v-card
+                              :dark="$store.getters.getTheme"
+                              :elevation="hover ? 20 : 5"
+                              :class="{ 'on-hover': hover }"
+                              style="padding: 20px"
+                            >
+                              <v-card-title
+                                ><h4 class="headline mb-1">
+                                  {{ fishes_chart_title }}
+                                </h4></v-card-title
+                              >
+                              <doughnut-chart
+                                :chart-data="fishes_chart_data"
+                                chart-id="fishes_chart"
+                                v-bind:title="fishes_chart_title"
+                              />
+                            </v-card>
+                          </v-hover>
+                        </div>
+                      </v-col>
+                      <v-col sm="12" md="5">
+                        <div v-if="signee_chart_data">
+                          <v-hover v-slot="{ hover }">
+                            <v-card
+                              :dark="$store.getters.getTheme"
+                              :elevation="hover ? 20 : 5"
+                              :class="{ 'on-hover': hover }"
+                              style="padding: 20px"
+                            >
+                              <v-card-title
+                                ><h4 class="headline mb-1">
+                                  {{ signee_chart_title }}
+                                </h4></v-card-title
+                              >
+                              <pie-chart
+                                :chart-data="signee_chart_data"
+                                chart-id="signee_chart"
+                                v-bind:title="signee_chart_title"
+                              />
+                            </v-card>
+                          </v-hover>
+                        </div>
+                      </v-col>
+                    </v-row>
+                    <v-row v-else>
+                      <v-col md="12">
+                        <p
+                          class="flow-text"
+                          v-bind:class="{
+                            'white--text': $store.getters.getTheme,
+                          }"
+                        >
+                          Ei tuloksia, vielä...
+                        </p>
+                      </v-col>
+                    </v-row>
+                  </v-col>
+                </v-row>
+                <v-row v-if="competition">
+                  <v-col md="8" offset-md="2">
+                    <v-hover v-slot="{ hover }">
+                      <v-card
+                        :dark="$store.getters.getTheme"
+                        :elevation="hover ? 20 : 5"
+                        :class="{ 'on-hover': hover }"
+                        style="padding: 20px"
+                      >
+                        <v-row>
+                          <v-col>
+                            <v-card
+                              :dark="$store.getters.getTheme"
+                              elevation="20"
+                              outlined
+                            >
+                              <v-card-title class="text-center"
+                                ><p class="display-1">
+                                  Kalalajien määritykset
+                                </p></v-card-title
+                              >
+                              <v-list outlined elevation="10">
+                                <div
+                                  v-for="(
+                                    fish, index
+                                  ) in calculated_fish_weights"
+                                  :key="index"
+                                >
+                                  <v-list-item>
+                                    <v-list-item-title>{{
+                                      fish.name
+                                    }}</v-list-item-title>
+                                    <v-divider vertical></v-divider>
+                                    <v-list-item-subtitle class="green-text">
+                                      <b> x {{ fish.multiplier }}</b>
+                                    </v-list-item-subtitle>
+                                    <v-divider vertical></v-divider>
+                                    <v-list-item-subtitle class="blue-text">
+                                      <v-tooltip bottom>
+                                        <template
+                                          v-slot:activator="{ on, attrs }"
+                                        >
+                                          <span v-bind="attrs" v-on="on"
+                                            ><b>{{ fish.minsize }} cm</b></span
+                                          >
+                                        </template>
+                                        <span>{{ fish.minsize }}</span>
+                                      </v-tooltip>
+                                    </v-list-item-subtitle>
+                                    <v-divider vertical></v-divider>
+                                    <v-list-item-subtitle class="green-text">
+                                      {{
+                                        fish.weights
+                                          ? Math.round(
+                                              (fish.weights / 1000 +
+                                                Number.EPSILON) *
+                                                100
+                                            ) / 100
+                                          : 0
+                                      }}
+                                      kg
+                                    </v-list-item-subtitle>
+                                  </v-list-item>
+                                  <v-divider></v-divider>
+                                </div>
+                                <v-list-item>
+                                  <v-list-item-title>
+                                    Saalista yhteensä
+                                  </v-list-item-title>
+                                  <v-list-item-subtitle>
+                                    <h4 class="green-text">
+                                      <b
+                                        >{{
+                                          Math.round(
+                                            (calculated_total_weights / 1000 +
+                                              Number.EPSILON) *
+                                              100
+                                          ) / 100
+                                        }}
+                                        kg</b
+                                      >
+                                    </h4></v-list-item-subtitle
+                                  >
+                                </v-list-item>
+                              </v-list>
+                            </v-card>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col>
+                            <v-card
+                              :dark="$store.getters.getTheme"
+                              elevation="20"
+                              outlined
+                            >
+                              <v-card-title class="text-center"
+                                ><p class="display-1">
+                                  Yleisiä tilastoja
+                                </p></v-card-title
+                              >
+                              <v-list outlined elevation="10">
+                                <v-list-item>
+                                  <v-list-item-title
+                                    >Cup pistekerroin</v-list-item-title
+                                  >
+                                  <v-divider vertical></v-divider>
+                                  <v-list-item-subtitle class="green-text">
+                                    <b
+                                      >x
+                                      {{ competition.cup_points_multiplier }}</b
+                                    >
+                                  </v-list-item-subtitle>
+                                </v-list-item>
+                                <v-divider></v-divider>
+                                <v-list-item>
+                                  <v-list-item-title>
+                                    <b>Ilmoittautuneita yhteensä</b>
+                                  </v-list-item-title>
+                                  <v-divider vertical></v-divider>
+                                  <v-list-item-subtitle class="green-text">
+                                    <b>{{ signees.length }}</b> venettä
+                                  </v-list-item-subtitle>
+                                </v-list-item>
+                                <v-divider></v-divider>
+                                <v-list-item>
+                                  <v-list-item-title>
+                                    <b>Saalista saaneita</b>
+                                  </v-list-item-title>
+                                  <v-divider vertical></v-divider>
+                                  <v-list-item-subtitle
+                                    v-if="$store.getters.getPointSignees.length"
+                                    class="green-text"
+                                  >
+                                    <b
+                                      >{{
+                                        Math.round(
+                                          ($store.getters.getPointSignees
+                                            .length /
+                                            competition.signees.length) *
+                                            100 *
+                                            100
+                                        ) / 100
+                                      }}% ({{
+                                        $store.getters.getPointSignees.length
+                                      }}
+                                      / {{ signees.length }})</b
+                                    >
+                                  </v-list-item-subtitle>
+                                  <v-list-item-subtitle class="red-text" v-else
+                                    ><b>0% (0/0)</b></v-list-item-subtitle
+                                  >
+                                </v-list-item>
+                              </v-list>
+                            </v-card>
+                          </v-col>
+                        </v-row>
+                      </v-card>
+                    </v-hover>
+                  </v-col>
+                </v-row>
+              </v-tab-item>
+              <!-- Normaalikilpailu -->
+              <v-tab-item
+                v-bind:class="{
+                  inputarea: !$store.getters.getTheme,
+                  'inputarea-dark': $store.getters.getTheme,
+                }"
+                :value="'normal-competition'"
+              >
+                <v-row>
+                  <v-col
+                    md="10"
+                    offset-md="1"
+                    style="padding-top: 50px; padding-bottom: 20px"
+                  >
+                    <v-row>
+                      <v-col md="4" offset-md="4">
+                        <v-select
+                          :dark="$store.getters.getTheme"
+                          :menu-props="
+                            $store.getters.getTheme ? 'dark' : 'light'
+                          "
+                          label="Valitse näytettävät tulokset"
+                          outlined
+                          :items="normal_options"
+                          @input="switchNormalResults"
+                          v-model="selected_normal"
+                        />
+                      </v-col>
+                      <v-col
+                        v-if="
+                          normal_points.length ||
+                          (signees.length &&
+                            selected_normal === 'Ilmoittautuneet')
+                        "
+                        md="3"
+                        offset-md="1"
+                      >
+                        <v-btn
+                          large
+                          outlined
+                          color="red lighten-2"
+                          :dark="$store.getters.getTheme"
+                          :loading="loading_competition"
+                          @click="
+                            pdf = '#normal-table';
+                            pdfDialog = true;
+                          "
+                        >
+                          <v-icon color="red">mdi-file-pdf-box</v-icon>
+                          Lataa pdf
+                        </v-btn>
+                      </v-col>
+                    </v-row>
+                    <v-row
+                      class="row"
+                      v-if="
+                        normal_points.length ||
+                        (signees.length &&
+                          selected_normal === 'Ilmoittautuneet')
+                      "
+                    >
+                      <v-col md="12">
+                        <v-card :dark="$store.getters.getTheme">
+                          <v-card-title>
+                            <p class="flow-text">
+                              Normaalikilpailu ({{ selected_normal }})
+                            </p>
+                            <v-spacer></v-spacer>
+                            <v-text-field
+                              v-model="search"
+                              append-icon="mdi-magnify"
+                              label="Hae kilpailijaa"
+                              single-line
+                              hide-details
+                            ></v-text-field>
+                          </v-card-title>
+                          <v-data-table
+                            :headers="headers"
+                            :items="results"
+                            :search="search"
+                          >
+                            <template v-slot:[`item.placement`]="{ item }">
+                              <v-chip
+                                :outlined="$store.getters.getTheme"
+                                :color="getColor(item.placement)"
+                                >{{ item.placement }}.</v-chip
+                              >
+                            </template>
+                            <template
+                              v-if="selected_normal === 'Ilmoittautuneet'"
+                              v-slot:[`item.boat_number`]="{ item }"
+                            >
+                              <v-chip>{{ item.boat_number }}</v-chip>
+                            </template>
+                            <template v-slot:[`item.total_points`]="{ item }">
+                              <v-chip
+                                >{{
+                                  item.total_points.toLocaleString()
+                                }}
+                                p</v-chip
+                              >
+                            </template>
+                            <template
+                              v-slot:[`item.cup_points_total`]="{ item }"
+                            >
+                              <v-tooltip bottom color="primary">
+                                <template v-slot:activator="{ on, attrs }">
+                                  <v-chip
+                                    v-bind="attrs"
+                                    v-on="on"
+                                    :color="
+                                      getColorPoints(item.cup_points_total)
+                                    "
+                                    >{{ item.cup_points_total }} p</v-chip
+                                  >
+                                </template>
+                                <span>
+                                  <b
+                                    >Sijoittumispisteet + Osallistumispisteet =
+                                    Cup pisteet</b
+                                  >
+                                  <br />
+                                  {{ item.cup_placement_points }} +
+                                  {{ item.cup_participation_points }} =
+                                  {{ item.cup_points_total }}
+                                </span>
+                              </v-tooltip>
+                            </template>
+                          </v-data-table>
+                        </v-card>
+                      </v-col>
+                    </v-row>
+                    <v-row v-else>
+                      <v-col v-if="!loading">
+                        <p
+                          class="flow-text"
+                          v-bind:class="{
+                            'white--text': $store.getters.getTheme,
+                          }"
+                        >
+                          Ei tuloksia, vielä...
+                        </p>
+                      </v-col>
+                      <v-col v-else>
+                        <h2
+                          v-bind:class="{
+                            'white--text': $store.getters.getTheme,
+                          }"
+                        >
+                          Päivitetään tuloksia tietokannasta...
+                        </h2>
+                        <ProgressBarQuery />
+                      </v-col>
+                    </v-row>
+                  </v-col>
+                </v-row>
+              </v-tab-item>
+
+              <!-- Tiimikilpailu -->
+              <v-tab-item
+                v-bind:class="{
+                  inputarea: !$store.getters.getTheme,
+                  'inputarea-dark': $store.getters.getTheme,
+                }"
+                :value="'team-competition'"
+                v-if="isTeamCompetition"
+              >
+                <v-row v-if="team_results.length">
+                  <v-col style="padding-top: 50px" md="3" offset-md="8">
+                    <v-btn
+                      large
+                      outlined
+                      color="red lighten-2"
+                      :dark="$store.getters.getTheme"
+                      :loading="loading_competition"
+                      @click="
+                        pdf = '#team-table';
                         pdfDialog = true;
                       "
                     >
-                      <v-icon color="red">mdi-file-pdf-box</v-icon>
-                      Lataa pdf
+                      <v-icon color="red">mdi-file-pdf-box</v-icon> Lataa pdf
                     </v-btn>
                   </v-col>
                 </v-row>
-                <v-row
-                  class="row"
-                  v-if="
-                    normal_points.length ||
-                    (signees.length && selected_normal === 'Ilmoittautuneet')
-                  "
-                >
-                  <v-col md="12">
+                <v-row>
+                  <v-col
+                    md="10"
+                    offset-md="1"
+                    style="padding-bottom: 20px"
+                    v-if="team_results.length"
+                  >
                     <v-card :dark="$store.getters.getTheme">
                       <v-card-title>
-                        <p class="flow-text">
-                          Normaalikilpailu ({{ selected_normal }})
+                        <p
+                          class="flow-text"
+                          v-bind:class="{
+                            'white--text': $store.getters.getTheme,
+                          }"
+                        >
+                          Tiimikilpailu
                         </p>
                         <v-spacer></v-spacer>
                         <v-text-field
-                          v-model="search"
+                          v-model="search_team"
                           append-icon="mdi-magnify"
                           label="Hae kilpailijaa"
                           single-line
@@ -614,9 +755,9 @@
                         ></v-text-field>
                       </v-card-title>
                       <v-data-table
-                        :headers="headers"
-                        :items="results"
-                        :search="search"
+                        :headers="team_headers"
+                        :items="team_results"
+                        :search="search_team"
                       >
                         <template v-slot:[`item.placement`]="{ item }">
                           <v-chip
@@ -625,38 +766,114 @@
                             >{{ item.placement }}.</v-chip
                           >
                         </template>
-                        <template
-                          v-if="selected_normal === 'Ilmoittautuneet'"
-                          v-slot:[`item.boat_number`]="{ item }"
-                        >
-                          <v-chip>{{ item.boat_number }}</v-chip>
+                        <template v-slot:[`item.points`]="{ item }">
+                          <v-chip>{{ item.points.toLocaleString() }} p</v-chip>
                         </template>
-                        <template v-slot:[`item.total_points`]="{ item }">
+                      </v-data-table>
+                    </v-card>
+                  </v-col>
+                  <v-col v-else>
+                    <v-col v-if="!loading"> </v-col>
+                    <p
+                      v-if="!loading"
+                      class="flow-text"
+                      v-bind:class="{
+                        'white--text': $store.getters.getTheme,
+                      }"
+                    >
+                      Ei tuloksia, vielä...
+                    </p>
+                    <v-col v-else>
+                      <h2
+                        v-bind:class="{
+                          'white--text': $store.getters.getTheme,
+                        }"
+                      >
+                        Päivitetään tuloksia tietokannasta...
+                      </h2>
+                      <ProgressBarQuery />
+                    </v-col>
+                  </v-col>
+                </v-row>
+              </v-tab-item>
+
+              <!-- Suurimmat kalat -->
+              <v-tab-item
+                v-bind:class="{
+                  inputarea: !$store.getters.getTheme,
+                  'inputarea-dark': $store.getters.getTheme,
+                }"
+                :value="'biggest-fishes'"
+              >
+                <v-row style="padding-top: 50px">
+                  <v-col md="3" offset-md="4">
+                    <v-select
+                      :dark="$store.getters.getTheme"
+                      :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
+                      label="Valitse näytettävät tulokset"
+                      outlined
+                      @input="calculateBiggestFishes"
+                      v-model="selected_biggest_fish"
+                      :items="fish_names"
+                    />
+                  </v-col>
+                  <v-col
+                    md="3"
+                    offset-md="1"
+                    v-if="biggest_fishes_results.length"
+                  >
+                    <v-btn
+                      large
+                      outlined
+                      color="red lighten-2"
+                      :dark="$store.getters.getTheme"
+                      :loading="loading_competition"
+                      @click="
+                        pdf = '#biggest-fishes-table';
+                        pdfDialog = true;
+                      "
+                    >
+                      <v-icon color="red">mdi-file-pdf-box</v-icon> Lataa pdf
+                    </v-btn>
+                  </v-col>
+                </v-row>
+                <v-row v-if="biggest_fishes_results.length">
+                  <v-col md="10" offset-md="1" style="margin-bottom: 40px">
+                    <v-card :dark="$store.getters.getTheme">
+                      <v-card-title>
+                        <p v-if="results_found_fishes" class="flow-text">
+                          Suurimmat kalat ({{ selected_biggest_fish }}
+                          {{ results_found_fishes }})
+                        </p>
+                        <p v-else class="flow-text">
+                          Suurimmat kalat ({{ selected_biggest_fish }})
+                        </p>
+                        <v-spacer></v-spacer>
+                        <v-text-field
+                          v-model="search_fishes"
+                          append-icon="mdi-magnify"
+                          label="Hae kilpailijaa"
+                          single-line
+                          hide-details
+                        ></v-text-field>
+                      </v-card-title>
+                      <v-data-table
+                        :headers="biggest_fishes_headers"
+                        :items="biggest_fishes_results"
+                        :search="search_fishes"
+                      >
+                        <template v-slot:[`item.placement`]="{ item }">
                           <v-chip
-                            >{{ item.total_points.toLocaleString() }} p</v-chip
+                            :outlined="$store.getters.getTheme"
+                            :color="getColor(item.placement)"
+                            >{{ item.placement }}.</v-chip
                           >
                         </template>
-                        <template v-slot:[`item.cup_points_total`]="{ item }">
-                          <v-tooltip bottom color="primary">
-                            <template v-slot:activator="{ on, attrs }">
-                              <v-chip
-                                v-bind="attrs"
-                                v-on="on"
-                                :color="getColorPoints(item.cup_points_total)"
-                                >{{ item.cup_points_total }} p</v-chip
-                              >
-                            </template>
-                            <span>
-                              <b
-                                >Sijoittumispisteet + Osallistumispisteet = Cup
-                                pisteet</b
-                              >
-                              <br />
-                              {{ item.cup_placement_points }} +
-                              {{ item.cup_participation_points }} =
-                              {{ item.cup_points_total }}
-                            </span>
-                          </v-tooltip>
+                        <template v-slot:[`item.name`]="{ item }">
+                          <v-chip>{{ item.name }}</v-chip>
+                        </template>
+                        <template v-slot:[`item.weight`]="{ item }">
+                          <v-chip>{{ item.weight.toLocaleString() }} g</v-chip>
                         </template>
                       </v-data-table>
                     </v-card>
@@ -684,91 +901,168 @@
                     <ProgressBarQuery />
                   </v-col>
                 </v-row>
-              </v-col>
-            </v-row>
-          </v-tab-item>
+              </v-tab-item>
 
-          <!-- Tiimikilpailu -->
-          <v-tab-item
-            v-bind:class="{
-              inputarea: !$store.getters.getTheme,
-              'inputarea-dark': $store.getters.getTheme,
-            }"
-            :value="'team-competition'"
-            v-if="isTeamCompetition"
-          >
-            <v-row v-if="team_results.length">
-              <v-col style="padding-top: 50px" md="3" offset-md="8">
-                <v-btn
-                  large
-                  outlined
-                  :dark="$store.getters.getTheme"
-                  :loading="loading_competition"
-                  @click="
-                    pdf = '#team-table';
-                    pdfDialog = true;
-                  "
-                >
-                  <v-icon color="red">mdi-file-pdf-box</v-icon> Lataa pdf
-                </v-btn>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col
-                md="10"
-                offset-md="1"
-                style="padding-bottom: 20px"
-                v-if="team_results.length"
+              <!-- Suurimmat kalasaaliit -->
+              <v-tab-item
+                v-bind:class="{
+                  inputarea: !$store.getters.getTheme,
+                  'inputarea-dark': $store.getters.getTheme,
+                }"
+                :value="'biggest-fish-amounts'"
               >
-                <v-card :dark="$store.getters.getTheme">
-                  <v-card-title>
+                <v-row style="padding-top: 50px">
+                  <v-col md="3" offset-md="4">
+                    <v-select
+                      :dark="$store.getters.getTheme"
+                      :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
+                      label="Valitse näytettävät tulokset"
+                      outlined
+                      @input="calculateBiggestAmounts"
+                      v-model="selected_biggest_amount"
+                      :items="fish_amount_names"
+                    />
+                  </v-col>
+                  <v-col
+                    md="3"
+                    offset-md="1"
+                    v-if="biggest_amounts_results.length"
+                  >
+                    <v-btn
+                      large
+                      outlined
+                      color="red lighten-2"
+                      :dark="$store.getters.getTheme"
+                      :loading="loading_competition"
+                      @click="
+                        pdf = '#biggest-amounts-table';
+                        pdfDialog = true;
+                      "
+                      :disabled="!biggest_amounts_results.length"
+                    >
+                      <v-icon color="red">mdi-file-pdf-box</v-icon> Lataa pdf
+                    </v-btn>
+                  </v-col>
+                </v-row>
+                <v-row v-if="biggest_amounts_results.length"
+                  >>
+                  <v-col>
+                    <p
+                      v-if="results_found_amounts"
+                      class="flow-text"
+                      v-bind:class="{
+                        'white--text': $store.getters.getTheme,
+                      }"
+                    >
+                      Suurimmat kalasaaliit ({{ selected_biggest_amount }}
+                      {{ results_found_amounts }})
+                    </p>
+                    <p
+                      v-else
+                      class="flow-text"
+                      v-bind:class="{
+                        'white--text': $store.getters.getTheme,
+                      }"
+                    >
+                      Suurimmat kalasaaliit ({{ selected_biggest_amount }})
+                    </p>
+                  </v-col>
+                </v-row>
+                <v-row v-if="biggest_amounts_results.length">
+                  <v-col md="10" offset-md="1" style="margin-bottom: 40px">
+                    <v-card :dark="$store.getters.getTheme">
+                      <v-card-title>
+                        <p v-if="results_found_amounts" class="flow-text">
+                          Suurimmat kalasaaliit ({{ selected_biggest_amount }}
+                          {{ results_found_amounts }})
+                        </p>
+                        <p v-else class="flow-text">
+                          Suurimmat kalasaaliit ({{ selected_biggest_amount }})
+                        </p>
+                        <v-spacer></v-spacer>
+                        <v-text-field
+                          v-model="search_amounts"
+                          append-icon="mdi-magnify"
+                          label="Hae kilpailijaa"
+                          single-line
+                          hide-details
+                        ></v-text-field>
+                      </v-card-title>
+                      <v-data-table
+                        :headers="biggest_amounts_headers"
+                        :items="biggest_amounts_results"
+                        :search="search_amounts"
+                      >
+                        <template v-slot:[`item.placement`]="{ item }">
+                          <v-chip
+                            :outlined="$store.getters.getTheme"
+                            :color="getColor(item.placement)"
+                            >{{ item.placement }}.</v-chip
+                          >
+                        </template>
+                        <template v-slot:[`item.name`]="{ item }">
+                          <v-chip>{{ item.name }}</v-chip>
+                        </template>
+                        <template v-slot:[`item.weight`]="{ item }">
+                          <v-chip>{{ item.weight.toLocaleString() }} g</v-chip>
+                        </template>
+                      </v-data-table>
+                    </v-card>
+                  </v-col>
+                </v-row>
+                <v-row v-else>
+                  <v-col v-if="!loading" md="8" offset-md="2">
                     <p
                       class="flow-text"
                       v-bind:class="{
                         'white--text': $store.getters.getTheme,
                       }"
                     >
-                      Tiimikilpailu
+                      Ei tuloksia, vielä...
                     </p>
-                    <v-spacer></v-spacer>
-                    <v-text-field
-                      v-model="search_team"
-                      append-icon="mdi-magnify"
-                      label="Hae kilpailijaa"
-                      single-line
-                      hide-details
-                    ></v-text-field>
-                  </v-card-title>
-                  <v-data-table
-                    :headers="team_headers"
-                    :items="team_results"
-                    :search="search_team"
-                  >
-                    <template v-slot:[`item.placement`]="{ item }">
-                      <v-chip
-                        :outlined="$store.getters.getTheme"
-                        :color="getColor(item.placement)"
-                        >{{ item.placement }}.</v-chip
-                      >
-                    </template>
-                    <template v-slot:[`item.points`]="{ item }">
-                      <v-chip>{{ item.points.toLocaleString() }} p</v-chip>
-                    </template>
-                  </v-data-table>
-                </v-card>
-              </v-col>
-              <v-col v-else>
-                <v-col v-if="!loading"> </v-col>
-                <p
-                  v-if="!loading"
-                  class="flow-text"
+                  </v-col>
+                  <v-col v-else md="8" offset-md="2">
+                    <h2
+                      v-bind:class="{
+                        'white--text': $store.getters.getTheme,
+                      }"
+                    >
+                      Päivitetään tuloksia tietokannasta...
+                    </h2>
+                    <ProgressBarQuery />
+                  </v-col>
+                </v-row>
+              </v-tab-item>
+            </v-tabs-items>
+            <v-row v-else style="margin: 20px">
+              <v-col v-if="!loading_competition && !loading">
+                <h2
                   v-bind:class="{
                     'white--text': $store.getters.getTheme,
                   }"
                 >
-                  Ei tuloksia, vielä...
-                </p>
-                <v-col v-else>
+                  Kilpailua ei valittuna
+                </h2>
+              </v-col>
+            </v-row>
+            <div v-if="competition" style="margin: 20px">
+              <v-row v-if="!loading_competition">
+                <v-col>
+                  <v-btn
+                    id="updatebtn"
+                    large
+                    tile
+                    :loading="loading_competition"
+                    color="blue darken-4"
+                    @click="refreshCompetition(true)"
+                    class="white--text"
+                  >
+                    <v-icon>mdi-update</v-icon>Päivitä tulokset
+                  </v-btn>
+                </v-col>
+              </v-row>
+              <v-row v-else>
+                <v-col>
                   <h2
                     v-bind:class="{
                       'white--text': $store.getters.getTheme,
@@ -778,295 +1072,29 @@
                   </h2>
                   <ProgressBarQuery />
                 </v-col>
-              </v-col>
-            </v-row>
-          </v-tab-item>
-
-          <!-- Suurimmat kalat -->
-          <v-tab-item
-            v-bind:class="{
-              inputarea: !$store.getters.getTheme,
-              'inputarea-dark': $store.getters.getTheme,
-            }"
-            :value="'biggest-fishes'"
-          >
-            <v-row style="padding-top: 50px">
-              <v-col md="3" offset-md="4">
-                <v-select
-                  :dark="$store.getters.getTheme"
-                  :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
-                  label="Valitse näytettävät tulokset"
-                  outlined
-                  @input="calculateBiggestFishes"
-                  v-model="selected_biggest_fish"
-                  :items="fish_names"
-                />
-              </v-col>
-              <v-col md="3" offset-md="1" v-if="biggest_fishes_results.length">
-                <v-btn
-                  large
-                  outlined
-                  :dark="$store.getters.getTheme"
-                  :loading="loading_competition"
-                  @click="
-                    pdf = '#biggest-fishes-table';
-                    pdfDialog = true;
-                  "
-                >
-                  <v-icon color="red">mdi-file-pdf-box</v-icon> Lataa pdf
-                </v-btn>
-              </v-col>
-            </v-row>
-            <v-row v-if="biggest_fishes_results.length">
-              <v-col md="10" offset-md="1" style="margin-bottom: 40px">
-                <v-card :dark="$store.getters.getTheme">
-                  <v-card-title>
-                    <p v-if="results_found_fishes" class="flow-text">
-                      Suurimmat kalat ({{ selected_biggest_fish }}
-                      {{ results_found_fishes }})
-                    </p>
-                    <p v-else class="flow-text">
-                      Suurimmat kalat ({{ selected_biggest_fish }})
-                    </p>
-                    <v-spacer></v-spacer>
-                    <v-text-field
-                      v-model="search_fishes"
-                      append-icon="mdi-magnify"
-                      label="Hae kilpailijaa"
-                      single-line
-                      hide-details
-                    ></v-text-field>
-                  </v-card-title>
-                  <v-data-table
-                    :headers="biggest_fishes_headers"
-                    :items="biggest_fishes_results"
-                    :search="search_fishes"
-                  >
-                    <template v-slot:[`item.placement`]="{ item }">
-                      <v-chip
-                        :outlined="$store.getters.getTheme"
-                        :color="getColor(item.placement)"
-                        >{{ item.placement }}.</v-chip
-                      >
-                    </template>
-                    <template v-slot:[`item.name`]="{ item }">
-                      <v-chip>{{ item.name }}</v-chip>
-                    </template>
-                    <template v-slot:[`item.weight`]="{ item }">
-                      <v-chip>{{ item.weight.toLocaleString() }} g</v-chip>
-                    </template>
-                  </v-data-table>
-                </v-card>
-              </v-col>
-            </v-row>
-            <v-row v-else>
-              <v-col v-if="!loading">
-                <p
-                  class="flow-text"
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  Ei tuloksia, vielä...
-                </p>
-              </v-col>
-              <v-col v-else>
-                <h2
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  Päivitetään tuloksia tietokannasta...
-                </h2>
-                <ProgressBarQuery />
-              </v-col>
-            </v-row>
-          </v-tab-item>
-
-          <!-- Suurimmat kalasaaliit -->
-          <v-tab-item
-            v-bind:class="{
-              inputarea: !$store.getters.getTheme,
-              'inputarea-dark': $store.getters.getTheme,
-            }"
-            :value="'biggest-fish-amounts'"
-          >
-            <v-row style="padding-top: 50px">
-              <v-col md="3" offset-md="4">
-                <v-select
-                  :dark="$store.getters.getTheme"
-                  :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
-                  label="Valitse näytettävät tulokset"
-                  outlined
-                  @input="calculateBiggestAmounts"
-                  v-model="selected_biggest_amount"
-                  :items="fish_amount_names"
-                />
-              </v-col>
-              <v-col md="3" offset-md="1" v-if="biggest_amounts_results.length">
-                <v-btn
-                  large
-                  outlined
-                  :dark="$store.getters.getTheme"
-                  :loading="loading_competition"
-                  @click="
-                    pdf = '#biggest-amounts-table';
-                    pdfDialog = true;
-                  "
-                  :disabled="!biggest_amounts_results.length"
-                >
-                  <v-icon color="red">mdi-file-pdf-box</v-icon> Lataa pdf
-                </v-btn>
-              </v-col>
-            </v-row>
-            <v-row v-if="biggest_amounts_results.length"
-              >>
-              <v-col>
-                <p
-                  v-if="results_found_amounts"
-                  class="flow-text"
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  Suurimmat kalasaaliit ({{ selected_biggest_amount }}
-                  {{ results_found_amounts }})
-                </p>
-                <p
-                  v-else
-                  class="flow-text"
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  Suurimmat kalasaaliit ({{ selected_biggest_amount }})
-                </p>
-              </v-col>
-            </v-row>
-            <v-row v-if="biggest_amounts_results.length">
-              <v-col md="10" offset-md="1" style="margin-bottom: 40px">
-                <v-card :dark="$store.getters.getTheme">
-                  <v-card-title>
-                    <p v-if="results_found_amounts" class="flow-text">
-                      Suurimmat kalasaaliit ({{ selected_biggest_amount }}
-                      {{ results_found_amounts }})
-                    </p>
-                    <p v-else class="flow-text">
-                      Suurimmat kalasaaliit ({{ selected_biggest_amount }})
-                    </p>
-                    <v-spacer></v-spacer>
-                    <v-text-field
-                      v-model="search_amounts"
-                      append-icon="mdi-magnify"
-                      label="Hae kilpailijaa"
-                      single-line
-                      hide-details
-                    ></v-text-field>
-                  </v-card-title>
-                  <v-data-table
-                    :headers="biggest_amounts_headers"
-                    :items="biggest_amounts_results"
-                    :search="search_amounts"
-                  >
-                    <template v-slot:[`item.placement`]="{ item }">
-                      <v-chip
-                        :outlined="$store.getters.getTheme"
-                        :color="getColor(item.placement)"
-                        >{{ item.placement }}.</v-chip
-                      >
-                    </template>
-                    <template v-slot:[`item.name`]="{ item }">
-                      <v-chip>{{ item.name }}</v-chip>
-                    </template>
-                    <template v-slot:[`item.weight`]="{ item }">
-                      <v-chip>{{ item.weight.toLocaleString() }} g</v-chip>
-                    </template>
-                  </v-data-table>
-                </v-card>
-              </v-col>
-            </v-row>
-            <v-row v-else>
-              <v-col v-if="!loading" md="8" offset-md="2">
-                <p
-                  class="flow-text"
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  Ei tuloksia, vielä...
-                </p>
-              </v-col>
-              <v-col v-else md="8" offset-md="2">
-                <h2
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  Päivitetään tuloksia tietokannasta...
-                </h2>
-                <ProgressBarQuery />
-              </v-col>
-            </v-row>
-          </v-tab-item>
-        </v-tabs-items>
-        <v-row v-else style="margin: 20px">
-          <v-col v-if="!loading_competition && !loading">
-            <h2
-              v-bind:class="{
-                'white--text': $store.getters.getTheme,
-              }"
-            >
-              Kilpailua ei valittuna
-            </h2>
+              </v-row>
+            </div>
           </v-col>
         </v-row>
-        <div v-if="competition" style="margin: 20px">
-          <v-row v-if="!loading_competition">
-            <v-col>
-              <v-btn
-                id="updatebtn"
-                large
-                tile
-                :loading="loading_competition"
-                color="blue darken-4"
-                @click="refreshCompetition(true)"
-                class="white--text"
-              >
-                <v-icon>mdi-update</v-icon>Päivitä tulokset
-              </v-btn>
-            </v-col>
-          </v-row>
-          <v-row v-else>
-            <v-col>
-              <h2
-                v-bind:class="{
-                  'white--text': $store.getters.getTheme,
-                }"
-              >
-                Päivitetään tuloksia tietokannasta...
-              </h2>
-              <ProgressBarQuery />
-            </v-col>
-          </v-row>
-        </div>
-      </v-col>
-    </v-row>
-    <v-snackbar v-model="snackbar" :timeout="timeout">
-      {{ text }}
+        <v-snackbar v-model="snackbar" :timeout="timeout">
+          {{ text }}
 
-      <template v-slot:action="{ attrs }">
-        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
-          Close
-        </v-btn>
-      </template>
-    </v-snackbar>
-  </v-container>
+          <template v-slot:action="{ attrs }">
+            <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
+              Close
+            </v-btn>
+          </template>
+        </v-snackbar>
+      </v-card>
+    </v-container>
+  </div>
 </template>
 <script>
 "use strict";
 
 import CompetitionService from "../CompetitionService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
+import PublicNavigation from "../components/layout/PublicNavigation.vue";
 import PieChart from "@/components/PieChart";
 import DoughnutChart from "../components/DoughnutChart.vue";
 import shared from "@/shared";
@@ -1077,6 +1105,7 @@ export default {
     ProgressBarQuery,
     PieChart,
     DoughnutChart,
+    PublicNavigation,
   },
   data() {
     return {

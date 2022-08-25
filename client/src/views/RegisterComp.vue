@@ -1,7 +1,13 @@
 <template>
   <!-- /register-comp -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <v-container>
+  <v-container
+    v-bind:class="{
+      mobile: $vuetify.breakpoint.width < 800,
+      browser: $vuetify.breakpoint.width >= 800,
+      wide: $vuetify.breakpoint.width >= 1200,
+    }"
+  >
     <!-- if errors, show errors -->
     <v-card
       :dark="$store.getters.getTheme"
@@ -24,11 +30,10 @@
     </v-card>
 
     <v-card
+      style="background: transparent"
+      elevation="10"
+      outlined
       :dark="$store.getters.getTheme"
-      v-bind:class="{
-        'container-transparent': !$store.getters.getTheme,
-        'container-transparent-dark': $store.getters.getTheme,
-      }"
     >
       <h1 style="margin: 30px">Kilpailun luonti</h1>
 
@@ -58,17 +63,11 @@
 
       <v-tabs-items v-model="tab" style="background: rgba(1, 1, 1, 0.4)">
         <!-- "Perustiedot" tab -->
-        <v-tab-item
-          v-bind:class="{
-            inputarea: !$store.getters.getTheme,
-            'inputarea-dark': $store.getters.getTheme,
-          }"
-          :value="'basic-info'"
-        >
+        <v-tab-item :value="'basic-info'">
           <v-container v-if="!loading">
             <v-row>
               <v-col>
-                <h4>Kilpailun perustiedot</h4>
+                <p class="white--text">Kilpailun perustiedot</p>
                 <p
                   v-if="basic_info_validated"
                   class="yellow lighten-1 black--text"
@@ -79,9 +78,9 @@
               </v-col>
             </v-row>
             <v-row>
-              <v-col md="12">
-                <v-row v-if="cup.name">
-                  <v-col md="6" offset-md="3" class="input-fields">
+              <v-col cols="12">
+                <v-row v-if="cup.name" justify="center">
+                  <v-col cols="6" class="input-fields">
                     <v-text-field
                       :dark="$store.getters.getTheme"
                       label="Kilpailun nimi"
@@ -94,8 +93,8 @@
                   </v-col>
                 </v-row>
 
-                <v-row v-if="cup.name">
-                  <v-col md="6" offset-md="3" class="input-fields">
+                <v-row v-if="cup.name" justify="center">
+                  <v-col cols="6" class="input-fields">
                     <v-text-field
                       :dark="$store.getters.getTheme"
                       label="Paikkakunta"
@@ -108,18 +107,9 @@
                   </v-col>
                 </v-row>
 
-                <v-row v-if="cup.name">
-                  <v-col md="3">
-                    <p
-                      class="center-align flow-text"
-                      v-bind:class="{
-                        'white--text': $store.getters.getTheme,
-                      }"
-                    >
-                      Valitse Cup
-                    </p>
-                  </v-col>
-                  <v-col class="d-flex" md="6">
+                <v-row v-if="cup.name" align="center" justify="end">
+                  <v-col cols="6" class="input-fields">
+                    <v-subheader class="white--text"> Valitse Cup </v-subheader>
                     <v-select
                       :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
                       :dark="$store.getters.getTheme"
@@ -134,10 +124,12 @@
                       single-line
                     ></v-select>
                   </v-col>
-                  <v-col md="3" style="margin-top: 20px">
+                  <v-col cols="3" style="margin-top: 20px">
                     <v-btn
                       tile
                       color="green lighten-1"
+                      outlined
+                      large
                       @click="
                         $router.push({
                           path: '/continue',
@@ -169,9 +161,13 @@
                     </router-link>
                   </v-col>
                 </v-row>
-                <v-row v-if="cup.name" justify="center">
-                  <v-col md="3">
-                    <h2>Kilpailun sijoittumispisteet</h2>
+                <v-row
+                  v-if="cup.name"
+                  justify="center"
+                  style="margin-top: 20px; margin-bottom: 20px"
+                >
+                  <v-col cols="6">
+                    <h2 class="white--text">Kilpailun sijoittumispisteet</h2>
                     <v-list
                       :dark="$store.getters.getTheme"
                       elevation="20"
@@ -246,8 +242,8 @@
                   </v-col>
                 </v-row>
 
-                <v-row v-if="cup.name">
-                  <v-col md="6" offset-md="3" class="input-fields">
+                <v-row v-if="cup.name" justify="center">
+                  <v-col cols="6" class="input-fields">
                     <v-text-field
                       :dark="$store.getters.getTheme"
                       label="Kilpailun cup osallistumispisteet"
@@ -274,8 +270,8 @@
                   </v-col>
                 </v-row>
 
-                <v-row v-if="cup.name">
-                  <v-col md="6" offset-md="3" class="input-fields">
+                <v-row v-if="cup.name" justify="center">
+                  <v-col cols="6" class="input-fields">
                     <v-text-field
                       :dark="$store.getters.getTheme"
                       label="Cup pistekerroin"
@@ -302,134 +298,92 @@
                   </v-col>
                 </v-row>
 
-                <v-row v-if="cup.name">
-                  <v-col md="6" offset-md="3" class="input-fields">
-                    <v-col>
-                      <span
-                        class="flow-text"
-                        v-bind:class="{
-                          'white--text': $store.getters.getTheme,
-                        }"
-                        >Onko Tiimikilpailua?</span
-                      >
-                    </v-col>
-                    <v-col offset-md="4">
-                      <v-radio-group
-                        v-model="team_competition"
-                        row
-                        :disabled="basic_info_validated"
-                      >
-                        <v-radio label="Kyllä" value="Kyllä"></v-radio>
-                        <v-radio label="Ei" value="Ei"></v-radio>
-                      </v-radio-group>
-                    </v-col>
+                <v-row v-if="cup.name" justify="center" align="center">
+                  <v-col cols="6" class="input-fields">
+                    <span class="white--text">Onko Tiimikilpailua?</span>
+                    <v-row justify="center" align="center">
+                      <v-spacer></v-spacer>
+                      <v-col>
+                        <v-radio-group
+                          v-model="team_competition"
+                          row
+                          :disabled="basic_info_validated"
+                        >
+                          <v-radio label="Kyllä" value="Kyllä"></v-radio>
+                          <v-radio label="Ei" value="Ei"></v-radio>
+                        </v-radio-group>
+                      </v-col>
+                      <v-spacer></v-spacer>
+                    </v-row>
                   </v-col>
                 </v-row>
 
                 <v-row
                   v-if="cup.name"
-                  style="padding: 10px; margin-bottom: 50px"
+                  style="padding: 20px; margin-bottom: 20px"
+                  justify="center"
+                  align="center"
                 >
-                  <v-col cols="12" md="5">
-                    <v-row align="center">
-                      <span
-                        class="flow-text col s6"
-                        v-bind:class="{
-                          'white--text': $store.getters.getTheme,
-                        }"
-                        >Kilpailun Aloituspäivä</span
-                      >
-                    </v-row>
-                    <v-row align="center">
-                      <v-date-picker
-                        :dark="$store.getters.getTheme"
-                        style="height: 480px"
-                        v-model="start_date"
-                        full-width
-                        elevation="15"
-                        locale="fi"
-                        class="mt-4"
-                        :disabled="basic_info_validated"
-                      ></v-date-picker>
-                    </v-row>
+                  <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
+                    <span class="white--text">Kilpailun Aloituspäivä</span>
+                    <v-date-picker
+                      :dark="$store.getters.getTheme"
+                      style="height: 480px"
+                      v-model="start_date"
+                      full-width
+                      elevation="15"
+                      locale="fi"
+                      class="mt-4"
+                      first-day-of-week="1"
+                      :disabled="basic_info_validated"
+                    ></v-date-picker>
                   </v-col>
-                  <v-col cols="12" md="5" offset-md="2">
-                    <v-row align="center">
-                      <span
-                        class="flow-text col s6"
-                        v-bind:class="{
-                          'white--text': $store.getters.getTheme,
-                        }"
-                        >Kilpailun Lopetuspäivä</span
-                      >
-                    </v-row>
-                    <v-row>
-                      <v-date-picker
-                        :dark="$store.getters.getTheme"
-                        style="height: 480px"
-                        v-model="end_date"
-                        full-width
-                        elevation="15"
-                        locale="fi"
-                        class="mt-4"
-                        :disabled="basic_info_validated"
-                      ></v-date-picker>
-                    </v-row>
+                  <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
+                    <span class="white--text">Kilpailun Lopetuspäivä</span>
+                    <v-date-picker
+                      :dark="$store.getters.getTheme"
+                      style="height: 480px"
+                      v-model="end_date"
+                      full-width
+                      elevation="15"
+                      locale="fi"
+                      class="mt-4"
+                      first-day-of-week="1"
+                      :disabled="basic_info_validated"
+                    ></v-date-picker>
                   </v-col>
                 </v-row>
 
-                <v-row v-if="cup.name">
-                  <v-col cols="12" md="5">
-                    <v-row align="center">
-                      <v-col>
-                        <span
-                          class="flow-text"
-                          v-bind:class="{
-                            'white--text': $store.getters.getTheme,
-                          }"
-                          >Kilpailun alkamismisaika</span
-                        >
-                      </v-col>
-                    </v-row>
-                    <v-row align="center">
-                      <v-col>
-                        <v-time-picker
-                          :dark="$store.getters.getTheme"
-                          v-model="start_time"
-                          format="24hr"
-                          full-width
-                          scrollable
-                          elevation="15"
-                          :disabled="basic_info_validated"
-                        ></v-time-picker>
-                      </v-col>
-                    </v-row>
+                <v-row
+                  v-if="cup.name"
+                  style="padding: 20px; margin-bottom: 20px"
+                  justify="center"
+                  align="center"
+                >
+                  <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
+                    <span class="white--text">Kilpailun alkamismisaika</span>
+
+                    <v-time-picker
+                      :dark="$store.getters.getTheme"
+                      v-model="start_time"
+                      format="24hr"
+                      full-width
+                      scrollable
+                      elevation="15"
+                      :disabled="basic_info_validated"
+                    ></v-time-picker>
                   </v-col>
-                  <v-col cols="12" md="5" offset-md="1">
-                    <v-row align="center">
-                      <v-col md="12" offset-md="2">
-                        <span
-                          class="flow-text"
-                          v-bind:class="{
-                            'white--text': $store.getters.getTheme,
-                          }"
-                          >Kilpailun loppumisaika</span
-                        >
-                      </v-col>
-                    </v-row>
-                    <v-row align="center">
-                      <v-col md="12" offset-md="2">
-                        <v-time-picker
-                          :dark="$store.getters.getTheme"
-                          v-model="end_time"
-                          format="24hr"
-                          full-width
-                          scrollable
-                          elevation="15"
-                          :disabled="basic_info_validated"
-                        ></v-time-picker>
-                      </v-col>
-                    </v-row>
+                  <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
+                    <span class="white--text">Kilpailun loppumisaika</span>
+                    <v-time-picker
+                      :dark="$store.getters.getTheme"
+                      v-model="end_time"
+                      format="24hr"
+                      full-width
+                      scrollable
+                      elevation="15"
+                      :disabled="basic_info_validated"
+                    ></v-time-picker>
                   </v-col>
                 </v-row>
 
@@ -486,7 +440,13 @@
           }"
           :value="'fishes'"
         >
-          <v-container style="width: 70%">
+          <v-container
+            v-bind:class="{
+              mobile: $vuetify.breakpoint.width < 800,
+              browser: $vuetify.breakpoint.width >= 800,
+              wide: $vuetify.breakpoint.width >= 1200,
+            }"
+          >
             <v-row>
               <v-col>
                 <p
@@ -645,7 +605,13 @@
           }"
           :value="'points'"
         >
-          <v-container style="width: 70%">
+          <v-container
+            v-bind:class="{
+              mobile: $vuetify.breakpoint.width < 800,
+              browser: $vuetify.breakpoint.width >= 800,
+              wide: $vuetify.breakpoint.width >= 1200,
+            }"
+          >
             <v-row>
               <v-col>
                 <p
