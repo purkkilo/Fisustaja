@@ -9,23 +9,28 @@
     }"
   >
     <v-row>
-      <v-col align-self="center">
-        <v-row align="center">
+      <v-col
+        align-self="center"
+        :cols="$vuetify.breakpoint.width < 800 ? 12 : 6"
+      >
+        <v-row align="center" class="slideRight">
           <v-col>
-            <v-avatar size="200">
+            <v-avatar
+              :size="$vuetify.breakpoint.width < 800 ? 150 : 200"
+              class="logo"
+            >
               <img alt="user" src="https://i.imgur.com/2WcI49A.png" />
             </v-avatar>
           </v-col>
         </v-row>
-        <v-row align="center">
+        <v-row align="center" class="slideRight">
           <v-col>
-            <h1 class="ml-3">Fisustaja</h1>
-            <p class="white--text"></p>
+            <h1 class="ml-3 logo-text">Fisustaja</h1>
           </v-col>
         </v-row>
       </v-col>
 
-      <v-col>
+      <v-col :cols="$vuetify.breakpoint.width < 800 ? 12 : 6">
         <div v-for="(link, i) in links" :key="i">
           <v-hover v-slot="{ hover }">
             <v-card
@@ -34,17 +39,26 @@
               tile
               outlined
               :elevation="hover ? 10 : 2"
-              style="background: transparent; margin-top: 100px"
+              class="card-link"
             >
-              <v-card-title
-                >{{ link.text }}<v-spacer></v-spacer>
-                <v-icon x-large right> {{ link.icon }}</v-icon></v-card-title
-              >
+              <v-card-title>
+                {{ link.text }}
+              </v-card-title>
 
               <v-card-actions>
                 <v-spacer></v-spacer>
                 <router-link :to="link.path">
-                  <v-btn text outlined> Siirry </v-btn>
+                  <v-chip
+                    class="ma-2"
+                    :color="link.color"
+                    :text-color="link.color"
+                    outlined
+                  >
+                    Siirry
+                    <v-icon right>
+                      {{ link.icon }}
+                    </v-icon>
+                  </v-chip>
                 </router-link>
                 <v-spacer></v-spacer>
               </v-card-actions>
@@ -70,17 +84,18 @@ export default {
           text: "Cuppien tuloksia",
           icon: "mdi-trophy",
           path: "/public-cups",
-          image: "@/assets/cup.jpg",
+          color: "yellow darken-1",
         },
         {
           text: "Kilpailujen tuloksia ",
           icon: "mdi-seal",
           path: "/public-results",
-          image: "@/assets/competition.jpg",
+          color: "yellow darken-2",
         },
       ],
       links: [],
       logged_in: false,
+      disabled: false,
     };
   },
   watch: {
@@ -125,6 +140,7 @@ export default {
           text: "Dashboard",
           icon: "mdi-view-dashboard",
           path: "/dashboard",
+          color: "blue darken-4",
         },
       ];
     }
@@ -132,5 +148,52 @@ export default {
   methods: {},
 };
 </script>
+<style scoped>
+.slideRight {
+  animation: 1.5s ease-out 0s 1 slideInFromLeft;
+}
 
-<style></style>
+.card-link {
+  background: transparent;
+  margin-top: 100px;
+  animation: 1.5s ease-out 0s 1 slideInFromUp;
+}
+
+.logo:hover {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes slideInFromUp {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromLeft {
+  0% {
+    transform: translateX(-200%) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: translateX(-50%) rotate(360deg);
+    opacity: 0.2;
+  }
+  100% {
+    transform: translateX(0) rotate(720deg);
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+</style>
