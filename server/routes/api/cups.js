@@ -43,6 +43,7 @@ router.post("/", async (req, res) => {
       signees: req.body.signees,
       isPublic: req.body.isPublic,
       createdAt: new Date(),
+      meaningful_competitions: req.body.meaningful_competitions,
     });
 
     res.status(201).send();

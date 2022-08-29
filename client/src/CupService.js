@@ -25,6 +25,7 @@ class CupService {
       year: cup.year,
       signees: [],
       isPublic: false,
+      meaningful_competitions: cup.meaningful_competitions,
     });
   }
 
@@ -45,12 +46,8 @@ class CupService {
 
 function dataToCup(data) {
   return data.map((cup) => ({
+    ...cup,
     id: cup._id,
-    user_id: cup.user_id,
-    name: cup.name,
-    year: cup.year,
-    signees: cup.signees,
-    isPublic: cup.isPublic,
     createdAt: new Date(cup.createdAt),
   }));
 }

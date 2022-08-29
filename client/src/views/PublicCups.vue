@@ -26,7 +26,7 @@
             <!-- TODO add v-autocompelete, but so that it popsup the keyboad on mobile only when pressing search button? -->
             <v-select
               :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
-              :dark="$store.getters.getTheme"
+              dark
               v-model="selected_cup"
               :items="cups"
               item-text="select"
@@ -41,23 +41,11 @@
         </v-row>
         <v-row v-else>
           <v-col v-if="!loading">
-            <h2
-              v-bind:class="{
-                'white--text': $store.getters.getTheme,
-              }"
-            >
-              Haetaan cuppeja...
-            </h2>
+            <h2 class="white--text">Haetaan cuppeja...</h2>
             <ProgressBarQuery />
           </v-col>
           <v-col v-else>
-            <h2
-              v-bind:class="{
-                'white--text': $store.getters.getTheme,
-              }"
-            >
-              Ei cuppeja saatavilla :(
-            </h2>
+            <h2 class="white--text">Ei cuppeja saatavilla :(</h2>
           </v-col>
         </v-row>
         <v-row>
@@ -105,13 +93,7 @@
         <v-row v-if="loading" style="margin: 20px">
           <v-row>
             <v-col>
-              <h2
-                v-bind:class="{
-                  'white--text': $store.getters.getTheme,
-                }"
-              >
-                Haetaan cupin kilpailuja...
-              </h2>
+              <h2 class="white--text">Haetaan cupin kilpailuja...</h2>
               <ProgressBarQuery />
             </v-col>
           </v-row>
@@ -363,6 +345,7 @@ export default {
         });
         // Convert dates to moment objects
         let counter = 1;
+        this.selectNumbers = [];
         this.competitions = this.competitions.filter((competition) => {
           return competition.isPublic;
         });
@@ -377,7 +360,10 @@ export default {
         this.competitions.sort((a, b) => {
           return b.start_date.isBefore(a.start_date);
         });
-        this.selectedCompetitions = this.competitions.length;
+        if (cup.meaningful_competitions > 0)
+          this.selectedCompetitions = cup.meaningful_competitions;
+        else this.selectedCompetitions = this.competitions.length;
+
         this.calculateAll(this.competitions, this.selectedCompetitions);
         this.text = "Tiedot ajantasalla!";
         this.snackbar = true;

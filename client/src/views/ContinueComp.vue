@@ -274,7 +274,7 @@
           <v-row style="margin-bottom: 20px">
             <v-col>
               <div class="text-center">
-                <v-dialog v-model="createCupDialog" width="700">
+                <v-dialog v-model="createCupDialog" width="700" persistent>
                   <template v-slot:activator="{ on, attrs }">
                     <v-btn
                       tile
@@ -292,8 +292,8 @@
                   <v-card :dark="$store.getters.getTheme">
                     <v-card-title> Luo Cup </v-card-title>
 
-                    <v-row>
-                      <v-col md="8" offset-md="2" class="input-fields">
+                    <v-row align="center" justify="center">
+                      <v-col cols="8" class="input-fields">
                         <v-text-field
                           :dark="$store.getters.getTheme"
                           label="Cupin nimi"
@@ -304,8 +304,8 @@
                         />
                       </v-col>
                     </v-row>
-                    <v-row>
-                      <v-col md="6" offset-md="3" class="input-fields">
+                    <v-row align="center" justify="center">
+                      <v-col cols="6" class="input-fields">
                         <v-menu
                           ref="menu"
                           :close-on-content-click="false"
@@ -337,7 +337,37 @@
                         </v-menu>
                       </v-col>
                     </v-row>
-                    <v-row>
+                    <v-row align="center" justify="center">
+                      <v-col cols="6" class="input-fields">
+                        <v-checkbox
+                          v-model="isThereCompetitionLimit"
+                          label="Aseta merkitsevien kilpailujen määrä?"
+                        ></v-checkbox>
+                      </v-col>
+                    </v-row>
+                    <v-row
+                      align="center"
+                      justify="center"
+                      v-if="isThereCompetitionLimit"
+                    >
+                      <v-col cols="6" class="input-fields">
+                        <v-text-field
+                          v-model="meaningful_competitions"
+                          :dark="$store.getters.getTheme"
+                          label="Merkitsevien kilpailujen määrä"
+                          maxlength="3"
+                          type="number"
+                          @paste.prevent
+                          counter="3"
+                          min="1"
+                          max="100"
+                          @keypress="isNumber($event, true)"
+                          :rules="number_rules"
+                          :loading="loading"
+                        />
+                      </v-col>
+                    </v-row>
+                    <v-row align="center" justify="center">
                       <v-col>
                         <v-btn
                           tile
@@ -417,6 +447,12 @@ export default {
       text: "",
       timeout: 5000,
       createCupDialog: false,
+      number_rules: [
+        (value) => !!value || "Kenttä ei voi jäädä tyhjäksi!",
+        (value) => !isNaN(value || "") || "Ei ole numero!",
+      ],
+      meaningful_competitions: 1,
+      isThereCompetitionLimit: false,
     };
   },
   watch: {
@@ -498,6 +534,36 @@ export default {
     location.href = "#app";
   },
   methods: {
+    //filter other characters out for number inputs
+    isNumber: function (evt, isDate) {
+      var charToCheckCode = 46; // --> .
+      var charToCheck = ".";
+
+      if (!isDate) {
+        charToCheckCode = 58; // --> :
+        charToCheck = ":";
+      }
+
+      evt = evt ? evt : window.event;
+      var charCode = evt.which ? evt.which : evt.keyCode;
+      if (
+        charCode > 31 &&
+        (charCode < 48 || charCode > 57) &&
+        charCode !== charToCheckCode
+      ) {
+        evt.preventDefault();
+      } else {
+        if (charCode == charToCheckCode) {
+          if (evt.target.value.indexOf(charToCheck) >= 0) {
+            evt.preventDefault();
+          } else {
+            return true;
+          }
+        } else {
+          return true;
+        }
+      }
+    },
     getColor(multiplier) {
       if (multiplier > 1) return "red";
       if (multiplier === 1) return "green";
@@ -564,10 +630,21 @@ export default {
         this.showError("Valitse Cupille vuosi!");
       }
 
+      if (this.isThereCompetitionLimit && !this.meaningful_competitions) {
+        this.showError("Syötä merkitsevien kilpailujen määrä!");
+      }
+
       if (!this.errors.length) {
         const user = JSON.parse(localStorage.getItem("user"));
         const user_id = user["_id"];
-        const cup = { user_id: user_id, name: this.name, year: this.year };
+        const cup = {
+          user_id: user_id,
+          name: this.name,
+          year: this.year,
+          meaningful_competitions: this.isThereCompetitionLimit
+            ? this.meaningful_competitions
+            : -1,
+        };
         try {
           //Submit Cup to database (check 'client\src\CupService.js' and 'server\routes\api\cups.js' to see how this works)
           await CupService.insertCup(cup);
@@ -586,6 +663,8 @@ export default {
       }
       this.loading = false;
       this.createCupDialog = false;
+      this.isThereCompetitionLimit = false;
+      this.meaningful_competitions = 1;
     },
   },
 };

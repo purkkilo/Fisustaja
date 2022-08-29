@@ -44,7 +44,7 @@
         <v-col class="d-flex" md="4">
           <v-select
             :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
-            :dark="$store.getters.getTheme"
+            dark
             :items="headerOptions"
             label="Kilpailun otsikko"
             outlined
@@ -55,7 +55,7 @@
         <v-col class="d-flex" md="4">
           <v-select
             :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
-            :dark="$store.getters.getTheme"
+            dark
             :items="selectNumbers"
             label="Cup sijoittumispisteisiin vaikuttavien kilpailujen määrä"
             outlined
@@ -253,6 +253,11 @@ export default {
       isLandscape: false,
       dialog: false,
     };
+  },
+  mounted() {
+    if (this.cup.meaningful_competitions > 0)
+      this.selectedCompetitions = this.cup.meaningful_competitions;
+    else this.selectedCompetitions = this.competitions.length;
   },
   methods: {
     getColor(placement) {

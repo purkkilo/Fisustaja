@@ -81,13 +81,7 @@
           <v-tab-item :value="'overview'">
             <v-row v-if="loading">
               <v-col>
-                <h2
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  Valmistellaan Cuppia...
-                </h2>
+                <h2 class="white--text">Valmistellaan Cuppia...</h2>
                 <ProgressBarQuery />
               </v-col>
             </v-row>
@@ -106,7 +100,7 @@
             <v-row v-if="competitions.length" style="margin-top: 50px">
               <v-col md="4" offset-md="4">
                 <v-select
-                  :dark="$store.getters.getTheme"
+                  dark
                   :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
                   label="Valitse näytettävät tiedot"
                   outlined
@@ -362,7 +356,7 @@
                   @click="dialog = true"
                   large
                   outlined
-                  :dark="$store.getters.getTheme"
+                  dark
                   :loading="publishing"
                   ><v-icon color="red">mdi-file-pdf-outline</v-icon> Lataa lista
                   kilpailijoista</v-btn
@@ -389,13 +383,7 @@
             </v-row>
             <v-row v-else>
               <v-col v-if="!loading && !competitions.length">
-                <h2
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  Ei kilpailuja!
-                </h2>
+                <h2 class="white--text">Ei kilpailuja!</h2>
                 <router-link to="/register-comp">
                   <v-btn tile color="blue lighten-1"
                     ><v-icon>mdi-plus-circle</v-icon>Luo kilpailu!</v-btn
@@ -403,24 +391,13 @@
                 </router-link>
               </v-col>
               <v-col v-if="error">
-                <h2
-                  class="error"
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
+                <h2 class="error white--text">
                   {{ error }}
                 </h2>
               </v-col>
 
               <v-col v-if="loading">
-                <h2
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  Ladataan kilpailuja...
-                </h2>
+                <h2 class="white--text">Ladataan kilpailuja...</h2>
                 <ProgressBarQuery />
               </v-col>
             </v-row>
@@ -1204,7 +1181,9 @@ export default {
             this.signees.forEach((signee) => {
               signee.dialog = false;
             });
-            this.selectedCompetitions = this.competitions.length;
+            if (cup.meaningful_competitions > 0)
+              this.selectedCompetitions = cup.meaningful_competitions;
+            else this.selectedCompetitions = this.competitions.length;
             this.calculateAll(this.competitions, this.selectedCompetitions);
             this.selectTableData();
             this.calculateCupStatistics();

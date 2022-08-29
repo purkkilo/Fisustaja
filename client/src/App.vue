@@ -256,24 +256,30 @@ table.highlight > tr:hover {
 }
 
 .theme--light.v-data-table tbody tr:nth-of-type(even) {
-  background-color: rgba(105, 140, 197, 0.5);
+  background-color: rgb(236, 244, 255);
 }
 .theme--light.v-data-table tbody tr:nth-of-type(odd) {
-  background-color: rgba(78, 97, 134, 0.5);
+  background-color: rgb(186, 210, 255);
 }
 .theme--dark.v-data-table tbody tr:nth-of-type(even) {
-  background-color: rgba(6, 8, 19, 0.5);
+  background-color: rgb(5, 6, 19);
 }
 .theme--dark.v-data-table tbody tr:nth-of-type(odd) {
-  background-color: rgba(36, 40, 53, 0.5);
+  background-color: rgb(21, 25, 34);
 }
 
 .theme--dark.v-data-table thead tr {
-  background-color: rgba(0, 0, 0, 0.438);
+  background-color: rgb(30, 30, 30);
 }
+
 .theme--light.v-data-table thead tr {
-  background-color: rgba(83, 88, 105, 0.5);
+  background-color: rgb(255, 255, 255);
 }
+
+.theme--light.v-data-table tbody tr:hover {
+  background-color: rgb(184, 193, 211) !important;
+}
+
 .strokeme {
   color: white;
   text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000,

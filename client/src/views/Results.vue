@@ -66,7 +66,7 @@
                 <v-row align="center" justify="center">
                   <v-col cols="4">
                     <v-switch
-                      :dark="$store.getters.getTheme"
+                      dark
                       :loading="loading"
                       v-model="intervalSwitch"
                       color="orange darken-3"
@@ -97,8 +97,8 @@
                           v-on="on"
                           :dark="$store.getters.getTheme"
                           large
-                          text
                           outlined
+                          color="red lighten-2"
                           :loading="loading"
                           :disabled="
                             !biggest_amounts_results.length || !competition
@@ -180,8 +180,7 @@
                           <v-col>
                             <v-btn
                               outlined
-                              color="red darken-4"
-                              text
+                              color="yellow darken-3"
                               @click="dialog_print = false"
                               >Sulje</v-btn
                             >
@@ -189,8 +188,7 @@
                           <v-col>
                             <v-btn
                               outlined
-                              color="green darken-4"
-                              text
+                              color="green lighten-1"
                               @click="choosePrints"
                               >Lataa</v-btn
                             >
@@ -243,11 +241,9 @@
           <v-row style="padding-top: 50px" v-if="competition">
             <v-col md="3" offset-md="8">
               <v-btn
-                :dark="$store.getters.getTheme"
                 large
-                text
                 outlined
-                class="white--text"
+                color="red lighten-2"
                 @click="
                   pdf = 'Tilastoja';
                   pdfDialog = true;
@@ -350,164 +346,159 @@
           </v-row>
           <v-row v-if="competition">
             <v-col md="10" offset-md="1">
-              <v-hover v-slot="{ hover }">
-                <v-card
-                  :dark="$store.getters.getTheme"
-                  :elevation="hover ? 20 : 5"
-                  :class="{ 'on-hover': hover }"
-                  style="padding: 20px"
-                >
-                  <v-row>
-                    <v-col>
-                      <v-card
-                        :dark="$store.getters.getTheme"
-                        elevation="20"
-                        outlined
+              <v-row>
+                <v-col>
+                  <v-hover v-slot="{ hover }">
+                    <v-card
+                      :dark="$store.getters.getTheme"
+                      :elevation="hover ? 20 : 5"
+                      :class="{ 'on-hover': hover }"
+                      style="padding: 20px"
+                    >
+                      <v-card-title class="text-center"
+                        ><p class="display-1">
+                          Kalalajien määritykset
+                        </p></v-card-title
                       >
-                        <v-card-title class="text-center"
-                          ><p class="display-1">
-                            Kalalajien määritykset
-                          </p></v-card-title
+                      <v-list outlined>
+                        <div
+                          v-for="(fish, index) in calculated_fish_weights"
+                          :key="index"
                         >
-                        <v-list outlined elevation="10">
-                          <div
-                            v-for="(fish, index) in calculated_fish_weights"
-                            :key="index"
-                          >
-                            <v-list-item>
-                              <v-list-item-title>{{
-                                fish.name
-                              }}</v-list-item-title>
-                              <v-divider vertical></v-divider>
-                              <v-list-item-subtitle class="green-text">
-                                <b> x {{ fish.multiplier }}</b>
-                              </v-list-item-subtitle>
-                              <v-divider vertical></v-divider>
-                              <v-list-item-subtitle class="blue-text">
-                                <v-tooltip bottom>
-                                  <template v-slot:activator="{ on, attrs }">
-                                    <span v-bind="attrs" v-on="on"
-                                      ><b>{{ fish.minsize }} cm</b></span
-                                    >
-                                  </template>
-                                  <span>{{ fish.minsize }}</span>
-                                </v-tooltip>
-                              </v-list-item-subtitle>
-                              <v-divider vertical></v-divider>
-                              <v-list-item-subtitle class="green-text">
-                                {{
-                                  fish.weights
-                                    ? Math.round(
-                                        (fish.weights / 1000 + Number.EPSILON) *
-                                          100
-                                      ) / 100
-                                    : 0
-                                }}
-                                kg
-                              </v-list-item-subtitle>
-                            </v-list-item>
-                            <v-divider></v-divider>
-                          </div>
                           <v-list-item>
-                            <v-list-item-title>
-                              Saalista yhteensä
-                            </v-list-item-title>
-                            <v-list-item-subtitle>
-                              <h4 class="green-text">
-                                <b
-                                  >{{
-                                    Math.round(
-                                      (calculated_total_weights / 1000 +
-                                        Number.EPSILON) *
-                                        100
-                                    ) / 100
-                                  }}
-                                  kg</b
-                                >
-                              </h4></v-list-item-subtitle
-                            >
-                          </v-list-item>
-                        </v-list>
-                      </v-card>
-                    </v-col>
-                  </v-row>
-                  <v-row>
-                    <v-col>
-                      <v-card
-                        :dark="$store.getters.getTheme"
-                        elevation="20"
-                        outlined
-                      >
-                        <v-card-title class="text-center"
-                          ><p class="display-1">
-                            Yleisiä tilastoja
-                          </p></v-card-title
-                        >
-                        <v-list outlined elevation="10">
-                          <v-list-item>
-                            <v-list-item-title
-                              >Cup pistekerroin</v-list-item-title
-                            >
-                            <v-divider vertical></v-divider>
-                            <v-list-item-subtitle class="green-text">
-                              <b>x {{ competition.cup_points_multiplier }}</b>
-                            </v-list-item-subtitle>
-                          </v-list-item>
-                          <v-divider></v-divider>
-                          <v-list-item>
-                            <v-list-item-title>
-                              <b>Ilmoittautuneita yhteensä</b>
-                            </v-list-item-title>
-                            <v-divider vertical></v-divider>
-                            <v-list-item-subtitle class="green-text">
-                              <b>{{ signees.length }}</b> venettä
-                            </v-list-item-subtitle>
-                          </v-list-item>
-                          <v-divider></v-divider>
-                          <v-list-item>
-                            <v-list-item-title>
-                              <b>Saalista saaneita</b>
-                            </v-list-item-title>
+                            <v-list-item-title>{{
+                              fish.name
+                            }}</v-list-item-title>
                             <v-divider vertical></v-divider>
                             <v-list-item-subtitle
-                              v-if="$store.getters.getPointSignees.length"
-                              class="green-text"
+                              :class="
+                                getMultiplierColor(fish.multiplier) + '--text'
+                              "
                             >
+                              <b> x {{ fish.multiplier }}</b>
+                            </v-list-item-subtitle>
+                            <v-divider vertical></v-divider>
+                            <v-list-item-subtitle class="blue--text">
+                              <v-tooltip bottom>
+                                <template v-slot:activator="{ on, attrs }">
+                                  <span v-bind="attrs" v-on="on"
+                                    ><b>{{ fish.minsize }} cm</b></span
+                                  >
+                                </template>
+                                <span>{{ fish.minsize }}</span>
+                              </v-tooltip>
+                            </v-list-item-subtitle>
+                            <v-divider vertical></v-divider>
+                            <v-list-item-subtitle class="green--text">
+                              <b>
+                              {{
+                                fish.weights
+                                  ? Math.round(
+                                      (fish.weights / 1000 + Number.EPSILON) *
+                                        100
+                                    ) / 100
+                                  : 0
+                              }}
+                              kg
+                            </b>
+                            </v-list-item-subtitle>
+                          </v-list-item>
+                          <v-divider></v-divider>
+                        </div>
+                        <v-list-item>
+                          <v-list-item-title>
+                            Saalista yhteensä
+                          </v-list-item-title>
+                          <v-list-item-subtitle>
+                            <h4 class="green--text">
                               <b
                                 >{{
                                   Math.round(
-                                    ($store.getters.getPointSignees.length /
-                                      competition.signees.length) *
-                                      100 *
+                                    (calculated_total_weights / 1000 +
+                                      Number.EPSILON) *
                                       100
                                   ) / 100
-                                }}% ({{
-                                  $store.getters.getPointSignees.length
                                 }}
-                                / {{ signees.length }})</b
+                                kg</b
                               >
-                            </v-list-item-subtitle>
-                            <v-list-item-subtitle class="red-text" v-else
-                              ><b>0% (0/0)</b></v-list-item-subtitle
+                            </h4></v-list-item-subtitle
+                          >
+                        </v-list-item>
+                      </v-list>
+                    </v-card>
+                  </v-hover>
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col>
+                  <v-hover v-slot="{ hover }">
+                    <v-card
+                      :dark="$store.getters.getTheme"
+                      :elevation="hover ? 20 : 5"
+                      :class="{ 'on-hover': hover }"
+                      style="padding: 20px"
+                    >
+                      <v-card-title class="text-center"
+                        ><p class="display-1">
+                          Yleisiä tilastoja
+                        </p></v-card-title
+                      >
+                      <v-list outlined>
+                        <v-list-item>
+                          <v-list-item-title
+                            ><b>Cup pistekerroin</b></v-list-item-title
+                          >
+                          <v-divider vertical></v-divider>
+                          <v-list-item-subtitle class="green--text">
+                            <b>x {{ competition.cup_points_multiplier }}</b>
+                          </v-list-item-subtitle>
+                        </v-list-item>
+                        <v-divider></v-divider>
+                        <v-list-item>
+                          <v-list-item-title>
+                            <b>Ilmoittautuneita yhteensä</b>
+                          </v-list-item-title>
+                          <v-divider vertical></v-divider>
+                          <v-list-item-subtitle class="green--text">
+                            <b>{{ signees.length }} venettä</b>
+                          </v-list-item-subtitle>
+                        </v-list-item>
+                        <v-divider></v-divider>
+                        <v-list-item>
+                          <v-list-item-title>
+                            <b>Saalista saaneita</b>
+                          </v-list-item-title>
+                          <v-divider vertical></v-divider>
+                          <v-list-item-subtitle
+                            v-if="$store.getters.getPointSignees.length"
+                            class="green--text"
+                          >
+                            <b
+                              >{{
+                                Math.round(
+                                  ($store.getters.getPointSignees.length /
+                                    competition.signees.length) *
+                                    100 *
+                                    100
+                                ) / 100
+                              }}% ({{ $store.getters.getPointSignees.length }} /
+                              {{ signees.length }})</b
                             >
-                          </v-list-item>
-                        </v-list>
-                      </v-card>
-                    </v-col>
-                  </v-row>
-                </v-card>
-              </v-hover>
+                          </v-list-item-subtitle>
+                          <v-list-item-subtitle class="red--text" v-else
+                            ><b>0% (0/0)</b></v-list-item-subtitle
+                          >
+                        </v-list-item>
+                      </v-list>
+                    </v-card>
+                  </v-hover>
+                </v-col>
+              </v-row>
             </v-col>
           </v-row>
           <v-row v-else>
             <v-col v-if="loading">
-              <h2
-                v-bind:class="{
-                  'white--text': $store.getters.getTheme,
-                }"
-              >
-                Päivitetään tuloksia tietokannasta...
-              </h2>
+              <h2 class="white--text">Päivitetään tuloksia tietokannasta...</h2>
               <ProgressBarQuery />
             </v-col>
             <v-col v-else>
@@ -552,9 +543,8 @@
                   offset-md="1"
                 >
                   <v-btn
-                    :dark="$store.getters.getTheme"
                     large
-                    text
+                    color="red lighten-2"
                     outlined
                     :loading="loading"
                     @click="
@@ -650,11 +640,7 @@
                   </p>
                 </v-col>
                 <v-col v-else>
-                  <h2
-                    v-bind:class="{
-                      'white--text': $store.getters.getTheme,
-                    }"
-                  >
+                  <h2 class="white--text">
                     Päivitetään tuloksia tietokannasta...
                   </h2>
                   <ProgressBarQuery />
@@ -676,9 +662,8 @@
           <v-row v-if="team_results.length">
             <v-col style="padding-top: 50px" md="3" offset-md="8">
               <v-btn
-                :dark="$store.getters.getTheme"
+                color="red lighten-2"
                 large
-                text
                 outlined
                 :loading="loading"
                 @click="
@@ -748,11 +733,7 @@
                 Ei tuloksia, vielä...
               </p>
               <v-col v-else>
-                <h2
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
+                <h2 class="white--text">
                   Päivitetään tuloksia tietokannasta...
                 </h2>
                 <ProgressBarQuery />
@@ -783,9 +764,8 @@
             </v-col>
             <v-col md="3" offset-md="1" v-if="biggest_fishes_results.length">
               <v-btn
-                :dark="$store.getters.getTheme"
                 large
-                text
+                color="red lighten-2"
                 outlined
                 :loading="loading"
                 @click="
@@ -852,13 +832,7 @@
               </p>
             </v-col>
             <v-col v-else>
-              <h2
-                v-bind:class="{
-                  'white--text': $store.getters.getTheme,
-                }"
-              >
-                Päivitetään tuloksia tietokannasta...
-              </h2>
+              <h2 class="white--text">Päivitetään tuloksia tietokannasta...</h2>
               <ProgressBarQuery />
             </v-col>
           </v-row>
@@ -886,10 +860,9 @@
             </v-col>
             <v-col md="3" offset-md="1" v-if="biggest_amounts_results.length">
               <v-btn
-                :dark="$store.getters.getTheme"
                 large
                 outlined
-                text
+                color="red lighten-2"
                 :loading="loading"
                 @click="
                   pdf = '#biggest-amounts-table';
@@ -956,13 +929,7 @@
               </p>
             </v-col>
             <v-col v-else md="8" offset-md="2">
-              <h2
-                v-bind:class="{
-                  'white--text': $store.getters.getTheme,
-                }"
-              >
-                Päivitetään tuloksia tietokannasta...
-              </h2>
+              <h2 class="white--text">Päivitetään tuloksia tietokannasta...</h2>
               <ProgressBarQuery />
             </v-col>
           </v-row>
@@ -1030,13 +997,7 @@
           </v-row>
           <v-row v-else>
             <v-col>
-              <h2
-                v-bind:class="{
-                  'white--text': $store.getters.getTheme,
-                }"
-              >
-                Päivitetään...
-              </h2>
+              <h2 class="white--text">Päivitetään...</h2>
             </v-col>
             <ProgressBarQuery />
           </v-row>
@@ -1246,6 +1207,11 @@ export default {
     clearInterval(this.timer_refresh);
   },
   methods: {
+    getMultiplierColor(multiplier) {
+      if (multiplier === 1) return "green";
+      else if (multiplier > 1 && multiplier < 25) return "orange";
+      else return "red";
+    },
     pdfWrapper() {
       if (this.pdf === "Tilastoja") {
         this.saveStatsAsPDF(
