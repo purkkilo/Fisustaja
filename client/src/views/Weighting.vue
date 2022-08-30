@@ -899,6 +899,7 @@ export default {
           last_points = signee.total_points;
           last_placement = signee.placement;
         }
+
         placement++;
       });
       return signees;
@@ -1382,11 +1383,11 @@ export default {
       const placement_points = competition.cup_placement_points_array;
       let cup_placement_points = placement_points[0];
       const cup_participation_points = competition.cup_participation_points;
-      let last_points = null;
-      let tied_competitors = 0;
-      let placement = 1;
-      let cup_points_total;
+      let last_points = -1;
+      let last_placement = -1;
 
+      let placement = 1;
+      let cup_points_total = 0;
       let normal_points = [];
       let normal_weights = [];
       this.signees = competition.signees.filter(
@@ -1398,28 +1399,16 @@ export default {
       // For every signee, calculate their cup points and placing
       //TODO rework the structure, seems more complex than it should be
       // Placements and points now saved in every competition to cup_placement_points_array, based on placement fetch from there?
-      this.signees.forEach((signee) => {
-        cup_points_total = 0;
-        if (!last_points) {
+      this.signees.forEach((signee, index) => {
+        // If competitor has same points as last competitor
+        if (signee.total_points == last_points) {
+          placement = last_placement;
+        }
+        // If no tie, add tied_competitors to placement, to give correct placement to next not tied competitor
+        else {
+          placement = index + 1;
           last_points = signee.total_points;
-        } else {
-          // If competitor has same points as last competitor
-          if (signee.total_points == last_points) {
-            placement -= 1; // Keep the same placing (adds 1 later)
-            tied_competitors += 1; // remember amount of tied competitors for later to deduct more points from next not tied competitor
-          }
-          // If no tie, add tied_competitors to placement, to give correct placement to next not tied competitor
-          else {
-            placement += tied_competitors;
-          }
-
-          // If no points --> no placement points
-          if (signee.total_points == 0) {
-            // if there is a tie on points, increment tied competitors
-            if (signee.total_points === last_points) {
-              tied_competitors += 1;
-            }
-          }
+          last_placement = signee.placement;
         }
 
         // Find the placement points according to the placement
@@ -1460,12 +1449,6 @@ export default {
         temp_dict.total_points = signee.total_points;
         normal_weights.push(temp_dict);
         last_points = signee.total_points;
-        // Calculate next placement
-        if (tied_competitors > 0) {
-          placement += tied_competitors;
-        } else {
-          placement++;
-        }
       });
 
       let output = {

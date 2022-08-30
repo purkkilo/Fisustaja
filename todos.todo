@@ -20,7 +20,8 @@ New:
   ☐ Update to heroku after pushing to git: git push heroku master
   ☐ Move from heroku to other hosting since heroku removes free tier
   ☐ Make cool dashboard
-
+  ☐ Make Määritykset page only one tab (changes the component when pressing "muuta tietoja")
+  ☐ Fix bug on charts when printing to pdf (this is undefined)
 
 
 Done:

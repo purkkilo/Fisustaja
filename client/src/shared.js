@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
-function addTitle(doc, title, cup, time) {
+export function addTitle(doc, title, cup, time) {
   doc.setFontSize(24);
   doc.text(10, 10, title, { align: "left" });
   doc.setFontSize(14);
@@ -11,7 +11,7 @@ function addTitle(doc, title, cup, time) {
 }
 
 // Parses dictionary/json to array, for pdf autotables
-function dictToArray(dict, type) {
+export function dictToArray(dict, type) {
   const temp_arr = Object.entries(dict);
   const arr = [];
   temp_arr.forEach((element) => {
@@ -87,10 +87,18 @@ function dictToArray(dict, type) {
     }
     //Kalalajien info
     if (type === 7) {
-      let fish_name = values[0];
-      let fish_multiplier = values[1];
-      let fish_minsize = values[2];
-      let fish_weights = values[3];
+      let fish_name = values[1];
+      let fish_multiplier = values[2];
+      let fish_minsize = values[3];
+      let fish_weights = values[4];
+
+      if (isNaN(values[0])) {
+        fish_name = values[0];
+        fish_multiplier = values[1];
+        fish_minsize = values[2];
+        fish_weights = values[3];
+      }
+
       values[0] = fish_name;
       values[1] = "x " + String(fish_multiplier);
       values[2] = fish_minsize + " cm";
@@ -121,7 +129,7 @@ function dictToArray(dict, type) {
 }
 
 // Capitalize all the words in given string. Takes account all the characters like "-", "'" etc.
-function capitalize_words(str) {
+export function capitalize_words(str) {
   return str.replace(
     /(?:^|\s|['`‘’.-])[^\x60^\x7B-\xDF](?!(\s|$))/g,
     function (txt) {
@@ -130,7 +138,7 @@ function capitalize_words(str) {
   );
 }
 
-function replaceAllChars(text, obj) {
+export function replaceAllChars(text, obj) {
   return [...text]
     .map((each) => {
       for (const o in obj) {
@@ -142,12 +150,12 @@ function replaceAllChars(text, obj) {
 }
 
 // For naming the pdf, replace certain characters
-function replaceAll(string, search, replace) {
+export function replaceAll(string, search, replace) {
   return string.split(search).join(replace);
 }
 
 // Returns date in format dd/mm/yyyy as string
-function formatDate(start_date) {
+export function formatDate(start_date) {
   start_date = this.$moment(start_date);
   let formatted_date = `${start_date.date()}.${
     start_date.month() + 1
@@ -156,8 +164,12 @@ function formatDate(start_date) {
   return formatted_date;
 }
 // Convert the charts and the tables to pdf
-function saveAsPDF(competition_type, table_id, orientation = "portrait") {
-  this.onBeforePrint();
+export function saveAsPDF(
+  competition_type,
+  table_id,
+  orientation = "portrait"
+) {
+  onBeforePrint();
   // Format dates for easier reding
   let temp_start_date = this.formatDate(this.competition.start_date);
   let temp_end_date = this.formatDate(this.competition.end_date);
@@ -290,11 +302,11 @@ function saveAsPDF(competition_type, table_id, orientation = "portrait") {
   )}_${pdf_competition_type}.pdf`;
   openPdfOnNewTab(doc, fileName);
   // Set charts to be responsive again
-  this.onafterprint();
+  onAfterPrint();
 }
 
-function saveStatsAsPDF(competition_type, orientation = "portrait") {
-  this.onBeforePrint();
+export function saveStatsAsPDF(competition_type, orientation = "portrait") {
+  onBeforePrint();
   // Format dates for easier reding
   let temp_start_date = this.formatDate(this.competition.start_date);
   let temp_end_date = this.formatDate(this.competition.end_date);
@@ -419,11 +431,11 @@ function saveStatsAsPDF(competition_type, orientation = "portrait") {
   )}_${this.replaceAll(this.capitalize_words(competition_type), " ", "")}.pdf`;
   openPdfOnNewTab(doc, fileName);
   // Set charts to be responsive again
-  this.onafterprint();
+  onAfterPrint();
 }
 // Saves all the chosen tables to pdf
-function saveAllAsPDF(tab, orientation = "portrait") {
-  this.onBeforePrint();
+export function saveAllAsPDF(tab, orientation = "portrait") {
+  onBeforePrint();
   let current_tab = tab;
   let charts_loaded = true;
   let temp_selected_biggest_fish = this.selected_biggest_fish;
@@ -1027,14 +1039,14 @@ function saveAllAsPDF(tab, orientation = "portrait") {
     )}Tulokset.pdf`;
     openPdfOnNewTab(doc, fileName);
     // Set charts to be responsive again
-    this.onafterprint();
+    onAfterPrint();
   } else {
     this.text = "Kaaviot ei ruudulla, yritetään uudelleen...";
     this.snackbar = true;
   }
 }
 
-function onBeforePrint() {
+export function onBeforePrint() {
   const Chart = require("chart.js");
   for (var id in Chart.instances) {
     let chart = Chart.instances[id];
@@ -1045,7 +1057,7 @@ function onBeforePrint() {
   }
 }
 
-function onafterprint() {
+export function onAfterPrint() {
   const Chart = require("chart.js");
   for (var id in Chart.instances) {
     let chart = Chart.instances[id];
@@ -1054,35 +1066,35 @@ function onafterprint() {
     chart.canvas.parentNode.style.width = "";
     chart.resize();
   }
-  this.drawCharts();
+  drawCharts();
 }
 
 // Custom range function for for loop, with recursion which is more efficient
-function* range(start, end) {
+export function* range(start, end) {
   yield start;
   if (start === end) return;
   yield* range(start + 1, end);
 }
 
-function getColor(placement) {
+export function getColor(placement) {
   if (placement === 1) return "yellow";
   else if (placement > 1 && placement <= 10) return "green";
   else return "orange";
 }
 
-function getMultiplierColor(multiplier) {
+export function getMultiplierColor(multiplier) {
   if (multiplier > 1) return "red";
   if (multiplier === 1) return "green";
   else return "grey";
 }
 
-function getColorPoints(points) {
+export function getColorPoints(points) {
   if (points > 5) return "primary darken-2";
   else return "red";
 }
 
 // Parse data, define charts, draw them
-function drawCharts() {
+export function drawCharts() {
   let temp_weights = [];
   let colors = [];
 
@@ -1124,7 +1136,7 @@ function drawCharts() {
 }
 
 // Sorts the dictionary based on weights
-function sortDict(fishes) {
+export function sortDict(fishes) {
   if (fishes) {
     let all_results = [];
     let temp_results = [];
@@ -1165,7 +1177,7 @@ function sortDict(fishes) {
  * Ported from the excellent java algorithm by Eugene Vishnevsky at:
  * http://www.cs.rit.edu/~ncs/color/t_convert.html
  */
-function HSVtoRGB(h, s, v) {
+export function HSVtoRGB(h, s, v) {
   var r, g, b;
   var i;
   var f, p, q, t;
@@ -1235,7 +1247,7 @@ function HSVtoRGB(h, s, v) {
   };
 }
 
-function getRandomColors(totalNumber) {
+export function getRandomColors(totalNumber) {
   var i = 360 / (totalNumber - 1); // distribute the colors evenly on the hue range
   var colors = []; // hold the generated colors
   const max = 90;
@@ -1249,7 +1261,7 @@ function getRandomColors(totalNumber) {
   return colors;
 }
 
-function openPdfOnNewTab(doc, fileName) {
+export function openPdfOnNewTab(doc, fileName) {
   // https://stackoverflow.com/questions/17739816/how-to-open-generated-pdf-using-jspdf-in-new-window
   // Save the pdf
   // IE doesn't allow using a blob object directly as link href
@@ -1271,7 +1283,7 @@ function openPdfOnNewTab(doc, fileName) {
   }
 }
 
-function sortBy(field, isAscending) {
+export function sortBy(field, isAscending) {
   return function (a, b) {
     if (isAscending) {
       return (b[field] < a[field]) - (b[field] > a[field]);
@@ -1281,8 +1293,14 @@ function sortBy(field, isAscending) {
   };
 }
 
+export function getMultiplierTextColor(multiplier) {
+  if (multiplier === 1) return "green";
+  else if (multiplier > 1 && multiplier < 25) return "orange";
+  else return "red";
+}
+
 export default {
-  onafterprint,
+  onAfterPrint,
   onBeforePrint,
   saveAllAsPDF,
   saveStatsAsPDF,
@@ -1292,8 +1310,9 @@ export default {
   replaceAll,
   formatDate,
   range,
-  getColorPoints,
   getMultiplierColor,
+  getMultiplierTextColor,
+  getColorPoints,
   getColor,
   drawCharts,
   sortDict,
