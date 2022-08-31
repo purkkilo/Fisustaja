@@ -144,8 +144,7 @@
                       large
                       @click="
                         $router.push({
-                          path: '/continue',
-                          query: { tab: 'create' },
+                          path: '/dashboard',
                         })
                       "
                       ><v-icon>mdi-plus-circle</v-icon>Luo uusi cup!</v-btn
@@ -1559,7 +1558,7 @@ export default {
           await CompetitionService.insertCompetition(competition);
           this.text = "Kilpailu lisätty tietokantaan!";
           this.snackbar = true;
-          this.$router.push({ path: "/continue" });
+          this.$router.push({ path: "/dashboard" });
         } catch (err) {
           this.errors.push(err.message);
         }
