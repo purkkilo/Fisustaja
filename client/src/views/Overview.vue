@@ -64,7 +64,7 @@
                     <v-icon>mdi-calendar-today</v-icon>
                   </v-list-item-icon>
                   <v-list-item-title>Päivämäärä</v-list-item-title>
-                  <v-list-item-subtitle class="blue-text">
+                  <v-list-item-subtitle class="blue--text">
                     <b>{{ formatted_start_date }} - {{ formatted_end_date }}</b>
                   </v-list-item-subtitle>
                 </v-list-item>
@@ -74,7 +74,7 @@
                     <v-icon>mdi-clock-time-four</v-icon>
                   </v-list-item-icon>
                   <v-list-item-title>Kilpailuaika</v-list-item-title>
-                  <v-list-item-subtitle class="blue-text">
+                  <v-list-item-subtitle class="blue--text">
                     <b
                       >{{ competition.start_time }} -
                       {{ competition.end_time }}</b
@@ -89,8 +89,8 @@
                   <v-list-item-title>Tila</v-list-item-title>
                   <v-list-item-subtitle
                     v-bind:class="{
-                      'green-text': competition.state === 'Kaikki maalissa',
-                      'blue-text': competition.state !== 'Kaikki maalissa',
+                      'green--text': competition.state === 'Kaikki maalissa',
+                      'blue--text': competition.state !== 'Kaikki maalissa',
                     }"
                   >
                     <b>{{ competition.state }}</b>
@@ -104,8 +104,8 @@
                   <v-list-item-title>Ilmoittautuneita</v-list-item-title>
                   <v-list-item-subtitle
                     v-bind:class="{
-                      'green-text': competition.signees.length,
-                      'red-text': !competition.signees.length,
+                      'green--text': competition.signees.length,
+                      'red--text': !competition.signees.length,
                     }"
                   >
                     <b>{{ competition.signees.length }}</b>
@@ -120,10 +120,10 @@
                   <v-list-item-subtitle
                     v-if="competition.signees.length"
                     v-bind:class="{
-                      'green-text':
+                      'green--text':
                         !competition.signees.length -
                         $store.getters.getFinishedSignees.length,
-                      'red-text': competition.signees.length,
+                      'red--text': competition.signees.length,
                     }"
                   >
                     <b>{{ hasNotReturnedPercentage }}%</b>
@@ -134,7 +134,7 @@
                     / {{ competition.signees.length }})
                   </v-list-item-subtitle>
 
-                  <v-list-item-subtitle class="green-text" v-else
+                  <v-list-item-subtitle class="green--text" v-else
                     ><b>Ketään ei vielä vesillä!</b></v-list-item-subtitle
                   >
                 </v-list-item>
@@ -145,7 +145,7 @@
                   </v-list-item-icon>
                   <v-list-item-title>Saalista saaneita</v-list-item-title>
                   <v-list-item-subtitle
-                    class="green-text"
+                    class="green--text"
                     v-if="competition.signees.length"
                   >
                     <b>{{ hasGottenFishPercentage }}%</b> ({{
@@ -153,7 +153,7 @@
                     }}
                     / {{ competition.signees.length }})
                   </v-list-item-subtitle>
-                  <v-list-item-subtitle class="red-text" v-else
+                  <v-list-item-subtitle class="red--text" v-else
                     ><b>Ei vielä ilmoittautuneita!</b></v-list-item-subtitle
                   >
                 </v-list-item>
@@ -164,12 +164,12 @@
                   </v-list-item-icon>
                   <v-list-item-title>Kalaa saatu yhteensä</v-list-item-title>
                   <v-list-item-subtitle
-                    class="green-text"
+                    class="green--text"
                     v-if="competition.signees.length"
                   >
                     <b>{{ competition.total_weights / 1000 }} kg</b>
                   </v-list-item-subtitle>
-                  <v-list-item-subtitle class="red-text" v-else
+                  <v-list-item-subtitle class="red--text" v-else
                     ><b>Ei vielä ilmoittautuneita!</b></v-list-item-subtitle
                   >
                 </v-list-item>
