@@ -11,20 +11,39 @@ New:
   ☐ Comment all the files... @started(20-05-26 12:11) @low
   ☐ Also Fix warning from entrypoint app being too large (optimize somehow) @low
   ☐ Add internatialization @low https://www.freecodecamp.org/news/how-to-add-internationalization-to-a-vue-application-d9cfdcabb03b/
-  ☐ Add tests! Vuetify can also be used for unit testing, add testing
+  ☐ Add tests!
   ☐ Add qr code possibility to signing/weighting (rfid)
   ☐ Add possibility to get weights via usb from weighting thing
   ☐ Reimplement api for competitions, cups and feedback (like users)
     ☐ Own database table for competition results
-  ☐ Make reusable components out of components that are used in many pages
-  ☐ Update to heroku after pushing to git: git push heroku master
-  ☐ Move from heroku to other hosting since heroku removes free tier
-  ☐ Make cool dashboard
-  ☐ Make Määritykset page only one tab (changes the component when pressing "muuta tietoja")
+  ☐ Move from heroku to other hosting since heroku removes free tier @high
 
 
+Cancelled:
+  ✘ Press Alt+C to mark a todo as cancelled
+  
+Tagging:
+  ☐ You can add tags using the @ symbol, like this @tag
+  ☐ There are some special, customizable tags: @critical @high @low @today
+Timekeeping:
+  ✔ Completed todos can show a timestamp @done(17-11-03 10:42)
+  ☐ Press Alt+S to mark a todo as started @started(17-11-03 10:42)
+    ✔ Now it will show the elapsed time @started(17-11-03 10:42) @done(17-11-03 20:11) @lasted(9h29m)
+  ☐ You can provide time estimates for your todos @1h30m
+    ☐ We are even doing some natural language processing @est(1 day and 20 minutes)
 
-Done:
+Formatting:
+You can format text in a markdown-like fashion
+Bold:
+  ☐ Use asterisks for *bold*
+Italic:
+  ☐ Use underscores for _italic_
+Strikethrough:
+  ☐ Use tildes for ~strikethrough~
+Code:
+  ☐ Use backticks for `code`
+
+Archive:
   ✔ Create signees database collection @started(20-05-26 11:19) @today @done(20-05-27 19:34) @lasted(1d8h15m1s)
   ✔ Add fish weights/points to signee properties @started(20-05-26 11:22) @today @done(20-05-28 15:33) @lasted(2d4h11m17s)
   ✔ Add signees/weights/points to competition collection @started(20-05-26 11:21) @today @done(20-05-28 19:44) @lasted(2d8h23m33s)
@@ -57,31 +76,6 @@ Done:
   ✔ Replace materialize components with vuetify (toast -> snackbar etc.) @done(21-11-27 14:44)
   ✔ Implement ability to create own point system (custom cup_placement_points_array) @done(22-06-15 01:20)
   ✔ Create all fishes category in biggest fishes and biggest amounts @done(22-06-17 01:59)
-
-Cancelled:
-  ✘ Press Alt+C to mark a todo as cancelled
-  
-Tagging:
-  ☐ You can add tags using the @ symbol, like this @tag
-  ☐ There are some special, customizable tags: @critical @high @low @today
-Timekeeping:
-  ✔ Completed todos can show a timestamp @done(17-11-03 10:42)
-  ☐ Press Alt+S to mark a todo as started @started(17-11-03 10:42)
-    ✔ Now it will show the elapsed time @started(17-11-03 10:42) @done(17-11-03 20:11) @lasted(9h29m)
-  ☐ You can provide time estimates for your todos @1h30m
-    ☐ We are even doing some natural language processing @est(1 day and 20 minutes)
-
-Formatting:
-You can format text in a markdown-like fashion
-Bold:
-  ☐ Use asterisks for *bold*
-Italic:
-  ☐ Use underscores for _italic_
-Strikethrough:
-  ☐ Use tildes for ~strikethrough~
-Code:
-  ☐ Use backticks for `code`
-
-Archive:
-✔ You can archive finished todos here
-✔ Congratulations, you are now a Todo+ master!
+  ✔ Make Määritykset page only one tab (changes the component when pressing "muuta tietoja") @done(22-08-31 12:35)
+  ✔ Make cool dashboard @done(22-08-31 12:35)
+  ✔ Make reusable components out of components that are used in many pages @done(22-08-31 12:37)
