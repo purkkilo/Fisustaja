@@ -169,7 +169,6 @@ export function saveAsPDF(
   table_id,
   orientation = "portrait"
 ) {
-  onBeforePrint();
   // Format dates for easier reding
   let temp_start_date = this.formatDate(this.competition.start_date);
   let temp_end_date = this.formatDate(this.competition.end_date);
@@ -302,11 +301,10 @@ export function saveAsPDF(
   )}_${pdf_competition_type}.pdf`;
   openPdfOnNewTab(doc, fileName);
   // Set charts to be responsive again
-  onAfterPrint();
 }
 
 export function saveStatsAsPDF(competition_type, orientation = "portrait") {
-  onBeforePrint();
+  resizeChartForPDF();
   // Format dates for easier reding
   let temp_start_date = this.formatDate(this.competition.start_date);
   let temp_end_date = this.formatDate(this.competition.end_date);
@@ -431,11 +429,10 @@ export function saveStatsAsPDF(competition_type, orientation = "portrait") {
   )}_${this.replaceAll(this.capitalize_words(competition_type), " ", "")}.pdf`;
   openPdfOnNewTab(doc, fileName);
   // Set charts to be responsive again
-  onAfterPrint();
+  setChartsResponsive();
 }
 // Saves all the chosen tables to pdf
 export function saveAllAsPDF(tab, orientation = "portrait") {
-  onBeforePrint();
   let current_tab = tab;
   let charts_loaded = true;
   let temp_selected_biggest_fish = this.selected_biggest_fish;
@@ -914,6 +911,7 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
     ) {
       doc.addPage();
     }
+    resizeChartForPDF();
     addTitle(doc, title, this.competition.cup_name, time);
     doc.setFontSize(18);
     // "Tilastot"
@@ -1020,6 +1018,8 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
       margin: { top: 20 },
       startY: doc.autoTable.previous.finalY + 25,
     });
+    // Set charts to be responsive again
+    setChartsResponsive();
   }
 
   // Reset variables
@@ -1028,6 +1028,7 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
   this.selected_normal = temp_selected_normal;
   this.calculateBiggestFishes();
   this.calculateBiggestAmounts();
+  initChartData;
 
   // Save to pdf
   if (charts_loaded) {
@@ -1038,15 +1039,13 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
       ""
     )}Tulokset.pdf`;
     openPdfOnNewTab(doc, fileName);
-    // Set charts to be responsive again
-    onAfterPrint();
   } else {
     this.text = "Kaaviot ei ruudulla, yritetään uudelleen...";
     this.snackbar = true;
   }
 }
 
-export function onBeforePrint() {
+export function resizeChartForPDF() {
   const Chart = require("chart.js");
   for (var id in Chart.instances) {
     let chart = Chart.instances[id];
@@ -1057,7 +1056,7 @@ export function onBeforePrint() {
   }
 }
 
-export function onAfterPrint() {
+export function setChartsResponsive() {
   const Chart = require("chart.js");
   for (var id in Chart.instances) {
     let chart = Chart.instances[id];
@@ -1066,7 +1065,6 @@ export function onAfterPrint() {
     chart.canvas.parentNode.style.width = "";
     chart.resize();
   }
-  drawCharts();
 }
 
 // Custom range function for for loop, with recursion which is more efficient
@@ -1094,25 +1092,23 @@ export function getColorPoints(points) {
 }
 
 // Parse data, define charts, draw them
-export function drawCharts() {
+export function initChartData(
+  weights,
+  fishNames,
+  signeesWithPoints,
+  totalSignees
+) {
   let temp_weights = [];
   let colors = [];
 
   // Get fish weights, and color from array for fishesChart
-  this.calculated_fish_weights.forEach((fish) => {
+  weights.forEach((fish) => {
     temp_weights.push(fish.weights);
     colors.push(fish.color);
   });
 
-  // Get data for signeesChart (total signees, and signees who have more than 0 points)
-  let signee_data = [];
-  let point_signees = this.$store.getters.getPointSignees.length;
-  let no_points_signees = this.signees.length - point_signees;
-  signee_data.push(point_signees);
-  signee_data.push(no_points_signees);
-  this.fishes_chart_title = "Kaloja saatu yhteensä";
-  this.fishes_chart_data = {
-    labels: this.table_fish_names,
+  const fishes_chart_data = {
+    labels: fishNames,
     datasets: [
       {
         label: "Paino",
@@ -1122,16 +1118,20 @@ export function drawCharts() {
     ],
   };
 
-  this.signee_chart_title = "Saalista saaneita";
-  this.signee_chart_data = {
+  const signee_chart_data = {
     labels: ["Kyllä", "Ei saalista"],
     datasets: [
       {
         label: "Lukumäärä",
         backgroundColor: ["#7fbf7f", "#ff7f7f"],
-        data: signee_data, // Data
+        data: [signeesWithPoints, totalSignees - signeesWithPoints], // Data
       },
     ],
+  };
+
+  return {
+    fishes_chart: { title: "Kaloja saatu yhteensä", data: fishes_chart_data },
+    signee_chart: { title: "Saalista saaneita", data: signee_chart_data },
   };
 }
 
@@ -1300,8 +1300,8 @@ export function getMultiplierTextColor(multiplier) {
 }
 
 export default {
-  onAfterPrint,
-  onBeforePrint,
+  setChartsResponsive,
+  resizeChartForPDF,
   saveAllAsPDF,
   saveStatsAsPDF,
   saveAsPDF,
@@ -1314,7 +1314,7 @@ export default {
   getMultiplierTextColor,
   getColorPoints,
   getColor,
-  drawCharts,
+  initChartData,
   sortDict,
   HSVtoRGB,
   getRandomColors,

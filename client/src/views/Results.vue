@@ -650,10 +650,8 @@ export default {
     this.range = shared.range;
     this.getColorPoints = shared.getColorPoints;
     this.getColor = shared.getColor;
-    this.drawCharts = shared.drawCharts;
+    this.initChartData = shared.initChartData;
     this.sortDict = shared.sortDict;
-    this.onAfterPrint = shared.onAfterPrint;
-    this.onBeforePrint = shared.onBeforePrint;
   },
   mounted() {
     /* eslint-disable no-unused-vars */
@@ -798,7 +796,19 @@ export default {
             this.fishes_chart.destroy();
             this.signees_chart.destroy();
           }
-          this.$nextTick(() => this.drawCharts(this.tab));
+          this.$nextTick(() => {
+            let charts = this.initChartData(
+              this.calculated_fish_weights,
+              this.table_fish_names,
+              this.$store.getters.getPointSignees.length,
+              this.signees.length
+            );
+
+            this.fishes_chart_title = charts.fishes_chart.title;
+            this.fishes_chart_data = charts.fishes_chart.data;
+            this.signee_chart_title = charts.signee_chart.title;
+            this.signee_chart_data = charts.signee_chart.data;
+          });
 
           if (this.normal_points.length) {
             this.results = this.normal_points;
