@@ -2,6 +2,18 @@
   <!-- /cup-overview -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <div>
+    <v-row>
+      <v-col v-if="prevRoute">
+        <v-btn
+          v-if="prevRoute.name"
+          large
+          rounded
+          color="yellow"
+          @click="$router.push({ path: prevRoute.path })"
+          ><v-icon>mdi-keyboard-return</v-icon>Palaa takaisin</v-btn
+        >
+      </v-col>
+    </v-row>
     <v-row style="margin: 20px">
       <v-col>
         <v-btn
@@ -725,6 +737,7 @@ export default {
   },
   data() {
     return {
+      prevRoute: null,
       dialog: false,
       isLandscape: false,
       dialog_clock: false,
@@ -812,6 +825,11 @@ export default {
       isResults: false,
       showInfoInPdf: true,
     };
+  },
+  beforeRouteEnter(to, from, next) {
+    next((vm) => {
+      vm.prevRoute = from;
+    });
   },
   created() {},
   mounted() {

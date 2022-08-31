@@ -81,15 +81,6 @@ const routes = [
     },
   },
   {
-    path: "/continue",
-    name: "ContinueComp",
-    component: () =>
-      import(/* webpackChunkName: "about" */ "../views/ContinueComp.vue"),
-    meta: {
-      requiresAuth: true,
-    },
-  },
-  {
     path: "/cup-overview",
     name: "CupOverview",
     component: () =>

@@ -8,6 +8,18 @@
       wide: $vuetify.breakpoint.width >= 1200,
     }"
   >
+    <v-row>
+      <v-col v-if="prevRoute">
+        <v-btn
+          v-if="prevRoute.name"
+          large
+          rounded
+          color="yellow"
+          @click="$router.push({ path: prevRoute.path })"
+          ><v-icon>mdi-keyboard-return</v-icon>Palaa takaisin</v-btn
+        >
+      </v-col>
+    </v-row>
     <!-- if errors, show errors -->
     <v-card
       :dark="$store.getters.getTheme"
@@ -964,6 +976,7 @@ export default {
   },
   data() {
     return {
+      prevRoute: null,
       tab: null,
       errors: [],
       selected: [],
@@ -1049,6 +1062,11 @@ export default {
       timeout: 5000,
       editPoints: false,
     };
+  },
+  beforeRouteEnter(to, from, next) {
+    next((vm) => {
+      vm.prevRoute = from;
+    });
   },
   // Runs everytime this page loads
   mounted() {
