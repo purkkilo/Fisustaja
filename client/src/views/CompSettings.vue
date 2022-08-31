@@ -27,786 +27,759 @@
           <v-col>
             <h1 style="margin: 30px">Kilpailun määritykset</h1>
           </v-col>
+          <v-col>
+            <v-btn
+              :disabled="!basic_info_validated"
+              large
+              tile
+              color="grey"
+              @click="basic_info_validated = false"
+              ><v-icon>mdi-cog-transfer</v-icon>Muuta tietoja</v-btn
+            >
+          </v-col>
         </v-row>
       </v-card>
 
-      <!-- Tabs -->
-      <v-tabs
-        v-model="tab"
-        background-color="blue lighten-2"
-        color="blue darken-4"
-        grow
-        show-arrows
-        next-icon="mdi-arrow-right-bold-box-outline"
-        prev-icon="mdi-arrow-left-bold-box-outline"
-        center-active
+      <!-- if this.loading === false, meaning app isn't loading competition data from database -->
+
+      <v-card
+        style="background: transparent"
+        elevation="10"
+        outlined
+        :dark="$store.getters.getTheme"
+        v-if="basic_info_validated"
       >
-        <v-tabs-slider color="blue darken-4"></v-tabs-slider>
-        <v-tab href="#show-settings">Määritykset</v-tab>
-        <v-tab href="#change-settings" :disabled="loading"
-          >Muuta määrityksiä</v-tab
-        >
-      </v-tabs>
-
-      <v-tabs-items v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
-        <v-tab-item :value="'show-settings'">
-          <!-- if this.loading === false, meaning app isn't loading competition data from database -->
-          <v-row v-if="!loading && competition" id="settings-info">
-            <v-col>
-              <v-row style="margin-top: 20px">
-                <v-col md="10" offset-md="1">
-                  <v-card
-                    :dark="$store.getters.getTheme"
-                    elevation="20"
-                    outlined
-                  >
-                    <v-card-title class="text-center"
-                      ><p class="display-1">Perustiedot</p></v-card-title
-                    >
-                    <v-list outlined elevation="10">
-                      <v-list-item>
-                        <v-list-item-icon>
-                          <v-icon>mdi-ferry</v-icon>
-                        </v-list-item-icon>
-                        <v-list-item-title>Kilpailu</v-list-item-title>
-                        <v-list-item-subtitle class="blue-text">
-                          <b
-                            >{{ competition.name }} ({{
-                              competition.locality
-                            }})</b
-                          >
-                        </v-list-item-subtitle>
-                      </v-list-item>
-                      <v-divider></v-divider>
-                      <v-list-item>
-                        <v-list-item-icon>
-                          <v-icon color="yellow darken-4">mdi-trophy</v-icon>
-                        </v-list-item-icon>
-                        <v-list-item-title>Cup</v-list-item-title>
-                        <v-list-item-subtitle class="blue-text">
-                          <b>{{ competition.cup_name }}</b>
-                        </v-list-item-subtitle>
-                      </v-list-item>
-                      <v-divider></v-divider>
-                      <v-list-item>
-                        <v-list-item-icon>
-                          <v-icon>mdi-calendar-arrow-right</v-icon>
-                        </v-list-item-icon>
-                        <v-list-item-title>Aloituspäivä</v-list-item-title>
-                        <v-list-item-subtitle class="blue-text">
-                          <b>{{ formatted_start_date }}</b>
-                        </v-list-item-subtitle>
-                      </v-list-item>
-                      <v-divider></v-divider>
-                      <v-list-item>
-                        <v-list-item-icon>
-                          <v-icon>mdi-calendar-multiple-check</v-icon>
-                        </v-list-item-icon>
-                        <v-list-item-title>Lopetuspäivä</v-list-item-title>
-                        <v-list-item-subtitle class="blue-text">
-                          <b>{{ formatted_end_date }}</b>
-                        </v-list-item-subtitle>
-                      </v-list-item>
-                      <v-divider></v-divider>
-                      <v-list-item>
-                        <v-list-item-icon>
-                          <v-icon>mdi-calendar-clock</v-icon>
-                        </v-list-item-icon>
-                        <v-list-item-title>Kilpailuaika</v-list-item-title>
-                        <v-list-item-subtitle class="blue-text">
-                          <b>
-                            {{ competition.start_time }} -
-                            {{ competition.end_time }}</b
-                          >
-                        </v-list-item-subtitle>
-                      </v-list-item>
-                      <v-divider></v-divider>
-                      <v-list-item>
-                        <v-list-item-icon>
-                          <v-icon color="green">mdi-clipboard-check</v-icon>
-                        </v-list-item-icon>
-                        <v-list-item-content>
-                          <v-list-item-title
-                            >Kilpailun sijoittumispisteet</v-list-item-title
-                          >
-                          <v-list
-                            :dark="$store.getters.getTheme"
-                            elevation="20"
-                            outlined
-                            style="max-height: 400px; overflow-y: auto"
-                          >
-                            <div
-                              v-for="(p, index) in placement_points_array"
-                              :key="index"
-                              style="margin-top: 20px"
-                            >
-                              <v-list-item>
-                                <v-row align="center">
-                                  <v-col>
-                                    <h3>#{{ p.placement }}</h3>
-                                  </v-col>
-                                  <v-col>
-                                    <p>{{ p.points }}p</p>
-                                  </v-col>
-                                </v-row>
-                              </v-list-item>
-                              <v-divider></v-divider>
-                            </div>
-                          </v-list>
-                        </v-list-item-content>
-                      </v-list-item>
-                      <v-divider></v-divider>
-                      <v-list-item>
-                        <v-list-item-icon>
-                          <v-icon color="green darken-2"
-                            >mdi-clipboard-check</v-icon
-                          >
-                        </v-list-item-icon>
-                        <v-list-item-title
-                          >Kilpailijoiden Cup
-                          osallistumispisteet</v-list-item-title
+        <v-row v-if="!loading && competition" id="settings-info">
+          <v-col>
+            <v-row style="margin-top: 20px">
+              <v-col md="10" offset-md="1">
+                <v-card :dark="$store.getters.getTheme" elevation="20" outlined>
+                  <v-card-title class="text-center">
+                    <p class="display-1">Perustiedot</p>
+                  </v-card-title>
+                  <v-list outlined elevation="10">
+                    <v-list-item>
+                      <v-list-item-icon>
+                        <v-icon>mdi-ferry</v-icon>
+                      </v-list-item-icon>
+                      <v-list-item-title>Kilpailu</v-list-item-title>
+                      <v-list-item-subtitle class="blue-text">
+                        <b
+                          >{{ competition.name }} ({{
+                            competition.locality
+                          }})</b
                         >
-                        <v-list-item-subtitle class="blue-text">
-                          <b>{{ competition.cup_participation_points }}</b>
-                        </v-list-item-subtitle>
-                      </v-list-item>
-                      <v-divider></v-divider>
-                      <v-list-item>
-                        <v-list-item-icon>
-                          <v-icon color="green darken-1"
-                            >mdi-calculator-variant-outline</v-icon
-                          >
-                        </v-list-item-icon>
-                        <v-list-item-title
-                          >Kilpailun pistekerroin</v-list-item-title
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item>
+                      <v-list-item-icon>
+                        <v-icon color="yellow darken-4">mdi-trophy</v-icon>
+                      </v-list-item-icon>
+                      <v-list-item-title>Cup</v-list-item-title>
+                      <v-list-item-subtitle class="blue-text">
+                        <b>{{ competition.cup_name }}</b>
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item>
+                      <v-list-item-icon>
+                        <v-icon>mdi-calendar-arrow-right</v-icon>
+                      </v-list-item-icon>
+                      <v-list-item-title>Aloituspäivä</v-list-item-title>
+                      <v-list-item-subtitle class="blue-text">
+                        <b>{{ formatted_start_date }}</b>
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item>
+                      <v-list-item-icon>
+                        <v-icon>mdi-calendar-multiple-check</v-icon>
+                      </v-list-item-icon>
+                      <v-list-item-title>Lopetuspäivä</v-list-item-title>
+                      <v-list-item-subtitle class="blue-text">
+                        <b>{{ formatted_end_date }}</b>
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item>
+                      <v-list-item-icon>
+                        <v-icon>mdi-calendar-clock</v-icon>
+                      </v-list-item-icon>
+                      <v-list-item-title>Kilpailuaika</v-list-item-title>
+                      <v-list-item-subtitle class="blue-text">
+                        <b>
+                          {{ competition.start_time }} -
+                          {{ competition.end_time }}</b
                         >
-                        <v-list-item-subtitle class="blue-text">
-                          <b>x {{ competition.cup_points_multiplier }}</b>
-                        </v-list-item-subtitle>
-                      </v-list-item>
-                      <v-divider></v-divider>
-                      <v-list-item>
-                        <v-list-item-icon>
-                          <v-icon>mdi-incognito</v-icon>
-                        </v-list-item-icon>
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item>
+                      <v-list-item-icon>
+                        <v-icon color="green">mdi-clipboard-check</v-icon>
+                      </v-list-item-icon>
+                      <v-list-item-content>
                         <v-list-item-title
-                          >Onko kilpailu julkinen</v-list-item-title
+                          >Kilpailun sijoittumispisteet</v-list-item-title
                         >
-                        <v-list-item-subtitle class="blue-text">
-                          <v-icon
-                            v-if="competition.isPublic"
-                            color="green darken-2"
-                            >mdi-check-bold</v-icon
-                          >
-                          <v-icon v-else color="red">mdi-close</v-icon>
-                        </v-list-item-subtitle>
-                      </v-list-item>
-                      <v-divider></v-divider>
-                      <v-list-item>
-                        <v-list-item-icon>
-                          <v-icon color="yellow darken-4"
-                            >mdi-trophy-award</v-icon
-                          >
-                        </v-list-item-icon>
-                        <v-list-item-title
-                          >Onko kilpailu päättynyt</v-list-item-title
+                        <v-list
+                          :dark="$store.getters.getTheme"
+                          elevation="20"
+                          outlined
+                          style="max-height: 400px; overflow-y: auto"
                         >
-                        <v-list-item-subtitle class="blue-text">
-                          <v-icon
-                            v-if="competition.isFinished"
-                            color="green darken-2"
-                            >mdi-check-bold</v-icon
+                          <div
+                            v-for="(p, index) in placement_points_array"
+                            :key="index"
+                            style="margin-top: 20px"
                           >
-                          <v-icon v-else color="red">mdi-close</v-icon>
-                        </v-list-item-subtitle>
-                      </v-list-item>
-                    </v-list>
-                  </v-card>
-                </v-col>
-              </v-row>
-              <v-row class="fishes_summary">
-                <v-col md="10" offset-md="1" class="scroll_table">
-                  <v-card
-                    :dark="$store.getters.getTheme"
-                    elevation="20"
-                    outlined
+                            <v-list-item>
+                              <v-row align="center">
+                                <v-col>
+                                  <h3>#{{ p.placement }}</h3>
+                                </v-col>
+                                <v-col>
+                                  <p>{{ p.points }}p</p>
+                                </v-col>
+                              </v-row>
+                            </v-list-item>
+                            <v-divider></v-divider>
+                          </div>
+                        </v-list>
+                      </v-list-item-content>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item>
+                      <v-list-item-icon>
+                        <v-icon color="green darken-2"
+                          >mdi-clipboard-check</v-icon
+                        >
+                      </v-list-item-icon>
+                      <v-list-item-title
+                        >Kilpailijoiden Cup
+                        osallistumispisteet</v-list-item-title
+                      >
+                      <v-list-item-subtitle class="blue-text">
+                        <b>{{ competition.cup_participation_points }}</b>
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item>
+                      <v-list-item-icon>
+                        <v-icon color="green darken-1"
+                          >mdi-calculator-variant-outline</v-icon
+                        >
+                      </v-list-item-icon>
+                      <v-list-item-title
+                        >Kilpailun pistekerroin</v-list-item-title
+                      >
+                      <v-list-item-subtitle class="blue-text">
+                        <b>x {{ competition.cup_points_multiplier }}</b>
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item>
+                      <v-list-item-icon>
+                        <v-icon>mdi-incognito</v-icon>
+                      </v-list-item-icon>
+                      <v-list-item-title
+                        >Onko kilpailu julkinen</v-list-item-title
+                      >
+                      <v-list-item-subtitle class="blue-text">
+                        <v-icon
+                          v-if="competition.isPublic"
+                          color="green darken-2"
+                          >mdi-check-bold</v-icon
+                        >
+                        <v-icon v-else color="red">mdi-close</v-icon>
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item>
+                      <v-list-item-icon>
+                        <v-icon color="yellow darken-4"
+                          >mdi-trophy-award</v-icon
+                        >
+                      </v-list-item-icon>
+                      <v-list-item-title
+                        >Onko kilpailu päättynyt</v-list-item-title
+                      >
+                      <v-list-item-subtitle class="blue-text">
+                        <v-icon
+                          v-if="competition.isFinished"
+                          color="green darken-2"
+                          >mdi-check-bold</v-icon
+                        >
+                        <v-icon v-else color="red">mdi-close</v-icon>
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                  </v-list>
+                </v-card>
+              </v-col>
+            </v-row>
+            <v-row class="fishes_summary">
+              <v-col md="10" offset-md="1" class="scroll_table">
+                <v-card :dark="$store.getters.getTheme" outlined>
+                  <v-card-title class="text-center"
+                    ><p class="display-1">Kalojen määritykset</p></v-card-title
                   >
-                    <v-card-title class="text-center"
-                      ><p class="display-1">
-                        Kalojen määritykset
-                      </p></v-card-title
-                    >
-                    <v-list outlined elevation="10">
-                      <div v-for="(fish, index) in fish_specs" :key="index">
-                        <v-list-item>
-                          <v-list-item-title>{{ fish.name }}</v-list-item-title>
-                          <v-divider vertical></v-divider>
-                          <v-list-item-subtitle class="green-text">
-                            <b> x {{ fish.multiplier }}</b>
-                          </v-list-item-subtitle>
-                          <v-divider vertical></v-divider>
-                          <v-list-item-subtitle class="blue-text">
-                            <b>{{ fish.minsize }} cm</b>
-                          </v-list-item-subtitle>
-                        </v-list-item>
-                        <v-divider></v-divider>
-                      </div>
-                    </v-list>
-                  </v-card>
-                </v-col>
-              </v-row>
-              <v-row v-if="!loading">
-                <v-col style="margin-top: 20px">
-                  <v-btn
-                    large
-                    rounded
-                    :color="
-                      competition.isPublic ? 'grey darken-4' : 'green darken-4'
-                    "
-                    @click="publishCompetition(competition.isPublic)"
-                    class="white--text"
-                    :loading="updating"
-                  >
-                    <div v-if="competition.isPublic">
-                      <v-icon>mdi-incognito</v-icon> Aseta kilpailu salaiseksi
-                    </div>
-                    <div v-else>
-                      <v-icon color="green">mdi-publish</v-icon> Aseta kilpailu
-                      julkiseksi
-                    </div>
-                  </v-btn>
-                </v-col>
-                <v-col style="margin-top: 20px">
-                  <v-btn
-                    large
-                    rounded
-                    :color="
-                      competition.isFinished ? 'yellow' : 'green darken-3'
-                    "
-                    @click="endCompetition(competition.isFinished)"
-                    :loading="updating"
-                  >
-                    <div v-if="competition.isFinished">
-                      <v-icon color="red darken-2">mdi-cancel</v-icon> Aseta
-                      kilpailu keskeneräiseksi
-                    </div>
-                    <div v-else>
-                      <v-icon color="yellow">mdi-trophy</v-icon> Aseta kilpailu
-                      päättyneeksi
-                    </div>
-                  </v-btn>
-                </v-col>
-              </v-row>
-              <v-row style="margin-bottom: 20px">
-                <v-col md="3" offset-md="4" style="margin-top: 20px">
-                  <v-btn
-                    block
-                    color="red darken-4"
-                    class="white--text"
-                    :loading="updating"
-                    @click="deleteCompetition(competition._id, false)"
-                    ><v-icon color="white">mdi-delete-forever</v-icon> Poista
-                    Kilpailu</v-btn
-                  >
-                </v-col>
-              </v-row>
-            </v-col>
-          </v-row>
-          <v-row v-else>
-            <v-col>
-              <h2 class="white--text">Haetaan määrityksiä...</h2>
-              <ProgressBarQuery />
-            </v-col>
-          </v-row>
-        </v-tab-item>
-        <v-tab-item :value="'change-settings'">
-          <v-card
-            :dark="$store.getters.getTheme"
-            id="errordiv"
-            elevation="20"
-            v-if="errors.length"
-          >
-            <v-alert type="error"> Korjaa seuraavat virheet: </v-alert>
-            <v-list>
-              <v-list-item v-for="(error, index) in errors" v-bind:key="index">
-                <v-list-item-icon>
-                  <v-icon color="red">mdi-alert-circle</v-icon>
-                </v-list-item-icon>
-
-                <v-list-item-content>
-                  <v-list-item-title>{{ error }}</v-list-item-title>
-                </v-list-item-content>
-              </v-list-item>
-            </v-list>
-          </v-card>
-          <v-row>
-            <v-col>
-              <h1>Muuta määrityksiä</h1>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col>
-              <p class="white--text">Kilpailun perustiedot</p>
-              <p
-                v-if="basic_info_validated"
-                class="flow-text yellow lighten-1 center-align"
-              >
-                Tiedot lukittuna, paina "Muuta tietoja" jos haluat varmasti
-                muokata tietoja
-              </p>
-            </v-col>
-          </v-row>
-          <v-row v-if="!loading">
-            <v-col cols="12">
-              <v-row v-if="competition" justify="center">
-                <v-col cols="6" class="input-fields">
-                  <v-text-field
-                    :dark="$store.getters.getTheme"
-                    label="Kilpailun nimi"
-                    v-model="name"
-                    :maxlength="max_input"
-                    :disabled="basic_info_validated"
-                    :rules="rules"
-                    :counter="max_input"
-                  />
-                </v-col>
-              </v-row>
-
-              <v-row v-if="competition" justify="center">
-                <v-col cols="6" class="input-fields">
-                  <v-text-field
-                    :dark="$store.getters.getTheme"
-                    label="Paikkakunta"
-                    v-model="locality"
-                    :maxlength="max_input"
-                    :disabled="basic_info_validated"
-                    :rules="rules"
-                    :counter="max_input"
-                  />
-                </v-col>
-              </v-row>
-
-              <v-row v-if="loading_cups">
-                <v-col>
-                  <h2 class="white--text">Haetaan cuppeja...</h2>
-                  <ProgressBarQuery />
-                </v-col>
-              </v-row>
-              <v-row v-if="!cups">
-                <v-col>
-                  <h2
-                    v-bind:class="{
-                      'white--text': $store.getters.getTheme,
-                    }"
-                  >
-                    Cuppeja ei löytynyt...
-                  </h2>
-                </v-col>
-              </v-row>
-              <v-row v-if="!competition.cup_name">
-                <v-col>
-                  <h2
-                    v-bind:class="{
-                      'white--text': $store.getters.getTheme,
-                    }"
-                  >
-                    Kilpailusta ei löytynyt cuppia...
-                  </h2>
-                </v-col>
-              </v-row>
-              <v-row v-else align="center" justify="center">
-                <v-col cols="6" class="input-fields">
-                  <v-subheader class="white--text"> Valitse Cup </v-subheader>
-                  <v-select
-                    label="Valitse Cup"
-                    :dark="$store.getters.getTheme"
-                    v-model="cup"
-                    :items="cups"
-                    item-text="select"
-                    item-value="_id"
-                    :hint="`${cup.name} (${cup.year})`"
-                    :disabled="basic_info_validated"
-                    outlined
-                    return-object
-                    single-line
-                  ></v-select>
-                </v-col>
-              </v-row>
-              <v-row v-if="competition" justify="center">
-                <v-col cols="6">
-                  <h2 class="white--text">Kilpailun sijoittumispisteet</h2>
-                  <v-list
-                    :dark="$store.getters.getTheme"
-                    elevation="20"
-                    outlined
-                    style="max-height: 400px; overflow-y: auto"
-                  >
-                    <div
-                      v-for="(p, index) in placement_points_array"
-                      :key="index"
-                      style="margin-top: 20px"
-                    >
+                  <v-list outlined elevation="10">
+                    <div v-for="(fish, index) in fish_specs" :key="index">
                       <v-list-item>
-                        <v-row align="center">
-                          <v-col>
-                            <h3>#{{ p.placement }}</h3>
-                          </v-col>
-                          <v-col>
-                            <v-text-field
-                              :dark="$store.getters.getTheme"
-                              label="Pisteet"
-                              v-model="p.points"
-                              :rules="number_rules"
-                              :disabled="basic_info_validated || !editPoints"
-                              @blur="sortPlacements"
-                            />
-                          </v-col>
-                          <v-col v-if="editPoints"
-                            ><v-btn @click="removePlacement(index)" color="red">
-                              <v-icon>mdi-delete</v-icon>
-                            </v-btn>
-                          </v-col>
-                        </v-row>
+                        <v-list-item-title>{{ fish.name }}</v-list-item-title>
+                        <v-divider vertical></v-divider>
+                        <v-list-item-subtitle class="green-text">
+                          <b> x {{ fish.multiplier }}</b>
+                        </v-list-item-subtitle>
+                        <v-divider vertical></v-divider>
+                        <v-list-item-subtitle class="blue-text">
+                          <b>{{ fish.minsize }} cm</b>
+                        </v-list-item-subtitle>
                       </v-list-item>
                       <v-divider></v-divider>
                     </div>
                   </v-list>
-                  <v-row v-if="editPoints">
-                    <v-col>
-                      <v-btn color="green" @click="addPlacement"
-                        ><v-icon>mdi-plus</v-icon>Lisää pistesija</v-btn
-                      >
-                    </v-col>
-                  </v-row>
-                  <v-row>
-                    <v-col v-if="editPoints">
-                      <v-btn block color="yellow" @click="cancelPoints"
-                        ><v-icon>mdi-cancel</v-icon>Peruuta</v-btn
-                      >
-                    </v-col>
-                    <v-col>
-                      <v-btn
-                        block
-                        :color="editPoints ? 'green darken-2' : 'grey'"
-                        @click="confirmPoints"
-                        :disabled="basic_info_validated"
-                        ><v-icon>mdi-check</v-icon
-                        >{{ editPoints ? "Valmis" : "Muokkaa" }}</v-btn
-                      >
-                    </v-col>
-                  </v-row>
-                </v-col>
-                <v-col cols="2" v-if="editPoints">
-                  <div style="margin-top: 200px">
-                    <p
-                      class="center-align flow-text"
-                      v-bind:class="{
-                        'white--text': $store.getters.getTheme,
-                      }"
-                    >
-                      Palauta alkuperäiset pisteet:<br />#1 = 30, #2 = 28, #3 =
-                      26...
-                    </p>
-                    <v-btn color="red" @click="resetPoints">Palauta</v-btn>
-                  </div>
-                </v-col>
-              </v-row>
-
-              <v-row v-if="competition" justify="center">
-                <v-col cols="6" class="input-fields">
-                  <v-text-field
-                    :dark="$store.getters.getTheme"
-                    label="Kilpailun cup osallistumispisteet"
-                    v-model="cup_participation_points"
-                    append-outer-icon="add"
-                    maxlength="6"
-                    @click:append-outer="
-                      cup_participation_points >= 0
-                        ? cup_participation_points++
-                        : (cup_participation_points = 1)
-                    "
-                    prepend-icon="remove"
-                    @click:prepend="
-                      cup_participation_points >= 1
-                        ? cup_participation_points--
-                        : (cup_participation_points = 0)
-                    "
-                    @paste.prevent
-                    :counter="6"
-                    @keypress="isNumber($event, true)"
-                    :rules="number_rules"
-                    :disabled="basic_info_validated"
-                  />
-                </v-col>
-              </v-row>
-
-              <v-row v-if="competition" justify="center">
-                <v-col cols="6" class="input-fields">
-                  <v-text-field
-                    :dark="$store.getters.getTheme"
-                    label="Cup pistekerroin"
-                    v-model="cup_points_multiplier"
-                    append-outer-icon="add"
-                    maxlength="3"
-                    @click:append-outer="
-                      cup_points_multiplier >= 1
-                        ? (cup_points_multiplier += 0.5)
-                        : (cup_points_multiplier = 1)
-                    "
-                    prepend-icon="remove"
-                    @click:prepend="
-                      cup_points_multiplier >= 1.5
-                        ? (cup_points_multiplier -= 0.5)
-                        : (cup_points_multiplier = 1)
-                    "
-                    @paste.prevent
-                    :counter="3"
-                    @keypress="isNumber($event, true)"
-                    :rules="number_rules"
-                    :disabled="basic_info_validated"
-                  />
-                </v-col>
-              </v-row>
-
-              <v-row v-if="competition" justify="center" align="center">
-                <v-col cols="6" class="input-fields">
-                  <span class="white--text">Onko Tiimikilpailua?</span>
-                  <v-row justify="center" align="center">
-                    <v-spacer></v-spacer>
-                    <v-col>
-                      <v-radio-group
-                        :dark="$store.getters.getTheme"
-                        v-model="team_competition"
-                        row
-                        :disabled="basic_info_validated"
-                      >
-                        <v-radio label="Kyllä" value="Kyllä"></v-radio>
-                        <v-radio label="Ei" value="Ei"></v-radio>
-                      </v-radio-group>
-                    </v-col>
-                    <v-spacer></v-spacer>
-                  </v-row>
-                </v-col>
-              </v-row>
-
-              <v-row
-                v-if="competition"
-                style="padding: 20px; margin-bottom: 50px"
-                justify="center"
-                align="center"
-              >
-                <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
-                  <span class="white--text">Kilpailun Aloituspäivä</span>
-
-                  <v-date-picker
-                    :dark="$store.getters.getTheme"
-                    style="height: 480px"
-                    v-model="start_date"
-                    full-width
-                    elevation="15"
-                    locale="fi"
-                    class="mt-4"
-                    first-day-of-week="1"
-                    :disabled="basic_info_validated"
-                  ></v-date-picker>
-                </v-col>
-                <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
-                  <span class="white--text">Kilpailun Lopetuspäivä</span>
-
-                  <v-date-picker
-                    :dark="$store.getters.getTheme"
-                    style="height: 480px"
-                    v-model="end_date"
-                    full-width
-                    elevation="15"
-                    locale="fi"
-                    class="mt-4"
-                    first-day-of-week="1"
-                    :disabled="basic_info_validated"
-                  ></v-date-picker>
-                </v-col>
-              </v-row>
-
-              <v-row
-                v-if="competition"
-                style="padding: 20px; margin-bottom: 50px"
-                justify="center"
-                align="center"
-              >
-                <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
-                  <span class="white--text">Kilpailun alkamismisaika</span>
-
-                  <v-time-picker
-                    :dark="$store.getters.getTheme"
-                    v-model="start_time"
-                    format="24hr"
-                    full-width
-                    scrollable
-                    elevation="15"
-                    :disabled="basic_info_validated"
-                  ></v-time-picker>
-                </v-col>
-                <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
-                  <span class="white--text">Kilpailun loppumisaika</span>
-
-                  <v-time-picker
-                    :dark="$store.getters.getTheme"
-                    v-model="end_time"
-                    format="24hr"
-                    full-width
-                    scrollable
-                    elevation="15"
-                    :disabled="basic_info_validated"
-                  ></v-time-picker>
-                </v-col>
-              </v-row>
-              <v-row class="fishes_summary" justify="center" align="center">
-                <v-col cols="12" xl="8" l="8" md="10" s="10" xs="12">
-                  <table
-                    class="highlight centered responsive-table table_header"
-                  >
-                    <thead>
-                      <tr>
-                        <th>Kalalaji</th>
-                        <th>Pistekerroin</th>
-                        <th>Alamitta</th>
-                        <th v-if="!basic_info_validated">Poista?</th>
-                      </tr>
-                    </thead>
-
-                    <!-- for every fish in this.fish_specs, show info for that fish -->
-                    <draggable v-model="inputs" tag="tbody">
-                      <tr v-for="(input, index) in inputs" :key="index">
-                        <th style="border: 1px solid black" scope="row">
-                          <v-text-field
-                            :dark="$store.getters.getTheme"
-                            label="Nimi"
-                            v-model="input.name"
-                            :disabled="basic_info_validated"
-                            :rules="rules"
-                            :counter="max_input"
-                          />
-                        </th>
-                        <td style="border: 1px solid black">
-                          <v-text-field
-                            :dark="$store.getters.getTheme"
-                            label="Kerroin"
-                            v-model="input.multiplier"
-                            maxlength="4"
-                            append-outer-icon="add"
-                            @click:append-outer="
-                              parseInt(input.multiplier) >= 1
-                                ? (input.multiplier += 0.5)
-                                : (input.multiplier = 1)
-                            "
-                            prepend-icon="remove"
-                            @click:prepend="
-                              input.multiplier >= 1.5
-                                ? (input.multiplier -= 0.5)
-                                : (input.multiplier = 1)
-                            "
-                            @paste.prevent
-                            :counter="3"
-                            @keypress="isNumber($event, true)"
-                            :rules="number_rules"
-                            :disabled="basic_info_validated"
-                          />
-                        </td>
-                        <td style="border: 1px solid black">
-                          <v-text-field
-                            :dark="$store.getters.getTheme"
-                            label="Alamitta (cm)"
-                            v-model="input.minsize"
-                            :maxlength="40"
-                            :disabled="basic_info_validated"
-                            :rules="rules"
-                            :counter="40"
-                          />
-                        </td>
-                        <td
-                          style="border: 1px solid black"
-                          v-if="!basic_info_validated"
-                        >
-                          <v-btn
-                            icon
-                            color="red darken-4"
-                            class="white--text"
-                            :disabled="basic_info_validated"
-                            @click="
-                              deleteFish(index, input.original_name, false)
-                            "
-                            ><v-icon>mdi-delete</v-icon></v-btn
-                          >
-                        </td>
-                      </tr>
-                    </draggable>
-                  </table>
-                </v-col>
-              </v-row>
-              <v-row v-if="!basic_info_validated">
-                <v-col
-                  ><b>
-                    <p>
-                      Siirrä taulukon riviä hiirellä muuttaaksesi paikkaa
-                      taulukossa
-                    </p></b
-                  ></v-col
-                >
-              </v-row>
-              <v-row v-if="!basic_info_validated">
-                <v-col>
-                  <v-btn
-                    large
-                    color="green darken-4"
-                    class="white--text"
-                    @click="addInput"
-                    ><v-icon color="green lighten-2">mdi-plus-circle</v-icon>
-                    Lisää kala</v-btn
-                  >
-                </v-col>
-              </v-row>
-
-              <v-row v-if="!basic_info_validated" style="margin-bottom: 20px">
-                <v-col md="6" v-if="competition">
-                  <v-btn large color="yellow" @click="setOriginalValues"
-                    ><v-icon color="red darken-2">mdi-cancel</v-icon> Peruuta
-                    muutokset</v-btn
-                  >
-                </v-col>
-                <v-col md="6" v-if="competition">
-                  <v-btn large color="green" @click="checkBasicInformation"
-                    ><v-icon color="green darken-4">mdi-check-outline</v-icon>
-                    Tallenna muutokset</v-btn
-                  >
-                </v-col>
-              </v-row>
-            </v-col>
-            <v-row v-if="basic_info_validated" style="margin-bottom: 20px">
+                </v-card>
+              </v-col>
+            </v-row>
+            <v-row v-if="!loading">
               <v-col style="margin-top: 20px">
                 <v-btn
                   large
-                  tile
-                  color="grey"
-                  @click="basic_info_validated = false"
-                  ><v-icon>mdi-cog-transfer</v-icon>Muuta tietoja</v-btn
+                  rounded
+                  :color="
+                    competition.isPublic ? 'grey darken-4' : 'green darken-4'
+                  "
+                  @click="publishCompetition(competition.isPublic)"
+                  class="white--text"
+                  :loading="updating"
+                >
+                  <div v-if="competition.isPublic">
+                    <v-icon>mdi-incognito</v-icon> Aseta kilpailu salaiseksi
+                  </div>
+                  <div v-else>
+                    <v-icon color="green">mdi-publish</v-icon> Aseta kilpailu
+                    julkiseksi
+                  </div>
+                </v-btn>
+              </v-col>
+              <v-col style="margin-top: 20px">
+                <v-btn
+                  large
+                  rounded
+                  :color="competition.isFinished ? 'yellow' : 'green darken-3'"
+                  @click="endCompetition(competition.isFinished)"
+                  :loading="updating"
+                >
+                  <div v-if="competition.isFinished" class="black--text">
+                    <v-icon color="red darken-2">mdi-cancel</v-icon> Aseta
+                    kilpailu keskeneräiseksi
+                  </div>
+                  <div v-else>
+                    <v-icon color="yellow">mdi-trophy</v-icon> Aseta kilpailu
+                    päättyneeksi
+                  </div>
+                </v-btn>
+              </v-col>
+            </v-row>
+            <v-row style="margin-bottom: 20px">
+              <v-col md="3" offset-md="4" style="margin-top: 20px">
+                <v-btn
+                  block
+                  color="red darken-4"
+                  class="white--text"
+                  :loading="updating"
+                  @click="deleteCompetition(competition._id, false)"
+                  ><v-icon color="white">mdi-delete-forever</v-icon> Poista
+                  Kilpailu</v-btn
                 >
               </v-col>
             </v-row>
-          </v-row>
-          <v-row v-else>
-            <v-col>
-              <h2
-                v-bind:class="{
-                  'white--text': $store.getters.getTheme,
-                }"
+          </v-col>
+        </v-row>
+
+        <v-row v-if="loading" align="center" justify="center">
+          <v-col>
+            <h2 class="white--text">{{ loadingMessage }}</h2>
+            <ProgressBarQuery />
+          </v-col>
+        </v-row>
+      </v-card>
+      <v-card
+        style="background: transparent"
+        elevation="10"
+        outlined
+        :dark="$store.getters.getTheme"
+        v-if="!basic_info_validated"
+      >
+        <v-card
+          :dark="$store.getters.getTheme"
+          id="errordiv"
+          v-if="errors.length"
+        >
+          <v-alert type="error"> Korjaa seuraavat virheet: </v-alert>
+          <v-list>
+            <v-list-item v-for="(error, index) in errors" v-bind:key="index">
+              <v-list-item-icon>
+                <v-icon color="red">mdi-alert-circle</v-icon>
+              </v-list-item-icon>
+
+              <v-list-item-content>
+                <v-list-item-title>{{ error }}</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list>
+        </v-card>
+        <v-row>
+          <v-col>
+            <h1>Muuta määrityksiä</h1>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col>
+            <p class="white--text">Kilpailun perustiedot</p>
+            <p
+              v-if="basic_info_validated"
+              class="flow-text yellow lighten-1 center-align"
+            >
+              Tiedot lukittuna, paina "Muuta tietoja" jos haluat varmasti
+              muokata tietoja
+            </p>
+          </v-col>
+        </v-row>
+        <v-row v-if="!loading">
+          <v-col cols="12">
+            <v-row v-if="competition" justify="center">
+              <v-col cols="6" class="input-fields">
+                <v-text-field
+                  :dark="$store.getters.getTheme"
+                  label="Kilpailun nimi"
+                  v-model="name"
+                  :maxlength="max_input"
+                  :disabled="basic_info_validated"
+                  :rules="rules"
+                  :counter="max_input"
+                />
+              </v-col>
+            </v-row>
+
+            <v-row v-if="competition" justify="center">
+              <v-col cols="6" class="input-fields">
+                <v-text-field
+                  :dark="$store.getters.getTheme"
+                  label="Paikkakunta"
+                  v-model="locality"
+                  :maxlength="max_input"
+                  :disabled="basic_info_validated"
+                  :rules="rules"
+                  :counter="max_input"
+                />
+              </v-col>
+            </v-row>
+
+            <v-row v-if="loading_cups">
+              <v-col>
+                <h2 class="white--text">Haetaan cuppeja...</h2>
+                <ProgressBarQuery />
+              </v-col>
+            </v-row>
+            <v-row v-if="!cups">
+              <v-col>
+                <h2
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Cuppeja ei löytynyt...
+                </h2>
+              </v-col>
+            </v-row>
+            <v-row v-if="!competition.cup_name">
+              <v-col>
+                <h2
+                  v-bind:class="{
+                    'white--text': $store.getters.getTheme,
+                  }"
+                >
+                  Kilpailusta ei löytynyt cuppia...
+                </h2>
+              </v-col>
+            </v-row>
+            <v-row v-else align="center" justify="center">
+              <v-col cols="6" class="input-fields">
+                <v-subheader class="white--text"> Valitse Cup </v-subheader>
+                <v-select
+                  label="Valitse Cup"
+                  :dark="$store.getters.getTheme"
+                  v-model="cup"
+                  :items="cups"
+                  item-text="select"
+                  item-value="_id"
+                  :hint="`${cup.name} (${cup.year})`"
+                  :disabled="basic_info_validated"
+                  outlined
+                  return-object
+                  single-line
+                ></v-select>
+              </v-col>
+            </v-row>
+            <v-row v-if="competition" justify="center">
+              <v-col cols="6">
+                <h2 class="white--text">Kilpailun sijoittumispisteet</h2>
+                <v-list
+                  :dark="$store.getters.getTheme"
+                  elevation="20"
+                  outlined
+                  style="max-height: 400px; overflow-y: auto"
+                >
+                  <div
+                    v-for="(p, index) in placement_points_array"
+                    :key="index"
+                    style="margin-top: 20px"
+                  >
+                    <v-list-item>
+                      <v-row align="center">
+                        <v-col>
+                          <h3>#{{ p.placement }}</h3>
+                        </v-col>
+                        <v-col>
+                          <v-text-field
+                            :dark="$store.getters.getTheme"
+                            label="Pisteet"
+                            v-model="p.points"
+                            :rules="number_rules"
+                            :disabled="basic_info_validated || !editPoints"
+                            @blur="sortPlacements"
+                          />
+                        </v-col>
+                        <v-col v-if="editPoints"
+                          ><v-btn @click="removePlacement(index)" color="red">
+                            <v-icon>mdi-delete</v-icon>
+                          </v-btn>
+                        </v-col>
+                      </v-row>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                  </div>
+                </v-list>
+                <v-row v-if="editPoints">
+                  <v-col>
+                    <v-btn color="green" @click="addPlacement"
+                      ><v-icon>mdi-plus</v-icon>Lisää pistesija</v-btn
+                    >
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-col v-if="editPoints">
+                    <v-btn
+                      block
+                      color="yellow"
+                      class="black--text"
+                      @click="cancelPoints"
+                      ><v-icon>mdi-cancel</v-icon>Peruuta</v-btn
+                    >
+                  </v-col>
+                  <v-col>
+                    <v-btn
+                      block
+                      :color="editPoints ? 'green darken-2' : 'grey'"
+                      @click="confirmPoints"
+                      :disabled="basic_info_validated"
+                      ><v-icon>mdi-check</v-icon
+                      >{{ editPoints ? "Valmis" : "Muokkaa" }}</v-btn
+                    >
+                  </v-col>
+                </v-row>
+              </v-col>
+              <v-col cols="2" v-if="editPoints">
+                <div style="margin-top: 200px">
+                  <p
+                    class="center-align flow-text"
+                    v-bind:class="{
+                      'white--text': $store.getters.getTheme,
+                    }"
+                  >
+                    Palauta alkuperäiset pisteet:<br />#1 = 30, #2 = 28, #3 =
+                    26...
+                  </p>
+                  <v-btn color="red" @click="resetPoints">Palauta</v-btn>
+                </div>
+              </v-col>
+            </v-row>
+
+            <v-row v-if="competition" justify="center">
+              <v-col cols="6" class="input-fields">
+                <v-text-field
+                  :dark="$store.getters.getTheme"
+                  label="Kilpailun cup osallistumispisteet"
+                  v-model="cup_participation_points"
+                  append-outer-icon="add"
+                  maxlength="6"
+                  @click:append-outer="
+                    cup_participation_points >= 0
+                      ? cup_participation_points++
+                      : (cup_participation_points = 1)
+                  "
+                  prepend-icon="remove"
+                  @click:prepend="
+                    cup_participation_points >= 1
+                      ? cup_participation_points--
+                      : (cup_participation_points = 0)
+                  "
+                  @paste.prevent
+                  :counter="6"
+                  @keypress="isNumber($event, true)"
+                  :rules="number_rules"
+                  :disabled="basic_info_validated"
+                />
+              </v-col>
+            </v-row>
+
+            <v-row v-if="competition" justify="center">
+              <v-col cols="6" class="input-fields">
+                <v-text-field
+                  :dark="$store.getters.getTheme"
+                  label="Cup pistekerroin"
+                  v-model="cup_points_multiplier"
+                  append-outer-icon="add"
+                  maxlength="3"
+                  @click:append-outer="
+                    cup_points_multiplier >= 1
+                      ? (cup_points_multiplier += 0.5)
+                      : (cup_points_multiplier = 1)
+                  "
+                  prepend-icon="remove"
+                  @click:prepend="
+                    cup_points_multiplier >= 1.5
+                      ? (cup_points_multiplier -= 0.5)
+                      : (cup_points_multiplier = 1)
+                  "
+                  @paste.prevent
+                  :counter="3"
+                  @keypress="isNumber($event, true)"
+                  :rules="number_rules"
+                  :disabled="basic_info_validated"
+                />
+              </v-col>
+            </v-row>
+
+            <v-row v-if="competition" justify="center" align="center">
+              <v-col cols="6" class="input-fields">
+                <span class="white--text">Onko Tiimikilpailua?</span>
+                <v-row justify="center" align="center">
+                  <v-spacer></v-spacer>
+                  <v-col>
+                    <v-radio-group
+                      :dark="$store.getters.getTheme"
+                      v-model="team_competition"
+                      row
+                      :disabled="basic_info_validated"
+                    >
+                      <v-radio label="Kyllä" value="Kyllä"></v-radio>
+                      <v-radio label="Ei" value="Ei"></v-radio>
+                    </v-radio-group>
+                  </v-col>
+                  <v-spacer></v-spacer>
+                </v-row>
+              </v-col>
+            </v-row>
+
+            <v-row
+              v-if="competition"
+              style="padding: 20px; margin-bottom: 50px"
+              justify="center"
+              align="center"
+            >
+              <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
+                <span class="white--text">Kilpailun Aloituspäivä</span>
+
+                <v-date-picker
+                  :dark="$store.getters.getTheme"
+                  style="height: 480px"
+                  v-model="start_date"
+                  full-width
+                  elevation="15"
+                  locale="fi"
+                  class="mt-4"
+                  first-day-of-week="1"
+                  :disabled="basic_info_validated"
+                ></v-date-picker>
+              </v-col>
+              <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
+                <span class="white--text">Kilpailun Lopetuspäivä</span>
+
+                <v-date-picker
+                  :dark="$store.getters.getTheme"
+                  style="height: 480px"
+                  v-model="end_date"
+                  full-width
+                  elevation="15"
+                  locale="fi"
+                  class="mt-4"
+                  first-day-of-week="1"
+                  :disabled="basic_info_validated"
+                ></v-date-picker>
+              </v-col>
+            </v-row>
+
+            <v-row
+              v-if="competition"
+              style="padding: 20px; margin-bottom: 50px"
+              justify="center"
+              align="center"
+            >
+              <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
+                <span class="white--text">Kilpailun alkamismisaika</span>
+
+                <v-time-picker
+                  :dark="$store.getters.getTheme"
+                  v-model="start_time"
+                  format="24hr"
+                  full-width
+                  scrollable
+                  elevation="15"
+                  :disabled="basic_info_validated"
+                ></v-time-picker>
+              </v-col>
+              <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
+                <span class="white--text">Kilpailun loppumisaika</span>
+
+                <v-time-picker
+                  :dark="$store.getters.getTheme"
+                  v-model="end_time"
+                  format="24hr"
+                  full-width
+                  scrollable
+                  elevation="15"
+                  :disabled="basic_info_validated"
+                ></v-time-picker>
+              </v-col>
+            </v-row>
+            <v-row class="fishes_summary" justify="center" align="center">
+              <v-col cols="12" xl="8" l="8" md="10" s="10" xs="12">
+                <table class="highlight centered responsive-table table_header">
+                  <thead>
+                    <tr>
+                      <th>Kalalaji</th>
+                      <th>Pistekerroin</th>
+                      <th>Alamitta</th>
+                      <th v-if="!basic_info_validated">Poista?</th>
+                    </tr>
+                  </thead>
+
+                  <!-- for every fish in this.fish_specs, show info for that fish -->
+                  <draggable v-model="inputs" tag="tbody">
+                    <tr v-for="(input, index) in inputs" :key="index">
+                      <th style="border: 1px solid black" scope="row">
+                        <v-text-field
+                          :dark="$store.getters.getTheme"
+                          label="Nimi"
+                          v-model="input.name"
+                          :disabled="basic_info_validated"
+                          :rules="rules"
+                          :counter="max_input"
+                        />
+                      </th>
+                      <td style="border: 1px solid black">
+                        <v-text-field
+                          :dark="$store.getters.getTheme"
+                          label="Kerroin"
+                          v-model="input.multiplier"
+                          maxlength="4"
+                          append-outer-icon="add"
+                          @click:append-outer="
+                            parseInt(input.multiplier) >= 1
+                              ? (input.multiplier += 0.5)
+                              : (input.multiplier = 1)
+                          "
+                          prepend-icon="remove"
+                          @click:prepend="
+                            input.multiplier >= 1.5
+                              ? (input.multiplier -= 0.5)
+                              : (input.multiplier = 1)
+                          "
+                          @paste.prevent
+                          :counter="3"
+                          @keypress="isNumber($event, true)"
+                          :rules="number_rules"
+                          :disabled="basic_info_validated"
+                        />
+                      </td>
+                      <td style="border: 1px solid black">
+                        <v-text-field
+                          :dark="$store.getters.getTheme"
+                          label="Alamitta (cm)"
+                          v-model="input.minsize"
+                          :maxlength="40"
+                          :disabled="basic_info_validated"
+                          :rules="rules"
+                          :counter="40"
+                        />
+                      </td>
+                      <td
+                        style="border: 1px solid black"
+                        v-if="!basic_info_validated"
+                      >
+                        <v-btn
+                          icon
+                          color="red darken-4"
+                          class="white--text"
+                          :disabled="basic_info_validated"
+                          @click="deleteFish(index, input.original_name, false)"
+                          ><v-icon>mdi-delete</v-icon></v-btn
+                        >
+                      </td>
+                    </tr>
+                  </draggable>
+                </table>
+              </v-col>
+            </v-row>
+            <v-row v-if="!basic_info_validated">
+              <v-col
+                ><b>
+                  <p>
+                    Siirrä taulukon riviä hiirellä muuttaaksesi paikkaa
+                    taulukossa
+                  </p></b
+                ></v-col
               >
-                Päivitetään tietoja...
-              </h2>
-              <ProgressBarQuery />
-            </v-col>
-          </v-row>
-        </v-tab-item>
-      </v-tabs-items>
+            </v-row>
+            <v-row v-if="!basic_info_validated">
+              <v-col>
+                <v-btn
+                  large
+                  color="green darken-4"
+                  class="white--text"
+                  @click="addInput"
+                  ><v-icon color="green lighten-2">mdi-plus-circle</v-icon>
+                  Lisää kala</v-btn
+                >
+              </v-col>
+            </v-row>
+
+            <v-row v-if="!basic_info_validated" style="margin-bottom: 20px">
+              <v-col md="6" v-if="competition">
+                <v-btn
+                  large
+                  color="yellow"
+                  class="black--text"
+                  @click="setOriginalValues"
+                  ><v-icon color="red darken-2">mdi-cancel</v-icon> Peruuta
+                  muutokset</v-btn
+                >
+              </v-col>
+              <v-col md="6" v-if="competition">
+                <v-btn large color="green" @click="checkBasicInformation"
+                  ><v-icon color="green darken-4">mdi-check-outline</v-icon>
+                  Tallenna muutokset</v-btn
+                >
+              </v-col>
+            </v-row>
+          </v-col>
+        </v-row>
+      </v-card>
+
       <v-snackbar v-model="snackbar" :timeout="timeout">
         {{ text }}
 
@@ -857,6 +830,7 @@ export default {
       start_time: null,
       end_time: null,
       loading: false,
+      loadingMessage: "Haetaan määrityksiä...",
       loading_cups: false,
       updating: false,
       tab: null,
@@ -1034,6 +1008,7 @@ export default {
     },
     // Update competition data from database
     async refreshCompetition(competition_id) {
+      this.loadingMessage = "Haetaan määrityksiä...";
       this.loading = true;
       this.inputs = [];
       try {
@@ -1105,9 +1080,9 @@ export default {
     addInput() {
       this.inputs.push({
         index: this.inputs.length,
-        name: null,
+        name: "",
         multiplier: 1,
-        minsize: 0,
+        minsize: "0",
         weights: 0,
         color: this.generateRandomColor(),
       });
@@ -1190,7 +1165,8 @@ export default {
       location.href = "#app";
     },
     // Check competitions basic information (Perustiedot)
-    checkBasicInformation: function () {
+    checkBasicInformation() {
+      this.loadingMessage = "Päivitetään tietoja...";
       this.errors = [];
       this.basic_info_validated = false;
       this.validated = false;
@@ -1296,7 +1272,9 @@ export default {
         }
         if (!input.multiplier) {
           this.showError(
-            `${input.name ? input.name : "Kalan"} kerroin on jäänyt tyhjäksi!`
+            `${
+              input.name ? input.name : "Kalan"
+            } kerroin on jäänyt tyhjäksi tai on alle yhden!`
           );
         }
         if (!input.minsize) {
