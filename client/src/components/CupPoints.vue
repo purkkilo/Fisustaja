@@ -13,7 +13,7 @@
             v-model="showInfoInPdf"
             label="Näytä pdf:ssä kuinka monta parasta kilpailua otettu huomioon pisteissä"
             :disabled="!competitions.length"
-            color="indigo darken-3"
+            color="indigo"
           ></v-checkbox>
         </v-card-text>
 
@@ -76,20 +76,23 @@
           </v-btn>
         </v-col>
       </v-row>
-
-      <v-row v-if="results.length && notFinishedCount > 0">
-        <v-col>
-          <p
-            class="flow-text"
-            v-bind:class="{
-              'white--text': $store.getters.getTheme,
-            }"
-          >
-            *Punaisella merkityt kilpailut ovat vielä kesken! ({{
-              notFinishedCount
-            }}
-            kpl)
-          </p>
+      <v-row
+        align="center"
+        justify="center"
+        v-if="
+          results.length &&
+          allCompetitions.filter((c) => !c.isFinished).length > 0
+        "
+      >
+        <v-col cols="4">
+          <v-checkbox
+            @change="$emit('sort', showUnfinishedCompetitions)"
+            dark
+            v-model="showUnfinishedCompetitions"
+            label="Näytä myös keskeneräiset kilpailut"
+            :disabled="!competitions.length"
+            color="green"
+          ></v-checkbox>
         </v-col>
       </v-row>
       <v-row v-if="isResults">
@@ -117,18 +120,21 @@
                 v-for="(h, index) in headers"
                 v-slot:[`header.${h.value}`]="{ header }"
               >
-                <span
-                  v-if="header.highlight"
-                  :key="index"
-                  class="strokeme"
-                  v-bind:class="{
-                    'red-text': header.isFinished,
-                    'green-text': !header.isFinished,
-                  }"
-                >
-                  {{ header.text }}
-                </span>
-                <span v-else :key="h.value">{{ header.text }}</span>
+                <v-row align="center" justify="center" :key="index">
+                  <v-col>
+                    <span
+                      v-if="header.highlight"
+                      class="strokeme"
+                      v-bind:class="{
+                        'red--text': !header.isFinished,
+                        'green--text': header.isFinished,
+                      }"
+                    >
+                      {{ header.text }}
+                    </span>
+                    <span v-else :key="h.value">{{ header.text }}</span>
+                  </v-col>
+                </v-row>
               </template>
               <template v-slot:[`item.final_placement`]="{ item }">
                 <v-chip
@@ -230,11 +236,12 @@
   </v-row>
 </template>
 <script>
-import shared from "../shared";
+import { getColor } from "../shared";
 export default {
   name: "CupPoints",
   props: [
     "competitions",
+    "allCompetitions",
     "results",
     "cup",
     "headers",
@@ -249,7 +256,8 @@ export default {
       headerSelection: "Paikkakunta",
       selectedCompetitions: this.competitions.length,
       search: "",
-      showInfoInPdf: true,
+      showInfoInPdf: false,
+      showUnfinishedCompetitions: false,
       isLandscape: false,
       dialog: false,
     };
@@ -261,7 +269,7 @@ export default {
   },
   methods: {
     getColor(placement) {
-      return shared.getColor(placement);
+      return getColor(placement);
     },
   },
 };

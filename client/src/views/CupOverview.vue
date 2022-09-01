@@ -105,7 +105,7 @@
                     'white--text': $store.getters.getTheme,
                   }"
                 >
-                  Ei kuppia valittuna
+                  Ei cuppia valittuna
                 </p>
               </v-col>
             </v-row>
@@ -122,7 +122,7 @@
                 />
               </v-col>
             </v-row>
-            <v-row v-if="competitions.length">
+            <v-row v-if="allCompetitions.length">
               <v-col md="10" offset-md="1">
                 <v-card :dark="$store.getters.getTheme">
                   <v-card-title>
@@ -417,6 +417,7 @@
           <v-tab-item :value="'points'">
             <cup-points
               :competitions="competitions"
+              :allCompetitions="allCompetitions"
               :results="results"
               :isResults="isResults"
               :loading="loading"
@@ -437,273 +438,16 @@
                   saveAsPDF(`Tulokset`);
                 }
               "
+              @sort="
+                (show) => {
+                  showUnfinishedCompetitions = show;
+                  sortUnfinished();
+                }
+              "
             ></cup-points>
           </v-tab-item>
           <v-tab-item :value="'stats'">
-            <v-row>
-              <v-col><h1>Tilastoja</h1></v-col>
-            </v-row>
-            <v-row>
-              <v-col>
-                <v-card :dark="$store.getters.getTheme">
-                  <v-row>
-                    <v-col offset="3">
-                      <v-checkbox
-                        v-model="showCharts"
-                        label="Näytä chartit"
-                        :disabled="!competitions.length"
-                        color="indigo darken-3"
-                      ></v-checkbox>
-                    </v-col>
-                    <v-col>
-                      <v-checkbox
-                        v-model="showTables"
-                        label="Näytä taulukot"
-                        :disabled="!competitions.length"
-                        color="indigo darken-3"
-                      ></v-checkbox>
-                    </v-col>
-                  </v-row>
-                </v-card>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col>
-                <v-tabs
-                  v-model="stats_tab"
-                  background-color="blue lighten-3"
-                  color="blue darken-4"
-                  grow
-                  show-arrows
-                  next-icon="mdi-arrow-right-bold-box-outline"
-                  prev-icon="mdi-arrow-left-bold-box-outline"
-                  center-active
-                >
-                  <v-tabs-slider color="green darken-4"></v-tabs-slider>
-                  <v-tab href="#cupfishes">Kalasaaliit</v-tab>
-                  <v-tab href="#cupbiggestfishes">Suurimmat kalat</v-tab>
-                  <v-tab href="#cupsignees">Kilpailijat</v-tab>
-                </v-tabs>
-              </v-col>
-            </v-row>
-            <v-tabs-items
-              v-model="stats_tab"
-              style="background: rgba(0, 0, 0, 0.4)"
-            >
-              <v-tab-item
-                :value="'cupfishes'"
-                v-bind:class="{
-                  inputarea: !$store.getters.getTheme,
-                  'inputarea-dark': $store.getters.getTheme,
-                }"
-              >
-                <v-row v-if="total_fishes_chart_data && showCharts">
-                  <v-col>
-                    <v-card :dark="$store.getters.getTheme">
-                      <v-card-title> Cupin kalasaaliit (Total) </v-card-title>
-                      <bar-chart
-                        :chart-data="total_fishes_chart_data"
-                        chart-id="total_fishes_signee_chart"
-                        v-bind:title="'Cupin kalasaaliit (Total)'"
-                      />
-                    </v-card>
-                  </v-col>
-                </v-row>
-                <v-row v-if="competition_fishes_chart_data && showCharts">
-                  <v-col>
-                    <v-card :dark="$store.getters.getTheme">
-                      <v-card-title>
-                        Cupin kalasaaliit (Kilpailuittain)
-                      </v-card-title>
-                      <bar-chart
-                        :chart-data="competition_fishes_chart_data"
-                        chart-id="competition_fishes_signee_chart"
-                        v-bind:title="'Cupin kalasaaliit (Kilpailuittain)'"
-                      />
-                    </v-card>
-                  </v-col>
-                </v-row>
-                <v-row v-if="cup_fishes_competition.length && showTables">
-                  <v-col>
-                    <v-card :dark="$store.getters.getTheme">
-                      <v-card-title>
-                        <p class="flow-text">
-                          Cupin kalasaaliit (Kilpailuittain)
-                        </p>
-                        <v-spacer></v-spacer>
-                      </v-card-title>
-                      <v-data-table
-                        id="normal-table"
-                        :headers="headers_cup_fishes_competition"
-                        :items="cup_fishes_competition"
-                        :loading="loading"
-                      >
-                        <template v-slot:[`item.weights`]="{ item }">
-                          <v-chip
-                            >{{
-                              (item.weights / 100).toLocaleString()
-                            }}
-                            kg</v-chip
-                          >
-                        </template>
-                      </v-data-table>
-                    </v-card>
-                  </v-col>
-                </v-row>
-                <v-row v-if="cup_fishes_total.length && showTables">
-                  <v-col>
-                    <v-card :dark="$store.getters.getTheme">
-                      <v-card-title>
-                        <p class="flow-text">Cupin kalasaaliit (Total)</p>
-                        <v-spacer></v-spacer>
-                      </v-card-title>
-                      <v-data-table
-                        id="normal-table"
-                        :headers="headers_cup_fishes_total"
-                        :items="cup_fishes_total"
-                        :loading="loading"
-                      >
-                        <template v-slot:[`item.weights`]="{ item }">
-                          <v-chip
-                            >{{
-                              (item.weights / 100).toLocaleString()
-                            }}
-                            kg</v-chip
-                          >
-                        </template>
-                      </v-data-table>
-                    </v-card>
-                  </v-col>
-                </v-row>
-              </v-tab-item>
-              <v-tab-item
-                :value="'cupbiggestfishes'"
-                v-bind:class="{
-                  inputarea: !$store.getters.getTheme,
-                  'inputarea-dark': $store.getters.getTheme,
-                }"
-              >
-                <v-row v-if="competition_fishes_chart_data && showCharts">
-                  <v-col>
-                    <v-card :dark="$store.getters.getTheme">
-                      <v-card-title> Cupin suurimmat kalat </v-card-title>
-                      <bar-chart
-                        :chart-data="cup_biggest_fishes_chart_data"
-                        chart-id="cup_biggest_fishes_chart"
-                        v-bind:title="'Cupin suurimmat kalat'"
-                      />
-                    </v-card>
-                  </v-col>
-                </v-row>
-                <v-row v-if="competition_fishes_chart_data && showCharts">
-                  <v-col>
-                    <v-card :dark="$store.getters.getTheme">
-                      <v-card-title> Cupin suurimmat kalasaaliit </v-card-title>
-                      <bar-chart
-                        :chart-data="cup_biggest_amounts_chart_data"
-                        chart-id="cup_biggest_amounts_chart"
-                        v-bind:title="'Cupin suurimmat kalasaaliit'"
-                      />
-                    </v-card>
-                  </v-col>
-                </v-row>
-
-                <v-row v-if="cup_biggest_fishes.length && showTables">
-                  <v-col>
-                    <v-card :dark="$store.getters.getTheme">
-                      <v-card-title>
-                        <p class="flow-text">Cupin suurimmat kalat</p>
-                        <v-spacer></v-spacer>
-                      </v-card-title>
-                      <v-data-table
-                        id="normal-table"
-                        :headers="headers_cup_biggest_fishes"
-                        :items="cup_biggest_fishes"
-                        :loading="loading"
-                      >
-                        <template v-slot:[`item.weight`]="{ item }">
-                          <v-chip>{{ item.weight.toLocaleString() }} g</v-chip>
-                        </template>
-                      </v-data-table>
-                    </v-card>
-                  </v-col>
-                </v-row>
-                <v-row v-if="cup_biggest_amounts.length && showTables">
-                  <v-col>
-                    <v-card :dark="$store.getters.getTheme">
-                      <v-card-title>
-                        <p class="flow-text">Cupin suurimmat kalasaaliit</p>
-                        <v-spacer></v-spacer>
-                      </v-card-title>
-                      <v-data-table
-                        id="normal-table"
-                        :headers="headers_cup_biggest_amounts"
-                        :items="cup_biggest_amounts"
-                        :loading="loading"
-                      >
-                        <template v-slot:[`item.weight`]="{ item }">
-                          <v-chip>{{ item.weight.toLocaleString() }} g</v-chip>
-                        </template>
-                      </v-data-table>
-                    </v-card>
-                  </v-col>
-                </v-row>
-              </v-tab-item>
-              <v-tab-item
-                :value="'cupsignees'"
-                v-bind:class="{
-                  inputarea: !$store.getters.getTheme,
-                  'inputarea-dark': $store.getters.getTheme,
-                }"
-              >
-                <v-row v-if="cup"
-                  ><v-col offset-md="4" md="5">
-                    <v-card :dark="$store.getters.getTheme">
-                      <v-card-title v-if="cup.signees">
-                        <v-icon color="blue darken-2">mdi-account-group</v-icon>
-                        Yhteensä ilmoittautuneita {{ cup.signees.length }} kpl
-                      </v-card-title>
-                    </v-card>
-                  </v-col></v-row
-                >
-                <v-row v-if="cup_signees_chart_data && showCharts">
-                  <v-col>
-                    <v-card :dark="$store.getters.getTheme">
-                      <v-card-title>
-                        Kilpailujen osallistujamäärät
-                      </v-card-title>
-                      <bar-chart
-                        :chart-data="cup_signees_chart_data"
-                        chart-id="cup_signees_chart"
-                        v-bind:title="'Kilpailujen osallistujamäärät'"
-                      />
-                    </v-card>
-                  </v-col>
-                </v-row>
-                <v-row v-if="cup_signees.length && showTables">
-                  <v-col>
-                    <v-card :dark="$store.getters.getTheme">
-                      <v-card-title>
-                        <p class="flow-text">Kilpailujen osallistujamäärät</p>
-                        <v-spacer></v-spacer>
-                      </v-card-title>
-                      <v-data-table
-                        id="normal-table"
-                        :headers="headers_cup_signees"
-                        :items="cup_signees"
-                        :loading="loading"
-                      >
-                        <template v-slot:[`item.signees`]="{ item }">
-                          <v-chip
-                            >{{ item.signees.toLocaleString() }} kpl</v-chip
-                          >
-                        </template>
-                      </v-data-table>
-                    </v-card>
-                  </v-col>
-                </v-row>
-              </v-tab-item>
-            </v-tabs-items>
+            <cup-stats :competitions="competitions" :cup="cup" :loading="loading"></cup-stats>
           </v-tab-item>
         </v-tabs-items>
         <v-snackbar v-model="snackbar" :timeout="timeout">
@@ -724,16 +468,16 @@
 import CupService from "../CupService";
 import CompetitionService from "../CompetitionService";
 import "jspdf-autotable";
-import BarChart from "@/components/BarChart";
 import shared from "../shared";
 import CupPoints from "../components/CupPoints.vue";
+import CupStats from "../components/CupStats.vue";
 import jsPDF from "jspdf";
 export default {
   name: "CupOverview",
   components: {
     ProgressBarQuery: () => import("../components/layout/ProgressBarQuery"),
-    BarChart,
     CupPoints,
+    CupStats,
   },
   data() {
     return {
@@ -743,6 +487,7 @@ export default {
       dialog_clock: false,
       dialog_signee: {},
       cup: null,
+      allCompetitions: [],
       competitions: [],
       signees: [],
       headers: [],
@@ -775,40 +520,13 @@ export default {
         { text: "Seura/Paikkakunta", value: "locality" },
         { text: "Muokkaa", value: "modify", sortable: false },
       ],
-      headers_cup_fishes_total: [
-        { text: "Kalan nimi", value: "name" },
-        { text: "Määrä", value: "weights" },
-      ],
-      headers_cup_fishes_competition: [
-        { text: "Kalan nimi", value: "name" },
-        { text: "Kilpailu", value: "comp_name" },
-        { text: "Määrä", value: "weights" },
-      ],
-      headers_cup_signees: [
-        { text: "Kilpailu", value: "comp_name" },
-        { text: "Määrä", value: "signees" },
-      ],
-      headers_cup_biggest_fishes: [
-        { text: "Kilp.nro", value: "boat_number" },
-        { text: "Kippari", value: "captain_name" },
-        { text: "Kilpailu", value: "comp_name" },
-        { text: "Kala", value: "fish_name" },
-        { text: "Paino", value: "weight" },
-      ],
-      headers_cup_biggest_amounts: [
-        { text: "Kilp.nro", value: "boat_number" },
-        { text: "Kippari", value: "captain_name" },
-        { text: "Kilpailu", value: "comp_name" },
-        { text: "Kala", value: "fish_name" },
-        { text: "Paino", value: "weight" },
-      ],
+
       results: [],
       loading: false,
       publishing: false,
       updating: false,
       selectNumbers: [],
       tab: null,
-      stats_tab: null,
       search_comp: "",
       competition: null,
       error: null,
@@ -817,13 +535,12 @@ export default {
       new_captain_name: null,
       new_temp_captain_name: null,
       isSimpleMode: true,
-      showTables: false,
-      showCharts: true,
       snackbar: false,
       text: "",
       timeout: 5000,
       isResults: false,
-      showInfoInPdf: true,
+      showInfoInPdf: false,
+      showUnfinishedCompetitions: false,
     };
   },
   beforeRouteEnter(to, from, next) {
@@ -848,6 +565,9 @@ export default {
     location.href = "#app";
   },
   methods: {
+    sortUnfinished() {
+      this.setCompetitionData(this.cup);
+    },
     async publishCup(isPublic) {
       this.cup.isPublic = !isPublic;
 
@@ -890,194 +610,20 @@ export default {
       }
       this.updating = false;
     },
-    changePage: function (path) {
+    changePage(path) {
       this.$router.push({
         path: path,
         query: { cup: localStorage.getItem("cup") },
       });
     },
-    selectTableData: function () {
+    selectTableData() {
       if (this.selected === "Kilpailut") {
-        this.selected_items = this.competitions;
+        this.selected_items = this.allCompetitions;
         this.selected_headers = this.headers_comp;
       } else {
         this.selected_items = this.signees;
         this.selected_headers = this.headers_signees;
       }
-    },
-
-    async calculateCupStatistics() {
-      let all_fishes = [];
-      let all_signees = [];
-      let all_signees_labels = [];
-      let all_biggest_fishes = [];
-      let all_biggest_amounts = [];
-      let all_biggest_fishes_labels = [];
-      let all_biggest_amounts_labels = [];
-      let all_biggest_fishes_data = [];
-      let all_biggest_amounts_data = [];
-      let all_signees_data = [];
-      let all_labels = [];
-      let all_data = [];
-      let competition_labels = [];
-      let competition_data = [];
-      this.competitions.forEach((competition) => {
-        competition.fishes.forEach((fish) => {
-          if (fish.weights > 0) {
-            this.cup_fishes_competition.push({
-              name: fish.name,
-              comp_name: competition.name,
-              weights: fish.weights,
-            });
-
-            let found_fish = all_fishes.findIndex((f) => f.name === fish.name);
-            if (found_fish > -1) {
-              all_fishes[found_fish].weights += fish.weights;
-            } else {
-              all_fishes.push({ name: fish.name, weights: fish.weights });
-            }
-          }
-        });
-
-        all_signees.push({
-          comp_name: competition.name,
-          signees: competition.signees.length,
-        });
-
-        for (const fish in competition.biggest_fishes) {
-          let fishes = competition.biggest_fishes[fish].sort(
-            shared.sortBy("weight", false)
-          );
-          if (fishes.length) {
-            if (fishes[0].weight > 0) {
-              all_biggest_fishes.push({
-                boat_number: fishes[0].boat_number,
-                captain_name: fishes[0].captain_name,
-                comp_name: competition.name,
-                fish_name: fish,
-                weight: fishes[0].weight,
-              });
-            }
-          }
-        }
-
-        for (const fish in competition.biggest_amounts) {
-          let fishes = competition.biggest_amounts[fish].sort(
-            shared.sortBy("weight", false)
-          );
-
-          if (fishes.length) {
-            if (fishes[0].weight > 0) {
-              all_biggest_amounts.push({
-                boat_number: fishes[0].boat_number,
-                captain_name: fishes[0].captain_name,
-                comp_name: competition.name,
-                fish_name: fish,
-                weight: fishes[0].weight,
-              });
-            }
-          }
-        }
-      });
-
-      // Data for Kalasaaliit tab
-      this.cup_fishes_total = all_fishes.sort(shared.sortBy("weights", false));
-      this.cup_fishes_total.forEach((fish) => {
-        all_labels.push(fish.name);
-        all_data.push(fish.weights);
-      });
-      this.total_fishes_chart_data = {
-        labels: all_labels,
-        datasets: [
-          {
-            label: "Määrä",
-            backgroundColor: shared.getRandomColors(all_data.length), // Green and red
-            data: all_data, // Data
-          },
-        ],
-      };
-
-      this.cup_fishes_competition = this.cup_fishes_competition.sort(
-        shared.sortBy("weights", false)
-      );
-      this.cup_fishes_competition.forEach((fish) => {
-        competition_labels.push(`${fish.name} (${fish.comp_name})`);
-        competition_data.push(fish.weights);
-      });
-      this.competition_fishes_chart_data = {
-        labels: competition_labels,
-        datasets: [
-          {
-            label: "Määrä",
-            backgroundColor: shared.getRandomColors(competition_data.length), // Green and red
-            data: competition_data, // Data
-          },
-        ],
-      };
-
-      // Data for Suurimmat kalat tab
-      this.cup_biggest_fishes = all_biggest_fishes.sort(
-        shared.sortBy("weight", false)
-      );
-      this.cup_biggest_fishes.forEach((item) => {
-        all_biggest_fishes_labels.push(
-          `${item.fish_name}, Vene (${item.boat_number})`
-        );
-        all_biggest_fishes_data.push(item.weight);
-      });
-      this.cup_biggest_fishes_chart_data = {
-        labels: all_biggest_fishes_labels,
-        datasets: [
-          {
-            label: "Paino",
-            backgroundColor: shared.getRandomColors(
-              all_biggest_fishes_data.length
-            ), // Green and red
-            data: all_biggest_fishes_data, // Data
-          },
-        ],
-      };
-
-      // Data for Suurimmat kalat tab
-      this.cup_biggest_amounts = all_biggest_amounts.sort(
-        shared.sortBy("weight", false)
-      );
-      this.cup_biggest_amounts.forEach((item) => {
-        all_biggest_amounts_labels.push(
-          `${item.fish_name} | Venekunta nro. (${item.boat_number})`
-        );
-        all_biggest_amounts_data.push(item.weight);
-      });
-      this.cup_biggest_amounts_chart_data = {
-        labels: all_biggest_amounts_labels,
-        datasets: [
-          {
-            label: "Paino",
-            backgroundColor: shared.getRandomColors(
-              all_biggest_amounts_data.length
-            ), // Green and red
-            data: all_biggest_amounts_data, // Data
-          },
-        ],
-      };
-
-      // Data for Kilpailijat tab
-      this.cup_signees = all_signees.sort(shared.sortBy("signees", false));
-      this.cup_signees.forEach((item) => {
-        all_signees_labels.push(item.comp_name);
-        all_signees_data.push(item.signees);
-      });
-
-      this.cup_signees_chart_data = {
-        labels: all_signees_labels,
-        datasets: [
-          {
-            label: "Kilpailijamäärä",
-            backgroundColor: shared.getRandomColors(all_signees_data.length), // Green and red
-            data: all_signees_data, // Data
-          },
-        ],
-      };
     },
 
     // Function to modify signees' captain, temp_captain or locality
@@ -1161,7 +707,37 @@ export default {
         this.$set(this.dialog_signee, signee.boat_number, false);
       }
     },
+    setCompetitionData(cup) {
+      this.selectNumbers = [];
+      // Convert dates to moment objects
+      this.allCompetitions.forEach((competition, i) => {
+        competition.start_date = this.$moment(competition.start_date);
+        competition.end_date = this.$moment(competition.end_date);
+        // Index for competition
+        competition.key_name = i + 1;
+      });
+      this.allCompetitions.sort((a, b) => {
+        return b.start_date.isBefore(a.start_date);
+      });
+      this.signees = this.cup.signees.sort(shared.sortBy("boat_number", true));
+      this.signees.forEach((signee) => {
+        signee.dialog = false;
+      });
 
+      this.competitions = [...this.allCompetitions];
+      if (!this.showUnfinishedCompetitions) {
+        this.competitions = this.competitions.filter((comp) => comp.isFinished);
+      }
+
+      this.competitions.forEach((_, i) => {
+        this.selectNumbers.push(i + 1);
+      });
+
+      if (cup.meaningful_competitions > 0)
+        this.selectedCompetitions = cup.meaningful_competitions;
+      else this.selectedCompetitions = this.competitions.length;
+      this.calculateAll(this.competitions, this.selectedCompetitions);
+    },
     async refreshCup(cup_id) {
       this.loading = true;
       try {
@@ -1177,34 +753,11 @@ export default {
           // Update to vuex, Assing variables from vuex (see client/store/index.js)
           this.$store.commit("refreshCup", this.cup);
           try {
-            this.competitions = await CompetitionService.getCompetitions({
+            this.allCompetitions = await CompetitionService.getCompetitions({
               cup_id: cup_id,
             });
-            // Convert dates to moment objects
-            let counter = 1;
-            this.competitions.forEach((competition) => {
-              this.selectNumbers.push(counter);
-              competition.start_date = this.$moment(competition.start_date);
-              competition.end_date = this.$moment(competition.end_date);
-              // Index for competition
-              competition.key_name = counter;
-              counter++;
-            });
-            this.competitions.sort((a, b) => {
-              return b.start_date.isBefore(a.start_date);
-            });
-            this.signees = this.cup.signees.sort(
-              shared.sortBy("boat_number", true)
-            );
-            this.signees.forEach((signee) => {
-              signee.dialog = false;
-            });
-            if (cup.meaningful_competitions > 0)
-              this.selectedCompetitions = cup.meaningful_competitions;
-            else this.selectedCompetitions = this.competitions.length;
-            this.calculateAll(this.competitions, this.selectedCompetitions);
+            this.setCompetitionData(this.cup);
             this.selectTableData();
-            this.calculateCupStatistics();
             this.text = "Tiedot ajantasalla!";
             this.snackbar = true;
           } catch (error) {
@@ -1320,24 +873,28 @@ export default {
         highlight: false,
         align: "center",
         value: "final_placement",
+        isFinished: true,
       });
       this.headers.push({
         text: "Kilp. Nro",
         align: "center",
         highlight: false,
         value: "boat_number",
+        isFinished: true,
       });
       this.headers.push({
         text: "Kippari",
         align: "center",
         highlight: false,
         value: "captain_name",
+        isFinished: true,
       });
       this.headers.push({
         text: "Paikkakunta",
         align: "center",
         highlight: false,
         value: "locality",
+        isFinished: true,
       });
       this.notFinishedCount = 0;
       this.competitions.forEach((competition) => {
@@ -1359,7 +916,7 @@ export default {
               text: new_header_text,
               align: "center",
               highlight: true,
-              isFinished: !competition.isFinished,
+              isFinished: competition.isFinished,
               value: `cup_results[${competition.key_name}].points`,
             });
           } else {
@@ -1367,7 +924,7 @@ export default {
               text: competition.locality,
               align: "center",
               highlight: true,
-              isFinished: !competition.isFinished,
+              isFinished: competition.isFinished,
               value: `cup_results[${competition.key_name}].points`,
             });
           }
@@ -1376,7 +933,7 @@ export default {
             text: competition.name,
             align: "center",
             highlight: true,
-            isFinished: !competition.isFinished,
+            isFinished: competition.isFinished,
             value: `cup_results[${competition.key_name}].points`,
           });
         }
@@ -1386,6 +943,7 @@ export default {
         align: "center",
         highlight: false,
         value: "final_cup_points",
+        isFinished: true,
       });
     },
     limitCompetitions(results, limit) {
@@ -1494,7 +1052,7 @@ export default {
           : unfinished_competitions++;
       });
       if (table_title === "Tulokset") {
-        if (unfinished_competitions === 0) {
+        if (unfinished_competitions === 0 || !this.showUnfinishedCompetitions) {
           sub_title = `Tulokset ${formatted_date}`;
         } else {
           sub_title = `Tilanne ${formatted_date}, ${last_competition_string}  (${unfinished_competitions} kpl kilpailuja kesken)`;
@@ -1580,7 +1138,7 @@ export default {
       shared.openPdfOnNewTab(doc, fileName);
     },
 
-    dictToArray: function (dict, type) {
+    dictToArray(dict, type) {
       const temp_arr = Object.entries(dict);
       const arr = [];
       let boat_number = 1;
@@ -1593,6 +1151,7 @@ export default {
           values[1] = "(" + String(values[1]) + ")";
           values[3] = values[4];
           let counter = 4;
+
           this.competitions.forEach((competition) => {
             if (cup_results[competition.key_name]) {
               values[counter] = `${

@@ -17,7 +17,9 @@ New:
   ☐ Reimplement api for competitions, cups and feedback (like users)
     ☐ Own database table for competition results
   ☐ Move from heroku to other hosting since heroku removes free tier @high
-
+  ☐ Update chart dependancies and move to newer versions
+  ☐ Add proper loading bar to Results.vue
+  ☐ Add cup stats to publicCups.vue
 
 Cancelled:
   ✘ Press Alt+C to mark a todo as cancelled

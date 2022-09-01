@@ -16,7 +16,7 @@ export default {
           },
           label: (tooltipItem, data) => {
             let sum = data.datasets[tooltipItem.datasetIndex].data.reduce(
-              function(a, b) {
+              function (a, b) {
                 return a + b;
               },
               0
@@ -41,7 +41,7 @@ export default {
       plugins: {
         labels: {
           // convert grams to kilograms and add "kg" to end of the label
-          render: function(args) {
+          render: function (args) {
             return ((args.value / (1000 + Number.EPSILON)) * 100) / 100 + " kg";
           },
           // Other options

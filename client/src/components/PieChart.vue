@@ -17,7 +17,7 @@ export default {
           },
           label: (tooltipItem, data) => {
             let sum = data.datasets[tooltipItem.datasetIndex].data.reduce(
-              function(a, b) {
+              function (a, b) {
                 return a + b;
               },
               0

@@ -12,7 +12,7 @@ router.get("/", async (req, res) => {
       if (req.query.isPublic) {
         // Transform string into boolean
         let boolean = req.query.isPublic === "true" ? true : false;
-        query = { isPublic: boolean };
+        query = { ...query, isPublic: boolean };
       }
       // Fetch by competition._id, only find one competition
       if (req.query._id) {

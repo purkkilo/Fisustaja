@@ -68,6 +68,7 @@
         <cup-points
           v-if="selected_cup && !loading"
           :competitions="competitions"
+          :allCompetitions="allCompetitions"
           :headers="headers"
           :cup="selected_cup"
           :isResults="isResults"
@@ -87,6 +88,12 @@
               isLandscape = options.isLandscape;
               showInfoInPdf = options.showInfoInPdf;
               saveAsPDF(`Tulokset`);
+            }
+          "
+          @sort="
+            (show) => {
+              showUnfinishedCompetitions = show;
+              sortUnfinished();
             }
           "
         ></cup-points>
@@ -121,6 +128,7 @@ import "jspdf-autotable";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import PublicNavigation from "../components/layout/PublicNavigation.vue";
 import CupPoints from "../components/CupPoints.vue";
+import { sortBy, openPdfOnNewTab } from "@/shared";
 
 export default {
   name: "PublicCups",
@@ -136,6 +144,7 @@ export default {
       cup: null,
       cups: [],
       competitions: [],
+      allCompetitions: [],
       headers: [],
       results: [],
       loading: false,
@@ -165,6 +174,7 @@ export default {
       timeout: 5000,
       isResults: false,
       showInfoInPdf: true,
+      showUnfinishedCompetitions: false,
     };
   },
   async mounted() {
@@ -182,6 +192,9 @@ export default {
     location.href = "#app";
   },
   methods: {
+    sortUnfinished() {
+      this.setCompetitionData(this.cup);
+    },
     pickCup() {
       this.refreshCup(this.selected_cup);
     },
@@ -333,43 +346,54 @@ export default {
       // Return sorted results
       return results;
     },
+    setCompetitionData(cup) {
+      this.selectNumbers = [];
+      // Convert dates to moment objects
+      let counter = 1;
+      this.allCompetitions.forEach((competition) => {
+        competition.start_date = this.$moment(competition.start_date);
+        competition.end_date = this.$moment(competition.end_date);
+        // Index for competition
+        competition.key_name = counter;
+        counter++;
+      });
+      this.allCompetitions.sort((a, b) => {
+        return b.start_date.isBefore(a.start_date);
+      });
+      this.signees = this.cup.signees.sort(sortBy("boat_number", true));
+      this.signees.forEach((signee) => {
+        signee.dialog = false;
+      });
+
+      this.competitions = [...this.allCompetitions];
+      if (!this.showUnfinishedCompetitions) {
+        this.competitions = this.competitions.filter((comp) => comp.isFinished);
+      }
+      this.competitions.forEach((_, i) => {
+        this.selectNumbers.push(i + 1);
+      });
+      if (cup.meaningful_competitions > 0)
+        this.selectedCompetitions = cup.meaningful_competitions;
+      else this.selectedCompetitions = this.competitions.length;
+      this.calculateAll(this.competitions, this.selectedCompetitions);
+    },
     async refreshCup(cup) {
+      this.cup = cup;
       this.loading = true;
       // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
       //TODO make a test for this?
       // Update to vuex, Assing variables from vuex (see client/store/index.js)
-      this.$store.commit("refreshCup", cup);
+      this.$store.commit("refreshCup", this.cup);
       try {
-        this.competitions = await CompetitionService.getCompetitions({
+        this.allCompetitions = await CompetitionService.getCompetitions({
           cup_id: cup.id,
-        });
-        // Convert dates to moment objects
-        let counter = 1;
-        this.selectNumbers = [];
-        this.competitions = this.competitions.filter((competition) => {
-          return competition.isPublic;
-        });
-        this.competitions.forEach((competition) => {
-          this.selectNumbers.push(counter);
-          competition.start_date = this.$moment(competition.start_date);
-          competition.end_date = this.$moment(competition.end_date);
-          // Index for competition
-          competition.key_name = counter;
-          counter++;
-        });
-        this.competitions.sort((a, b) => {
-          return b.start_date.isBefore(a.start_date);
-        });
-        if (cup.meaningful_competitions > 0)
-          this.selectedCompetitions = cup.meaningful_competitions;
-        else this.selectedCompetitions = this.competitions.length;
-
-        this.calculateAll(this.competitions, this.selectedCompetitions);
+          isPublic: true,
+        }).finally(() => (this.loading = false));
+        this.setCompetitionData(this.cup);
+        //this.calculateCupStatistics();
         this.text = "Tiedot ajantasalla!";
         this.snackbar = true;
-        this.loading = false;
       } catch (error) {
-        this.loading = false;
         console.error(error);
       }
     },
@@ -433,7 +457,7 @@ export default {
               text: new_header_text,
               align: "center",
               highlight: true,
-              isFinished: !competition.isFinished,
+              isFinished: competition.isFinished,
               value: `cup_results[${competition.key_name}].points`,
             });
           } else {
@@ -441,7 +465,7 @@ export default {
               text: competition.locality,
               align: "center",
               highlight: true,
-              isFinished: !competition.isFinished,
+              isFinished: competition.isFinished,
               value: `cup_results[${competition.key_name}].points`,
             });
           }
@@ -450,7 +474,7 @@ export default {
             text: competition.name,
             align: "center",
             highlight: true,
-            isFinished: !competition.isFinished,
+            isFinished: competition.isFinished,
             value: `cup_results[${competition.key_name}].points`,
           });
         }
@@ -606,8 +630,7 @@ export default {
         " ",
         ""
       )}_${this.replaceAll(this.capitalize_words(table_title), " ", "")}.pdf`;
-      const { default: shared } = await import("../shared");
-      shared.openPdfOnNewTab(doc, fileName);
+      openPdfOnNewTab(doc, fileName);
     },
   },
 };

@@ -10,9 +10,18 @@ export default {
       maintainAspectRatio: false,
       responsive: true,
       scales: {
-        y: {
-          beginAtZero: true,
-        },
+        yAxes: [
+          {
+            ticks: {
+              beginAtZero: true,
+              // Include a dollar sign in the ticks
+              callback: function (value) {
+                let output = value < 1000 ? value : value / 1000 + "kg";
+                return output;
+              },
+            },
+          },
+        ],
       },
       tooltips: {
         callbacks: {
@@ -46,7 +55,7 @@ export default {
                 data.datasets[tooltipItem.datasetIndex].data[
                   tooltipItem.index
                 ] / 1000
-              ).toLocaleString()} kg ( ${percentage}% Cupin kaloista )`;
+              ).toLocaleString()} kg ( ${percentage}% kaloista )`;
             }
 
             return lbl;
