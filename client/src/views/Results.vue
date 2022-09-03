@@ -216,13 +216,22 @@
         center-active
       >
         <v-tabs-slider color="blue darken-4"></v-tabs-slider>
-        <v-tab href="#stats">Tilastoja</v-tab>
-        <v-tab href="#normal-competition">Normaalikilpailu</v-tab>
-        <v-tab v-if="isTeamCompetition" href="#team-competition"
+        <v-tab href="#stats" :disabled="loading">Tilastoja</v-tab>
+        <v-tab href="#normal-competition" :disabled="loading"
+          >Normaalikilpailu</v-tab
+        >
+        <v-tab
+          v-if="isTeamCompetition"
+          href="#team-competition"
+          :disabled="loading"
           >Tiimikilpailu</v-tab
         >
-        <v-tab href="#biggest-fishes">Suurimmat Kalat</v-tab>
-        <v-tab href="#biggest-fish-amounts">Suurimmat Kalasaaliit</v-tab>
+        <v-tab href="#biggest-fishes" :disabled="loading"
+          >Suurimmat Kalat</v-tab
+        >
+        <v-tab href="#biggest-fish-amounts" :disabled="loading"
+          >Suurimmat Kalasaaliit</v-tab
+        >
       </v-tabs>
 
       <v-tabs-items v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
@@ -234,7 +243,14 @@
           }"
           :value="'stats'"
         >
+          <v-row v-if="loading">
+            <v-col>
+              <h2 class="white--text">Ladataan tietoja...</h2>
+              <ProgressBarQuery />
+            </v-col>
+          </v-row>
           <stats
+            v-else
             :competition="competition"
             :signees="signees"
             :loading="loading"
@@ -261,21 +277,50 @@
           }"
           :value="'normal-competition'"
         >
+          <v-row style="margin-top: 40px">
+            <v-col md="4" offset-md="4">
+              <v-select
+                dark
+                :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
+                label="Valitse näytettävät tulokset"
+                outlined
+                :items="normal_options"
+                @input="switchNormalResults"
+                v-model="selected_normal"
+              />
+            </v-col>
+            <v-col
+              v-if="
+                normal_points.length ||
+                (signees.length && selected_normal === 'Ilmoittautuneet')
+              "
+              md="3"
+            >
+              <v-btn
+                large
+                outlined
+                color="red lighten-2"
+                :dark="$store.getters.getTheme"
+                :loading="loading"
+                @click="
+                  $emit('dialog', {
+                    pdf: '#normal-table',
+                    pdfDialog: true,
+                  })
+                "
+              >
+                <v-icon color="red">mdi-file-pdf-box</v-icon>
+                Lataa pdf
+              </v-btn>
+            </v-col>
+          </v-row>
           <normal-comp
             :loading="loading"
             :search="search"
             :headers="headers"
             :results="results"
-            :normal_options="normal_options"
             :normal_points="normal_points"
             :selected_normal="selected_normal"
-            @switch="switchNormalResults"
-            @dialog="
-              (options) => {
-                pdf = options.pdf;
-                pdfDialog = options.pdfDialog;
-              }
-            "
           ></normal-comp>
         </v-tab-item>
 

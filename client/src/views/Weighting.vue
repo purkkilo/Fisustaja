@@ -196,6 +196,7 @@
                                 isBiggestFishVisible = !isBiggestFishVisible
                               "
                               color="primary"
+                              :disabled="loading || loading_fish"
                               ><v-icon>{{
                                 isBiggestFishVisible ? "mdi-eye-off" : "mdi-eye"
                               }}</v-icon
@@ -323,6 +324,7 @@
                                   min="0"
                                   :rules="number_rules"
                                   :loading="loading_fish"
+                                  :disabled="loading || loading_fish"
                                 />
                               </v-col>
                               <v-col md="2">
@@ -337,6 +339,7 @@
                                       dark
                                       v-bind="attrs"
                                       v-on="on"
+                                      :disabled="loading || loading_fish"
                                       ><v-icon>mdi-plus</v-icon>Plussaa</v-btn
                                     >
                                   </template>
@@ -432,15 +435,15 @@
                             <v-divider class="black"></v-divider>
                           </v-col>
                         </v-row>
-                        <v-row v-if="!loading">
-                          <v-col>
+                        <v-row v-if="!loading" align="center" justify="center">
+                          <v-col cols="6">
                             <v-card
                               :dark="$store.getters.getTheme"
                               outlined
                               tile
                             >
                               <v-card-title>Yhteenveto</v-card-title>
-                              <v-list>
+                              <v-list dense>
                                 <v-list-item>
                                   <v-list-item-icon>
                                     <v-icon>mdi-weight-gram</v-icon>
@@ -945,11 +948,11 @@ export default {
       return totalPoints;
     },
     getBoatTotalWeights() {
-      return this.inputs.reduce((a, b) => {
-        let aValue = a.value ? parseInt(a.value) : 0;
-        let bValue = b.value ? parseInt(b.value) : 0;
-        return aValue + bValue;
+      let sum = 0;
+      this.inputs.forEach((element) => {
+        sum += element.value ? parseInt(element.value) : 0;
       });
+      return sum;
     },
     getBoatPlacing() {
       if (this.sortedCompetition.length === 0) {

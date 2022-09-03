@@ -308,21 +308,48 @@
                 }"
                 :value="'normal-competition'"
               >
+                <v-row style="margin-top: 40px">
+                  <v-col md="4" offset-md="4">
+                    <v-select
+                      dark
+                      :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
+                      label="Valitse näytettävät tulokset"
+                      outlined
+                      :items="normal_options"
+                      @input="switchNormalResults"
+                      v-model="selected_normal"
+                    />
+                  </v-col>
+                  <v-col
+                    v-if="
+                      normal_points.length ||
+                      (signees.length && selected_normal === 'Ilmoittautuneet')
+                    "
+                    md="3"
+                  >
+                    <v-btn
+                      large
+                      outlined
+                      color="red lighten-2"
+                      :dark="$store.getters.getTheme"
+                      :loading="loading"
+                      @click="
+                        pdf = '#normal-table';
+                        pdfDialog = true;
+                      "
+                    >
+                      <v-icon color="red">mdi-file-pdf-box</v-icon>
+                      Lataa pdf
+                    </v-btn>
+                  </v-col>
+                </v-row>
                 <normal-comp
                   :loading="loading_competition"
                   :search="search"
                   :headers="headers"
                   :results="results"
-                  :normal_options="normal_options"
                   :normal_points="normal_points"
                   :selected_normal="selected_normal"
-                  @switch="switchNormalResults"
-                  @dialog="
-                    (options) => {
-                      pdf = options.pdf;
-                      pdfDialog = options.pdfDialog;
-                    }
-                  "
                 ></normal-comp>
               </v-tab-item>
               <!-- Tiimikilpailu -->

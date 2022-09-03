@@ -6,44 +6,6 @@
         offset-md="1"
         style="padding-top: 50px; padding-bottom: 20px"
       >
-        <v-row>
-          <v-col md="4" offset-md="4">
-            <v-select
-              dark
-              :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
-              label="Valitse näytettävät tulokset"
-              outlined
-              :items="normal_options"
-              @input="$emit('switch')"
-              v-model="selected_normal"
-            />
-          </v-col>
-          <v-col
-            v-if="
-              normal_points.length ||
-              (signees.length && selected_normal === 'Ilmoittautuneet')
-            "
-            md="3"
-            offset-md="1"
-          >
-            <v-btn
-              large
-              outlined
-              color="red lighten-2"
-              :dark="$store.getters.getTheme"
-              :loading="loading"
-              @click="
-                $emit('dialog', {
-                  pdf: '#normal-table',
-                  pdfDialog: true,
-                })
-              "
-            >
-              <v-icon color="red">mdi-file-pdf-box</v-icon>
-              Lataa pdf
-            </v-btn>
-          </v-col>
-        </v-row>
         <v-row
           class="row"
           v-if="
@@ -144,7 +106,6 @@ export default {
     "headers",
     "search",
     "results",
-    "normal_options",
     "selected_normal",
     "normal_points",
   ],
