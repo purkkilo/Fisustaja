@@ -128,7 +128,7 @@ import "jspdf-autotable";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import PublicNavigation from "../components/layout/PublicNavigation.vue";
 import CupPoints from "../components/CupPoints.vue";
-import { sortBy, openPdfOnNewTab } from "@/shared";
+import { sortBy, openPdfOnNewTab, cupDictToArray } from "@/shared";
 
 export default {
   name: "PublicCups",
@@ -231,6 +231,8 @@ export default {
               let found_signee = all_results[index];
               found_signee.points_compare.push(signee.cup_points_total); // For comparing
               found_signee.cup_results[competition.key_name] = {
+                competition: competition._id,
+                key_name: competition.key_name,
                 points: signee.cup_points_total,
                 placement: signee.placement,
               };
@@ -252,6 +254,8 @@ export default {
               signee.points_compare = [];
               signee.points_compare.push(signee.cup_points_total); // For comparing
               signee.cup_results[competition.key_name] = {
+                competition: competition._id,
+                key_name: competition.key_name,
                 points: signee.cup_points_total,
                 placement: signee.placement,
               };
@@ -289,60 +293,35 @@ export default {
       }
     },
     limitCompetitions(results, limit) {
-      limit = limit < 0 ? 0 : limit; // Make sure limit is at least 1
-
       results.forEach((signee) => {
         // If there are more or equal amount of competitions than the limit, limit remaining competitions after the limit
         if (this.competitions.length >= limit) {
-          // sort the array that points are compared to
-          // so first "limit" amount of competitions are only taken into account
-          signee.points_compare.sort(function compare(a, b) {
-            return parseInt(b) - parseInt(a);
-          });
           // Initialize total points to 0
           signee.cup_results["total"] = 0;
-          let counter = 0; // counter for competitions that have same points as the limit
-          // Check each competition
-          this.competitions.forEach((competition) => {
-            // If signee has points for this competition
-            if (signee.cup_results[competition.key_name]) {
-              // If signee's points are less than the limit points from the array
-              // check which placement the points would have from array, and pair it with points, the signee.placement isn't accurate anymore if competitions are limited
+          // sort the array that points are compared to
+          let temp = [...signee.cup_results];
+          temp.sort(function compare(a, b) {
+            return parseInt(b.points) - parseInt(a.points);
+          });
 
-              signee.cup_results[competition.key_name].placement =
-                competition.normal_points.find(
-                  (result) => result.boat_number === signee.boat_number
-                ).placement;
-
-              if (
-                signee.cup_results[competition.key_name].points <
-                signee.points_compare[limit]
-              ) {
-                // Give signee only participation points
-                signee.cup_results[competition.key_name].points =
-                  competition.cup_participation_points;
-              }
-              // If the competition points are same as the limit
-              if (
-                signee.cup_results[competition.key_name].points ===
-                signee.points_compare[limit]
-              ) {
-                if (counter !== 1) {
-                  // Points are greater than the limit points, give full points
-                  signee.cup_results[competition.key_name].points =
-                    competition.cup_participation_points;
-                }
-                counter++;
+          // Add all the limited points to total points
+          temp.forEach((element, index) => {
+            if (element) {
+              if (index + 1 <= limit) {
+                signee.cup_results["total"] += element.points;
+              } else {
+                const comp = this.competitions.find(
+                  (c) => element.competition === c._id
+                );
+                signee.cup_results[element.key_name].points =
+                  comp.cup_participation_points;
+                signee.cup_results["total"] += comp.cup_participation_points;
               }
             }
           });
         }
-
-        // Add all the limited points to total points
-        signee.cup_results.forEach((element) => {
-          signee.cup_results["total"] += element.points;
-        });
       });
+
       // Return sorted results
       return results;
     },
@@ -515,33 +494,6 @@ export default {
         }
       );
     },
-    // Parses dictionary/json to array, for pdf autotables
-    dictToArray: function (dict) {
-      const temp_arr = Object.entries(dict);
-      const arr = [];
-
-      temp_arr.forEach((element) => {
-        let values = Object.values(element[1]);
-        let cup_results = values[9];
-        values[0] = String(values[11]) + ".";
-        values[1] = "(" + String(values[1]) + ")";
-        values[3] = values[4];
-        let counter = 4;
-        this.competitions.forEach((competition) => {
-          if (cup_results[competition.key_name]) {
-            values[counter] = `${cup_results[competition.key_name].points}p (${
-              cup_results[competition.key_name].placement
-            }.)`;
-          } else {
-            values[counter] = "-";
-          }
-          counter++;
-        });
-        values[counter] = `${cup_results["total"]}p`;
-        arr.push(values);
-      });
-      return arr;
-    },
     // Convert the charts and the tables to pdf
     async saveAsPDF(table_title) {
       // Format dates for easier reding
@@ -600,7 +552,11 @@ export default {
       this.headers.forEach((header) => {
         columns.push(header.text);
       });
-      rows = this.dictToArray(this.results, 1);
+      rows = cupDictToArray(
+        this.results,
+        this.competitions,
+        "cup_total_points"
+      );
       startY = 45;
 
       doc.autoTable({

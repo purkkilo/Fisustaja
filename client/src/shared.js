@@ -128,6 +128,67 @@ export function dictToArray(dict, type) {
   return arr;
 }
 
+export function cupDictToArray(results, competitions, type) {
+  const arr = [];
+  let boat_number = 1;
+  let missing_numbers = false;
+  results.forEach((boat) => {
+    let values = [];
+    if (type === "cup_total_points") {
+      values[0] = `${boat.final_placement}.`;
+      values[1] = `(${boat.boat_number})`;
+      values[2] = `${boat.captain_name}`;
+      values[3] = `${boat.locality}`;
+      let counter = 4;
+      competitions.forEach((competition) => {
+        if (boat.cup_results[competition.key_name]) {
+          values[counter] = `${
+            boat.cup_results[competition.key_name].points
+          }p (${boat.cup_results[competition.key_name].placement}.)`;
+        } else {
+          values[counter] = "-";
+        }
+        counter++;
+      });
+      values[counter] = `${boat.cup_results["total"]}p`;
+    }
+
+    if (type === "signees") {
+      if (boat.boat_number > boat_number) {
+        // values[0] is bigger than the next boat_number should be, so there is a gap
+        missing_numbers = true;
+        for (let i of range(boat_number, boat.boat_number)) {
+          // When the i reaches the value boat_number should be, add the next real row
+          if (i === boat.boat_number) {
+            values[0] = String(boat.boat_number);
+            values[1] = boat.captain_name;
+            values[2] = boat.temp_captain_name;
+            values[3] = boat.locality;
+            missing_numbers = false;
+            // Else just push empty rows until then
+          } else {
+            boat_number++;
+            arr.push([String(i) + "*", "", "", ""]);
+          }
+        }
+      } else {
+        values[0] = String(boat.boat_number);
+        values[1] = boat.captain_name;
+        values[2] = boat.temp_captain_name;
+        values[3] = boat.locality;
+      }
+    }
+
+    // If there are gaps in boat_numbers --> 1, 2, 4, 5, 7, etc.
+    if (!missing_numbers) {
+      boat_number++;
+    }
+    arr.push(values);
+  });
+
+  return arr;
+}
+
 // Capitalize all the words in given string. Takes account all the characters like "-", "'" etc.
 export function capitalize_words(str) {
   return str.replace(
@@ -1306,6 +1367,7 @@ export default {
   saveStatsAsPDF,
   saveAsPDF,
   dictToArray,
+  cupDictToArray,
   capitalize_words,
   replaceAll,
   formatDate,

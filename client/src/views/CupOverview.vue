@@ -447,7 +447,11 @@
             ></cup-points>
           </v-tab-item>
           <v-tab-item :value="'stats'">
-            <cup-stats :competitions="competitions" :cup="cup" :loading="loading"></cup-stats>
+            <cup-stats
+              :competitions="competitions"
+              :cup="cup"
+              :loading="loading"
+            ></cup-stats>
           </v-tab-item>
         </v-tabs-items>
         <v-snackbar v-model="snackbar" :timeout="timeout">
@@ -807,8 +811,9 @@ export default {
             if (index > -1) {
               // Get the signee, and add competitions results to array, under the competition.name key
               let found_signee = all_results[index];
-              found_signee.points_compare.push(signee.cup_points_total); // For comparing
               found_signee.cup_results[competition.key_name] = {
+                competition: competition._id,
+                key_name: competition.key_name,
                 points: signee.cup_points_total,
                 placement: signee.placement,
               };
@@ -827,9 +832,9 @@ export default {
               // Initialize variables and add first points
               signee.cup_results = [];
               // Array for comparing points with limit
-              signee.points_compare = [];
-              signee.points_compare.push(signee.cup_points_total); // For comparing
               signee.cup_results[competition.key_name] = {
+                competition: competition._id,
+                key_name: competition.key_name,
                 points: signee.cup_points_total,
                 placement: signee.placement,
               };
@@ -947,60 +952,35 @@ export default {
       });
     },
     limitCompetitions(results, limit) {
-      limit = limit < 0 ? 0 : limit; // Make sure limit is at least 1
-
       results.forEach((signee) => {
         // If there are more or equal amount of competitions than the limit, limit remaining competitions after the limit
         if (this.competitions.length >= limit) {
-          // sort the array that points are compared to
-          // so first "limit" amount of competitions are only taken into account
-          signee.points_compare.sort(function compare(a, b) {
-            return parseInt(b) - parseInt(a);
-          });
           // Initialize total points to 0
           signee.cup_results["total"] = 0;
-          let counter = 0; // counter for competitions that have same points as the limit
-          // Check each competition
-          this.competitions.forEach((competition) => {
-            // If signee has points for this competition
-            if (signee.cup_results[competition.key_name]) {
-              // If signee's points are less than the limit points from the array
-              // check which placement the points would have from array, and pair it with points, the signee.placement isn't accurate anymore if competitions are limited
+          // sort the array that points are compared to
+          let temp = [...signee.cup_results];
+          temp.sort(function compare(a, b) {
+            return parseInt(b.points) - parseInt(a.points);
+          });
 
-              signee.cup_results[competition.key_name].placement =
-                competition.normal_points.find(
-                  (result) => result.boat_number === signee.boat_number
-                ).placement;
-
-              if (
-                signee.cup_results[competition.key_name].points <
-                signee.points_compare[limit]
-              ) {
-                // Give signee only participation points
-                signee.cup_results[competition.key_name].points =
-                  competition.cup_participation_points;
-              }
-              // If the competition points are same as the limit
-              if (
-                signee.cup_results[competition.key_name].points ===
-                signee.points_compare[limit]
-              ) {
-                if (counter !== 1) {
-                  // Points are greater than the limit points, give full points
-                  signee.cup_results[competition.key_name].points =
-                    competition.cup_participation_points;
-                }
-                counter++;
+          // Add all the limited points to total points
+          temp.forEach((element, index) => {
+            if (element) {
+              if (index + 1 <= limit) {
+                signee.cup_results["total"] += element.points;
+              } else {
+                const comp = this.competitions.find(
+                  (c) => element.competition === c._id
+                );
+                signee.cup_results[element.key_name].points =
+                  comp.cup_participation_points;
+                signee.cup_results["total"] += comp.cup_participation_points;
               }
             }
           });
         }
-
-        // Add all the limited points to total points
-        signee.cup_results.forEach((element) => {
-          signee.cup_results["total"] += element.points;
-        });
       });
+
       // Return sorted results
       return results;
     },
@@ -1071,7 +1051,11 @@ export default {
         this.headers.forEach((header) => {
           columns.push(header.text);
         });
-        rows = this.dictToArray(this.results, 1);
+        rows = shared.cupDictToArray(
+          this.results,
+          this.competitions,
+          "cup_total_points"
+        );
         startY = 45;
       } else {
         if (unfinished_competitions === 0) {
@@ -1086,12 +1070,16 @@ export default {
         this.signees = this.cup.signees.sort(
           shared.sortBy("boat_number", true)
         );
-        rows = this.dictToArray(this.signees, 2);
+        rows = shared.cupDictToArray(
+          this.signees,
+          this.competitions,
+          "signees"
+        );
         /* eslint-disable no-unused-vars */
         // Just add some empty rows for new signees
         if (rows.length) {
           let last_number = Number(rows[rows.length - 1][0]) + 1;
-          for (let i of shared.range(last_number, last_number + 6)) {
+          for (let i of shared.range(last_number, last_number + 10)) {
             rows.push([i, "", "", ""]);
           }
         } else {
@@ -1136,61 +1124,6 @@ export default {
       )}.pdf`;
       this.dialog = false;
       shared.openPdfOnNewTab(doc, fileName);
-    },
-
-    dictToArray(dict, type) {
-      const temp_arr = Object.entries(dict);
-      const arr = [];
-      let boat_number = 1;
-      let missing_numbers = false;
-      temp_arr.forEach((element) => {
-        let values = Object.values(element[1]);
-        if (type === 1) {
-          values[0] = String(values[11]) + ".";
-          let cup_results = values[9];
-          values[1] = "(" + String(values[1]) + ")";
-          values[3] = values[4];
-          let counter = 4;
-
-          this.competitions.forEach((competition) => {
-            if (cup_results[competition.key_name]) {
-              values[counter] = `${
-                cup_results[competition.key_name].points
-              }p (${cup_results[competition.key_name].placement}.)`;
-            } else {
-              values[counter] = "-";
-            }
-            counter++;
-          });
-          values[counter] = `${cup_results["total"]}p`;
-        }
-        if (type === 2) {
-          if (values[0] > boat_number) {
-            // values[0] is bigger than the next boat_number should be, so there is a gap
-            missing_numbers = true;
-            for (let i of shared.range(boat_number, values[0])) {
-              // When the i reaches the value boat_number should be, add the next real row
-              if (i === values[0]) {
-                values[0] = String(values[0]);
-                missing_numbers = false;
-                // Else just push empty rows until then
-              } else {
-                boat_number++;
-                arr.push([String(i) + "*", "", "", ""]);
-              }
-            }
-          } else {
-            values[0] = String(values[0]);
-          }
-        }
-
-        // If there are gaps in boat_numbers --> 1, 2, 4, 5, 7, etc.
-        if (!missing_numbers) {
-          boat_number++;
-          arr.push(values);
-        }
-      });
-      return arr;
     },
     getMultiplierColor: shared.getMultiplierColor,
   },

@@ -20,6 +20,7 @@ New:
   ☐ Update chart dependancies and move to newer versions
   ☐ Add proper loading bar to Results.vue
   ☐ Add cup stats to publicCups.vue
+  ☐ Refactor dictToArray from shared.js to be like cupDictToArray
 
 Cancelled:
   ✘ Press Alt+C to mark a todo as cancelled
