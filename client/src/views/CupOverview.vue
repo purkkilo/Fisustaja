@@ -826,9 +826,20 @@ export default {
               let cup_signee = this.signees.find(
                 (element) => element.boat_number === signee.boat_number
               );
-              signee.captain_name = cup_signee.captain_name;
-              signee.temp_captain_name = cup_signee.temp_captain_name;
-              signee.locality = cup_signee.locality;
+              if (cup_signee) {
+                // Add original names from the first instance
+                signee.captain_name = cup_signee.captain_name;
+                signee.temp_captain_name = cup_signee.temp_captain_name;
+                signee.locality = cup_signee.locality;
+              } else {
+                // TODO: Figure out a better way to notify
+                console.log(
+                  `(${signee.boat_number}) - ${signee.captain_name} ei löytynyt cupin ilmoittautumislistalta`
+                );
+                alert(
+                  `(${signee.boat_number}) - ${signee.captain_name} ei löytynyt cupin ilmoittautumislistalta`
+                );
+              }
               // Initialize variables and add first points
               signee.cup_results = [];
               // Array for comparing points with limit

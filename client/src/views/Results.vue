@@ -303,10 +303,8 @@
                 :dark="$store.getters.getTheme"
                 :loading="loading"
                 @click="
-                  $emit('dialog', {
-                    pdf: '#normal-table',
-                    pdfDialog: true,
-                  })
+                  pdf = '#normal-table';
+                  pdfDialog = true;
                 "
               >
                 <v-icon color="red">mdi-file-pdf-box</v-icon>
