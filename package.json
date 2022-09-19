@@ -8,7 +8,7 @@
     "server": "nodemon server/index.js",
     "dev": "concurrently \" cd server && nodemon index.js\" \"cd client && npm run serve\"",
     "build-app": "cd client && npm run build",
-    "postinstall": "(cd client && npm install); npm install;npm run build-app"
+    "postinstall": "cd client && npm install && npm run build"
   },
   "author": "Jori Kosonen",
   "license": "ISC",
