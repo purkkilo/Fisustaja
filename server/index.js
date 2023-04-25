@@ -43,6 +43,7 @@ if (process.env.NODE_ENV === "production") {
   db = config.mongodb_url;
 }
 
+mongoose.set("strictQuery", false);
 mongoose
   .connect(db, { useNewUrlParser: true })
   .then(() => {

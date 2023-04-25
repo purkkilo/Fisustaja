@@ -54,23 +54,29 @@ router.post("/", async (req, res) => {
 });
 
 // Update one competition
-router.put("/:id", async (req, res) => {
+router.put("/:id/update", async (req, res) => {
   const cups = await loadCupsCollection();
   if (cups) {
-    // Update whole competition if cup._id is present
-    if (req.body._id) {
-      const cup = req.body;
-      delete cup._id;
-      await cups.replaceOne({ _id: new mongodb.ObjectID(req.params.id) }, cup);
-      res.status(204).send();
-    } else {
-      const newvalues = req.body;
-      await cups.updateOne(
-        { _id: new mongodb.ObjectID(req.params.id) },
-        newvalues
-      );
-      res.status(204).send();
-    }
+    const newvalues = req.body;
+    await cups.updateOne(
+      { _id: new mongodb.ObjectID(req.params.id) },
+      newvalues
+    );
+    res.status(204).send();
+  } else {
+    // Connection timed out
+    res.status(408).send();
+  }
+});
+
+// Replace one competition
+router.put("/:id/replace", async (req, res) => {
+  const cups = await loadCupsCollection();
+  if (cups) {
+    const cup = req.body;
+    delete cup._id;
+    await cups.replaceOne({ _id: new mongodb.ObjectID(req.params.id) }, cup);
+    res.status(204).send();
   } else {
     // Connection timed out
     res.status(408).send();

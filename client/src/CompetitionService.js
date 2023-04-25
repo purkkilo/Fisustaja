@@ -33,12 +33,12 @@ class CompetitionService {
 
   // Update whole competition
   static updateCompetition(id, competition) {
-    return axios.put(`${url}${id}`, competition);
+    return axios.put(`${url}${id}/replace`, competition);
   }
 
   // Update some values
   static updateValues(id, newvalues) {
-    return axios.put(`${url}${id}`, newvalues);
+    return axios.put(`${url}${id}/update`, newvalues);
   }
 
   static deleteCompetition(id) {

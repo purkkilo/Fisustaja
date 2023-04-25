@@ -388,6 +388,7 @@
             :headers="biggest_fishes_headers"
             :results_found_fishes="results_found_fishes"
             :search_fishes="search_fishes"
+            :selected_biggest_fish="selected_biggest_fish"
           ></biggest-fishes>
         </v-tab-item>
 

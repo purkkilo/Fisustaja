@@ -1,0 +1,7 @@
+{
+  "include": ["./src/**/*"],
+  "vueCompilerOptions": {
+    "extensions": [".vue"],
+    "target": 2
+  }
+}

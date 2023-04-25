@@ -1031,6 +1031,7 @@ export default {
           });
           this.result_signees = this.$store.getters.getResultSignees;
           this.still_on_water = this.$store.getters.getStillOnWaterSignees;
+          this.inputs = [];
           this.competition_fishes.forEach((fish) => {
             this.inputs.push({
               name: fish.name,

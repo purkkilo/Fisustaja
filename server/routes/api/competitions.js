@@ -73,7 +73,24 @@ router.post("/", async (req, res) => {
 });
 
 // Update one competition
-router.put("/:id", async (req, res) => {
+router.put("/:id/update", async (req, res) => {
+  const competitions = await loadCompetitionsCollection();
+
+  if (competitions) {
+    const update = req.body;
+    await competitions.updateOne(
+      { _id: new mongodb.ObjectID(req.params.id) },
+      update
+    );
+    res.status(204).send();
+  } else {
+    // Connection timed out
+    res.status(408).send();
+  }
+});
+
+// Replace one competition
+router.put("/:id/replace", async (req, res) => {
   const competitions = await loadCompetitionsCollection();
 
   if (competitions) {
