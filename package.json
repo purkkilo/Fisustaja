@@ -17,7 +17,6 @@
     "nodemon": "^2.0.19"
   },
   "dependencies": {
-    "@vue/runtime-dom": "^3.2.47",
     "bcrypt": "^5.0.1",
     "bcryptjs": "^2.4.3",
     "connect-history-api-fallback": "^1.6.0",

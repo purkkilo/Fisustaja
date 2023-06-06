@@ -65,7 +65,7 @@
         </v-dialog>
 
         <v-row justify="center" align="center">
-          <v-col v-if="cup">
+          <v-col v-if="!loading && cup">
             <h1>{{ cup.name }}, {{ cup.year }}</h1>
           </v-col>
           <v-col v-else><h1>Ladataan...</h1></v-col>
@@ -109,7 +109,7 @@
                 </p>
               </v-col>
             </v-row>
-            <v-row v-if="competitions.length" style="margin-top: 50px">
+            <v-row v-if="!loading && cup" style="margin-top: 50px">
               <v-col md="4" offset-md="4">
                 <v-select
                   dark
@@ -122,7 +122,7 @@
                 />
               </v-col>
             </v-row>
-            <v-row v-if="allCompetitions.length">
+            <v-row v-if="!loading && cup">
               <v-col md="10" offset-md="1">
                 <v-card :dark="$store.getters.getTheme">
                   <v-card-title>
@@ -223,6 +223,7 @@
                       <v-btn
                         color="yellow darken-2"
                         :dark="$store.getters.getTheme"
+                        :disabled="loading || publishing"
                         @click.stop="
                           new_captain_name = item.captain_name;
                           new_temp_captain_name = item.temp_captain_name;
@@ -346,19 +347,96 @@
                         </v-card>
                       </v-dialog>
                     </template>
+                    <template v-slot:[`item.delete`]="{ item }">
+                      <v-btn
+                        color="red darken-2"
+                        :dark="$store.getters.getTheme"
+                        :disabled="loading || publishing"
+                        @click.stop="deleteSignee(item)"
+                        ><v-icon color="black">mdi-delete</v-icon></v-btn
+                      >
+                    </template>
                   </v-data-table>
                 </v-card>
               </v-col>
             </v-row>
+            <v-row v-if="!loading && cup && selected == 'Ilmoittautuneet'">
+              <v-col>
+                <v-btn
+                  @click="createSigneeDialog = true"
+                  large
+                  outlined
+                  dark
+                  :loading="publishing || loading"
+                  ><v-icon color="green">mdi-plus</v-icon> Lisää
+                  ilmoittautunut</v-btn
+                >
+                <v-dialog v-model="createSigneeDialog" width="500">
+                  <v-card :dark="$store.getters.getTheme">
+                    <v-card-title> Lisää ilmoittautunut </v-card-title>
+                    <v-card-text>
+                      <h3 v-if="signeeError" class="red--text">
+                        {{ signeeError }}
+                      </h3>
+                      <v-text-field
+                        label="Kilpailunumero"
+                        v-model="signeeNumber"
+                        append-outer-icon="add"
+                        maxlength="6"
+                        @click:append-outer="
+                          signeeNumber > 0 ? signeeNumber++ : (signeeNumber = 1)
+                        "
+                        prepend-icon="remove"
+                        @click:prepend="
+                          signeeNumber > 1 ? signeeNumber-- : (signeeNumber = 1)
+                        "
+                        @paste.prevent
+                        :counter="6"
+                        @keypress="isNumber($event, true)"
+                        :rules="number_rules"
+                      ></v-text-field>
+                      <v-text-field
+                        label="Kippari"
+                        v-model="signeeCaptain"
+                      ></v-text-field>
+                      <v-text-field
+                        label="Varakippari"
+                        v-model="signeeTempCaptain"
+                      ></v-text-field>
+                      <v-text-field
+                        label="Seura/Paikkakunta"
+                        v-model="signeeLocality"
+                      ></v-text-field>
+                    </v-card-text>
+
+                    <v-divider></v-divider>
+
+                    <v-card-actions>
+                      <v-btn
+                        color="yellow"
+                        text
+                        @click="createSigneeDialog = false"
+                      >
+                        Peruuta
+                      </v-btn>
+                      <v-spacer></v-spacer>
+                      <v-btn color="primary" text @click="addSignee">
+                        Lisää
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+              </v-col>
+            </v-row>
             <v-row
-              v-if="competitions.length"
+              v-if="!loading && cup"
               style="margin-top: 10px; margin-bottom: 10px"
             >
               <v-col>
                 <v-btn
                   tile
                   color="blue lighten-1"
-                  :loading="publishing"
+                  :loading="publishing || loading"
                   @click="changePage('/register-comp')"
                   ><v-icon>mdi-plus-circle</v-icon>Luo uusi kilpailu!</v-btn
                 >
@@ -369,8 +447,9 @@
                   large
                   outlined
                   dark
-                  :loading="publishing"
-                  ><v-icon color="red">mdi-file-pdf-outline</v-icon> Lataa lista
+                  :loading="publishing || loading"
+                  :disabled="!cup.signees.length"
+                  ><v-icon color="red">>mdi-file-pdf-box</v-icon> Lataa lista
                   kilpailijoista</v-btn
                 >
               </v-col>
@@ -381,7 +460,7 @@
                   :color="cup.isPublic ? 'grey darken-4' : 'green darken-4'"
                   @click="publishCup(cup.isPublic)"
                   class="white--text"
-                  :loading="publishing"
+                  :loading="publishing || loading"
                 >
                   <div v-if="cup.isPublic">
                     <v-icon>mdi-incognito</v-icon> Aseta cup salaiseksi
@@ -393,24 +472,11 @@
                 </v-btn>
               </v-col>
             </v-row>
-            <v-row v-else>
-              <v-col v-if="!loading && !competitions.length">
-                <h2 class="white--text">Ei kilpailuja!</h2>
-                <router-link to="/register-comp">
-                  <v-btn tile color="blue lighten-1"
-                    ><v-icon>mdi-plus-circle</v-icon>Luo kilpailu!</v-btn
-                  >
-                </router-link>
-              </v-col>
-              <v-col v-if="error">
+            <v-row v-if="error">
+              <v-col>
                 <h2 class="error white--text">
                   {{ error }}
                 </h2>
-              </v-col>
-
-              <v-col v-if="loading">
-                <h2 class="white--text">Ladataan kilpailuja...</h2>
-                <ProgressBarQuery />
               </v-col>
             </v-row>
           </v-tab-item>
@@ -487,6 +553,16 @@ export default {
     return {
       prevRoute: null,
       dialog: false,
+      createSigneeDialog: false,
+      signeeError: "",
+      signeeNumber: 1,
+      number_rules: [
+        (value) => !isNaN(value || "") || "Ei ole numero!",
+        (value) => (value || "") >= 0 || "Numeron pitää olla positiivinen!",
+      ],
+      signeeCaptain: "",
+      signeeTempCaptain: "",
+      signeeLocality: "",
       isLandscape: false,
       dialog_clock: false,
       dialog_signee: {},
@@ -523,6 +599,7 @@ export default {
         { text: "Varakippari", value: "temp_captain_name" },
         { text: "Seura/Paikkakunta", value: "locality" },
         { text: "Muokkaa", value: "modify", sortable: false },
+        { text: "Poista", value: "delete", sortable: false },
       ],
 
       results: [],
@@ -620,6 +697,23 @@ export default {
         query: { cup: localStorage.getItem("cup") },
       });
     },
+    isNumber: function (evt) {
+      evt = evt ? evt : window.event;
+      var charCode = evt.which ? evt.which : evt.keyCode;
+      if (
+        charCode > 31 &&
+        (charCode < 48 || charCode > 57) &&
+        charCode !== 46
+      ) {
+        evt.preventDefault();
+      } else {
+        if (charCode == 46) {
+          evt.preventDefault();
+        } else {
+          return true;
+        }
+      }
+    },
     selectTableData() {
       if (this.selected === "Kilpailut") {
         this.selected_items = this.allCompetitions;
@@ -629,7 +723,73 @@ export default {
         this.selected_headers = this.headers_signees;
       }
     },
-
+    async deleteSignee(item) {
+      let signeeIndex = this.signees.findIndex(
+        (o) => o.boat_number === item.boat_number
+      );
+      this.signees.splice(signeeIndex, 1);
+      await this.updateSignees(this.signees);
+    },
+    async addSignee() {
+      if (this.signeeNumber < 1 || this.signeeNumber === null) {
+        this.signeeError = "Numero puuttuu!";
+      } else if (
+        this.signeeCaptain.trim() === "" ||
+        this.signeeCaptain === null
+      ) {
+        this.signeeError = "Kapteeni puuttuu!";
+      } else {
+        const numberInSignees = this.cup.signees.find(
+          (s) => s.boat_number === this.signeeNumber
+        );
+        if (numberInSignees) {
+          const largest = Math.max(...this.signees.map((o) => o.boat_number));
+          this.signeeError =
+            "Numero on jo käytössä! Suurin vapaa numero = " + (largest + 1);
+        } else {
+          this.signees.push({
+            boat_number: this.signeeNumber,
+            captain_name: this.signeeCaptain,
+            dialog: false,
+            locality: this.signeeLocality || "-",
+            starting_place: "-",
+            temp_captain_name: this.signeeTempCaptain || "-",
+          });
+          await this.updateSignees(this.signees).finally(() => {
+            this.createSigneeDialog = false;
+            this.signeeNumber = this.signeeNumber + 1;
+            this.signeeCaptain =
+              this.signeeTempCaptain =
+              this.signeeLocality =
+                "";
+          });
+        }
+      }
+    },
+    async updateSignees(signees) {
+      this.$store.state.cup = this.cup;
+      this.publishing = true;
+      const new_signees = [...signees];
+      // No need to have this variable in database
+      new_signees.forEach((signee) => {
+        delete signee.dialog;
+      });
+      const newvalues = {
+        $set: { signees: new_signees },
+      };
+      await CupService.updateValues(this.cup._id, newvalues)
+        .then(() => {
+          this.text = "Kilpailijoiden tiedot päivitetty!";
+          this.snackbar = true;
+        })
+        .catch((err) => {
+          this.text =
+            "Virhe kilpailijan tietojen päivityksessä... Yritä uudelleen!";
+          this.snackbar = true;
+          console.log(err);
+        });
+      this.publishing = false;
+    },
     // Function to modify signees' captain, temp_captain or locality
     async modifySignee(
       signee,
@@ -671,31 +831,11 @@ export default {
             signee.captain_name = new_captain_name;
             signee.temp_captain_name = new_temp_captain_name;
             signee.locality = new_locality;
-            this.$store.state.cup = this.cup;
-            this.publishing = true;
-            const new_signees = [...this.signees];
-            // No need to have this variable in database
-            new_signees.forEach((signee) => {
-              delete signee.dialog;
+            await this.updateSignees(this.signees).finally(() => {
+              // Update names to "points" table
+              this.calculateAll(this.competitions, this.selectedCompetitions);
+              this.$set(this.dialog_signee, signee.boat_number, false);
             });
-            const newvalues = {
-              $set: { signees: this.signees },
-            };
-            await CupService.updateValues(this.cup._id, newvalues)
-              .then(() => {
-                // Update names to "points" table
-                this.calculateAll(this.competitions, this.selectedCompetitions);
-                this.$set(this.dialog_signee, signee.boat_number, false);
-                this.text = "Kilpailijan tiedot päivitetty!";
-                this.snackbar = true;
-              })
-              .catch((err) => {
-                this.text =
-                  "Virhe kilpailijan tietojen päivityksessä... Yritä uudelleen!";
-                this.snackbar = true;
-                console.log(err);
-              });
-            this.publishing = false;
           } else {
             // Nothing modified -> do nothing
             this.text =
@@ -740,6 +880,7 @@ export default {
       if (cup.meaningful_competitions > 0)
         this.selectedCompetitions = cup.meaningful_competitions;
       else this.selectedCompetitions = this.competitions.length;
+
       this.calculateAll(this.competitions, this.selectedCompetitions);
     },
     async refreshCup(cup_id) {

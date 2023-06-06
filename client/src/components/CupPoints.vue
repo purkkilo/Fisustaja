@@ -174,9 +174,7 @@
                 <span v-else v-bind:key="index"> - </span>
               </template>
               <template v-slot:[`item.final_cup_points`]="{ item }">
-                <span class="indigo--text font-weight-bold"
-                  >{{ item.final_cup_points }}p</span
-                >
+                <v-chip color="primary">{{ item.final_cup_points }}p</v-chip>
               </template>
             </v-data-table>
           </v-card>

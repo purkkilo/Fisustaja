@@ -2,6 +2,6 @@
   "include": ["./src/**/*"],
   "vueCompilerOptions": {
     "extensions": [".vue"],
-    "target": 2
+    "target": 2.7
   }
 }
