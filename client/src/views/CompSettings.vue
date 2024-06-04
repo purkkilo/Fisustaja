@@ -1173,23 +1173,23 @@ export default {
       // Check if the given dates and times are valid with moment
       var isDateValid = this.$moment(
         this.start_date,
-        "YYYY-M-D",
+        "YYYY-MM-DD",
         true
       ).isValid();
 
       var isEndDateValid = this.$moment(
         this.end_date,
-        "YYYY-M-D",
+        "YYYY-MM-DD",
         true
       ).isValid();
 
       var isStartTimeValid = this.$moment(
         this.start_time,
-        "H:mm",
+        "HH:mm",
         true
       ).isValid();
 
-      var isEndTimeValid = this.$moment(this.end_time, "H:mm", true).isValid();
+      var isEndTimeValid = this.$moment(this.end_time, "HH:mm", true).isValid();
 
       // Check other variables
       if (!this.name) {

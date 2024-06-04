@@ -38,7 +38,7 @@
               :dark="$store.getters.getTheme"
               tile
               outlined
-              :elevation="hover ? 10 : 2"
+              :elevation="hover ? 10 : 6"
               class="card-link"
             >
               <v-card-title>
@@ -52,6 +52,7 @@
                     class="ma-2"
                     :color="link.color"
                     :text-color="link.color"
+                    dark
                     outlined
                   >
                     Siirry
@@ -111,6 +112,7 @@ export default {
             text: "Dashboard",
             icon: "mdi-view-dashboard",
             path: "/dashboard",
+            color: "blue lighten-1",
           },
         ];
       } else {

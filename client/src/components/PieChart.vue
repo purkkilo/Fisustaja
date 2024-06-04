@@ -1,62 +1,121 @@
+<template>
+  <Pie
+    :chart-options="options"
+    :chart-data="chartData"
+    :chart-id="chartId"
+    :dataset-id-key="datasetIdKey"
+    :plugins="plugins"
+    :css-classes="cssClasses"
+    :styles="styles"
+    :width="width"
+    :height="height"
+    :title="title"
+  />
+</template>
+
 <script>
-import { Pie, mixins } from "vue-chartjs";
-const { reactiveProp } = mixins;
-import "chartjs-plugin-labels";
+import { Pie } from "vue-chartjs/legacy";
+import ChartDataLabels from "chartjs-plugin-datalabels";
+
+import {
+  Chart as ChartJS,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  CategoryScale,
+} from "chart.js";
+
+ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale);
+ChartJS.register(ChartDataLabels);
 export default {
-  props: ["title"],
-  extends: Pie,
-  mixins: [reactiveProp],
+  name: "PieChart",
+  components: {
+    Pie,
+  },
+  props: {
+    title: {
+      type: String,
+      default: "pie-chart",
+    },
+    chartData: {
+      type: Object,
+      default: () => {},
+    },
+    chartId: {
+      type: String,
+      default: "pie-chart",
+    },
+    datasetIdKey: {
+      type: String,
+      default: "label",
+    },
+    width: {
+      type: Number,
+      default: 400,
+    },
+    height: {
+      type: Number,
+      default: 400,
+    },
+    cssClasses: {
+      default: "",
+      type: String,
+    },
+    styles: {
+      type: Object,
+      default: () => {},
+    },
+    plugins: {
+      type: Array,
+      default: () => {},
+    },
+  },
   data: () => ({
     options: {
+      plugins: {
+        tooltip: {
+          callbacks: {
+            title: (tooltipItem) => {
+              return tooltipItem[0].label;
+            },
+            label: (tooltipItem) => {
+              let allData = tooltipItem.dataset.data;
+              let tooltipData = allData[tooltipItem.dataIndex];
+              let sum = allData.reduce(function (a, b) {
+                return a + b;
+              }, 0);
+              let percentage = (tooltipData / sum) * 100;
+              percentage =
+                Math.round((percentage + Number.EPSILON) * 100) / 100;
+
+              let lbl = `${tooltipData} kpl ( ${percentage}% )`;
+              return lbl;
+            },
+          },
+        },
+        datalabels: {
+          labels: {
+            value: {
+              color: "#000",
+              font: {
+                weight: "bold",
+                size: 26,
+                family: '"Lucida Console", Monaco, monospace',
+              },
+            },
+          },
+        },
+      },
       maintainAspectRatio: false,
       responsive: true,
-      tooltips: {
-        callbacks: {
-          title: (tooltipItem, data) => {
-            return data.labels[tooltipItem[0].index];
-          },
-          label: (tooltipItem, data) => {
-            let sum = data.datasets[tooltipItem.datasetIndex].data.reduce(
-              function (a, b) {
-                return a + b;
-              },
-              0
-            );
-            let percentage =
-              (data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] /
-                sum) *
-              100;
-            percentage = Math.round((percentage + Number.EPSILON) * 100) / 100;
 
-            let lbl = `${data.datasets[tooltipItem.datasetIndex].label}: ${
-              data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index]
-            } kpl ( ${percentage}% )`;
-            return lbl;
-          },
-        },
-      },
-      plugins: {
-        labels: {
-          render: "percentage",
-          fontSize: 26,
-          fontStyle: "bold",
-          fontColor: "#000",
-          fontFamily: '"Lucida Console", Monaco, monospace',
-          precision: 2,
-        },
-      },
       legend: {
         display: true,
       },
     },
   }),
-  mounted() {
-    this.renderChart(this.chartData, this.options);
-  },
-  watch: {
-    chartData(val) {
-      this.renderChart(val, this.options);
-    },
-  },
+  mounted() {},
+  watch: {},
 };
 </script>

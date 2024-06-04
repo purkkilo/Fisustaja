@@ -392,11 +392,11 @@ export function saveStatsAsPDF(competition_type, orientation = "portrait") {
     .toDataURL("image/png", 1.0);
 
   if (orientation === "landscape") {
-    doc.addImage(fishesImg, "PNG", 0, 40, 180, 90);
-    doc.addImage(signeeImg, "PNG", 140, 40, 180, 90);
+    doc.addImage(fishesImg, "PNG", 50, 40, 90, 90);
+    doc.addImage(signeeImg, "PNG", 160, 40, 90, 90);
   } else {
-    doc.addImage(fishesImg, "PNG", -5, 40, 160, 80);
-    doc.addImage(signeeImg, "PNG", 90, 60, 160, 80);
+    doc.addImage(fishesImg, "PNG", 10, 40, 90, 90);
+    doc.addImage(signeeImg, "PNG", 110, 40, 90, 90);
   }
 
   doc.text(
@@ -985,11 +985,11 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
       .toDataURL("image/png", 1.0);
     try {
       if (orientation === "landscape") {
-        doc.addImage(fishesImg, "PNG", 0, 40, 180, 90);
-        doc.addImage(signeeImg, "PNG", 140, 40, 180, 90);
+        doc.addImage(fishesImg, "PNG", 50, 40, 90, 90);
+        doc.addImage(signeeImg, "PNG", 160, 40, 90, 90);
       } else {
-        doc.addImage(fishesImg, "PNG", -5, 40, 160, 80);
-        doc.addImage(signeeImg, "PNG", 90, 60, 160, 80);
+        doc.addImage(fishesImg, "PNG", 10, 40, 90, 90);
+        doc.addImage(signeeImg, "PNG", 110, 40, 90, 90);
       }
     } catch (err) {
       charts_loaded = false;

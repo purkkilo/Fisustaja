@@ -1,6 +1,5 @@
 const express = require("express");
 const mongodb = require("mongodb");
-
 const router = express.Router();
 
 // Get all cups
@@ -16,7 +15,7 @@ router.get("/", async (req, res) => {
       }
       // Fetch by cup._id, only find one cup
       if (req.query._id) {
-        query = { _id: new mongodb.ObjectID(req.query._id) };
+        query = { _id: new mongodb.ObjectId(req.query._id) };
         res.status(200).send(await cups.findOne(query));
       }
       // Otherwise return an array of all the cups that match query
@@ -59,7 +58,7 @@ router.put("/:id/update", async (req, res) => {
   if (cups) {
     const newvalues = req.body;
     await cups.updateOne(
-      { _id: new mongodb.ObjectID(req.params.id) },
+      { _id: new mongodb.ObjectId(req.params.id) },
       newvalues
     );
     res.status(204).send();
@@ -75,7 +74,7 @@ router.put("/:id/replace", async (req, res) => {
   if (cups) {
     const cup = req.body;
     delete cup._id;
-    await cups.replaceOne({ _id: new mongodb.ObjectID(req.params.id) }, cup);
+    await cups.replaceOne({ _id: new mongodb.ObjectId(req.params.id) }, cup);
     res.status(204).send();
   } else {
     // Connection timed out
@@ -87,7 +86,7 @@ router.put("/:id/replace", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   const cups = await loadCupsCollection();
   if (cups) {
-    await cups.deleteOne({ _id: new mongodb.ObjectID(req.params.id) });
+    await cups.deleteOne({ _id: new mongodb.ObjectId(req.params.id) });
     res.status(200).send();
   } else {
     // Connection timed out
@@ -105,10 +104,7 @@ async function loadCupsCollection() {
   }
 
   try {
-    const client = await mongodb.MongoClient.connect(mongodb_url, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    const client = await mongodb.MongoClient.connect(mongodb_url);
 
     return client.db("fisustaja").collection("cups");
   } catch (err) {

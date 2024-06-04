@@ -39,7 +39,7 @@ router.delete("/:id", async (req, res) => {
   const feedback = await loadFeedbackCollection();
 
   if (feedback) {
-    await feedback.deleteOne({ _id: new mongodb.ObjectID(req.params.id) });
+    await feedback.deleteOne({ _id: new mongodb.ObjectId(req.params.id) });
     res.status(200).send();
   } else {
     // Connection timed out
@@ -57,10 +57,7 @@ async function loadFeedbackCollection() {
   }
 
   try {
-    const client = await mongodb.MongoClient.connect(mongodb_url, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    const client = await mongodb.MongoClient.connect(mongodb_url);
 
     return client.db("fisustaja").collection("feedback");
   } catch (err) {

@@ -16,7 +16,7 @@ router.get("/", async (req, res) => {
       }
       // Fetch by competition._id, only find one competition
       if (req.query._id) {
-        query = { _id: new mongodb.ObjectID(req.query._id) };
+        query = { _id: new mongodb.ObjectId(req.query._id) };
         res.status(200).send(await competitions.findOne(query));
       }
       // Otherwise return an array of all the competitions that match query
@@ -79,7 +79,7 @@ router.put("/:id/update", async (req, res) => {
   if (competitions) {
     const update = req.body;
     await competitions.updateOne(
-      { _id: new mongodb.ObjectID(req.params.id) },
+      { _id: new mongodb.ObjectId(req.params.id) },
       update
     );
     res.status(204).send();
@@ -97,7 +97,7 @@ router.put("/:id/replace", async (req, res) => {
     const competition = req.body;
     delete competition._id;
     await competitions.replaceOne(
-      { _id: new mongodb.ObjectID(req.params.id) },
+      { _id: new mongodb.ObjectId(req.params.id) },
       competition
     );
     res.status(204).send();
@@ -111,7 +111,7 @@ router.put("/:id/replace", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   const competitions = await loadCompetitionsCollection();
   if (competitions) {
-    await competitions.deleteOne({ _id: new mongodb.ObjectID(req.params.id) });
+    await competitions.deleteOne({ _id: new mongodb.ObjectId(req.params.id) });
     res.status(200).send();
   } else {
     // Connection timed out
@@ -129,10 +129,7 @@ async function loadCompetitionsCollection() {
   }
 
   try {
-    const client = await mongodb.MongoClient.connect(mongodb_url, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    const client = await mongodb.MongoClient.connect(mongodb_url);
 
     return client.db("fisustaja").collection("competitions");
   } catch (err) {

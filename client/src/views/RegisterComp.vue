@@ -1242,23 +1242,23 @@ export default {
       // Check if the given dates and times are valid with moment
       var isDateValid = this.$moment(
         this.start_date,
-        "YYYY-M-D",
+        "YYYY-MM-DD",
         true
       ).isValid();
 
       var isEndDateValid = this.$moment(
         this.end_date,
-        "YYYY-M-D",
+        "YYYY-MM-DD",
         true
       ).isValid();
 
       var isStartTimeValid = this.$moment(
         this.start_time,
-        "H:mm",
+        "HH:mm",
         true
       ).isValid();
 
-      var isEndTimeValid = this.$moment(this.end_time, "H:mm", true).isValid();
+      var isEndTimeValid = this.$moment(this.end_time, "HH:mm", true).isValid();
 
       // Check other variables
       if (!this.name) {
@@ -1289,6 +1289,9 @@ export default {
               'Syötä aika muodossa "hh:mm" (esim: 13:00). Syötetty aika oli: ' +
                 this.start_time
             );
+        console.log(this.start_time);
+        console.log(isStartTimeValid);
+        console.log(this.$moment(this.start_time, "H:mm", true).invalidAt());
       }
       if (!this.end_time || !isEndTimeValid) {
         !this.end_time == true

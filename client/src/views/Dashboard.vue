@@ -526,7 +526,7 @@ export default {
           name: this.name,
           year: this.year,
           meaningful_competitions: this.isThereCompetitionLimit
-            ? this.meaningful_competitions
+            ? Number(this.meaningful_competitions)
             : -1,
         };
         try {

@@ -45,6 +45,7 @@
                     :headers="headers"
                     :items="competitions"
                     :search="search_comp"
+                    show-group-by
                   >
                     <template v-slot:[`item.start_date`]="{ item }">
                       <v-chip color="primary darken-2">{{
@@ -238,11 +239,15 @@ export default {
     return {
       tab: null,
       headers: [
-        { text: "Kilpailun Päivämäärä", value: "start_date" },
-        { text: "Nimi", value: "name" },
+        { text: "Kilpailun Päivämäärä", value: "start_date", groupable: false },
+        { text: "Nimi", value: "name", groupable: false },
         { text: "Cup", value: "cup_name" },
-        { text: "Pistekerroin", value: "cup_points_multiplier" },
-        { text: "Valitse", value: "choose", sortable: false },
+        {
+          text: "Pistekerroin",
+          value: "cup_points_multiplier",
+          groupable: false,
+        },
+        { text: "Valitse", value: "choose", sortable: false, groupable: false },
       ],
       headers_cup: [
         { text: "Nimi", value: "name" },
@@ -287,7 +292,7 @@ export default {
     pickCup(cup) {
       // Pick cup for the app to use
       // Set cup.id to localstorage for database queries
-      localStorage.setItem("cup", cup.id);
+      localStorage.setItem("cup", cup._id);
       // redirect to /cup-overview
       this.$router.push({ path: "/cup-overview" });
     },

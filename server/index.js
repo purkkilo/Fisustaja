@@ -45,7 +45,7 @@ if (process.env.NODE_ENV === "production") {
 
 mongoose.set("strictQuery", false);
 mongoose
-  .connect(db, { useNewUrlParser: true })
+  .connect(db)
   .then(() => {
     console.log(`Database connected succesfully!`);
   })
