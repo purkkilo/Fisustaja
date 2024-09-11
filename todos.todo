@@ -1,84 +1,9 @@
-Projects:
-  ☐ Fisustaja @started(20-05-26 11:16)
-Nested:
-  ☐ Fisustaja Backend @started(20-05-26 11:17)
-  ☐ Fisustaja Frontend @started(20-05-26 11:17)
-  ☐ Fisustaja Login @started(20-05-26 11:17)
-  ☐ Fisustaja styling @started(20-05-26 11:17)
-
 Todos:
-New:
-  ☐ Comment all the files... @started(20-05-26 12:11) @low
-  ☐ Also Fix warning from entrypoint app being too large (optimize somehow) @low
-  ☐ Add internatialization @low https://www.freecodecamp.org/news/how-to-add-internationalization-to-a-vue-application-d9cfdcabb03b/
+  ☐ Reimplement backend for competitions, cups and feedback (like users)
+    ☐ Own database table for competition results
+    ☐ Own database table for biggest fishes
+  ☐ Add cup stats to publicCups.vue
+  ☐ Refactor dictToArray from shared.js to be like cupDictToArray  
   ☐ Add tests!
   ☐ Add qr code possibility to signing/weighting (rfid)
   ☐ Add possibility to get weights via usb from weighting thing
-  ☐ Reimplement api for competitions, cups and feedback (like users)
-    ☐ Own database table for competition results
-  ☐ Move from heroku to other hosting since heroku removes free tier @high
-  ☐ Update chart dependancies and move to newer versions
-  ☐ Add proper loading bar to Results.vue
-  ☐ Add cup stats to publicCups.vue
-  ☐ Refactor dictToArray from shared.js to be like cupDictToArray
-
-Cancelled:
-  ✘ Press Alt+C to mark a todo as cancelled
-  
-Tagging:
-  ☐ You can add tags using the @ symbol, like this @tag
-  ☐ There are some special, customizable tags: @critical @high @low @today
-Timekeeping:
-  ✔ Completed todos can show a timestamp @done(17-11-03 10:42)
-  ☐ Press Alt+S to mark a todo as started @started(17-11-03 10:42)
-    ✔ Now it will show the elapsed time @started(17-11-03 10:42) @done(17-11-03 20:11) @lasted(9h29m)
-  ☐ You can provide time estimates for your todos @1h30m
-    ☐ We are even doing some natural language processing @est(1 day and 20 minutes)
-
-Formatting:
-You can format text in a markdown-like fashion
-Bold:
-  ☐ Use asterisks for *bold*
-Italic:
-  ☐ Use underscores for _italic_
-Strikethrough:
-  ☐ Use tildes for ~strikethrough~
-Code:
-  ☐ Use backticks for `code`
-
-Archive:
-  ✔ Create signees database collection @started(20-05-26 11:19) @today @done(20-05-27 19:34) @lasted(1d8h15m1s)
-  ✔ Add fish weights/points to signee properties @started(20-05-26 11:22) @today @done(20-05-28 15:33) @lasted(2d4h11m17s)
-  ✔ Add signees/weights/points to competition collection @started(20-05-26 11:21) @today @done(20-05-28 19:44) @lasted(2d8h23m33s)
-  ✔ Add some navigation buttons to views ("back","to weighting", etc.) @today @done(20-06-10 18:22)
-  ✔ Update competition status correctly @today @done(20-06-10 18:23)
-  ✔ Implement team competition @done(20-06-10 18:25)
-  ✔ Implement timer that shows if competition has started, how much competition is left etc. @done(20-06-14 18:37)
-  ✔ Implement biggest fishes @started(20-06-14 18:36) @done(20-06-14 18:36) @lasted(53s)
-  ✔ Make teams optional, selectable from registercomp @done(20-06-22 18:25)
-  ✔ Fix header for mobile @done(20-06-22 18:25)
-  ✔ Choose team from dropdown (vselect) @done(20-06-22 18:25)
-  ✔ Parse results table(s) to pdf @done(20-06-22 18:25)
-  ✔ Implement login @done(20-06-22 18:25)
-  ✔ Re-routing when competition not selected / not logged in @done(20-06-22 18:25)
-  ✔ Add input for competition end date @done(20-06-22 18:25)
-  ✔ Fix placement if points == 0 @done(20-06-25 20:21)
-  ✔ Fix competition refreshing on Results.vue @done(20-06-25 20:21)
-  ✔ Remove biggest fishes and amounts if points are reset @done(20-07-02 07:44)
-  ✔ Style with Vuetify (https://vuetifyjs.com/en/components/api-explorer/) @done(20-07-30 19:05)
-  ✔ Add competitions to cups @done(20-07-30 19:05)
-  ✔ Update competition from database on some time interval (allows using multiple computers at the same time), at least on result.vue  @high @done(20-08-12 02:13)
-  ✔ Add support for changing fishnames and other competition variables from compsettings.vue @done(20-08-17 05:47)
-  ✔ Add print signees to cup overview @done(20-08-18 00:08)
-  ✔ Transform tables to vuetify data-tables @done(20-08-18 00:08)
-  ✔ Add plus icon next to weighting inputs, when clicked user can input more weights that are added to existing sum on the input @done(20-08-18 00:08)
-  ✔ Handle timeout response on all Service.js calls on .vue files (Request failed with status code 408 -> Timeout -> Bad internet or api problem); @done(20-08-18 00:09)
-  ✔ Move darkmode switch from each table to header or somewhere handy, update it to vuex or user's datatable @done(20-09-01 05:21)
-  ✔ Implement competition updating like updating user preferences (check: Header.vue, Userservice.js, users.js) @done(20-09-17 10:35)
-  ✔ Implement refreshing access tokens @done(21-11-27 14:44)
-  ✔ Replace materialize components with vuetify (toast -> snackbar etc.) @done(21-11-27 14:44)
-  ✔ Implement ability to create own point system (custom cup_placement_points_array) @done(22-06-15 01:20)
-  ✔ Create all fishes category in biggest fishes and biggest amounts @done(22-06-17 01:59)
-  ✔ Make Määritykset page only one tab (changes the component when pressing "muuta tietoja") @done(22-08-31 12:35)
-  ✔ Make cool dashboard @done(22-08-31 12:35)
-  ✔ Make reusable components out of components that are used in many pages @done(22-08-31 12:37)

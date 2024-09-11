@@ -367,6 +367,7 @@ export default {
     const user_id = user["_id"];
     // Get competitions
     const query = { user_id: user_id };
+
     await CompetitionService.getCompetitions(query)
       .then((response) => {
         this.competitions = response;
@@ -423,6 +424,7 @@ export default {
           return console.log(err);
         }
       });
+
     this.loading = false;
   },
 

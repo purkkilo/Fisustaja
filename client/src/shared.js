@@ -1360,6 +1360,48 @@ export function getMultiplierTextColor(multiplier) {
   else return "red";
 }
 
+export function competitionToResults(competition) {
+  const results = [];
+  competition.normal_weights.forEach((e) => {
+    let b = competition.normal_points.find(
+      (boat) => boat.boat_number === e.boat_number
+    );
+    let result = {
+      boat_number: e.boat_number,
+      captain_name: e.captain_name,
+      crew: [b.temp_captain_name],
+      fishes: [],
+      competition_id: competition._id.$oid,
+      createdAt: new Date(),
+    };
+    competition.fishes.forEach((f) => {
+      result.fishes.push({
+        name: f.name,
+        weight: e[f.name],
+      });
+    });
+    results.push(result);
+  });
+  return results;
+}
+
+export function competitionToFishes(competition) {
+  const fishes = [];
+  for (const [key, value] of Object.entries(competition.biggest_fishes)) {
+    value.forEach((f) => {
+      fishes.push({
+        boat_number: f.boat_number,
+        captain_name: f.captain_name,
+        fish: key,
+        weight: f.weight,
+        competition_id: competition._id.$oid,
+        createdAt: new Date(),
+      });
+    });
+  }
+  return fishes;
+}
+
 export default {
   setChartsResponsive,
   resizeChartForPDF,
@@ -1383,4 +1425,6 @@ export default {
   openPdfOnNewTab,
   sortBy,
   replaceAllChars,
+  competitionToResults,
+  competitionToFishes,
 };

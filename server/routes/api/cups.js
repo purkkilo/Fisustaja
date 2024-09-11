@@ -15,7 +15,7 @@ router.get("/", async (req, res) => {
       }
       // Fetch by cup._id, only find one cup
       if (req.query._id) {
-        query = { _id: new mongodb.ObjectId(req.query._id) };
+        query = { _id: mongodb.ObjectId.createFromHexString(req.query._id) };
         res.status(200).send(await cups.findOne(query));
       }
       // Otherwise return an array of all the cups that match query
@@ -58,7 +58,7 @@ router.put("/:id/update", async (req, res) => {
   if (cups) {
     const newvalues = req.body;
     await cups.updateOne(
-      { _id: new mongodb.ObjectId(req.params.id) },
+      { _id: mongodb.ObjectId.createFromHexString(req.params.id) },
       newvalues
     );
     res.status(204).send();
@@ -74,7 +74,10 @@ router.put("/:id/replace", async (req, res) => {
   if (cups) {
     const cup = req.body;
     delete cup._id;
-    await cups.replaceOne({ _id: new mongodb.ObjectId(req.params.id) }, cup);
+    await cups.replaceOne(
+      { _id: mongodb.ObjectId.createFromHexString(req.params.id) },
+      cup
+    );
     res.status(204).send();
   } else {
     // Connection timed out
@@ -86,7 +89,9 @@ router.put("/:id/replace", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   const cups = await loadCupsCollection();
   if (cups) {
-    await cups.deleteOne({ _id: new mongodb.ObjectId(req.params.id) });
+    await cups.deleteOne({
+      _id: mongodb.ObjectId.createFromHexString(req.params.id),
+    });
     res.status(200).send();
   } else {
     // Connection timed out

@@ -39,7 +39,9 @@ router.delete("/:id", async (req, res) => {
   const feedback = await loadFeedbackCollection();
 
   if (feedback) {
-    await feedback.deleteOne({ _id: new mongodb.ObjectId(req.params.id) });
+    await feedback.deleteOne({
+      _id: mongodb.ObjectId.createFromHexString(req.params.id),
+    });
     res.status(200).send();
   } else {
     // Connection timed out
