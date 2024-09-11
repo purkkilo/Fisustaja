@@ -35,17 +35,21 @@ app.use(
 // Static folder
 app.use(express.static(path.join(__dirname, "public")));
 
-let db = "";
+let url = "";
+let db = "fisustaja";
 if (process.env.NODE_ENV === "production") {
-  db = process.env.MONGODB_URI;
+  url = process.env.MONGODB_URI;
 } else {
   const config = require("./config/config.json");
-  db = config.mongodb_url;
+  url = config.mongodb_url;
+  if (config.use_dev_db) {
+    db = "fisustaja-dev";
+  }
 }
 
 mongoose.set("strictQuery", false);
 mongoose
-  .connect(db)
+  .connect(url, { dbName: db })
   .then(() => {
     console.log(`Database connected succesfully!`);
   })

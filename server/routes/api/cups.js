@@ -96,17 +96,22 @@ router.delete("/:id", async (req, res) => {
 
 async function loadCupsCollection() {
   let mongodb_url = "";
+  let db = "fisustaja";
+
   if (process.env.NODE_ENV === "production") {
     mongodb_url = process.env.MONGODB_URI;
   } else {
     const config = require("../../config/config.json");
     mongodb_url = config.mongodb_url;
+    if (config.use_dev_db) {
+      db = "fisustaja-dev";
+    }
   }
 
   try {
     const client = await mongodb.MongoClient.connect(mongodb_url);
 
-    return client.db("fisustaja").collection("cups");
+    return client.db(db).collection("cups");
   } catch (err) {
     console.log(err.message);
   }
