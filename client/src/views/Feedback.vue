@@ -147,7 +147,13 @@ export default {
           try {
             // Add object to database
             //Add feedback to database (check 'client\src\FeedbackService.js' and 'server\routes\api\feedback.js' to see how this works)
-            await FeedbackService.insertFeedback(feedback);
+            await FeedbackService.insertFeedback([feedback])
+              .then((f) => {
+                console.log(f);
+              })
+              .catch((e) => {
+                console.log(e);
+              });
             this.text = "Palaute vastaanotettu!";
             this.snackbar = true;
           } catch (err) {

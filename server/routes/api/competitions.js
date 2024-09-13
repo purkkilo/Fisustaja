@@ -1,147 +1,112 @@
 const express = require("express");
 const mongodb = require("mongodb");
 const router = express.Router();
+const Competition = require("../../models/Competition");
 
 // Get competitions with given query
 router.get("/", async (req, res) => {
-  const competitions = await loadCompetitionsCollection();
-
-  if (competitions) {
-    let query = req.query;
-    try {
-      if (req.query.isPublic) {
-        // Transform string into boolean
-        let boolean = req.query.isPublic === "true" ? true : false;
-        query = { ...query, isPublic: boolean };
-      }
-      // Fetch by competition._id, only find one competition
-      if (req.query._id) {
-        query = { _id: mongodb.ObjectId.createFromHexString(req.query._id) };
-        res.status(200).send(await competitions.findOne(query));
-      }
-      // Otherwise return an array of all the competitions that match query
-      else {
-        res.status(200).send(await competitions.find(query).toArray());
-      }
-    } catch (error) {
-      res.status(400).send(error);
+  let query = req.query;
+  try {
+    if (req.query.isPublic) {
+      // Transform string into boolean
+      let boolean = req.query.isPublic === "true" ? true : false;
+      query = { ...query, isPublic: boolean };
     }
-  } else {
-    // Connection timed out
-    res.status(408).send();
+    // Fetch by competition._id, only find one competition
+    if (req.query._id) {
+      query = { _id: mongodb.ObjectId.createFromHexString(req.query._id) };
+      await Competition.findOne(query)
+        .then((comps) => {
+          res.status(200).send(comps);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+    // Otherwise return an array of all the competitions that match query
+    else {
+      await Competition.find(query)
+        .then((comps) => {
+          res.status(200).send(comps);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+  } catch (error) {
+    res.status(400).send(error);
   }
 });
 
 // Add Competition
 router.post("/", async (req, res) => {
-  const competitions = await loadCompetitionsCollection();
-  if (competitions) {
-    await competitions.insertOne({
-      user_id: req.body.user_id,
-      cup_id: req.body.cup_id,
-      name: req.body.name,
-      locality: req.body.locality,
-      cup_name: req.body.cup_name,
-      cup_placement_points: req.body.cup_placement_points,
-      cup_placement_points_array: req.body.cup_placement_points_array,
-      cup_participation_points: req.body.cup_participation_points,
-      cup_points_multiplier: req.body.cup_points_multiplier,
-      start_date: req.body.start_date,
-      end_date: req.body.end_date,
-      start_time: req.body.start_time,
-      end_time: req.body.end_time,
-      total_weights: req.body.total_weights,
-      fishes: req.body.fishes,
-      state: req.body.state,
-      signees: req.body.signees,
-      teams: req.body.teams,
-      normal_points: req.body.normal_points,
-      normal_weights: req.body.normal_weights,
-      team_results: req.body.team_results,
-      team_competition: req.body.team_competition,
-      biggest_fishes: req.body.biggest_fishes,
-      biggest_amounts: req.body.biggest_amounts,
-      isPublic: req.body.isPublic,
-      isFinished: req.body.isFinished,
-      createdAt: new Date(),
+  try {
+    if (!req.body.length) {
+      res.status(400).send("No results in request");
+      return;
+    }
+    if (req.body.length === 1) {
+      let newComp = new Competition(req.body[0]);
+      await newComp.save().catch((err) => {
+        console.log(err);
+      });
+    } else {
+      await Competition.insertMany(req.body);
+    }
+
+    res.status(201).json({
+      success: true,
+      msg: "Competitions saved",
     });
     res.status(201).send();
-  } else {
-    // Connection timed out
-    res.status(408).send();
+  } catch (error) {
+    res.status(400).send(error);
   }
 });
 
 // Update one competition
 router.put("/:id/update", async (req, res) => {
-  const competitions = await loadCompetitionsCollection();
-
-  if (competitions) {
-    const update = req.body;
-    await competitions.updateOne(
+  try {
+    await Competition.updateOne(
       { _id: mongodb.ObjectId.createFromHexString(req.params.id) },
-      update
-    );
+      req.body
+    ).catch((err) => {
+      console.log(err);
+    });
     res.status(204).send();
-  } else {
-    // Connection timed out
-    res.status(408).send();
+  } catch (error) {
+    res.status(400).send(error);
   }
 });
 
 // Replace one competition
 router.put("/:id/replace", async (req, res) => {
-  const competitions = await loadCompetitionsCollection();
-
-  if (competitions) {
-    const competition = req.body;
-    delete competition._id;
-    await competitions.replaceOne(
+  try {
+    delete req.body._id;
+    await Competition.replaceOne(
       { _id: mongodb.ObjectId.createFromHexString(req.params.id) },
-      competition
-    );
+      req.body
+    ).catch((err) => {
+      console.log(err);
+    });
     res.status(204).send();
-  } else {
-    // Connection timed out
-    res.status(408).send();
+  } catch (error) {
+    res.status(400).send(error);
   }
 });
 
-// Delete Competitions
+// Delete Competition
 router.delete("/:id", async (req, res) => {
-  const competitions = await loadCompetitionsCollection();
-  if (competitions) {
-    await competitions.deleteOne({
+  try {
+    await Competition.deleteOne({
       _id: mongodb.ObjectId.createFromHexString(req.params.id),
+    }).catch((err) => {
+      console.log(err);
     });
     res.status(200).send();
-  } else {
-    // Connection timed out
-    res.status(408).send();
+  } catch (error) {
+    res.status(400).send(error);
   }
 });
-
-async function loadCompetitionsCollection() {
-  let mongodb_url = "";
-  let db = "fisustaja";
-
-  if (process.env.NODE_ENV === "production") {
-    mongodb_url = process.env.MONGODB_URI;
-  } else {
-    const config = require("../../config/config.json");
-    mongodb_url = config.mongodb_url;
-    if (config.use_dev_db) {
-      db = "fisustaja-dev";
-    }
-  }
-
-  try {
-    const client = await mongodb.MongoClient.connect(mongodb_url);
-
-    return client.db(db).collection("competitions");
-  } catch (err) {
-    console.log(err);
-  }
-}
 
 module.exports = router;

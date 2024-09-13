@@ -66,6 +66,7 @@ class ResultService {
   }
 }
 
+// ?
 function dataToResult(data) {
   return data.map((result) => ({
     ...result,

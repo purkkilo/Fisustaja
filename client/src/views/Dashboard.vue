@@ -290,6 +290,11 @@
       :cups="cups"
       :loading="loading"
       :publishing="publishing"
+      @publish="
+        (cup) => {
+          publishCup(cup);
+        }
+      "
     ></comp-cup-table>
     <v-snackbar v-model="snackbar" :timeout="timeout">
       {{ text }}
@@ -486,10 +491,11 @@ export default {
         const newValues = {
           $set: { isPublic: cup.isPublic },
         };
-        await CupService.updateValues(cup.id, newValues);
+        await CupService.updateValues(cup._id, newValues);
       } catch (err) {
         console.error(err.message);
       }
+
       this.publishing = false;
     },
     // Add error to error array and direct user to it
@@ -533,7 +539,7 @@ export default {
         };
         try {
           //Submit Cup to database (check 'client\src\CupService.js' and 'server\routes\api\cups.js' to see how this works)
-          await CupService.insertCup(cup);
+          await CupService.insertCup([cup]);
           this.text = "Cup lisätty tietokantaan!";
           this.snackbar = true;
           /*

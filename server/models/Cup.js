@@ -16,7 +16,7 @@ const CupSchema = new Schema({
     type: String,
     required: true,
   },
-  signees: [Schema.Types.Mixed],
+  signees: { type: [Schema.Types.Mixed], required: true, default: [] },
   isPublic: {
     type: Boolean,
     default: false,
@@ -27,4 +27,4 @@ const CupSchema = new Schema({
   },
 });
 
-module.exports = Cup = mongoose.model("cup", CupSchema);
+module.exports = Cup = mongoose.model("cups", CupSchema);

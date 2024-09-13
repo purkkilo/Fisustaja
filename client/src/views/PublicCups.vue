@@ -365,7 +365,7 @@ export default {
       this.$store.commit("refreshCup", this.cup);
       try {
         this.allCompetitions = await CompetitionService.getCompetitions({
-          cup_id: cup.id,
+          cup_id: cup._id,
           isPublic: true,
         }).finally(() => (this.loading = false));
         this.setCompetitionData(this.cup);

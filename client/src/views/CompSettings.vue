@@ -993,7 +993,7 @@ export default {
             cup.select = `${cup.name} (${cup.year})`;
           });
           let temp_cup = this.cups.find((cup) => {
-            return this.competition.cup_id === cup.id;
+            return this.competition.cup_id === cup._id;
           });
           if (temp_cup) {
             this.cup = temp_cup;
@@ -1201,7 +1201,7 @@ export default {
         this.showError("Kilpailun paikkakunta puuttuu!");
       }
 
-      if (!this.cup.id) {
+      if (!this.cup._id) {
         this.showError("Cuppia ei valittuna!");
       }
       if (!this.placement_points_array.length) {
@@ -1298,7 +1298,7 @@ export default {
         );
 
         // Basic info, change all the competition variables with values from inputs
-        this.competition.cup_id = this.cup.id;
+        this.competition.cup_id = this.cup._id;
         this.competition.cup_name = this.cup.name;
         this.competition.name = this.name;
         this.competition.locality = this.locality;

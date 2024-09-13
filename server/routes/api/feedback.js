@@ -1,75 +1,79 @@
 const express = require("express");
 const mongodb = require("mongodb");
-
 const router = express.Router();
+const Feedback = require("../../models/Feedback");
 
 // Get Feedback
 router.get("/", async (req, res) => {
-  const feedback = await loadFeedbackCollection();
-
-  if (feedback) {
-    let query = req.query;
-    res.send(await feedback.find(query).toArray());
-  } else {
-    // Connection timed out
-    res.status(408).send();
+  let query = req.query;
+  try {
+    // Fetch by _id
+    if (req.query._id) {
+      query = { _id: mongodb.ObjectId.createFromHexString(req.query._id) };
+      let l = await Feedback.findOne(query)
+        .then((feedback) => {
+          res.status(200).send(feedback);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      console.log(l);
+    }
+    // Otherwise return an array of all the competitions that match query
+    else {
+      await Feedback.find(query)
+        .then((feedback) => {
+          res.status(200).send(feedback);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+  } catch (error) {
+    res.status(400).send(error);
   }
 });
 
-// Add Competition
+// Add Feedback
 router.post("/", async (req, res) => {
-  const feedback = await loadFeedbackCollection();
+  try {
+    if (!req.body.length) {
+      res.status(400).send("No results in request");
+      return;
+    }
 
-  if (feedback) {
-    await feedback.insertOne({
-      type: req.body.type,
-      message: req.body.message,
-      createdAt: new Date(),
+    if (req.body.length === 1) {
+      let newFeedback = new Feedback(req.body[0]);
+      await newFeedback.save().catch((err) => {
+        console.log(err);
+      });
+    } else {
+      await Feedback.insertMany(req.body).catch((err) => {
+        console.log(err);
+      });
+    }
+
+    res.status(201).json({
+      success: true,
+      msg: "Feedbacks saved",
     });
-
-    res.status(201).send();
-  } else {
-    // Connection timed out
-    res.status(408).send();
+  } catch (error) {
+    res.status(400).send(error);
   }
 });
 
-// Delete Competitions
+// Delete Feedback
 router.delete("/:id", async (req, res) => {
-  const feedback = await loadFeedbackCollection();
-
-  if (feedback) {
-    await feedback.deleteOne({
+  try {
+    await Feedback.deleteOne({
       _id: mongodb.ObjectId.createFromHexString(req.params.id),
+    }).catch((err) => {
+      console.log(err);
     });
     res.status(200).send();
-  } else {
-    // Connection timed out
-    res.status(408).send();
+  } catch (error) {
+    res.status(400).send(error);
   }
 });
-
-async function loadFeedbackCollection() {
-  let mongodb_url = "";
-  let db = "fisustaja";
-
-  if (process.env.NODE_ENV === "production") {
-    mongodb_url = process.env.MONGODB_URI;
-  } else {
-    const config = require("../../config/config.json");
-    mongodb_url = config.mongodb_url;
-    if (config.use_dev_db) {
-      db = "fisustaja-dev";
-    }
-  }
-
-  try {
-    const client = await mongodb.MongoClient.connect(mongodb_url);
-
-    return client.db(db).collection("feedback");
-  } catch (err) {
-    console.log(err.message);
-  }
-}
 
 module.exports = router;

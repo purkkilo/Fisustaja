@@ -712,6 +712,7 @@ export default {
       await UserService.getUsers()
         .then(async (res) => {
           this.feedback = await FeedbackService.getFeedback();
+          console.log(this.feedback);
           this.loading = false;
           this.users = res;
           this.users.forEach((user) => {

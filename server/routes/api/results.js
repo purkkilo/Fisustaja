@@ -7,14 +7,26 @@ const Result = require("../../models/Result");
 router.get("/", async (req, res) => {
   let query = req.query;
   try {
-    // Fetch by result._id, only find one
+    // Fetch by _id
     if (req.query._id) {
       query = { _id: mongodb.ObjectId.createFromHexString(req.query._id) };
-      res.status(200).send(await Result.findOne(query));
+      await Result.findOne(query)
+        .then((results) => {
+          res.status(200).send(results);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     }
-    // Otherwise return an array of all the results that match query
+    // Otherwise return an array of all the competitions that match query
     else {
-      res.status(200).send(await Result.find(query));
+      await Result.find(query)
+        .then((results) => {
+          res.status(200).send(results);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     }
   } catch (error) {
     res.status(400).send(error);
@@ -31,9 +43,13 @@ router.post("/", async (req, res) => {
 
     if (req.body.length === 1) {
       let newResult = new Result(req.body[0]);
-      await newResult.save();
+      await newResult.save().catch((err) => {
+        console.log(err);
+      });
     } else {
-      await Result.insertMany(req.body);
+      await Result.insertMany(req.body).catch((err) => {
+        console.log(err);
+      });
     }
 
     res.status(201).json({
@@ -51,7 +67,9 @@ router.put("/:id/update", async (req, res) => {
     await Result.updateOne(
       { _id: mongodb.ObjectId.createFromHexString(req.params.id) },
       req.body
-    );
+    ).catch((err) => {
+      console.log(err);
+    });
     res.status(204).send();
   } catch (error) {
     res.status(400).send(error);
@@ -64,7 +82,9 @@ router.put("/:id/replace", async (req, res) => {
     await Result.replaceOne(
       { _id: mongodb.ObjectId.createFromHexString(req.params.id) },
       req.body
-    );
+    ).catch((err) => {
+      console.log(err);
+    });
     res.status(204).send();
   } catch (error) {
     res.status(400).send(error);
@@ -76,6 +96,8 @@ router.delete("/:id", async (req, res) => {
   try {
     await Result.deleteOne({
       _id: mongodb.ObjectId.createFromHexString(req.params.id),
+    }).catch((err) => {
+      console.log(err);
     });
     res.status(200).send();
   } catch (error) {

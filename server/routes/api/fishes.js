@@ -7,14 +7,26 @@ const Fish = require("../../models/Fish");
 router.get("/", async (req, res) => {
   let query = req.query;
   try {
-    // Fetch by fish._id, only find one
+    // Fetch by _id
     if (req.query._id) {
       query = { _id: mongodb.ObjectId.createFromHexString(req.query._id) };
-      res.status(200).send(await Fish.findOne(query));
+      await Fish.findOne(query)
+        .then((fish) => {
+          res.status(200).send(fish);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     }
-    // Otherwise return an array of all the fishes that match query
+    // Otherwise return an array of all the competitions that match query
     else {
-      res.status(200).send(await Fish.find(query));
+      await Fish.find(query)
+        .then((fish) => {
+          res.status(200).send(fish);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     }
   } catch (error) {
     res.status(400).send(error);
@@ -30,10 +42,14 @@ router.post("/", async (req, res) => {
     }
 
     if (req.body.length === 1) {
-      let newResult = new Fish(req.body[0]);
-      await newResult.save();
+      let newFish = new Fish(req.body[0]);
+      await newFish.save().catch((err) => {
+        console.log(err);
+      });
     } else {
-      await Fish.insertMany(req.body);
+      await Fish.insertMany(req.body).catch((err) => {
+        console.log(err);
+      });
     }
 
     res.status(201).json({
@@ -51,7 +67,9 @@ router.put("/:id/update", async (req, res) => {
     await Fish.updateOne(
       { _id: mongodb.ObjectId.createFromHexString(req.params.id) },
       req.body
-    );
+    ).catch((err) => {
+      console.log(err);
+    });
     res.status(204).send();
   } catch (error) {
     res.status(400).send(error);
@@ -64,7 +82,9 @@ router.put("/:id/replace", async (req, res) => {
     await Fish.replaceOne(
       { _id: mongodb.ObjectId.createFromHexString(req.params.id) },
       req.body
-    );
+    ).catch((err) => {
+      console.log(err);
+    });
     res.status(204).send();
   } catch (error) {
     res.status(400).send(error);
@@ -76,6 +96,8 @@ router.delete("/:id", async (req, res) => {
   try {
     await Fish.deleteOne({
       _id: mongodb.ObjectId.createFromHexString(req.params.id),
+    }).catch((err) => {
+      console.log(err);
     });
     res.status(200).send();
   } catch (error) {

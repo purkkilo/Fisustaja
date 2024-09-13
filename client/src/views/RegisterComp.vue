@@ -79,7 +79,7 @@
           <v-container v-if="!loading">
             <v-row>
               <v-col>
-                <p class="white--text">Kilpailun perustiedot</p>
+                <h2 class="white--text">Perustiedot</h2>
                 <p
                   v-if="basic_info_validated"
                   class="yellow lighten-1 black--text"
@@ -178,7 +178,7 @@
                   style="margin-top: 20px; margin-bottom: 20px"
                 >
                   <v-col cols="6">
-                    <h2 class="white--text">Kilpailun sijoittumispisteet</h2>
+                    <h2 class="white--text">Sijoittumispisteet</h2>
                     <v-list
                       :dark="$store.getters.getTheme"
                       elevation="20"
@@ -336,7 +336,7 @@
                   align="center"
                 >
                   <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
-                    <span class="white--text">Kilpailun Aloituspäivä</span>
+                    <h2 class="white--text">Aloituspäivä</h2>
                     <v-date-picker
                       :dark="$store.getters.getTheme"
                       style="height: 480px"
@@ -350,7 +350,7 @@
                     ></v-date-picker>
                   </v-col>
                   <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
-                    <span class="white--text">Kilpailun Lopetuspäivä</span>
+                    <h2 class="white--text">Lopetuspäivä</h2>
                     <v-date-picker
                       :dark="$store.getters.getTheme"
                       style="height: 480px"
@@ -372,7 +372,7 @@
                   align="center"
                 >
                   <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
-                    <span class="white--text">Kilpailun alkamismisaika</span>
+                    <h2 class="white--text">Alkamismisaika</h2>
 
                     <v-time-picker
                       :dark="$store.getters.getTheme"
@@ -385,7 +385,7 @@
                     ></v-time-picker>
                   </v-col>
                   <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
-                    <span class="white--text">Kilpailun loppumisaika</span>
+                    <h2 class="white--text">Loppumisaika</h2>
                     <v-time-picker
                       :dark="$store.getters.getTheme"
                       v-model="end_time"
@@ -1187,7 +1187,7 @@ export default {
           // If localstorage has cup, select it
           if (this.$route.query.cup) {
             this.cup = this.cups.find(
-              (cup) => cup.id === this.$route.query.cup
+              (cup) => cup._id === this.$route.query.cup
             );
           } else {
             this.cup = this.cups[this.cups.length - 1];
@@ -1270,7 +1270,7 @@ export default {
         this.showError("Kilpailun paikkakunta puuttuu!");
       }
 
-      if (!this.cup.id) {
+      if (!this.cup._id) {
         this.showError("Cuppia ei valittuna!");
       }
       if (!this.cup_participation_points) {
@@ -1289,9 +1289,6 @@ export default {
               'Syötä aika muodossa "hh:mm" (esim: 13:00). Syötetty aika oli: ' +
                 this.start_time
             );
-        console.log(this.start_time);
-        console.log(isStartTimeValid);
-        console.log(this.$moment(this.start_time, "H:mm", true).invalidAt());
       }
       if (!this.end_time || !isEndTimeValid) {
         !this.end_time == true
@@ -1366,7 +1363,7 @@ export default {
           locality: this.locality,
           cup_name: this.cup.name,
           cup_participation_points: Number(this.cup_participation_points),
-          cup_placement_points_array: temp_placement_points,
+          cup_placement_points: temp_placement_points,
           cup_points_multiplier: Number(this.cup_points_multiplier),
           team_competition: this.team_competition === "Ei" ? false : true,
           start_date: start_date,
@@ -1530,15 +1527,14 @@ export default {
         const user_id = user["_id"];
 
         // Whole competition object
-        let cup_id = this.cup.id;
+        let cup_id = this.cup._id;
         const competition = {
           cup_id: cup_id,
           user_id: user_id,
           name: this.basic_info.name,
           locality: this.basic_info.locality,
           cup_name: this.basic_info.cup_name,
-          cup_placement_points_array:
-            this.basic_info.cup_placement_points_array,
+          cup_placement_points: this.basic_info.cup_placement_points,
           cup_participation_points: this.basic_info.cup_participation_points,
           cup_points_multiplier: this.basic_info.cup_points_multiplier,
           team_competition: this.basic_info.team_competition,
@@ -1549,16 +1545,10 @@ export default {
           end_time: this.basic_info.end_time,
           fishes: this.completed_fish_specs,
           state: "Rekisteröity",
-          total_weights: 0,
-          signees: [],
-          results: [],
-          teams: [],
-          biggest_fishes: {},
-          biggest_amounts: {},
         };
         try {
           //Submit competition to database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
-          await CompetitionService.insertCompetition(competition);
+          await CompetitionService.insertCompetitions([competition]);
           this.text = "Kilpailu lisätty tietokantaan!";
           this.snackbar = true;
           this.$router.push({ path: "/dashboard" });

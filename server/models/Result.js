@@ -25,6 +25,14 @@ const ResultSchema = new Schema({
     type: [String],
     required: true,
   },
+  team: {
+    type: String,
+    required: true,
+  },
+  locality: {
+    type: String,
+    required: true,
+  },
   fishes: {
     type: [Schema.Types.Mixed],
     required: true,
@@ -36,7 +44,10 @@ const ResultSchema = new Schema({
   cup_id: {
     type: String,
     required: true,
-    default: "-",
+  },
+  returned: {
+    type: Boolean,
+    default: false,
   },
   createdAt: {
     type: Date,

@@ -176,7 +176,7 @@
                             :color="
                               item.isPublic ? 'green darken-2' : 'red darken-2'
                             "
-                            @click="publishCup(item)"
+                            @click="$emit('publish', item)"
                             :disabled="publishing"
                             >{{
                               item.isPublic ? "Julkinen" : "Salainen"
@@ -231,7 +231,7 @@
 
 <script>
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
-
+import CupService from "../CupService.js";
 export default {
   name: "ContinueComp",
   props: ["competitions", "cups", "loading", "publishing"],
@@ -291,10 +291,25 @@ export default {
     },
     pickCup(cup) {
       // Pick cup for the app to use
-      // Set cup.id to localstorage for database queries
+      // Set cup._id to localstorage for database queries
       localStorage.setItem("cup", cup._id);
+      console.log(cup);
       // redirect to /cup-overview
       this.$router.push({ path: "/cup-overview" });
+    },
+    async publishCup(cup) {
+      cup.isPublic = !cup.isPublic;
+      try {
+        //TODO update only this one variable (competition.normal_points) to database, not the whole competition
+        this.publishing = true;
+        const newValues = {
+          $set: { isPublic: cup.isPublic },
+        };
+        await CupService.updateValues(cup._id, newValues);
+      } catch (err) {
+        console.error(err.message);
+      }
+      this.publishing = false;
     },
   },
 };
