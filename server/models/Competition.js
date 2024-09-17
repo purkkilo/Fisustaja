@@ -52,6 +52,7 @@ const CompetitionSchema = new Schema({
     required: true,
   },
   fishes: [Schema.Types.Mixed],
+  teams: [Schema.Types.Mixed],
   state: {
     type: String,
     default: "Rekisteröity",

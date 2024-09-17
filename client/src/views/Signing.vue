@@ -465,15 +465,7 @@
                   </v-card>
                 </v-col>
               </v-row>
-              <v-row v-if="selected_id">
-                <v-col style="margin-top: 20px; margin-bottom: 20px">
-                  <v-btn large tile color="blue" @click="searchSelected"
-                    ><v-icon>mdi-information</v-icon>Näytä valitun
-                    ilmoittautumistiedot</v-btn
-                  >
-                </v-col>
-              </v-row>
-              <v-row v-else>
+              <v-row>
                 <v-col style="margin: 20px 50px">
                   <p
                     v-if="signees.length"
@@ -481,8 +473,7 @@
                     v-bind:class="{ 'white--text': $store.getters.getTheme }"
                   >
                     Voit katsella venekunnan tietoja myös klikkaamalla
-                    haluamaasi riviä taulukosta ja painamalla ilmestyvää
-                    nappulaa
+                    haluamaasi riviä taulukosta.
                   </p>
                   <h3
                     v-else
@@ -512,6 +503,7 @@
 <script>
 "use strict";
 import CompetitionService from "../CompetitionService";
+import ResultService from "../ResultService.js";
 import CupService from "../CupService";
 import Timedate from "../components/layout/Timedate";
 import CompetitionNavigation from "../components/layout/CompetitionNavigation.vue";
@@ -619,7 +611,14 @@ export default {
     //clearInterval(this.timer_refresh);
   },
   methods: {
-    changePage: function (route) {
+    // Select row from table, if selected --> unselect
+    // selected_id bound to selected css class (on App.vue)
+    rowClick(item, row) {
+      this.selected_id = item._id;
+      this.selected_row = row;
+      this.searchSelected();
+    },
+    changePage(route) {
       if (this.$router.currentRoute.path !== route) {
         this.$router.push(route);
         this.drawer = !this.drawer;
@@ -637,6 +636,14 @@ export default {
           _id: competition_id,
         });
         if (competition) {
+          // Get results === signees
+          await ResultService.getResults({ competition_id: competition._id })
+            .then((r) => {
+              competition.signees = r;
+            })
+            .catch((e) => {
+              console.log(e);
+            });
           // Update to vuex, Assing variables and arrays from vuex (see client/store/index.js)
           this.$store.commit("refreshCompetition", competition);
           this.isTeamCompetition = this.$store.getters.isTeamCompetition;
@@ -655,7 +662,7 @@ export default {
               Math.max.apply(
                 Math,
                 this.signees.map(function (o) {
-                  return o.id;
+                  return o._id;
                 })
               ) + 1;
           } else {
@@ -788,7 +795,7 @@ export default {
           // If signee found
           if (found_signee) {
             this.notification = `Venekunta löydetty!\n(${found_signee.boat_number}) : ${found_signee.captain_name}, ${found_signee.temp_captain_name}`;
-            this.selected_id = found_signee.id;
+            this.selected_id = found_signee._id;
             this.boat_number = found_signee.boat_number;
             this.starting_place = found_signee.starting_place;
             this.captain_name = found_signee.captain_name;
@@ -872,21 +879,6 @@ export default {
         this.notification = "Syötä venekunnan numero ennen hakemista!";
       }
     },
-    // Select row from table, if selected --> unselect
-    // selected_id bound to selected css class (on App.vue)
-    rowClick: function (item, row) {
-      if (item.id == this.selected_id) {
-        this.selected_id = null;
-        row.select(false);
-      } else {
-        if (this.selected_row) {
-          this.selected_row.select(false);
-        }
-        this.selected_id = item.id;
-        row.select(true);
-        this.selected_row = row;
-      }
-    },
     // Fetch signee from vuex based on boat number
     // Check client\src\store\index.js for implementation
     searchBoatNumber: function (boat_number) {
@@ -922,7 +914,6 @@ export default {
           captain_name: new_signee.captain_name,
           temp_captain_name: new_signee.temp_captain_name,
           locality: new_signee.locality,
-          starting_place: new_signee.starting_place,
         });
       }
       // Create competition object
@@ -934,15 +925,24 @@ export default {
       this.$store.commit("refreshCompetition", comp);
       try {
         this.loading = true;
-        // Update signees and state to competition
-        let newvalues = {
-          $set: { signees: comp.signees, state: comp.state },
+        // Add result
+        new_signee = {
+          ...new_signee,
+          competition_id: comp._id,
+          cup_id: comp.cup_id,
         };
+
+        if (replace) {
+          await ResultService.updateResult(new_signee._id, new_signee);
+        } else {
+          await ResultService.insertResults([new_signee]);
+        }
+
         //await CompetitionService.updateCompetition(comp._id, comp);
-        await CompetitionService.updateValues(comp._id, newvalues);
+        await CompetitionService.updateValues(comp._id, { state: comp.state });
         this.loading = false;
         // Update signees to cup
-        newvalues = {
+        let newvalues = {
           $set: { signees: this.cup.signees },
         };
         await CupService.updateValues(comp.cup_id, newvalues);
@@ -973,7 +973,7 @@ export default {
                 .then((r) => {
                   if (r) {
                     // Deletion confirmed by user, call function again with confirmed == true
-                    this.deleteSignee(r, found_signee.id);
+                    this.deleteSignee(r, found_signee._id);
                   }
                 })
                 .catch((error) => {
@@ -994,7 +994,7 @@ export default {
                 .then((r) => {
                   if (r) {
                     // Deletion confirmed by user, call function again with confirmed == true
-                    this.deleteSignee(r, temp_boat.id);
+                    this.deleteSignee(r, temp_boat._id);
                   }
                 })
                 .catch((error) => {
@@ -1101,7 +1101,7 @@ export default {
           if (found_signee) {
             let temp_boat = this.searchBoatNumber(this.boat_number);
             // If there already exist a boat with same number, but it isn't the same id
-            if (temp_boat && temp_boat.id != found_signee.id) {
+            if (temp_boat && temp_boat._id != found_signee._id) {
               console.log("Boat number already exists...");
               // Ask if user wants to overwrite
               this.old_info = temp_boat;
@@ -1137,7 +1137,7 @@ export default {
                 Math.max.apply(
                   Math,
                   this.signees.map(function (o) {
-                    return o.id;
+                    return o._id;
                   })
                 ) + 1;
               this.selected_id = null;
@@ -1147,7 +1147,7 @@ export default {
           // No selected id, so new input
           let temp_boat = this.searchBoatNumber(this.boat_number);
           // IF there is boat with same boat number, and somehow with this id
-          if (temp_boat && temp_boat.id != this.id) {
+          if (temp_boat && temp_boat._id != this._id) {
             console.log("Boat number already exists...");
             this.notification = `Numerolla on jo olemassa venekunta, päällekirjoitetaanko?`;
             this.old_info = temp_boat;
@@ -1166,7 +1166,6 @@ export default {
             });
             // Create signee object and save to database/vuex
             this.new_signee = {
-              id: this.id,
               boat_number: parseInt(this.boat_number),
               starting_place: this.starting_place,
               captain_name: this.captain_name,
@@ -1202,7 +1201,7 @@ export default {
               Math.max.apply(
                 Math,
                 this.signees.map(function (o) {
-                  return o.id;
+                  return o._id;
                 })
               ) + 1;
             this.selected_id = null;

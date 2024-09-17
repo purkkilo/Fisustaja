@@ -1022,7 +1022,7 @@ export default {
           //TODO make a test for this?
           this.competition = competition;
           this.placement_points_array = [
-            ...this.competition.cup_placement_points_array,
+            ...this.competition.cup_placement_points,
           ];
           // Update to vuex, Assing variables from vuex (see client/store/index.js)
           this.$store.commit("refreshCompetition", competition);
@@ -1325,89 +1325,13 @@ export default {
           temp_placement_points = [...this.placement_points_array];
         }
         this.competition.cup_points_multiplier = this.cup_points_multiplier;
-        this.competition.cup_placement_points_array = temp_placement_points;
+        this.competition.cup_placement_points = temp_placement_points;
         this.competition.team_competition =
           this.team_competition === "Ei" ? false : true;
         this.competition.start_date = start_date;
         this.competition.end_date = end_date;
         this.competition.start_time = this.start_time;
         this.competition.end_time = this.end_time;
-
-        // Change values for each signee (so that only the changed variables change), if the name/multiplier/minsize has been changed
-        this.competition.signees.forEach((signee) => {
-          if (signee.weights.length) {
-            this.inputs.forEach((input) => {
-              // If one of these input values are changed, handle variable changes to database
-              if (
-                input.name !== input.original_name ||
-                input.multiplier !== input.original_multiplier ||
-                input.minsize !== input.original_minsize
-              ) {
-                let index = signee.weights.findIndex((fish) => {
-                  return fish.name === input.original_name;
-                });
-                if (index > -1) {
-                  // Replace name, and calculate points in case the multiplier has been changed
-                  signee.weights[index].name = input.name;
-                  // Remove old points from total points
-                  signee.total_points -= signee.weights[index].points;
-                  // Calculate new points
-                  signee.weights[index].points =
-                    signee.weights[index].weights * input.multiplier;
-                  // Add new points
-                  signee.total_points += signee.weights[index].points;
-
-                  if (this.competition.normal_weights.length) {
-                    // Update signee values on competition.normal_weights
-                    let weight_index =
-                      this.competition.normal_weights.findIndex((results) => {
-                        return (
-                          parseInt(results.boat_number) ===
-                          parseInt(signee.boat_number)
-                        );
-                      });
-                    if (weight_index > -1) {
-                      let normal_weight =
-                        this.competition.normal_weights[weight_index];
-                      // Assing total_points here too
-                      normal_weight.total_points = signee.total_points;
-                      // If name has changed, replace old key with new one, so only name changes, not the values apart from total_points
-                      if (input.name !== input.original_name) {
-                        delete Object.assign(normal_weight, {
-                          [input.name]: normal_weight[input.original_name],
-                        })[input.original_name];
-                      }
-                    }
-
-                    // Update signee values on competition.normal_points
-                    let point_index = this.competition.normal_points.findIndex(
-                      (results) => {
-                        return (
-                          parseInt(results.boat_number) ===
-                          parseInt(signee.boat_number)
-                        );
-                      }
-                    );
-                    if (point_index > -1) {
-                      let normal_point =
-                        this.competition.normal_points[point_index];
-                      // Assing total_points here too, so no need to calculate points again
-                      normal_point.total_points = signee.total_points;
-                    }
-                  }
-                }
-                // New fish, add to signee.weights
-                else {
-                  signee.weights.push({
-                    name: input.name,
-                    weights: 0,
-                    points: 0,
-                  });
-                }
-              }
-            });
-          }
-        });
 
         this.inputs.forEach((input) => {
           // Change only the key names for each fish for biggest_fishes and biggest_amounts, if the name has been changed
@@ -1434,12 +1358,6 @@ export default {
         });
         //Update to database, calculate current standings and points in case multipliers have been changed
         this.competition.fishes = this.fish_specs = this.inputs;
-        let normal_results = this.calculateNormalResults(this.competition);
-        this.competition.normal_points = normal_results.normal_points;
-        this.competition.normal_weights = normal_results.normal_weights;
-        if (this.competition.team_competition) {
-          this.competition.team_results = this.calculateTeamResults();
-        }
         this.updateCompetition(this.competition);
         this.basic_info_validated = true;
       }
@@ -1493,129 +1411,6 @@ export default {
             }
           });
       }
-    },
-    // "Normaalikilpailu" results
-    calculateNormalResults(competition) {
-      const placement_points = competition.cup_placement_points_array;
-      let cup_placement_points = placement_points[0];
-      const cup_participation_points = competition.cup_participation_points;
-      let last_points = -1;
-      let last_placement = -1;
-
-      let placement = 1;
-      let cup_points_total = 0;
-      let normal_points = [];
-      let normal_weights = [];
-      this.signees = competition.signees.filter(
-        (signee) => signee.returned == true
-      );
-      this.signees = this.signees.sort(function compare(a, b) {
-        return parseInt(b.total_points) - parseInt(a.total_points);
-      });
-      // For every signee, calculate their cup points and placing
-      //TODO rework the structure, seems more complex than it should be
-      // Placements and points now saved in every competition to cup_placement_points_array, based on placement fetch from there?
-      this.signees.forEach((signee, index) => {
-        // If competitor has same points as last competitor
-        if (signee.total_points == last_points) {
-          placement = last_placement;
-        }
-        // If no tie, add tied_competitors to placement, to give correct placement to next not tied competitor
-        else {
-          placement = index + 1;
-          last_points = signee.total_points;
-          last_placement = signee.placement;
-        }
-
-        // Find the placement points according to the placement
-        let p = placement_points.find((e) => e.placement === placement);
-        // If placement isn't found (placement > than provided placements), or points = 0 (no points from competition)
-        if (!p || signee.total_points === 0) {
-          cup_placement_points = 0;
-        } else {
-          cup_placement_points = p.points * competition.cup_points_multiplier;
-        }
-        // Calculate total cup points, cup points multiplier only scales the placement points
-        cup_points_total = cup_placement_points + cup_participation_points;
-        //For showing cup points, "Pisteet" on v-select
-        normal_points.push({
-          placement: placement,
-          boat_number: signee.boat_number,
-          captain_name: signee.captain_name,
-          temp_captain_name: signee.temp_captain_name,
-          locality: signee.locality,
-          total_points: signee.total_points.toLocaleString(),
-          cup_placement_points: cup_placement_points,
-          cup_participation_points: cup_participation_points,
-          cup_points_total: cup_points_total,
-        });
-
-        //For showing fish weights, "Kalat" on v-select
-        let temp_dict = {};
-        temp_dict.placement = placement;
-        temp_dict.boat_number = signee.boat_number;
-        temp_dict.captain_name = signee.captain_name;
-
-        // For each fish, get the weight and fish name
-        signee.weights.forEach((weights) => {
-          let name = weights.name;
-          let weight = weights.weights;
-          temp_dict[name] = weight;
-        });
-        temp_dict.total_points = signee.total_points;
-        normal_weights.push(temp_dict);
-        last_points = signee.total_points;
-      });
-
-      let output = {
-        normal_points: normal_points,
-        normal_weights: normal_weights,
-      };
-
-      return output;
-    },
-    calculateTeamResults: function () {
-      let signees = this.competition.signees;
-      var team_names = [];
-      let team_results = [];
-      // Get all the team names
-      signees.forEach((signee) => {
-        if (signee.team !== "-" && signee.team !== null) {
-          team_names.push(signee.team);
-        }
-      });
-      // Only unique ones needed
-      team_names = [...new Set(team_names)];
-
-      // Get all the members of each team and add up their points
-      team_names.forEach((team_name) => {
-        let team = signees.filter((signee) => signee.team == team_name);
-        let team_points = 0;
-        let members = [];
-
-        team.forEach((member) => {
-          members.push(member.captain_name);
-          team_points += member.total_points;
-        });
-
-        // If there aren't 3 members in a team, add "-"'s as members for nicer looking table
-        if (members.length === 1) {
-          members.push("-");
-          members.push("-");
-        }
-        if (members.length === 2) {
-          members.push("-");
-        }
-        team_results.push({
-          name: team_name,
-          captain_name_1: members[0],
-          captain_name_2: members[1],
-          captain_name_3: members[2],
-          points: team_points.toLocaleString(),
-        });
-      });
-
-      return team_results;
     },
   },
 };

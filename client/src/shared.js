@@ -1402,6 +1402,132 @@ export function competitionToFishes(competition) {
   return fishes;
 }
 
+// "Normaalikilpailu" results
+export function calculateNormalResults(competition) {
+  const placement_points = competition.cup_placement_points;
+  let cup_placement_points = placement_points[0];
+  const cup_participation_points = competition.cup_participation_points;
+  let last_points = -1;
+  let last_placement = -1;
+
+  let placement = 1;
+  let cup_points_total = 0;
+  let normal_points = [];
+  let normal_weights = [];
+  let signees = competition.signees.filter((signee) => signee.returned == true);
+  // TODO calculate total points from signee.fishes
+  /*
+      signees = signees.sort(function compare(a, b) {
+        return parseInt(b.total_points) - parseInt(a.total_points);
+      });
+*/
+  // For every signee, calculate their cup points and placing
+  //TODO rework the structure, seems more complex than it should be
+  // Placements and points now saved in every competition to cup_placement_points_array, based on placement fetch from there?
+  signees.forEach((signee, index) => {
+    // If competitor has same points as last competitor
+    if (signee.total_points == last_points) {
+      placement = last_placement;
+    }
+    // If no tie, add tied_competitors to placement, to give correct placement to next not tied competitor
+    else {
+      placement = index + 1;
+      last_points = signee.total_points;
+      last_placement = signee.placement;
+    }
+
+    // Find the placement points according to the placement
+    let p = placement_points.find((e) => e.placement === placement);
+    // If placement isn't found (placement > than provided placements), or points = 0 (no points from competition)
+    if (!p || signee.total_points === 0) {
+      cup_placement_points = 0;
+    } else {
+      cup_placement_points = p.points * competition.cup_points_multiplier;
+    }
+    // Calculate total cup points, cup points multiplier only scales the placement points
+    cup_points_total = cup_placement_points + cup_participation_points;
+    //For showing cup points, "Pisteet" on v-select
+    normal_points.push({
+      placement: placement,
+      boat_number: signee.boat_number,
+      captain_name: signee.captain_name,
+      temp_captain_name: signee.temp_captain_name,
+      locality: signee.locality,
+      total_points: signee.total_points.toLocaleString(),
+      cup_placement_points: cup_placement_points,
+      cup_participation_points: cup_participation_points,
+      cup_points_total: cup_points_total,
+    });
+
+    //For showing fish weights, "Kalat" on v-select
+    let temp_dict = {};
+    temp_dict.placement = placement;
+    temp_dict.boat_number = signee.boat_number;
+    temp_dict.captain_name = signee.captain_name;
+
+    // For each fish, get the weight and fish name
+    signee.weights.forEach((weights) => {
+      let name = weights.name;
+      let weight = weights.weights;
+      temp_dict[name] = weight;
+    });
+    temp_dict.total_points = signee.total_points;
+    normal_weights.push(temp_dict);
+    last_points = signee.total_points;
+  });
+
+  let output = {
+    normal_points: normal_points,
+    normal_weights: normal_weights,
+  };
+
+  return output;
+}
+
+export function calculateTeamResults(competition) {
+  let signees = competition.signees;
+  var team_names = [];
+  let team_results = [];
+  // Get all the team names
+  signees.forEach((signee) => {
+    if (signee.team !== "-" && signee.team !== null) {
+      team_names.push(signee.team);
+    }
+  });
+  // Only unique ones needed
+  team_names = [...new Set(team_names)];
+
+  // Get all the members of each team and add up their points
+  team_names.forEach((team_name) => {
+    let team = signees.filter((signee) => signee.team == team_name);
+    let team_points = 0;
+    let members = [];
+
+    team.forEach((member) => {
+      members.push(member.captain_name);
+      team_points += member.total_points;
+    });
+
+    // If there aren't 3 members in a team, add "-"'s as members for nicer looking table
+    if (members.length === 1) {
+      members.push("-");
+      members.push("-");
+    }
+    if (members.length === 2) {
+      members.push("-");
+    }
+    team_results.push({
+      name: team_name,
+      captain_name_1: members[0],
+      captain_name_2: members[1],
+      captain_name_3: members[2],
+      points: team_points.toLocaleString(),
+    });
+  });
+
+  return team_results;
+}
+
 export default {
   setChartsResponsive,
   resizeChartForPDF,

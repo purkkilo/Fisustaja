@@ -21,6 +21,10 @@ const ResultSchema = new Schema({
     type: String,
     required: true,
   },
+  temp_captain_name: {
+    type: [String],
+    required: true,
+  },
   crew: {
     type: [String],
     required: true,

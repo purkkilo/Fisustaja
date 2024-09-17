@@ -23,7 +23,7 @@ export default new Vuex.Store({
       return state.competition.signees.length;
     },
     getSigneeById: (state) => (id) => {
-      return state.competition.signees.find((signee) => signee.id === id);
+      return state.competition.signees.find((signee) => signee._id === id);
     },
     getSigneeByBoatNumber: (state) => (boat_number) => {
       return state.competition.signees.find(
@@ -58,9 +58,17 @@ export default new Vuex.Store({
       );
     },
     getPointSignees: (state) => {
-      return state.competition.signees.filter(
-        (signee) => signee.total_points > 0
-      );
+      return state.competition.signees.filter((signee) => {
+        let fishFound = false;
+        signee.fishes.every((fish) => {
+          if (fish.weight > 0) {
+            fishFound = true;
+            return false;
+          }
+          return true;
+        });
+        return fishFound;
+      });
     },
     getResultSignees: (state) => {
       return state.competition.signees.sort(function compare(a, b) {

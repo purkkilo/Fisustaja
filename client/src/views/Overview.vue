@@ -199,6 +199,7 @@
 <script>
 "use strict";
 import CompetitionService from "../CompetitionService";
+import ResultService from "../ResultService.js";
 import Timedate from "../components/layout/Timedate";
 import CompetitionNavigation from "../components/layout/CompetitionNavigation.vue";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
@@ -288,6 +289,14 @@ export default {
         // IF competition found from database
         if (competition) {
           this.competition = competition;
+          // Get results === signees
+          await ResultService.getResults({ competition_id: competition._id })
+            .then((r) => {
+              this.competition.signees = r;
+            })
+            .catch((e) => {
+              console.log(e);
+            });
           // Update to vuex, Assing variables from vuex (see client/store/index.js)
           this.$store.commit("refreshCompetition", this.competition);
           localStorage.setItem("cup", this.competition.cup_id);
@@ -312,7 +321,7 @@ export default {
             Math.round(
               ((this.competition.signees.length -
                 this.$store.getters.getFinishedSignees.length) /
-                competition.signees.length) *
+                this.competition.signees.length) *
                 100 *
                 100
             ) / 100;
@@ -320,7 +329,7 @@ export default {
           this.competition = { name: "Kilpailua ei löytynyt tietokannasta..." };
         }
       } catch (err) {
-        console.log(err.message);
+        console.log(err);
       }
       this.loading = false;
     },
