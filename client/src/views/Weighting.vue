@@ -99,8 +99,8 @@
                           :dark="$store.getters.getTheme"
                           v-model="boat_number_input"
                           :items="sortedArray"
-                          item-text="select"
                           label="Valitse tai hae venekunta"
+                          select="boat_number"
                           :hint="
                             boat_number_input['boat_number'] !== undefined
                               ? `(${boat_number_input.boat_number})
@@ -112,13 +112,7 @@
                           outlined
                           return-object
                           single-line
-                          @input="
-                            fetchFromDatabase(
-                              boat_number_input
-                                ? boat_number_input.boat_number
-                                : -1
-                            )
-                          "
+                          @input="searchSelected"
                         >
                           <template v-slot:item="data">
                             <template v-if="typeof data.item !== 'object'">
@@ -131,8 +125,10 @@
                                 >
                               </v-list-item-icon>
                               <v-list-item-content
-                                v-text="data.item"
-                              ></v-list-item-content>
+                                ><span>{{
+                                  data.item
+                                }}</span></v-list-item-content
+                              >
                             </template>
                             <template v-else>
                               <v-list-item-icon>
@@ -145,11 +141,15 @@
                               </v-list-item-icon>
                               <v-list-item-content>
                                 <v-list-item-title
-                                  v-html="data.item.boat_number"
-                                ></v-list-item-title>
+                                  ><span>{{
+                                    data.item.boat_number
+                                  }}</span></v-list-item-title
+                                >
                                 <v-list-item-subtitle
-                                  v-html="data.item.captain_name"
-                                ></v-list-item-subtitle>
+                                  ><span>{{
+                                    data.item.captain_name
+                                  }}</span></v-list-item-subtitle
+                                >
                               </v-list-item-content>
                             </template>
                           </template>
@@ -685,14 +685,9 @@
           <v-row>
             <v-col>
               <v-row v-if="!signees.length || !still_on_water.length">
-                <v-col
-                  md="8"
-                  offset-md="2"
-                  class="input-fields"
-                  style="margin-top: 100px"
-                >
+                <v-col md="8" offset-md="2" style="margin-top: 100px">
                   <p v-if="!signees.length" class="flow-text red--text">
-                    Kilpailussa ei vielä ilmoittautuneita!
+                    Kilpailussa ei vielä ilmoittautuneita
                   </p>
                   <p
                     v-if="!still_on_water.length && signees.length"
@@ -717,8 +712,7 @@
                         single-line
                         hide-details
                       ></v-text-field>
-                      ></v-card-title
-                    >
+                    </v-card-title>
 
                     <v-data-table
                       @click:row="rowClick"
@@ -791,6 +785,7 @@
 <script>
 "use strict";
 import CompetitionService from "../CompetitionService";
+import ResultService from "../ResultService";
 import Timedate from "../components/layout/Timedate";
 import CompetitionNavigation from "../components/layout/CompetitionNavigation.vue";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
@@ -923,13 +918,6 @@ export default {
     }
   },
   mounted() {
-    /* eslint-enable no-unused-vars */
-    if (!this.competition_id) {
-      const competition = JSON.parse(localStorage.getItem("competition"));
-      this.competition_id = competition["id"];
-      this.loading_site = true;
-      this.refreshCompetition(this.competition_id);
-    }
     // Focus on top of the page when changing pages
     location.href = "#";
     location.href = "#app";
@@ -1014,7 +1002,6 @@ export default {
           comp.normal_weights = normal_results.normal_weights;
           this.$store.commit("refreshCompetition", comp);
           this.competition_fishes = this.$store.getters.getCompetitionFishes;
-          this.signees = this.$store.getters.getCompetitionSignees;
           let placement = 1;
           let last_points = -1;
           let last_placement = -1;
@@ -1029,8 +1016,6 @@ export default {
             }
             placement++;
           });
-          this.result_signees = this.$store.getters.getResultSignees;
-          this.still_on_water = this.$store.getters.getStillOnWaterSignees;
           this.inputs = [];
           this.competition_fishes.forEach((fish) => {
             this.inputs.push({
@@ -1052,6 +1037,9 @@ export default {
     // "Kaikki päässeet maaliin" button pressed
     async allFinished() {
       // Mark all signees as returned
+      let not_finished = this.signees.filter((s) => !s.returned);
+      console.log(not_finished);
+      /*
       this.signees.forEach((signee) => {
         signee.returned = true;
       });
@@ -1075,11 +1063,14 @@ export default {
         await CompetitionService.updateValues(comp._id, newvalues);
         this.loading = false;
         this.still_on_water = this.$store.getters.getStillOnWaterSignees;
+
         this.text = "Kaikki kilpailijat merkattu maaliin saapuneeksi!";
         this.snackbar = true;
+        
       } catch (err) {
         console.log(err.message);
       }
+      */
     },
     // Check if input value is number, and only accept numbers to inputs
     isNumber: function (evt) {
@@ -1098,11 +1089,6 @@ export default {
           return true;
         }
       }
-    },
-    // Fetch signee from vuex based on boat number
-    // Check client\src\store\index.js for implementation
-    searchBoatNumber: function (boat_number) {
-      return this.$store.getters.getSigneeByBoatNumber(parseInt(boat_number));
     },
     getColor(placement) {
       if (placement > 30) return "red";
@@ -1135,35 +1121,34 @@ export default {
     setInputWeights: function () {
       // Loop trhough all the competition fishes
       this.inputs.forEach((input) => {
-        let fish_name = input.name;
-        // find the fish weights based on the fish_name, from signees weights array
-        let fish_weights = this.competition_boat.weights.find(
-          (fish) => fish.name === fish_name
-        ).weights;
-        // Assign the value to input
-        if (fish_weights > 0) {
-          input.value = fish_weights;
-        } else {
-          input.value = null;
+        if (this.competition_boat.fishes.length) {
+          // find the fish weights based on the fish_name, from signees weights array
+          let fish_weights = this.competition_boat.fishes.find(
+            (fish) => fish.index === input.index
+          ).weights;
+          // Assign the value to input
+          if (fish_weights) {
+            input.value = fish_weights;
+          } else {
+            input.value = null;
+          }
         }
       });
     },
     // Search signee from database when selected from table
-    searchSelected: function () {
+    searchSelected() {
       // Change tab to "Punnitus" and fetch
       this.tab = "weighting";
-      this.fetchFromDatabase(this.selected_boat_number);
-    },
-
-    fetchFromDatabase: function (boat_number) {
       this.selected_id = null;
       this.selected_boat_number = null;
       // If boat_number_input is empty, boat_number = -1
       // If boat_number selected on input
-      if (boat_number !== -1) {
+      if (this.boat_number_input.boat_number !== -1) {
         this.searched = true;
         this.notification = null;
-        this.competition_boat = this.searchBoatNumber(boat_number);
+        this.competition_boat = this.signees.find(
+          (s) => s.boat_number === this.boat_number_input.boat_number
+        );
         if (this.competition_boat) {
           //Wait for render to set weights to inputs
           this.$nextTick(() => this.setInputWeights());
@@ -1217,6 +1202,9 @@ export default {
     },
     // Save all weights to database
     async saveToDatabase(reset) {
+      console.log(reset);
+      console.log(this.competition_boat);
+      /*
       let competition_fishes = this.$store.getters.getCompetitionFishes;
       let fish_weights = [];
       let total_weights = 0;
@@ -1369,7 +1357,6 @@ export default {
         // Update values for next signee
         this.boat_number_input = {};
         this.competition_boat = null;
-        this.signees = comp.signees;
         this.competition_fishes = this.$store.getters.getCompetitionFishes;
         this.calculated_total_weights =
           this.$store.getters.getCompetitionTotalWeights;
@@ -1381,10 +1368,11 @@ export default {
       this.loading = false;
       this.loading_fish = false;
       this.searched = false;
+      */
     },
     // "Normaalikilpailu" results
-    calculateNormalResults(competition) {
-      const placement_points = competition.cup_placement_points_array;
+    async calculateNormalResults(competition) {
+      const placement_points = competition.cup_placement_points;
       let cup_placement_points = placement_points[0];
       const cup_participation_points = competition.cup_participation_points;
       let last_points = -1;
@@ -1394,15 +1382,35 @@ export default {
       let cup_points_total = 0;
       let normal_points = [];
       let normal_weights = [];
-      this.signees = competition.signees.filter(
-        (signee) => signee.returned == true
-      );
+
+      await ResultService.getResults({ competition_id: competition._id })
+        .then((r) => {
+          this.signees = r;
+          this.still_on_water = r.filter((s) => !s.returned);
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+
+      this.signees.forEach((s) => {
+        s.total_points = 0;
+        if (s.fishes.length) {
+          s.fishes.forEach((f) => {
+            let competition_fish = competition.fishes.find(
+              (cf) => cf.index === f.index
+            );
+            s.total_points += f.weights * competition_fish.multiplier;
+          });
+        }
+      });
+
+      //this.signees = this.signees.filter((signee) => signee.returned == true);
       this.signees = this.signees.sort(function compare(a, b) {
         return parseInt(b.total_points) - parseInt(a.total_points);
       });
       // For every signee, calculate their cup points and placing
       //TODO rework the structure, seems more complex than it should be
-      // Placements and points now saved in every competition to cup_placement_points_array, based on placement fetch from there?
+      // Placements and points now saved in every competition to cup_placement_points, based on placement fetch from there?
       this.signees.forEach((signee, index) => {
         // If competitor has same points as last competitor
         if (signee.total_points == last_points) {
@@ -1426,6 +1434,7 @@ export default {
         // Calculate total cup points, cup points multiplier only scales the placement points
         cup_points_total = cup_placement_points + cup_participation_points;
         //For showing cup points, "Pisteet" on v-select
+        signee.placement = placement;
         normal_points.push({
           placement: placement,
           boat_number: signee.boat_number,
@@ -1445,9 +1454,9 @@ export default {
         temp_dict.captain_name = signee.captain_name;
 
         // For each fish, get the weight and fish name
-        signee.weights.forEach((weights) => {
-          let name = weights.name;
-          let weight = weights.weights;
+        signee.fishes.forEach((fish) => {
+          let name = fish.name;
+          let weight = fish.weights;
           temp_dict[name] = weight;
         });
         temp_dict.total_points = signee.total_points;

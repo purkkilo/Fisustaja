@@ -80,18 +80,7 @@
           :value="'signing'"
         >
           <v-row v-if="!loading_site">
-            <v-col>
-              <v-row style="margin-top: 20px">
-                <v-col md="10" offset-md="1">
-                  <p
-                    class="flow-text"
-                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
-                  >
-                    Ilmoittautuminen
-                  </p>
-                </v-col>
-              </v-row>
-
+            <v-col style="margin-top: 20px">
               <v-row v-if="notification">
                 <v-col md="8" offset-md="2">
                   <v-alert type="info" class="flow-text">
@@ -316,11 +305,11 @@
                             :disabled="data.disabled"
                             @click:close="data.parent.selectItem(data.item)"
                           >
-                            <v-avatar
-                              class="accent white--text"
-                              left
-                              v-text="data.item.slice(0, 1).toUpperCase()"
-                            ></v-avatar>
+                            <v-avatar class="accent white--text" left
+                              ><span>{{
+                                data.item.slice(0, 1).toUpperCase()
+                              }}</span></v-avatar
+                            >
                             {{ data.item }}
                           </v-chip>
                         </template>
@@ -432,7 +421,7 @@
           <v-row>
             <v-col>
               <v-row style="margin-top: 20px">
-                <v-col class="title" offset-md="4" md="4">
+                <v-col offset-md="4" md="4">
                   <p
                     class="flow-text"
                     v-bind:class="{ 'white--text': $store.getters.getTheme }"

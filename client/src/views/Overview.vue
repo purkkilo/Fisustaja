@@ -44,20 +44,15 @@
         outlined
         :dark="$store.getters.getTheme"
       >
-        <v-row align="center">
-          <v-col>
-            <h1 style="margin: 30px">Yleisnäkymä</h1>
-          </v-col>
-        </v-row>
-
         <v-row>
           <v-col>
             <v-card :dark="$store.getters.getTheme" elevation="20" outlined>
-              <v-card-title class="text-center"
-                ><p class="display-1">
+              <v-card-title
+                ><span class="display-2">
                   {{ competition.name }}
-                </p></v-card-title
+                </span></v-card-title
               >
+              <v-card-subtitle>Yleistietoa</v-card-subtitle>
               <v-list outlined elevation="10">
                 <v-list-item>
                   <v-list-item-icon>
@@ -292,6 +287,12 @@ export default {
           // Get results === signees
           await ResultService.getResults({ competition_id: competition._id })
             .then((r) => {
+              this.competition.total_weights = 0;
+              r.forEach((s) => {
+                s.fishes.forEach((f) => {
+                  this.competition.total_weights += f.weights;
+                });
+              });
               this.competition.signees = r;
             })
             .catch((e) => {
