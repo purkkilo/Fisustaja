@@ -5,7 +5,7 @@ const Schema = mongoose.Schema;
 /*
       boat_number: 4,
       captain_name: "test4",
-      fish: "Lohi",
+      name: "Lohi",
       weight: 100,
       competition_id: "665e652954728ad48eff6aa0",
       cup_id: "665e5f6354728ad48eff6a9b",
@@ -21,7 +21,7 @@ const FishSchema = new Schema({
     type: String,
     required: true,
   },
-  fish: {
+  name: {
     type: String,
     required: true,
   },

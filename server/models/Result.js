@@ -22,7 +22,7 @@ const ResultSchema = new Schema({
     required: true,
   },
   temp_captain_name: {
-    type: [String],
+    type: String,
     required: true,
   },
   crew: {

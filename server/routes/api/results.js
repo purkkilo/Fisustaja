@@ -36,13 +36,14 @@ router.get("/", async (req, res) => {
 // Add results
 router.post("/", async (req, res) => {
   try {
+    let newResult = {};
     if (!req.body.length) {
       res.status(400).send("No results in request");
       return;
     }
 
     if (req.body.length === 1) {
-      let newResult = new Result(req.body[0]);
+      newResult = new Result(req.body[0]);
       await newResult.save().catch((err) => {
         console.log(err);
       });
@@ -55,6 +56,7 @@ router.post("/", async (req, res) => {
     res.status(201).json({
       success: true,
       msg: "Results saved",
+      id: newResult._id,
     });
   } catch (error) {
     res.status(400).send(error);

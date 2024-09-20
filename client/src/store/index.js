@@ -22,9 +22,6 @@ export default new Vuex.Store({
     getSigneesCount: (state) => {
       return state.competition.signees.length;
     },
-    getSigneeById: (state) => (id) => {
-      return state.competition.signees.find((signee) => signee._id === id);
-    },
     getSigneeByBoatNumber: (state) => (boat_number) => {
       return state.competition.signees.find(
         (signee) => signee.boat_number === boat_number

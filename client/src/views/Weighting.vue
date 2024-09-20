@@ -100,12 +100,9 @@
                           v-model="boat_number_input"
                           :items="sortedArray"
                           label="Valitse tai hae venekunta"
-                          select="boat_number"
                           :hint="
                             boat_number_input['boat_number'] !== undefined
-                              ? `(${boat_number_input.boat_number})
-                          ${boat_number_input.captain_name},
-                          ${boat_number_input.temp_captain_name}`
+                              ? `Valittu venekunta`
                               : `Valitse tai hae venekunta`
                           "
                           :disabled="loading_site"
@@ -114,6 +111,21 @@
                           single-line
                           @input="searchSelected"
                         >
+                          <template v-slot:selection="data">
+                            <div>
+                              <v-chip
+                                v-bind="data.attrs"
+                                :input-value="data.selected"
+                                close
+                                @click="data.select"
+                                @click:close="clearInputs"
+                              >
+                                ({{ data.item.boat_number }})
+                                {{ data.item.captain_name }},
+                                {{ data.item.temp_captain_name }}
+                              </v-chip>
+                            </div>
+                          </template>
                           <template v-slot:item="data">
                             <template v-if="typeof data.item !== 'object'">
                               <v-list-item-icon>
@@ -187,7 +199,7 @@
                       <v-col md="10" offset-md="1">
                         <ul
                           id="fish_weights"
-                          v-if="$store.getters.getCompetitionFishes.length"
+                          v-if="competition.fishes.length"
                           style="list-style-type: none"
                         >
                           <li style="padding: 10px; margin-bottom: 10px">
@@ -240,7 +252,7 @@
                                   label="Valitse kalalaji painamalla"
                                   v-model="selected_fish"
                                   item-text="name"
-                                  :items="competition_fishes"
+                                  :items="competition.fishes"
                                   :dark="$store.getters.getTheme"
                                 >
                                   <template v-slot:selection="data">
@@ -446,6 +458,25 @@
                               <v-list dense>
                                 <v-list-item>
                                   <v-list-item-icon>
+                                    <v-icon>mdi-sail-boat</v-icon>
+                                  </v-list-item-icon>
+                                  <v-list-item-content>
+                                    <v-list-item-title>
+                                      <h3>
+                                        ({{ boat_number_input.boat_number }})
+                                        {{ boat_number_input.captain_name }},
+                                        {{
+                                          boat_number_input.temp_captain_name
+                                        }}
+                                      </h3>
+                                    </v-list-item-title>
+                                    <v-list-item-subtitle>
+                                      Venekunta
+                                    </v-list-item-subtitle>
+                                  </v-list-item-content>
+                                </v-list-item>
+                                <v-list-item>
+                                  <v-list-item-icon>
                                     <v-icon>mdi-weight-gram</v-icon>
                                   </v-list-item-icon>
                                   <v-list-item-content>
@@ -600,11 +631,25 @@
         >
           <v-row>
             <v-col>
-              <v-row v-if="result_signees.length">
+              <v-row v-if="signees.filter((s) => s.returned).length">
                 <v-col md="8" offset-md="2" style="margin-top: 20px">
                   <v-card :dark="$store.getters.getTheme">
                     <v-card-title>
                       <p class="flow-text">Tilannekatsaus</p>
+                      <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-icon
+                            v-bind="attrs"
+                            v-on="on"
+                            style="margin: 0px 0px 20px 5px"
+                            >mdi-chat-question-outline</v-icon
+                          >
+                        </template>
+                        <span>
+                          Voit siirtyä punnitukseen myös klikkaamalla haluamaasi
+                          riviä taulukosta.</span
+                        >
+                      </v-tooltip>
                       <v-spacer></v-spacer>
                       <v-text-field
                         v-model="search"
@@ -617,7 +662,7 @@
                     <v-data-table
                       @click:row="rowClick"
                       :headers="headers"
-                      :items="sortedCompetition"
+                      :items="signees.filter((s) => s.returned)"
                       :search="search"
                     >
                       <template v-slot:[`item.placement`]="{ item }">
@@ -636,17 +681,6 @@
                   </v-card>
                 </v-col>
               </v-row>
-              <v-row v-if="selected_id && result_signees.length">
-                <v-col
-                  md="8"
-                  offset-md="2"
-                  style="margin-top: 30px; margin-bottom: 30px"
-                >
-                  <v-btn large tile color="blue" @click="searchSelected"
-                    ><v-icon>mdi-arrow-right</v-icon>Siirry punnitukseen</v-btn
-                  >
-                </v-col>
-              </v-row>
               <v-row v-else>
                 <v-col
                   md="8"
@@ -654,15 +688,6 @@
                   style="margin-top: 30px; margin-bottom: 30px"
                 >
                   <p
-                    v-if="result_signees.length"
-                    class="flow-text"
-                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
-                  >
-                    Voit siirtyä punnitukseen myös klikkaamalla haluamaasi riviä
-                    taulukosta ja painamalla ilmestyvää nappulaa
-                  </p>
-                  <p
-                    v-else
                     class="flow-text"
                     v-bind:class="{ 'white--text': $store.getters.getTheme }"
                   >
@@ -684,26 +709,41 @@
         >
           <v-row>
             <v-col>
-              <v-row v-if="!signees.length || !still_on_water.length">
+              <v-row v-if="!signees.length">
                 <v-col md="8" offset-md="2" style="margin-top: 100px">
                   <p v-if="!signees.length" class="flow-text red--text">
                     Kilpailussa ei vielä ilmoittautuneita
                   </p>
                   <p
-                    v-if="!still_on_water.length && signees.length"
+                    v-if="!signees.filter((s) => !s.returned).length"
                     class="flow-text green--text"
                   >
                     Kaikki venekunnat palanneet maaliin!
                   </p>
                 </v-col>
               </v-row>
-              <v-row v-if="still_on_water.length" style="margin-top: 20px">
+              <v-row
+                v-if="signees.filter((s) => !s.returned).length"
+                style="margin: 0px 0px 0px 0px"
+              >
                 <v-col md="8" offset-md="2">
                   <v-card :dark="$store.getters.getTheme">
                     <v-card-title>
-                      <p class="flow-text">
-                        Venekunnat, jotka ovat vielä vesillä
-                      </p>
+                      <p class="flow-text">Vielä vesillä</p>
+                      <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-icon
+                            v-bind="attrs"
+                            v-on="on"
+                            style="margin: 0px 0px 20px 5px"
+                            >mdi-chat-question-outline</v-icon
+                          >
+                        </template>
+                        <span>
+                          Voit siirtyä punnitukseen myös klikkaamalla haluamaasi
+                          riviä taulukosta.</span
+                        >
+                      </v-tooltip>
                       <v-spacer></v-spacer>
                       <v-text-field
                         v-model="search_on_water"
@@ -717,7 +757,7 @@
                     <v-data-table
                       @click:row="rowClick"
                       :headers="headers_on_water"
-                      :items="still_on_water"
+                      :items="signees.filter((s) => !s.returned)"
                       :search="search_on_water"
                       :loading="loading"
                     >
@@ -728,14 +768,21 @@
                   </v-card>
                 </v-col>
               </v-row>
-              <v-row v-if="selected_id && still_on_water.length">
+              <v-row v-if="signees.filter((s) => !s.returned).length">
                 <v-col
                   md="8"
                   offset-md="2"
                   style="margin-top: 30px; margin-bottom: 30px"
                 >
-                  <v-btn large tile color="blue" @click="searchSelected"
-                    ><v-icon>mdi-arrow-right</v-icon>Siirry punnitukseen</v-btn
+                  <v-btn
+                    large
+                    tile
+                    color="grey darken-4"
+                    class="white--text"
+                    @click="allFinished"
+                    :loading="loading"
+                    ><v-icon>mdi-check-outline</v-icon>Kaikki saapuneet
+                    maaliin</v-btn
                   >
                 </v-col>
               </v-row>
@@ -746,24 +793,11 @@
                   style="margin-top: 30px; margin-bottom: 30px"
                 >
                   <p
-                    v-if="still_on_water.length"
                     class="flow-text"
                     v-bind:class="{ 'white--text': $store.getters.getTheme }"
                   >
-                    Voit siirtyä punnitukseen myös klikkaamalla haluamaasi riviä
-                    taulukosta ja painamalla ilmestyvää nappulaa
+                    Kaikki maalissa!
                   </p>
-                  <v-btn
-                    v-if="still_on_water.length"
-                    large
-                    tile
-                    color="grey darken-4"
-                    class="white--text"
-                    @click="allFinished"
-                    :loading="loading"
-                    ><v-icon>mdi-check-outline</v-icon>Kaikki saapuneet
-                    maaliin</v-btn
-                  >
                 </v-col>
               </v-row>
             </v-col>
@@ -785,10 +819,12 @@
 <script>
 "use strict";
 import CompetitionService from "../CompetitionService";
+//import FishService from "../FishService";
 import ResultService from "../ResultService";
 import Timedate from "../components/layout/Timedate";
 import CompetitionNavigation from "../components/layout/CompetitionNavigation.vue";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
+import FishService from "../FishService";
 
 export default {
   name: "Weighting",
@@ -801,13 +837,12 @@ export default {
     return {
       dialog: false,
       tab: null,
-      competition_id: null,
+      competition: {},
       boat_number_input: {},
       competition_boat: null,
       calculated_total_weights: null,
       calculated_fish_weights: null,
       searched: false,
-      selected_id: null,
       selected_boat_number: null,
       loading: false,
       refreshing: false,
@@ -817,11 +852,9 @@ export default {
       biggest_fish: null,
       selected_fish: null,
       isBiggestFishVisible: false,
-      competition_fishes: [],
       biggest_fishes: {},
       biggest_amounts: {},
       signees: [],
-      result_signees: [],
       headers: [
         { text: "Sijoitus", value: "placement" },
         { text: "Kilp. Numero", value: "boat_number" },
@@ -836,7 +869,6 @@ export default {
       ],
       search_on_water: "",
       search: "",
-      still_on_water: [],
       number_rules: [
         (value) => !isNaN(value || "") || "Ei ole numero!",
         (value) => (value || "") >= 0 || "Numeron pitää olla positiivinen!",
@@ -905,16 +937,9 @@ export default {
   },
   created() {
     if (localStorage.getItem("competition") != null) {
-      const competition = JSON.parse(localStorage.getItem("competition"));
-      this.competition_id = competition["id"];
+      this.competition = JSON.parse(localStorage.getItem("competition"));
       this.loading_site = true;
-      this.refreshCompetition(this.competition_id);
-      /*
-      this.timer_refresh = setInterval(
-        () => this.refreshCompetition(competition_id),
-        this.interval
-      );
-      */
+      this.refreshCompetition(this.competition._id);
     }
   },
   mounted() {
@@ -930,7 +955,7 @@ export default {
     getBoatTotalPoints() {
       let totalPoints = 0;
       this.inputs.forEach((i) => {
-        const fish = this.competition_fishes.find((f) => f.name === i.name);
+        const fish = this.competition.fishes.find((f) => f.name === i.name);
         totalPoints += fish.multiplier * i.value;
       });
       return totalPoints;
@@ -991,38 +1016,22 @@ export default {
     async refreshCompetition(competition_id) {
       this.refreshing = true;
       try {
-        let competition = await CompetitionService.getCompetitions({
+        let competitions = await CompetitionService.getCompetitions({
           _id: competition_id,
         });
-        if (competition) {
+        if (competitions.length) {
+          this.competition = competitions[0];
           // Update to vuex, Assing variables and arrays from vuex (see client/store/index.js)
-          let comp = competition;
-          let normal_results = this.calculateNormalResults(comp);
-          comp.normal_points = normal_results.normal_points;
-          comp.normal_weights = normal_results.normal_weights;
-          this.$store.commit("refreshCompetition", comp);
-          this.competition_fishes = this.$store.getters.getCompetitionFishes;
-          let placement = 1;
-          let last_points = -1;
-          let last_placement = -1;
-          this.signees.forEach((signee) => {
-            signee.select = `${signee.boat_number}, ${signee.captain_name}`;
-            if (last_points === signee.total_points) {
-              signee.placement = last_placement;
-            } else {
-              signee.placement = placement;
-              last_points = signee.total_points;
-              last_placement = signee.placement;
-            }
-            placement++;
-          });
+          this.calculateNormalResults(this.competition);
           this.inputs = [];
-          this.competition_fishes.forEach((fish) => {
+          this.competition.fishes.forEach((fish) => {
             this.inputs.push({
+              index: fish.index,
               name: fish.name,
               value: null,
               dialog: false,
               addition: null,
+              multiplier: fish.multiplier,
             });
           });
         } else {
@@ -1036,41 +1045,24 @@ export default {
     },
     // "Kaikki päässeet maaliin" button pressed
     async allFinished() {
-      // Mark all signees as returned
       let not_finished = this.signees.filter((s) => !s.returned);
-      console.log(not_finished);
-      /*
-      this.signees.forEach((signee) => {
-        signee.returned = true;
-      });
-      // Update signees array to database/vuex
-      let comp = this.$store.getters.getCompetition;
-      let normal_results = this.calculateNormalResults(comp);
-      comp.normal_points = normal_results.normal_points;
-      comp.normal_weights = normal_results.normal_weights;
-      comp.signees = this.signees;
-      this.$store.commit("refreshCompetition", comp);
+      let i = 0;
+      while (not_finished.length) {
+        not_finished[i].returned = true;
+
+        not_finished.splice(i, 1);
+      }
+
       try {
         this.loading = true;
-        let newvalues = {
-          $set: {
-            normal_points: comp.normal_points,
-            normal_weights: comp.normal_weights,
-            signees: comp.signees,
-          },
-        };
-        //await CompetitionService.updateCompetition(comp._id, comp);
-        await CompetitionService.updateValues(comp._id, newvalues);
+
         this.loading = false;
-        this.still_on_water = this.$store.getters.getStillOnWaterSignees;
 
         this.text = "Kaikki kilpailijat merkattu maaliin saapuneeksi!";
         this.snackbar = true;
-        
       } catch (err) {
         console.log(err.message);
       }
-      */
     },
     // Check if input value is number, and only accept numbers to inputs
     isNumber: function (evt) {
@@ -1100,22 +1092,9 @@ export default {
       if (points > 0) return "indigo";
       else return "grey";
     },
-    // Select row from table, if selected --> unselect
-    // selected_id bound to selected css class (on App.vue)
-    rowClick: function (item, row) {
-      if (item.id == this.selected_id) {
-        this.selected_id = null;
-        this.selected_boat_number = null;
-        row.select(false);
-      } else {
-        if (this.selected_row) {
-          this.selected_row.select(false);
-        }
-        this.selected_id = item.id;
-        this.selected_boat_number = item.boat_number;
-        row.select(true);
-        this.selected_row = row;
-      }
+    rowClick(item) {
+      this.boat_number_input = item;
+      this.searchSelected();
     },
     // Set input weights for each fish for the signee
     setInputWeights: function () {
@@ -1139,7 +1118,6 @@ export default {
     searchSelected() {
       // Change tab to "Punnitus" and fetch
       this.tab = "weighting";
-      this.selected_id = null;
       this.selected_boat_number = null;
       // If boat_number_input is empty, boat_number = -1
       // If boat_number selected on input
@@ -1166,31 +1144,27 @@ export default {
     async saveBiggestFish() {
       // If name for biggest fish, boat number and weight for biggest fish all have been selected
       if (this.selected_fish && this.boat_number_input && this.biggest_fish) {
-        // Create fish object
         let fish = {
-          name: this.selected_fish,
           boat_number: this.boat_number_input.boat_number,
           captain_name: this.boat_number_input.captain_name,
+          name: this.selected_fish,
           weight: this.biggest_fish,
+          competition_id: this.boat_number_input.competition_id,
+          cup_id: this.boat_number_input.cup_id,
         };
-        this.$store.commit("addBiggestFish", fish);
-        this.biggest_fishes = this.$store.getters.getBiggestFishes;
-        // Create competition object and update it to database
-        let comp = this.$store.getters.getCompetition;
-        comp.biggest_fishes = this.biggest_fishes;
-        this.$store.commit("refreshCompetition", comp);
+
         try {
           this.loading_fish = true;
-          let newvalues = {
-            $set: {
-              biggest_fishes: comp.biggest_fishes,
-            },
-          };
-          //await CompetitionService.updateCompetition(comp._id, comp);
-          await CompetitionService.updateValues(comp._id, newvalues);
+
+          // TODO Check if there is already a biggest fish,
+          // If yes then update
+
+          //Otherwise
+          await FishService.insertFishes([fish]).catch((e) => console.log(e));
           this.notification = `Tiedot päivitetty tietokantaan!`;
           this.loading_fish = false;
-          (this.selected_fish = null), (this.biggest_fish = null);
+          this.selected_fish = null;
+          this.biggest_fish = null;
         } catch (err) {
           console.log(err.message);
         }
@@ -1202,191 +1176,109 @@ export default {
     },
     // Save all weights to database
     async saveToDatabase(reset) {
-      console.log(reset);
-      console.log(this.competition_boat);
-      /*
-      let competition_fishes = this.$store.getters.getCompetitionFishes;
       let fish_weights = [];
-      let total_weights = 0;
-      let total_points = 0;
       let fish_weight = 0;
-      let fish_points = 0;
-      let fish_name;
-      this.biggest_fishes = this.$store.getters.getBiggestFishes;
-
+      let total_points = 0;
       // if biggest fish not yet saved, save it
       if (this.selected_fish && this.boat_number_input && this.biggest_fish) {
         let fish = {
-          name: this.selected_fish,
           boat_number: this.boat_number_input.boat_number,
           captain_name: this.boat_number_input.captain_name,
+          name: this.selected_fish,
           weight: this.biggest_fish,
+          competition_id: this.boat_number_input.competition_id,
+          cup_id: this.boat_number_input.cup_id,
         };
-        this.$store.commit("addBiggestFish", fish);
-        this.biggest_fishes = this.$store.getters.getBiggestFishes;
-        (this.selected_fish = null), (this.biggest_fish = null);
+        this.selected_fish = null;
+        this.biggest_fish = null;
+        this.loading_fish = true;
+        // TODO Check if there is already a biggest fish,
+        // If yes then update
+
+        // Query competition_id and boat_number?
+
+        //Otherwise
+        await FishService.insertFishes([fish]).catch((e) => console.log(e));
       }
       //if reset == true, reset current weights to 0, otherwise update weights from inputs
       if (reset) {
         this.competition_boat.returned = false;
-        // For every fish, reset weights/points and add them to array
-        this.inputs.forEach((input) => {
-          fish_name = input.name;
-          fish_weights.push({
-            name: fish_name,
-            weights: fish_weight,
-            points: fish_points,
-          });
-          // If there are biggest fishes in competition
-          if (this.biggest_fishes) {
-            // If there are biggest fishes from certain fish_name
-            if (this.biggest_fishes[fish_name]) {
-              // Check if signee has biggest fish there
-              let index = this.biggest_fishes[fish_name].findIndex((item) => {
-                return (
-                  parseInt(this.boat_number_input.boat_number) ===
-                  parseInt(item.boat_number)
-                );
-              });
-              // If fish found, delete it
-              if (index > -1) {
-                this.biggest_fishes[fish_name].splice(index, 1);
-              }
-            }
-          }
-          // If there are fish amounts in competition
-          if (this.biggest_amounts) {
-            // If there are fish amounts from certain fish_name
-            if (this.biggest_amounts[fish_name]) {
-              // Check if signee has biggest fish there
-              let index = this.biggest_amounts[fish_name].findIndex((item) => {
-                return (
-                  parseInt(this.boat_number_input.boat_number) ===
-                  parseInt(item.boat_number)
-                );
-              });
-              if (index > -1) {
-                // If fish found, delete it
-                this.biggest_amounts[fish_name].splice(index, 1);
-              }
-            }
-          }
-        });
+        // reset weights
+        this.competition_boat.fishes = [];
+        // Check if biggest fish and delete
       }
       // Don't reset points, add new values
       else {
         this.competition_boat.returned = true;
         // For every fish, get values from inputs
         this.inputs.forEach((input) => {
-          fish_name = input.name;
           fish_weight = parseInt(input.value ? input.value : 0); // If input empty, replace with 0
-          // Get points multiplier for this certain fish for points calculation
-          let points_multiplier = competition_fishes.find(
-            (fish) => fish.name === fish_name
-          ).multiplier;
-          fish_points = fish_weight * points_multiplier;
           // Add fish object to array
           fish_weights.push({
-            name: fish_name,
+            index: input.index,
+            name: input.name,
             weights: fish_weight,
-            points: fish_points,
           });
-          // Create biggest fish amount object and store to vuex
-          let fish = {
-            name: fish_name,
-            boat_number: this.competition_boat.boat_number,
-            captain_name: this.competition_boat.captain_name,
-            weight: fish_weight,
-          };
-          this.$store.commit("addBiggestAmount", fish);
-          this.biggest_amounts = this.$store.getters.getBiggestAmounts;
-          total_weights += fish_weight;
-          total_points += fish_points;
+          total_points += fish_weight * input.multiplier;
         });
       }
 
-      this.competition_boat.weights = fish_weights;
-      this.competition_boat.total_weights = total_weights;
       this.competition_boat.total_points = total_points;
-      // If there is signee with save number, replace in vuex
-      // Check implementation from 'client\src\store\index.js'
-      this.$store.commit("replaceSignee", this.competition_boat);
-      let comp = this.$store.getters.getCompetition;
-      let normal_results = this.calculateNormalResults(comp);
-      let temp_total_weights = this.calculateTotalWeights();
+      this.competition_boat.fishes = fish_weights;
+      const index = this.signees.findIndex(
+        (item) => item._id === this.competition_boat._id
+      );
+      this.signees.splice(index, 1, this.competition_boat);
 
-      // Store to database and vuex
-      comp.signees = this.$store.getters.getCompetitionSignees;
-      comp.normal_points = normal_results.normal_points;
-      comp.normal_weights = normal_results.normal_weights;
-      if (comp.team_competition) {
-        comp.team_results = this.calculateTeamResults();
-      }
-      comp.biggest_fishes = this.biggest_fishes;
-      comp.biggest_amounts = this.biggest_amounts;
-      comp.total_weights = temp_total_weights.total_weights;
-      comp.fishes = temp_total_weights.competition_fishes;
-
-      // Update competition state
-      if (this.still_on_water.length) {
-        comp.state = "Punnitus";
-      } else {
-        comp.state = "Kaikki maalissa";
-      }
-      // Refresh to vuex
-      this.$store.commit("refreshCompetition", comp);
       try {
         this.loading = true;
         this.loading_fish = true;
-        let newvalues = {
-          $set: {
-            signees: comp.signees,
-            normal_points: comp.normal_points,
-            normal_weights: comp.normal_weights,
-            team_results: comp.team_results,
-            biggest_fishes: comp.biggest_fishes,
-            biggest_amounts: comp.biggest_amounts,
-            fishes: comp.fishes,
-            total_weights: comp.total_weights,
-            state: comp.state,
-          },
-        };
-        //await CompetitionService.updateCompetition(comp._id, comp);
-        await CompetitionService.updateValues(comp._id, newvalues);
+
+        await ResultService.updateResult(
+          this.competition_boat._id,
+          this.competition_boat
+        ).catch((e) => console.log(e));
+
+        // Update competition state
+        if (this.signees.filter((s) => !s.returned).length) {
+          this.competition.state = "Punnitus";
+        } else {
+          this.competition.state = "Kaikki maalissa";
+          // Refresh to vuex
+          this.$store.commit("refreshCompetition", this.competition);
+          let newvalues = {
+            $set: {
+              state: this.competition.state,
+            },
+          };
+          //await CompetitionService.updateCompetition(comp._id, comp);
+          await CompetitionService.updateValues(
+            this.competition._id,
+            newvalues
+          );
+        }
+
+        this.clearInputs();
         this.notification = `Tiedot päivitetty tietokantaan!`;
         // Update values for next signee
         this.boat_number_input = {};
         this.competition_boat = null;
-        this.competition_fishes = this.$store.getters.getCompetitionFishes;
-        this.calculated_total_weights =
-          this.$store.getters.getCompetitionTotalWeights;
-        this.result_signees = this.$store.getters.getResultSignees;
-        this.still_on_water = this.$store.getters.getStillOnWaterSignees;
       } catch (err) {
         console.log(err.message);
       }
       this.loading = false;
       this.loading_fish = false;
       this.searched = false;
-      */
     },
-    // "Normaalikilpailu" results
+
     async calculateNormalResults(competition) {
-      const placement_points = competition.cup_placement_points;
-      let cup_placement_points = placement_points[0];
-      const cup_participation_points = competition.cup_participation_points;
       let last_points = -1;
       let last_placement = -1;
-
       let placement = 1;
-      let cup_points_total = 0;
-      let normal_points = [];
-      let normal_weights = [];
 
       await ResultService.getResults({ competition_id: competition._id })
         .then((r) => {
           this.signees = r;
-          this.still_on_water = r.filter((s) => !s.returned);
         })
         .catch((e) => {
           console.log(e);
@@ -1422,54 +1314,9 @@ export default {
           last_points = signee.total_points;
           last_placement = signee.placement;
         }
-
-        // Find the placement points according to the placement
-        let p = placement_points.find((e) => e.placement === placement);
-        // If placement isn't found (placement > than provided placements), or points = 0 (no points from competition)
-        if (!p || signee.total_points === 0) {
-          cup_placement_points = 0;
-        } else {
-          cup_placement_points = p.points * competition.cup_points_multiplier;
-        }
-        // Calculate total cup points, cup points multiplier only scales the placement points
-        cup_points_total = cup_placement_points + cup_participation_points;
         //For showing cup points, "Pisteet" on v-select
         signee.placement = placement;
-        normal_points.push({
-          placement: placement,
-          boat_number: signee.boat_number,
-          captain_name: signee.captain_name,
-          temp_captain_name: signee.temp_captain_name,
-          locality: signee.locality,
-          total_points: signee.total_points.toLocaleString(),
-          cup_placement_points: cup_placement_points,
-          cup_participation_points: cup_participation_points,
-          cup_points_total: cup_points_total,
-        });
-
-        //For showing fish weights, "Kalat" on v-select
-        let temp_dict = {};
-        temp_dict.placement = placement;
-        temp_dict.boat_number = signee.boat_number;
-        temp_dict.captain_name = signee.captain_name;
-
-        // For each fish, get the weight and fish name
-        signee.fishes.forEach((fish) => {
-          let name = fish.name;
-          let weight = fish.weights;
-          temp_dict[name] = weight;
-        });
-        temp_dict.total_points = signee.total_points;
-        normal_weights.push(temp_dict);
-        last_points = signee.total_points;
       });
-
-      let output = {
-        normal_points: normal_points,
-        normal_weights: normal_weights,
-      };
-
-      return output;
     },
     calculateTeamResults: function () {
       var team_names = [];
@@ -1513,33 +1360,7 @@ export default {
 
       return team_results;
     },
-    // Calculate total weight of all the fishes in competition
-    calculateTotalWeights: function () {
-      let finished_boats = this.$store.getters.getFinishedSignees;
-      let competition_fishes = this.$store.getters.getCompetitionFishes;
-      let total_weights = 0;
-      // For each boat, get every fish weight and add them to competition_fishes and total_weights in competition
-      // For statistics
-      // First reset
-      for (let i = 0; i < competition_fishes.length; i++) {
-        competition_fishes[i].weights = 0;
-      }
-      //Then add
-      finished_boats.forEach((element) => {
-        for (let i = 0; i < competition_fishes.length; i++) {
-          let fish_weights = element.weights.find(
-            (fish) => competition_fishes[i].name == fish.name
-          ).weights;
-          competition_fishes[i].weights += parseInt(fish_weights);
-          //TODO update only this one variable to database, not the whole competition
-          total_weights += parseInt(fish_weights);
-        }
-      });
-      return {
-        total_weights: total_weights,
-        competition_fishes: competition_fishes,
-      };
-    },
+
     // Clear all inputs and selections
     clearInputs: function () {
       this.text = "Pyyhitään inputit ja valinnat...";
