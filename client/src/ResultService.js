@@ -45,6 +45,13 @@ class ResultService {
     return axios.put(`${url}${id}/replace`, result);
   }
 
+  static updateManyResults(ids, valueToSet) {
+    return axios.put(`${url}/update-many`, {
+      ids: ids,
+      valueToSet: valueToSet,
+    });
+  }
+
   // Update some values
   /**
    *

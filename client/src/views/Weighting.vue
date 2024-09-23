@@ -29,6 +29,9 @@
             <v-row justfify="center">
               <v-col>
                 <h1 style="margin: 30px">Punnitus</h1>
+                <h2 style="margin: 10px; color: chartreuse">
+                  {{ allReturned ? "Kaikki maalissa!" : "" }}
+                </h2>
               </v-col>
             </v-row>
           </v-col>
@@ -49,7 +52,7 @@
         <v-tabs-slider color="blue darken-4"></v-tabs-slider>
         <v-tab href="#weighting">Punnitus</v-tab>
         <v-tab href="#situation">Tilannekatsaus</v-tab>
-        <v-tab href="#onwater">Vielä vesillä</v-tab>
+        <v-tab v-if="!allReturned" href="#onwater">Vielä vesillä</v-tab>
       </v-tabs>
       <v-tabs-items v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
         <!-- "Punnitus" tab -->
@@ -662,7 +665,7 @@
                     <v-data-table
                       @click:row="rowClick"
                       :headers="headers"
-                      :items="signees.filter((s) => s.returned)"
+                      :items="sortedCompetition"
                       :search="search"
                     >
                       <template v-slot:[`item.placement`]="{ item }">
@@ -673,9 +676,9 @@
                         >
                       </template>
                       <template v-slot:[`item.total_points`]="{ item }">
-                        <v-chip :color="getColorPoints(item.total_points)"
-                          >{{ item.total_points.toLocaleString() }} p</v-chip
-                        >
+                        <v-chip :color="getColorPoints(item.total_points)">{{
+                          item.total_points.toLocaleString()
+                        }}</v-chip>
                       </template>
                     </v-data-table>
                   </v-card>
@@ -914,6 +917,11 @@ export default {
     sortedArray() {
       return [...this.signees].sort((a, b) => a.boat_number - b.boat_number);
     },
+    allReturned() {
+      return this.signees.filter((b) => !b.returned).length === 0
+        ? true
+        : false;
+    },
     sortedCompetition() {
       let signees = [...this.signees].sort(
         (a, b) => b.total_points - a.total_points
@@ -921,16 +929,19 @@ export default {
       let placement = 1;
       let last_points = -1;
       let last_placement = -1;
-      signees.forEach((signee) => {
-        if (last_points === signee.total_points) {
-          signee.placement = last_placement;
-        } else {
-          signee.placement = placement;
-          last_points = signee.total_points;
-          last_placement = signee.placement;
+      signees.forEach((signee, index) => {
+        // If competitor has same points as last competitor
+        if (signee.total_points == last_points) {
+          placement = last_placement;
         }
-
-        placement++;
+        // If no tie, add tied_competitors to placement, to give correct placement to next not tied competitor
+        else {
+          placement = index + 1;
+          last_points = signee.total_points;
+          last_placement = placement;
+        }
+        //For showing cup points, "Pisteet" on v-select
+        signee.placement = placement;
       });
       return signees;
     },
@@ -974,21 +985,11 @@ export default {
       let points = this.getBoatTotalPoints();
       let index = this.bisect(points, this.sortedCompetition);
       let placement = index + 1;
-      // Check if boat is already on the list with these points
-      // = Placement doesn't change
-      let samePoints = this.sortedCompetition.filter(
-        (boat) => boat.total_points === points
+      let samePoints = this.sortedCompetition.find(
+        (b) => b.total_points === points
       );
-      if (index > 0) {
-        samePoints.every((element) => {
-          if (element.boat_number === this.boat_number_input.boat_number) {
-            // Boat found with same points
-            placement = element.placement;
-            return false;
-          }
-          return true;
-        });
-      }
+      if (samePoints) placement = samePoints.placement;
+
       return placement;
     },
     bisect(value, array) {
@@ -1046,18 +1047,22 @@ export default {
     // "Kaikki päässeet maaliin" button pressed
     async allFinished() {
       let not_finished = this.signees.filter((s) => !s.returned);
-      let i = 0;
-      while (not_finished.length) {
-        not_finished[i].returned = true;
+      let ids = [];
+      not_finished.forEach((element) => {
+        element.returned = true;
+        ids.push(element._id);
+      });
 
-        not_finished.splice(i, 1);
-      }
+      let valueToSet = {
+        $set: { returned: true },
+      };
 
       try {
         this.loading = true;
-
+        await ResultService.updateManyResults(ids, valueToSet).catch((e) => {
+          console.log(e);
+        });
         this.loading = false;
-
         this.text = "Kaikki kilpailijat merkattu maaliin saapuneeksi!";
         this.snackbar = true;
       } catch (err) {
@@ -1089,7 +1094,7 @@ export default {
       else return "green";
     },
     getColorPoints(points) {
-      if (points > 0) return "indigo";
+      if (points > 0) return "indigo lighten-2";
       else return "grey";
     },
     rowClick(item) {
@@ -1139,28 +1144,39 @@ export default {
         this.clearInputs();
       }
     },
-
     // Save biggest fish to database
     async saveBiggestFish() {
       // If name for biggest fish, boat number and weight for biggest fish all have been selected
       if (this.selected_fish && this.boat_number_input && this.biggest_fish) {
-        let fish = {
-          boat_number: this.boat_number_input.boat_number,
-          captain_name: this.boat_number_input.captain_name,
-          name: this.selected_fish,
-          weight: this.biggest_fish,
-          competition_id: this.boat_number_input.competition_id,
-          cup_id: this.boat_number_input.cup_id,
-        };
-
         try {
           this.loading_fish = true;
-
           // TODO Check if there is already a biggest fish,
           // If yes then update
+          let found_fish = null;
+          let query = {
+            boat_number: this.boat_number_input.boat_number,
+            competition_id: this.boat_number_input.competition_id,
+            name: this.selected_fish,
+          };
+          await FishService.getFishes(query).then((r) => {
+            if (r.length) found_fish = r[0];
+          });
+          if (found_fish) {
+            found_fish.weight = this.biggest_fish;
+            await FishService.updateFish(found_fish._id, found_fish);
+          } else {
+            let fish = {
+              boat_number: this.boat_number_input.boat_number,
+              captain_name: this.boat_number_input.captain_name,
+              name: this.selected_fish,
+              weight: this.biggest_fish,
+              competition_id: this.boat_number_input.competition_id,
+              cup_id: this.boat_number_input.cup_id,
+            };
+            //Otherwise
+            await FishService.insertFishes([fish]).catch((e) => console.log(e));
+          }
 
-          //Otherwise
-          await FishService.insertFishes([fish]).catch((e) => console.log(e));
           this.notification = `Tiedot päivitetty tietokantaan!`;
           this.loading_fish = false;
           this.selected_fish = null;
@@ -1180,26 +1196,8 @@ export default {
       let fish_weight = 0;
       let total_points = 0;
       // if biggest fish not yet saved, save it
-      if (this.selected_fish && this.boat_number_input && this.biggest_fish) {
-        let fish = {
-          boat_number: this.boat_number_input.boat_number,
-          captain_name: this.boat_number_input.captain_name,
-          name: this.selected_fish,
-          weight: this.biggest_fish,
-          competition_id: this.boat_number_input.competition_id,
-          cup_id: this.boat_number_input.cup_id,
-        };
-        this.selected_fish = null;
-        this.biggest_fish = null;
-        this.loading_fish = true;
-        // TODO Check if there is already a biggest fish,
-        // If yes then update
+      if (this.isBiggestFishVisible) await this.saveBiggestFish();
 
-        // Query competition_id and boat_number?
-
-        //Otherwise
-        await FishService.insertFishes([fish]).catch((e) => console.log(e));
-      }
       //if reset == true, reset current weights to 0, otherwise update weights from inputs
       if (reset) {
         this.competition_boat.returned = false;
@@ -1272,10 +1270,6 @@ export default {
     },
 
     async calculateNormalResults(competition) {
-      let last_points = -1;
-      let last_placement = -1;
-      let placement = 1;
-
       await ResultService.getResults({ competition_id: competition._id })
         .then((r) => {
           this.signees = r;
@@ -1300,9 +1294,10 @@ export default {
       this.signees = this.signees.sort(function compare(a, b) {
         return parseInt(b.total_points) - parseInt(a.total_points);
       });
-      // For every signee, calculate their cup points and placing
-      //TODO rework the structure, seems more complex than it should be
-      // Placements and points now saved in every competition to cup_placement_points, based on placement fetch from there?
+
+      let last_points = -1;
+      let last_placement = -1;
+      let placement = 1;
       this.signees.forEach((signee, index) => {
         // If competitor has same points as last competitor
         if (signee.total_points == last_points) {
@@ -1312,7 +1307,7 @@ export default {
         else {
           placement = index + 1;
           last_points = signee.total_points;
-          last_placement = signee.placement;
+          last_placement = placement;
         }
         //For showing cup points, "Pisteet" on v-select
         signee.placement = placement;

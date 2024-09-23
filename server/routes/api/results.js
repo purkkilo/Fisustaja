@@ -78,6 +78,25 @@ router.put("/:id/update", async (req, res) => {
   }
 });
 
+// Update many results
+router.put("/update-many", async (req, res) => {
+  try {
+    await Result.updateMany(
+      {
+        _id: {
+          $in: req.body.ids,
+        },
+      },
+      req.body.valueToSet
+    ).catch((err) => {
+      console.log(err);
+    });
+    res.status(204).send();
+  } catch (error) {
+    res.status(400).send(error);
+  }
+});
+
 // Replace one result
 router.put("/:id/replace", async (req, res) => {
   try {

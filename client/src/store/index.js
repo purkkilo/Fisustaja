@@ -54,19 +54,6 @@ export default new Vuex.Store({
         (signee) => signee.returned == true
       );
     },
-    getPointSignees: (state) => {
-      return state.competition.signees.filter((signee) => {
-        let fishFound = false;
-        signee.fishes.every((fish) => {
-          if (fish.weight > 0) {
-            fishFound = true;
-            return false;
-          }
-          return true;
-        });
-        return fishFound;
-      });
-    },
     getResultSignees: (state) => {
       return state.competition.signees.sort(function compare(a, b) {
         return parseInt(b.total_points) - parseInt(a.total_points);

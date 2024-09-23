@@ -144,7 +144,7 @@
                     v-if="competition.signees.length"
                   >
                     <b>{{ hasGottenFishPercentage }}%</b> ({{
-                      $store.getters.getPointSignees.length
+                      hasGottenFishCount
                     }}
                     / {{ competition.signees.length }})
                   </v-list-item-subtitle>
@@ -216,6 +216,7 @@ export default {
       dialog: false,
       hasNotReturnedPercentage: 0,
       hasGottenFishPercentage: 0,
+      hasGottenFishCount: 0,
       selectedItem: 0,
       items: [
         {
@@ -310,18 +311,27 @@ export default {
             end_date.month() + 1
           }.${end_date.year()}`;
 
+          // Check how many signees have gotten fish
+          this.competition.signees.filter((signee) => {
+            signee.fishes.every((fish) => {
+              if (fish.weights > 0) {
+                this.hasGottenFishCount++;
+                return false;
+              } else return true;
+            });
+          });
+          console.log(this.hasGottenFishCount);
+
           this.hasGottenFishPercentage =
             Math.round(
-              (this.$store.getters.getPointSignees.length /
-                this.competition.signees.length) *
+              (this.hasGottenFishCount / this.competition.signees.length) *
                 100 *
                 100
             ) / 100;
 
           this.hasNotReturnedPercentage =
             Math.round(
-              ((this.competition.signees.length -
-                this.$store.getters.getFinishedSignees.length) /
+              ((this.competition.signees.length - this.hasGottenFishCount) /
                 this.competition.signees.length) *
                 100 *
                 100
