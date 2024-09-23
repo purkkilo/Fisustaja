@@ -115,16 +115,17 @@
                   <v-list-item-subtitle
                     v-if="competition.signees.length"
                     v-bind:class="{
-                      'green--text':
-                        !competition.signees.length -
-                        $store.getters.getFinishedSignees.length,
-                      'red--text': competition.signees.length,
+                      'green--text': !competition.signees.filter(
+                        (s) => !s.returned
+                      ).length,
+                      'red--text': competition.signees.filter(
+                        (s) => !s.returned
+                      ).length,
                     }"
                   >
                     <b>{{ hasNotReturnedPercentage }}%</b>
                     ({{
-                      competition.signees.length -
-                      $store.getters.getFinishedSignees.length
+                      competition.signees.filter((s) => !s.returned).length
                     }}
                     / {{ competition.signees.length }})
                   </v-list-item-subtitle>
@@ -248,17 +249,6 @@ export default {
     };
   },
   created() {
-    // IF competition on localstorage
-    if (localStorage.getItem("competition") != null) {
-      // update from database
-      const competition = JSON.parse(localStorage.getItem("competition"));
-      const competition_id = competition["id"];
-      this.refreshCompetition(competition_id);
-    } else {
-      console.log("No competition in localstorage!");
-    }
-  },
-  mounted() {
     // Focus on top of the page when changing pages
     location.href = "#";
     location.href = "#app";
@@ -272,6 +262,7 @@ export default {
       console.log("No competition in localstorage!");
     }
   },
+  mounted() {},
   methods: {
     // fetch/update competition from database
     async refreshCompetition(competition_id) {
@@ -311,28 +302,22 @@ export default {
             end_date.month() + 1
           }.${end_date.year()}`;
 
-          // Check how many signees have gotten fish
-          this.competition.signees.filter((signee) => {
-            signee.fishes.every((fish) => {
-              if (fish.weights > 0) {
-                this.hasGottenFishCount++;
-                return false;
-              } else return true;
-            });
-          });
-          console.log(this.hasGottenFishCount);
-
-          this.hasGottenFishPercentage =
+          this.hasNotReturnedPercentage =
             Math.round(
-              (this.hasGottenFishCount / this.competition.signees.length) *
+              (this.competition.signees.filter((s) => !s.returned).length /
+                this.competition.signees.length) *
                 100 *
                 100
             ) / 100;
 
-          this.hasNotReturnedPercentage =
+          // Check how many signees have gotten fish
+          this.competition.signees.forEach((signee) => {
+            if (signee.fishes.length) this.hasGottenFishCount++;
+          });
+
+          this.hasGottenFishPercentage =
             Math.round(
-              ((this.competition.signees.length - this.hasGottenFishCount) /
-                this.competition.signees.length) *
+              (this.hasGottenFishCount / this.competition.signees.length) *
                 100 *
                 100
             ) / 100;
