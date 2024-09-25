@@ -1,5 +1,10 @@
 <template>
-  <v-progress-linear indeterminate color="indigo lighten-2"></v-progress-linear>
+  <v-progress-linear
+    indeterminate
+    rounded
+    color="indigo lighten-2"
+    height="10"
+  ></v-progress-linear>
 </template>
 
 <script>

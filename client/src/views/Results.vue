@@ -250,13 +250,13 @@
             </v-col>
           </v-row>
           <stats
-            v-else
+            v-if="!loading && competition"
             :competition="competition"
+            :normal_points="normal_points"
+            :hasGottenFishCount="hasGottenFishCount"
             :signees="signees"
             :loading="loading"
             :biggest_amounts="biggest_amounts_results"
-            :calculated_weights="calculated_fish_weights"
-            :calculated_total="calculated_total_weights"
             :fishes_chart_title="fishes_chart_title"
             :fishes_chart_data="fishes_chart_data"
             :signee_chart_title="signee_chart_title"
@@ -522,9 +522,9 @@
 <script>
 "use strict";
 import CompetitionService from "@/CompetitionService";
+import ResultService from "@/ResultService";
 import Timedate from "@/components/layout/Timedate";
 import CompetitionNavigation from "@/components/layout/CompetitionNavigation.vue";
-import ProgressBarQuery from "@/components/layout/ProgressBarQuery";
 import Stats from "../components/results/Stats.vue";
 import TeamComp from "../components/results/TeamComp.vue";
 import NormalComp from "../components/results/NormalComp.vue";
@@ -536,7 +536,7 @@ export default {
   name: "Results",
   components: {
     Timedate,
-    ProgressBarQuery,
+    ProgressBarQuery: () => require("@/components/layout/ProgressBarQuery"),
     CompetitionNavigation,
     Stats,
     TeamComp,
@@ -570,8 +570,6 @@ export default {
       results_found_amounts: "",
       competition: null,
       isTeamCompetition: false,
-      calculated_total_weights: null,
-      calculated_fish_weights: null,
       selected_normal: null,
       fishes_chart: null,
       signees_chart: null,
@@ -587,8 +585,8 @@ export default {
         { text: "Kippari", value: "captain_name" },
         { text: "Varakippari", value: "temp_captain_name" },
         { text: "Paikkakunta", value: "locality" },
-        { text: "Tulos", value: "total_points" },
-        { text: "Cup pisteet", value: "cup_points_total" },
+        { text: "Tulos (p)", value: "total_points" },
+        { text: "Cup (p)", value: "cup_points_total" },
       ],
       signee_headers: [],
       team_headers: [
@@ -603,20 +601,20 @@ export default {
         { text: "Kalalaji", value: "name" },
         { text: "Kilp. numero", value: "boat_number" },
         { text: "Kippari", value: "captain_name" },
-        { text: "Paino", value: "weight" },
+        { text: "Paino (g)", value: "weight" },
       ],
       all_fishes_headers: [
         { text: "Sijoitus", value: "placement" },
         { text: "Kilp. numero", value: "boat_number" },
         { text: "Kippari", value: "captain_name" },
         { text: "Kala", value: "fish" },
-        { text: "Paino", value: "weight" },
+        { text: "Paino (g)", value: "weight" },
       ],
       biggest_headers: [
         { text: "Sijoitus", value: "placement" },
         { text: "Kilp. numero", value: "boat_number" },
         { text: "Kippari", value: "captain_name" },
-        { text: "Paino", value: "weight" },
+        { text: "Paino (g)", value: "weight" },
       ],
       search: "",
       search_team: "",
@@ -662,6 +660,7 @@ export default {
       pdf: null,
       pdfDialog: false,
       isLandscape: false,
+      hasGottenFishCount: 0,
     };
   },
   watch: {
@@ -696,8 +695,6 @@ export default {
     this.getColor = shared.getColor;
     this.initChartData = shared.initChartData;
     this.sortDict = shared.sortDict;
-  },
-  mounted() {
     /* eslint-disable no-unused-vars */
     if (localStorage.getItem("competition") != null) {
       const competition = JSON.parse(localStorage.getItem("competition"));
@@ -710,6 +707,7 @@ export default {
     location.href = "#";
     location.href = "#app";
   },
+  mounted() {},
   beforeDestroy() {
     // Clear timer
     clearInterval(this.timer_refresh);
@@ -797,13 +795,59 @@ export default {
         if (competition) {
           // Pick first result (the array should only have one, since id's are unique)
           this.competition = competition;
+
+          // Get results === signees
+          await ResultService.getResults({ competition_id: competition._id })
+            .then((r) => {
+              this.competition.total_weights = 0;
+              this.hasGottenFishCount = 0;
+              r.forEach((s) => {
+                s.total_points = 0;
+                if (s.fishes.length) {
+                  this.hasGottenFishCount++;
+
+                  s.fishes.forEach((f) => {
+                    let fish = this.competition.fishes.find(
+                      (cf) => cf.index === f.index
+                    );
+                    s.total_points += f.weights * fish.multiplier;
+                    this.competition.total_weights += f.weights;
+                    fish.weights += f.weights;
+                    if (this.biggest_amounts[fish.name]) {
+                      this.biggest_amounts[fish.name].push({
+                        boat_number: s.boat_number,
+                        captain_name: s.captain_name,
+                        weight: f.weights,
+                      });
+                    } else {
+                      this.biggest_amounts[fish.name] = [
+                        {
+                          boat_number: s.boat_number,
+                          captain_name: s.captain_name,
+                          weight: f.weights,
+                        },
+                      ];
+                    }
+                  });
+                } else {
+                  // Fix for pdf
+                  this.competition.fishes.forEach((cf) => {
+                    s.fishes.push({ name: cf.name, weights: 0 });
+                  });
+                }
+              });
+              this.signees = r;
+            })
+            .catch((e) => {
+              console.log(e);
+            });
+
           // Update to vuex, Assing variables and arrays from vuex (see client/store/index.js)
           this.$store.commit("refreshCompetition", this.competition);
           this.isTeamCompetition = this.$store.getters.isTeamCompetition;
-          this.signees = this.$store.getters.getResultSignees;
+
           this.selected_normal = "Pisteet";
-          this.normal_points = this.competition.normal_points;
-          this.normal_weights = this.competition.normal_weights;
+
           if (this.isTeamCompetition) {
             this.signee_headers.push({ text: "Tiimi", value: "team" });
             this.team_results = this.competition.team_results;
@@ -819,11 +863,6 @@ export default {
               placement++;
             });
           }
-          this.biggest_fishes = this.$store.getters.getBiggestFishes;
-          this.biggest_amounts = this.$store.getters.getBiggestAmounts;
-          this.calculated_total_weights =
-            this.$store.getters.getCompetitionTotalWeights;
-          this.calculated_fish_weights = this.competition.fishes;
 
           let temp_fish_names = this.$store.getters.getCompetitionFishes;
           this.fish_names.push("Voittajat");
@@ -835,16 +874,19 @@ export default {
             this.fish_amount_names.push(fish.name);
             this.table_fish_names.push(fish.name);
           });
-          this.calculateAll();
+
           if (this.fishes_chart && this.signees_chart) {
             this.fishes_chart.destroy();
             this.signees_chart.destroy();
           }
+
+          this.calculateAll();
+
           this.$nextTick(() => {
             let charts = this.initChartData(
-              this.calculated_fish_weights,
+              this.competition.fishes,
               this.table_fish_names,
-              this.$store.getters.getPointSignees.length,
+              this.hasGottenFishCount,
               this.signees.length
             );
 
@@ -858,7 +900,7 @@ export default {
             this.results = this.normal_points;
             this.headers = this.normal_headers;
           } else {
-            this.results = this.$store.getters.getSignees;
+            this.results = this.signees;
             this.headers = this.signee_headers;
             this.selected_normal = "Ilmoittautuneet";
           }
@@ -871,9 +913,10 @@ export default {
           console.log("No competition found on database...");
         }
       } catch (err) {
-        console.error(err.message);
+        console.error(err);
       }
       this.loading = false;
+      this.tab = "stats";
     },
     async publishCompetition(isPublic) {
       this.competition.isPublic = !isPublic;
@@ -907,12 +950,88 @@ export default {
 
     // "Wrapper" to calculate all the results at once
     async calculateAll() {
+      this.calculateNormalResults(this.competition);
       this.calculateBiggestFishes();
       this.calculateBiggestAmounts();
     },
 
+    // "Normaalikilpailu" results
+    calculateNormalResults(competition) {
+      const placement_points = competition.cup_placement_points;
+      let cup_placement_points = placement_points[0];
+      const cup_participation_points = competition.cup_participation_points;
+      let last_points = -1;
+      let last_placement = -1;
+
+      let placement = 1;
+      let cup_points_total = 0;
+      let normal_points = [];
+      let normal_weights = [];
+      this.signees = this.signees.filter((signee) => signee.returned == true);
+      this.signees = this.signees.sort(function compare(a, b) {
+        return parseInt(b.total_points) - parseInt(a.total_points);
+      });
+      // For every signee, calculate their cup points and placing
+      //TODO rework the structure, seems more complex than it should be
+      // Placements and points now saved in every competition to cup_placement_points_array, based on placement fetch from there?
+      this.signees.forEach((signee, index) => {
+        // If competitor has same points as last competitor
+        if (signee.total_points == last_points) {
+          placement = last_placement;
+        }
+        // If no tie, add tied_competitors to placement, to give correct placement to next not tied competitor
+        else {
+          placement = index + 1;
+          last_points = signee.total_points;
+          last_placement = signee.placement;
+        }
+
+        // Find the placement points according to the placement
+        let p = placement_points.find((e) => e.placement === placement);
+        // If placement isn't found (placement > than provided placements), or points = 0 (no points from competition)
+        if (!p || signee.total_points === 0) {
+          cup_placement_points = 0;
+        } else {
+          cup_placement_points = p.points * competition.cup_points_multiplier;
+        }
+        // Calculate total cup points, cup points multiplier only scales the placement points
+        cup_points_total = cup_placement_points + cup_participation_points;
+        //For showing cup points, "Pisteet" on v-select
+        normal_points.push({
+          placement: placement,
+          boat_number: signee.boat_number,
+          captain_name: signee.captain_name,
+          temp_captain_name: signee.temp_captain_name,
+          locality: signee.locality,
+          total_points: signee.total_points.toLocaleString(),
+          cup_placement_points: cup_placement_points,
+          cup_participation_points: cup_participation_points,
+          cup_points_total: cup_points_total,
+        });
+
+        //For showing fish weights, "Kalat" on v-select
+        let temp_dict = {};
+        temp_dict.placement = placement;
+        temp_dict.boat_number = signee.boat_number;
+        temp_dict.captain_name = signee.captain_name;
+
+        // For each fish, get the weight and fish name
+        signee.fishes.forEach((weights) => {
+          let name = weights.name;
+          let weight = weights.weights;
+          temp_dict[name] = weight;
+        });
+        temp_dict.total_points = signee.total_points;
+        normal_weights.push(temp_dict);
+        last_points = signee.total_points;
+      });
+
+      this.normal_points = normal_points;
+      this.normal_weights = normal_weights;
+    },
+
     // Switch table headers and columns based on this.selected_normal value (v-select)
-    switchNormalResults: function () {
+    switchNormalResults() {
       // Prevent v-select having no value, would show error
       if (!this.selected_normal) {
         this.selected_normal = "Pisteet";
@@ -934,11 +1053,11 @@ export default {
         this.table_fish_names.forEach((name) => {
           this.headers.push({ text: name, value: name });
         });
-        this.headers.push({ text: "Tulos", value: "total_points" });
+        this.headers.push({ text: "Tulos (p)", value: "total_points" });
       }
       if (this.selected_normal === "Ilmoittautuneet") {
         this.headers = this.signee_headers;
-        this.results = this.$store.getters.getSignees;
+        this.results = this.signees;
       }
     },
     // Calculate "Suurimmat Kalat"

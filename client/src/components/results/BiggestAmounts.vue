@@ -37,7 +37,7 @@
               <v-chip>{{ item.name }}</v-chip>
             </template>
             <template v-slot:[`item.weight`]="{ item }">
-              <v-chip>{{ item.weight.toLocaleString() }} g</v-chip>
+              <v-chip>{{ item.weight.toLocaleString() }}</v-chip>
             </template>
           </v-data-table>
         </v-card>

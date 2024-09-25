@@ -822,12 +822,11 @@
 <script>
 "use strict";
 import CompetitionService from "../CompetitionService";
-//import FishService from "../FishService";
 import ResultService from "../ResultService";
+import FishService from "../FishService";
 import Timedate from "../components/layout/Timedate";
 import CompetitionNavigation from "../components/layout/CompetitionNavigation.vue";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
-import FishService from "../FishService";
 
 export default {
   name: "Weighting",

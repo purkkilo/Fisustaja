@@ -36,9 +36,6 @@ export default new Vuex.Store({
     getCompetitionSignees: (state) => {
       return state.competition.signees;
     },
-    getCompetitionTotalWeights: (state) => {
-      return state.competition.total_weights;
-    },
     getStillOnWaterSignees: (state) => {
       return state.competition.signees.filter(
         (signee) => signee.returned == false

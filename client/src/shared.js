@@ -1,5 +1,6 @@
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import moment from "moment";
 
 export function addTitle(doc, title, cup, time) {
   doc.setFontSize(24);
@@ -217,7 +218,7 @@ export function replaceAll(string, search, replace) {
 
 // Returns date in format dd/mm/yyyy as string
 export function formatDate(start_date) {
-  start_date = this.$moment(start_date);
+  start_date = moment(start_date);
   let formatted_date = `${start_date.date()}.${
     start_date.month() + 1
   }.${start_date.year()}`;
@@ -231,8 +232,8 @@ export function saveAsPDF(
   orientation = "portrait"
 ) {
   // Format dates for easier reding
-  let temp_start_date = this.formatDate(this.competition.start_date);
-  let temp_end_date = this.formatDate(this.competition.end_date);
+  let temp_start_date = formatDate(this.competition.start_date);
+  let temp_end_date = formatDate(this.competition.end_date);
   let rows;
   let columns;
   let pdf_competition_type;
@@ -262,7 +263,7 @@ export function saveAsPDF(
         "Cup pisteet",
       ];
       // Format dictionary/json to format that autotable understands (arrays in arrays);
-      rows = this.dictToArray(this.normal_points, 1);
+      rows = dictToArray(this.normal_points, 1);
     }
     if (this.selected_normal === "Kalat") {
       columns = ["Sijoitus", "Nro.", "Kippari"];
@@ -272,7 +273,7 @@ export function saveAsPDF(
       });
       columns.push("Tulos");
       // Format dictionary/json to format that autotable understands (arrays in arrays);
-      rows = this.dictToArray(this.normal_weights, 2);
+      rows = dictToArray(this.normal_weights, 2);
     }
     if (this.selected_normal === "Ilmoittautuneet") {
       columns = [
@@ -286,7 +287,7 @@ export function saveAsPDF(
         columns.push("Tiimi");
       }
       // Format dictionary/json to format that autotable understands (arrays in arrays);
-      rows = this.dictToArray(this.$store.getters.getSignees, 6);
+      rows = dictToArray(this.$store.getters.getSignees, 6);
     }
   }
 
@@ -295,7 +296,7 @@ export function saveAsPDF(
     // Other tables are generated in code so no need to wait for rendering to html
     columns = ["Sijoitus", "Tiimi", "Jäsen 1", "Jäsen 2", "Jäsen 3", "Pisteet"];
     // Format dictionary/json to format that autotable understands (arrays in arrays);
-    rows = this.dictToArray(this.team_results, 5);
+    rows = dictToArray(this.team_results, 5);
   }
 
   if (table_id === "#biggest-fishes-table") {
@@ -303,13 +304,13 @@ export function saveAsPDF(
 
     if (this.selected_biggest_fish === "Voittajat") {
       columns = ["Kalalaji", "Veneen nro", "Kippari", "Paino"];
-      rows = this.dictToArray(this.biggest_fishes_results, 4);
+      rows = dictToArray(this.biggest_fishes_results, 4);
     } else if (this.selected_biggest_fish === "Kaikki") {
       columns = ["Sijoitus", "Veneen nro", "Kippari", "Kala", "Paino"];
-      rows = this.dictToArray(this.biggest_fishes_results, 8);
+      rows = dictToArray(this.biggest_fishes_results, 8);
     } else {
       columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino"];
-      rows = this.dictToArray(this.biggest_fishes_results, 3);
+      rows = dictToArray(this.biggest_fishes_results, 3);
     }
   }
 
@@ -318,13 +319,13 @@ export function saveAsPDF(
 
     if (this.selected_biggest_amount === "Voittajat") {
       columns = ["Kalalaji", "Veneen nro", "Kippari", "Paino"];
-      rows = this.dictToArray(this.biggest_amounts_results, 4);
+      rows = dictToArray(this.biggest_amounts_results, 4);
     } else if (this.selected_biggest_amount === "Kaikki") {
       columns = ["Sijoitus", "Veneen nro", "Kippari", "Kala", "Paino"];
-      rows = this.dictToArray(this.biggest_amounts_results, 8);
+      rows = dictToArray(this.biggest_amounts_results, 8);
     } else {
       columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino"];
-      rows = this.dictToArray(this.biggest_amounts_results, 3);
+      rows = dictToArray(this.biggest_amounts_results, 3);
     }
   }
 
@@ -367,8 +368,8 @@ export function saveAsPDF(
 export function saveStatsAsPDF(competition_type, orientation = "portrait") {
   resizeChartForPDF();
   // Format dates for easier reding
-  let temp_start_date = this.formatDate(this.competition.start_date);
-  let temp_end_date = this.formatDate(this.competition.end_date);
+  let temp_start_date = formatDate(this.competition.start_date);
+  let temp_end_date = formatDate(this.competition.end_date);
 
   let doc = new jsPDF({ orientation: orientation });
 
@@ -406,9 +407,9 @@ export function saveStatsAsPDF(competition_type, orientation = "portrait") {
     { align: "center" }
   );
   // Generate table
-  let rows = this.dictToArray(this.calculated_fish_weights, 7);
+  let rows = dictToArray(this.competition.fishes, 7);
   let temp =
-    Math.round((this.calculated_total_weights / 1000 + Number.EPSILON) * 100) /
+    Math.round((this.competition.total_weights / 1000 + Number.EPSILON) * 100) /
     100;
   let total_amount = temp.toLocaleString() + " kg";
   rows.push(["Yhteensä", "", "", total_amount]);
@@ -450,14 +451,9 @@ export function saveStatsAsPDF(competition_type, orientation = "portrait") {
       "Saalista saaneita",
       `${
         Math.round(
-          (this.$store.getters.getPointSignees.length /
-            this.competition.signees.length) *
-            100 *
-            100
+          (this.hasGottenFishCount / this.signees.length) * 100 * 100
         ) / 100
-      } % (${this.$store.getters.getPointSignees.length}/${
-        this.signees.length
-      })`,
+      } % (${this.hasGottenFishCount}/${this.signees.length})`,
     ],
   ];
   doc.autoTable({
@@ -500,8 +496,8 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
   let temp_selected_biggest_amount = this.selected_biggest_amount;
   let temp_selected_normal = this.selected_normal;
   // Format dates for easier reding
-  let temp_start_date = this.formatDate(this.competition.start_date);
-  let temp_end_date = this.formatDate(this.competition.end_date);
+  let temp_start_date = formatDate(this.competition.start_date);
+  let temp_end_date = formatDate(this.competition.end_date);
   let year = this.$moment(this.competition.start_date).year();
 
   let doc = new jsPDF({ orientation: orientation });
@@ -528,7 +524,7 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
       columns.push(name);
     });
     columns.push("Tulos");
-    rows = this.dictToArray(this.normal_weights, 2);
+    rows = dictToArray(this.normal_weights, 2);
     doc.text(
       "Normaalikilpailun tulokset (Kalat)",
       doc.internal.pageSize.getWidth() / 2,
@@ -572,7 +568,7 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
       "Cup pisteet",
     ];
     // Format dictionary/json to format that autotable understands (arrays in arrays);
-    rows = this.dictToArray(this.normal_points, 1);
+    rows = dictToArray(this.normal_points, 1);
     doc.text(
       "Normaalikilpailun tulokset (Pisteet)",
       doc.internal.pageSize.getWidth() / 2,
@@ -624,7 +620,7 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
         "Pisteet",
       ];
       // Format dictionary/json to format that autotable understands (arrays in arrays);
-      rows = this.dictToArray(this.normal_points, 1);
+      rows = dictToArray(this.normal_points, 1);
       doc.autoTable({
         head: [columns],
         body: rows,
@@ -674,7 +670,7 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
 
     // If there are biggest fishes
     if (this.biggest_fishes_results.length) {
-      rows = this.dictToArray(this.biggest_fishes_results, 8);
+      rows = dictToArray(this.biggest_fishes_results, 8);
       doc.text(
         "Suurimmat kalat" + ` (${this.selected_biggest_fish})`,
         doc.internal.pageSize.getWidth() / 2,
@@ -711,7 +707,7 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
     //Suurimmat kalasaaliit (Kaikki)
     // If there are any amounts --> if someone has gotten any fish
     if (this.biggest_amounts_results.length) {
-      rows = this.dictToArray(this.biggest_amounts_results, 8);
+      rows = dictToArray(this.biggest_amounts_results, 8);
       doc.text(
         "Suurimmat kalasaaliit" + ` (${this.selected_biggest_fish})`,
         doc.internal.pageSize.getWidth() / 2,
@@ -769,7 +765,7 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
         start_coord = 50;
 
         columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino"];
-        rows = this.dictToArray(this.biggest_fishes_results, 3);
+        rows = dictToArray(this.biggest_fishes_results, 3);
 
         doc.text(
           "Suurimmat kalat" + ` (${name})`,
@@ -831,7 +827,7 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
         doc.setFontSize(18);
         start_coord = 50;
         columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino"];
-        rows = this.dictToArray(this.biggest_amounts[name], 3);
+        rows = dictToArray(this.biggest_amounts[name], 3);
         doc.text(
           "Suurimmat kalasaaliit" + ` (${name})`,
           doc.internal.pageSize.getWidth() / 2,
@@ -894,7 +890,7 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
 
     // If there are biggest fishes
     if (this.biggest_fishes_results.length) {
-      rows = this.dictToArray(this.biggest_fishes_results, 4);
+      rows = dictToArray(this.biggest_fishes_results, 4);
       doc.text(
         "Suurimmat kalat" + ` (${this.selected_biggest_fish})`,
         doc.internal.pageSize.getWidth() / 2,
@@ -931,7 +927,7 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
     //Suurimmat kalasaaliit (Voittajat)
     // If there are any amounts --> if someone has gotten any fish
     if (this.biggest_amounts_results.length) {
-      rows = this.dictToArray(this.biggest_amounts_results, 4);
+      rows = dictToArray(this.biggest_amounts_results, 4);
       doc.text(
         "Suurimmat kalasaaliit" + ` (${this.selected_biggest_fish})`,
         doc.internal.pageSize.getWidth() / 2,
@@ -1004,10 +1000,10 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
       { align: "center" }
     );
     // Table generated straight from html
-    rows = this.dictToArray(this.calculated_fish_weights, 7);
+    rows = dictToArray(this.competition.fishes, 7);
     let temp =
       Math.round(
-        (this.calculated_total_weights / 1000 + Number.EPSILON) * 100
+        (this.competition.total_weights / 1000 + Number.EPSILON) * 100
       ) / 100;
     let total_amount = temp.toLocaleString() + " kg";
     rows.push(["Yhteensä", "", "", total_amount]);
@@ -1050,14 +1046,9 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
         "Saalista saaneita",
         `${
           Math.round(
-            (this.$store.getters.getPointSignees.length /
-              this.competition.signees.length) *
-              100 *
-              100
+            (this.hasGottenFishCount / this.signees.length) * 100 * 100
           ) / 100
-        } % (${this.$store.getters.getPointSignees.length}/${
-          this.signees.length
-        })`,
+        } % (${this.hasGottenFishCount}/${this.signees.length})`,
       ],
     ];
     doc.autoTable({

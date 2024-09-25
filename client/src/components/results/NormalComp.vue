@@ -47,7 +47,7 @@
                   <v-chip>{{ item.boat_number }}</v-chip>
                 </template>
                 <template v-slot:[`item.total_points`]="{ item }">
-                  <v-chip>{{ item.total_points.toLocaleString() }} p</v-chip>
+                  <v-chip>{{ item.total_points.toLocaleString() }}</v-chip>
                 </template>
                 <template v-slot:[`item.cup_points_total`]="{ item }">
                   <v-tooltip bottom color="primary">
@@ -56,7 +56,7 @@
                         v-bind="attrs"
                         v-on="on"
                         :color="getColorPoints(item.cup_points_total)"
-                        >{{ item.cup_points_total }} p</v-chip
+                        >{{ item.cup_points_total }}</v-chip
                       >
                     </template>
                     <span>
