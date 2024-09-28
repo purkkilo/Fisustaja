@@ -11,124 +11,6 @@ export function addTitle(doc, title, cup, time) {
   doc.line(0, 35, 400, 35);
 }
 
-// Parses dictionary/json to array, for pdf autotables
-export function dictToArray(dict, type) {
-  const temp_arr = Object.entries(dict);
-  const arr = [];
-  temp_arr.forEach((element) => {
-    let values = Object.values(element[1]);
-    // Normaalikilpailu, pisteet
-    if (type === 1) {
-      values[0] = String(values[0]) + ".";
-      values[1] = "(" + String(values[1]) + ")";
-      values[5] = values[5].toLocaleString() + " p";
-      values[6] = values[values.length - 1] + " p";
-    }
-    // Normaalikilpailu, kalat
-    if (type === 2) {
-      values[0] = String(values[0]) + ".";
-      values[1] = "(" + String(values[1]) + ")";
-      for (let i of range(3, values.length - 2)) {
-        if (parseInt(values[i]) > 0) {
-          values[i] = values[i].toLocaleString() + " g";
-        } else {
-          values[i] = "-";
-        }
-      }
-      values[values.length - 1] =
-        values[values.length - 1].toLocaleString() + " p";
-    }
-    // Suurimmat kalat, suurimmat kalasaaliit
-    if (type === 3) {
-      let temp_placement = isNaN(values[values.length - 1])
-        ? values[values.length - 2]
-        : values[values.length - 1];
-      let temp_bnumber = values[0];
-      let temp_captain = values[1];
-      let temp_points = values[2].toLocaleString() + " g";
-      values[0] = String(temp_placement) + ".";
-      values[1] = "(" + String(temp_bnumber) + ")";
-      values[2] = temp_captain;
-      values[3] = temp_points;
-    }
-    //Voittajat
-    if (type === 4) {
-      values[1] = "(" + String(values[1]) + ")";
-      values[3] = values[values.length - 1].toLocaleString() + " g";
-    }
-    //Tiimikilpailu
-    if (type === 5) {
-      let place = values[5];
-      let team = values[0];
-      let captain_1 = values[1];
-      let captain_2 = values[2];
-      let captain_3 = values[3];
-      let points = values[4];
-      values[0] = String(place) + ".";
-      values[1] = team;
-      values[2] = captain_1;
-      values[3] = captain_2;
-      values[4] = captain_3;
-      values[5] = points.toLocaleString() + " p";
-    }
-    //Normaalikilpailu, Ilmoittautuneet
-    if (type === 6) {
-      let b_number = values[1];
-      let captain = values[3];
-      let temp_captain = values[4];
-      let starting_place = values[2];
-      let locality = values[5];
-      let team = values[6];
-      values[0] = "(" + String(b_number) + ")";
-      values[1] = captain;
-      values[2] = temp_captain;
-      values[3] = locality;
-      values[4] = starting_place;
-      values[5] = team;
-    }
-    //Kalalajien info
-    if (type === 7) {
-      let fish_name = values[1];
-      let fish_multiplier = values[2];
-      let fish_minsize = values[3];
-      let fish_weights = values[4];
-
-      if (isNaN(values[0])) {
-        fish_name = values[0];
-        fish_multiplier = values[1];
-        fish_minsize = values[2];
-        fish_weights = values[3];
-      }
-
-      values[0] = fish_name;
-      values[1] = "x " + String(fish_multiplier);
-      values[2] = fish_minsize + " cm";
-      values[3] =
-        String(Math.round((fish_weights / 1000 + Number.EPSILON) * 100) / 100) +
-        " kg";
-    }
-    // Suurimmat kalat, suurimmat kalasaaliit (Kaikki)
-    if (type === 8) {
-      let temp_placement = isNaN(values[values.length - 1])
-        ? values[values.length - 2]
-        : values[values.length - 1];
-      let temp_bnumber = values[0];
-      let temp_captain = values[1];
-      let temp_fish = isNaN(values[values.length - 1])
-        ? values[values.length - 1]
-        : values[values.length - 2];
-      let temp_points = values[2].toLocaleString() + " g";
-      values[0] = String(temp_placement) + ".";
-      values[1] = "(" + String(temp_bnumber) + ")";
-      values[2] = temp_captain;
-      values[3] = temp_fish;
-      values[4] = temp_points;
-    }
-    arr.push(values);
-  });
-  return arr;
-}
-
 export function cupDictToArray(results, competitions, type) {
   const arr = [];
   let boat_number = 1;
@@ -234,7 +116,7 @@ export function saveAsPDF(
   // Format dates for easier reding
   let temp_start_date = formatDate(this.competition.start_date);
   let temp_end_date = formatDate(this.competition.end_date);
-  let rows;
+  let rows = [];
   let columns;
   let pdf_competition_type;
   // PDF creation
@@ -259,21 +141,39 @@ export function saveAsPDF(
         "Kippari",
         "Varakippari",
         "Paikkakunta",
-        "Tulos",
-        "Cup pisteet",
+        "Tulos (p)",
+        "Cup (p)",
       ];
       // Format dictionary/json to format that autotable understands (arrays in arrays);
-      rows = dictToArray(this.normal_points, 1);
+      this.normal_points.forEach((b, i) => {
+        rows[i] = [
+          b.placement + ".",
+          "(" + b.boat_number + ")",
+          b.captain_name,
+          b.temp_captain_name,
+          b.locality,
+          b.total_points.toLocaleString(),
+          b.cup_points_total,
+        ];
+      });
     }
     if (this.selected_normal === "Kalat") {
       columns = ["Sijoitus", "Nro.", "Kippari"];
       // Get fish names for columns
       this.table_fish_names.forEach((name) => {
-        columns.push(name);
+        columns.push(name + " (g)");
       });
-      columns.push("Tulos");
+      columns.push("Tulos (p)");
       // Format dictionary/json to format that autotable understands (arrays in arrays);
-      rows = dictToArray(this.normal_weights, 2);
+      this.normal_weights.forEach((b, i) => {
+        let r = [];
+        r = [b.placement + ".", "(" + b.boat_number + ")", b.captain_name];
+        this.table_fish_names.forEach((name) => {
+          r.push(b[name].toLocaleString());
+        });
+        r.push(b.total_points.toLocaleString());
+        rows[i] = r;
+      });
     }
     if (this.selected_normal === "Ilmoittautuneet") {
       columns = [
@@ -287,30 +187,77 @@ export function saveAsPDF(
         columns.push("Tiimi");
       }
       // Format dictionary/json to format that autotable understands (arrays in arrays);
-      rows = dictToArray(this.$store.getters.getSignees, 6);
+      this.$store.getters.getSignees.forEach((b, i) => {
+        rows[i] = [
+          "(" + b.boat_number + ")",
+          b.captain_name,
+          b.temp_captain,
+          b.locality,
+          b.starting_place,
+        ];
+      });
     }
   }
 
   if (table_id === "#team-table") {
     pdf_competition_type = `Tiimikilpailu`;
     // Other tables are generated in code so no need to wait for rendering to html
-    columns = ["Sijoitus", "Tiimi", "Jäsen 1", "Jäsen 2", "Jäsen 3", "Pisteet"];
+    columns = [
+      "Sijoitus",
+      "Tiimi",
+      "Jäsen 1",
+      "Jäsen 2",
+      "Jäsen 3",
+      "Pisteet (p)",
+    ];
     // Format dictionary/json to format that autotable understands (arrays in arrays);
-    rows = dictToArray(this.team_results, 5);
+    rows = [];
+    this.team_results.forEach((b, i) => {
+      rows[i] = [
+        b.placement,
+        b.team,
+        b.captain_name_1,
+        b.captain_name_1,
+        b.captain_name_1,
+        b.total_points.toLocaleString(),
+      ];
+    });
   }
 
   if (table_id === "#biggest-fishes-table") {
     pdf_competition_type = `SuurimmatKalat${this.selected_biggest_fish}`;
 
     if (this.selected_biggest_fish === "Voittajat") {
-      columns = ["Kalalaji", "Veneen nro", "Kippari", "Paino"];
-      rows = dictToArray(this.biggest_fishes_results, 4);
+      columns = ["Kalalaji", "Veneen nro", "Kippari", "Paino (g)"];
+      this.biggest_fishes_results.forEach((f, i) => {
+        rows[i] = [
+          f.name,
+          "(" + f.boat_number + ")",
+          f.captain_name,
+          f.weight.toLocaleString(),
+        ];
+      });
     } else if (this.selected_biggest_fish === "Kaikki") {
-      columns = ["Sijoitus", "Veneen nro", "Kippari", "Kala", "Paino"];
-      rows = dictToArray(this.biggest_fishes_results, 8);
+      columns = ["Sijoitus", "Veneen nro", "Kippari", "Kala", "Paino (g)"];
+      this.biggest_fishes_results.forEach((f, i) => {
+        rows[i] = [
+          f.placement + ".",
+          "(" + f.boat_number + ")",
+          f.captain_name,
+          f.name,
+          f.weight.toLocaleString(),
+        ];
+      });
     } else {
-      columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino"];
-      rows = dictToArray(this.biggest_fishes_results, 3);
+      columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino (g)"];
+      this.biggest_fishes_results.forEach((f, i) => {
+        rows[i] = [
+          f.placement + ".",
+          "(" + f.boat_number + ")",
+          f.captain_name,
+          f.weight.toLocaleString(),
+        ];
+      });
     }
   }
 
@@ -318,14 +265,36 @@ export function saveAsPDF(
     pdf_competition_type = `SuurimmatSaaliit${this.selected_biggest_amount}`;
 
     if (this.selected_biggest_amount === "Voittajat") {
-      columns = ["Kalalaji", "Veneen nro", "Kippari", "Paino"];
-      rows = dictToArray(this.biggest_amounts_results, 4);
+      columns = ["Kalalaji", "Veneen nro", "Kippari", "Paino (g)"];
+      this.biggest_amounts_results.forEach((f, i) => {
+        rows[i] = [
+          f.name,
+          "(" + f.boat_number + ")",
+          f.captain_name,
+          f.weight.toLocaleString(),
+        ];
+      });
     } else if (this.selected_biggest_amount === "Kaikki") {
-      columns = ["Sijoitus", "Veneen nro", "Kippari", "Kala", "Paino"];
-      rows = dictToArray(this.biggest_amounts_results, 8);
+      columns = ["Sijoitus", "Veneen nro", "Kippari", "Kala", "Paino (g)"];
+      this.biggest_amounts_results.forEach((f, i) => {
+        rows[i] = [
+          f.placement + ".",
+          "(" + f.boat_number + ")",
+          f.captain_name,
+          f.name,
+          f.weight.toLocaleString(),
+        ];
+      });
     } else {
-      columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino"];
-      rows = dictToArray(this.biggest_amounts_results, 3);
+      columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino (g)"];
+      this.biggest_amounts_results.forEach((f, i) => {
+        rows[i] = [
+          f.placement + ".",
+          "(" + f.boat_number + ")",
+          f.captain_name,
+          f.weight.toLocaleString(),
+        ];
+      });
     }
   }
 
@@ -407,7 +376,16 @@ export function saveStatsAsPDF(competition_type, orientation = "portrait") {
     { align: "center" }
   );
   // Generate table
-  let rows = dictToArray(this.competition.fishes, 7);
+  let rows = [];
+
+  this.competition.fishes.forEach((f, i) => {
+    rows[i] = [
+      f.name,
+      "x " + f.multiplier,
+      f.minsize + " cm",
+      Math.round((f.weights / 1000 + Number.EPSILON) * 100) / 100 + " kg",
+    ];
+  });
   let temp =
     Math.round((this.competition.total_weights / 1000 + Number.EPSILON) * 100) /
     100;
@@ -513,7 +491,7 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
   doc.setFontSize(18);
   // start_coord needed to keep track of y coordinates for tables (if there are no results -> no table drawn to pdf -> varying coordinates)
   let start_coord;
-  let rows;
+  let rows = [];
   let columns;
   //Normaalikilpailu (Pisteet), saved to pdf if it's inclued in this.selected_print array
   if (this.selected_print.includes("normal")) {
@@ -521,10 +499,21 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
     columns = ["Sijoitus", "Nro.", "Kippari"];
     // Get fish names for columns
     this.table_fish_names.forEach((name) => {
-      columns.push(name);
+      columns.push(name + " (g)");
     });
-    columns.push("Tulos");
-    rows = dictToArray(this.normal_weights, 2);
+    columns.push("Tulos (p)");
+
+    this.normal_weights.forEach((b, i) => {
+      let r = [];
+      r = [b.placement + ".", "(" + b.boat_number + ")", b.captain_name];
+
+      this.table_fish_names.forEach((name) => {
+        r.push(b[name].toLocaleString());
+      });
+      r.push(b.total_points.toLocaleString());
+      rows[i] = r;
+    });
+
     doc.text(
       "Normaalikilpailun tulokset (Kalat)",
       doc.internal.pageSize.getWidth() / 2,
@@ -564,11 +553,22 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
       "Kippari",
       "Varakippari",
       "Paikkakunta",
-      "Tulos",
-      "Cup pisteet",
+      "Tulos (p)",
+      "Cup (p)",
     ];
     // Format dictionary/json to format that autotable understands (arrays in arrays);
-    rows = dictToArray(this.normal_points, 1);
+    rows = [];
+    this.normal_points.forEach((b, i) => {
+      rows[i] = [
+        b.placement + ".",
+        "(" + b.boat_number + ")",
+        b.captain_name,
+        b.temp_captain_name,
+        b.locality,
+        b.total_points.toLocaleString(),
+        b.cup_points_total,
+      ];
+    });
     doc.text(
       "Normaalikilpailun tulokset (Pisteet)",
       doc.internal.pageSize.getWidth() / 2,
@@ -617,10 +617,20 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
         "Jäsen 1",
         "Jäsen 2",
         "Jäsen 3",
-        "Pisteet",
+        "Pisteet (p)",
       ];
       // Format dictionary/json to format that autotable understands (arrays in arrays);
-      rows = dictToArray(this.normal_points, 1);
+      rows = [];
+      this.team_results.forEach((b, i) => {
+        rows[i] = [
+          b.placement + ".",
+          b.team,
+          b.captain_name_1,
+          b.captain_name_1,
+          b.captain_name_1,
+          b.total_points.toLocaleString(),
+        ];
+      });
       doc.autoTable({
         head: [columns],
         body: rows,
@@ -655,10 +665,8 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
     // Suurimmat Kalat  (Kaikki)
     // Select these for calculations
     this.selected_biggest_fish = this.selected_biggest_amount = "Kaikki";
-    columns = ["Sijoitus", "Veneen nro", "Kippari", "Kala", "Paino"];
-    // Calculate data
-    this.calculateBiggestFishes();
-    this.calculateBiggestAmounts();
+    columns = ["Sijoitus", "Veneen nro", "Kippari", "Kala", "Paino (g)"];
+
     // If there are any results, add title
     if (
       this.biggest_fishes_results.length ||
@@ -670,7 +678,16 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
 
     // If there are biggest fishes
     if (this.biggest_fishes_results.length) {
-      rows = dictToArray(this.biggest_fishes_results, 8);
+      rows = [];
+      this.biggest_fishes_results.forEach((f, i) => {
+        rows[i] = [
+          f.placement + ".",
+          "(" + f.boat_number + ")",
+          f.captain_name,
+          f.name,
+          f.weight.toLocaleString(),
+        ];
+      });
       doc.text(
         "Suurimmat kalat" + ` (${this.selected_biggest_fish})`,
         doc.internal.pageSize.getWidth() / 2,
@@ -707,7 +724,16 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
     //Suurimmat kalasaaliit (Kaikki)
     // If there are any amounts --> if someone has gotten any fish
     if (this.biggest_amounts_results.length) {
-      rows = dictToArray(this.biggest_amounts_results, 8);
+      rows = [];
+      this.biggest_amounts_results.forEach((f, i) => {
+        rows[i] = [
+          f.placement + ".",
+          "(" + f.boat_number + ")",
+          f.captain_name,
+          f.name,
+          f.weight.toLocaleString(),
+        ];
+      });
       doc.text(
         "Suurimmat kalasaaliit" + ` (${this.selected_biggest_fish})`,
         doc.internal.pageSize.getWidth() / 2,
@@ -752,7 +778,6 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
     this.table_fish_names.forEach((name) => {
       // Same process as above, but for every fish instead of only winners
       this.selected_biggest_fish = name;
-      this.calculateBiggestFishes();
       start_coord = 10;
 
       if (this.biggest_fishes_results.length) {
@@ -764,8 +789,16 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
         doc.setFontSize(18);
         start_coord = 50;
 
-        columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino"];
-        rows = dictToArray(this.biggest_fishes_results, 3);
+        columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino  (g)"];
+        rows = [];
+        this.biggest_fishes_results.forEach((f, i) => {
+          rows[i] = [
+            f.placement + ".",
+            "(" + f.boat_number + ")",
+            f.captain_name,
+            f.weight.toLocaleString(),
+          ];
+        });
 
         doc.text(
           "Suurimmat kalat" + ` (${name})`,
@@ -812,10 +845,9 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
       doc.addPage();
     }
     let counter = 0;
-    columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino"];
+    columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino (g)"];
     this.table_fish_names.forEach((name) => {
       this.selected_biggest_amount = name;
-      this.calculateBiggestAmounts();
       start_coord = 10;
 
       if (this.biggest_amounts[name].length) {
@@ -826,8 +858,31 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
         addTitle(doc, title, this.competition.cup_name, time);
         doc.setFontSize(18);
         start_coord = 50;
-        columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino"];
-        rows = dictToArray(this.biggest_amounts[name], 3);
+        rows = [];
+
+        let last_weight = -1;
+        let last_placement = -1;
+        let placement = 1;
+        this.biggest_amounts[name].sort((a, b) => b.weight - a.weight);
+        this.biggest_amounts[name].forEach((f, i) => {
+          // no placements on some amounts??? TODO FIX. Quick fix for now
+          if (!f.placement) {
+            if (f.weight === last_weight) {
+              f.placement = last_placement;
+            } else {
+              f.placement = last_placement = placement;
+              last_weight = f.weight;
+            }
+          }
+          rows[i] = [
+            f.placement + ".",
+            "(" + f.boat_number + ")",
+            f.captain_name,
+            f.weight.toLocaleString(),
+          ];
+          placement++;
+        });
+
         doc.text(
           "Suurimmat kalasaaliit" + ` (${name})`,
           doc.internal.pageSize.getWidth() / 2,
@@ -875,10 +930,19 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
     // Suurimmat Kalat  (Voittajat)
     // Select these for calculations
     this.selected_biggest_fish = this.selected_biggest_amount = "Voittajat";
-    columns = ["Kalalaji", "Veneen nro", "Kippari", "Paino"];
-    // Calculate data
-    this.calculateBiggestFishes();
-    this.calculateBiggestAmounts();
+
+    this.biggest_fishes_results = [];
+    this.table_fish_names.forEach((n) => {
+      let temp_fishes = this.biggest_fishes.filter((f) => f.name === n);
+      if (temp_fishes.length) {
+        this.biggest_fishes_results.push(
+          temp_fishes.sort((a, b) => b.weight - a.weight)[0]
+        );
+      }
+    });
+
+    columns = ["Kalalaji", "Veneen nro", "Kippari", "Paino (g)"];
+
     // If there are any results, add title
     if (
       this.biggest_fishes_results.length ||
@@ -890,7 +954,15 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
 
     // If there are biggest fishes
     if (this.biggest_fishes_results.length) {
-      rows = dictToArray(this.biggest_fishes_results, 4);
+      rows = [];
+      this.biggest_fishes_results.forEach((f, i) => {
+        rows[i] = [
+          f.name,
+          "(" + f.boat_number + ")",
+          f.captain_name,
+          f.weight.toLocaleString(),
+        ];
+      });
       doc.text(
         "Suurimmat kalat" + ` (${this.selected_biggest_fish})`,
         doc.internal.pageSize.getWidth() / 2,
@@ -926,8 +998,18 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
 
     //Suurimmat kalasaaliit (Voittajat)
     // If there are any amounts --> if someone has gotten any fish
+    this.biggest_amounts_results = [];
+    this.biggest_amounts_results = this.sortDict(this.biggest_amounts);
     if (this.biggest_amounts_results.length) {
-      rows = dictToArray(this.biggest_amounts_results, 4);
+      rows = [];
+      this.biggest_amounts_results.forEach((f, i) => {
+        rows[i] = [
+          f.name,
+          "(" + f.boat_number + ")",
+          f.captain_name,
+          f.weight.toLocaleString(),
+        ];
+      });
       doc.text(
         "Suurimmat kalasaaliit" + ` (${this.selected_biggest_fish})`,
         doc.internal.pageSize.getWidth() / 2,
@@ -999,15 +1081,24 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
       165,
       { align: "center" }
     );
+
+    columns = ["Kalalaji", "Kerroin", "Alamitta", "Saalista saatu"];
     // Table generated straight from html
-    rows = dictToArray(this.competition.fishes, 7);
+    rows = [];
+    this.competition.fishes.forEach((f, i) => {
+      rows[i] = [
+        f.name,
+        "x " + f.multiplier,
+        f.minsize + " cm",
+        Math.round((f.weights / 1000 + Number.EPSILON) * 100) / 100 + " kg",
+      ];
+    });
     let temp =
       Math.round(
         (this.competition.total_weights / 1000 + Number.EPSILON) * 100
       ) / 100;
     let total_amount = temp.toLocaleString() + " kg";
     rows.push(["Yhteensä", "", "", total_amount]);
-    columns = ["Kalalaji", "Kerroin", "Alamitta", "Saalista saatu"];
 
     doc.autoTable({
       head: [columns],
@@ -1078,8 +1169,6 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
   this.selected_biggest_fish = temp_selected_biggest_fish;
   this.selected_biggest_amount = temp_selected_biggest_amount;
   this.selected_normal = temp_selected_normal;
-  this.calculateBiggestFishes();
-  this.calculateBiggestAmounts();
   initChartData;
 
   // Save to pdf
@@ -1192,7 +1281,7 @@ export function sortDict(fishes) {
   if (fishes) {
     let all_results = [];
     let temp_results = [];
-    this.fish_names.forEach((name) => {
+    this.table_fish_names.forEach((name) => {
       // If fish name is not "Voittajat"
       if (name !== "Voittajat") {
         // For every fish name, sort the array
@@ -1525,7 +1614,6 @@ export default {
   saveAllAsPDF,
   saveStatsAsPDF,
   saveAsPDF,
-  dictToArray,
   cupDictToArray,
   capitalize_words,
   replaceAll,

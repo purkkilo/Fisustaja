@@ -34,10 +34,10 @@
               >
             </template>
             <template v-slot:[`item.name`]="{ item }">
-              <v-chip>{{ item.name }}</v-chip>
+              {{ item.name }}
             </template>
             <template v-slot:[`item.weight`]="{ item }">
-              <v-chip>{{ item.weight.toLocaleString() }}</v-chip>
+              {{ item.weight.toLocaleString() }}
             </template>
           </v-data-table>
         </v-card>
