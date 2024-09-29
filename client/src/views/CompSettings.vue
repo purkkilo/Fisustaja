@@ -886,7 +886,7 @@ export default {
   created() {
     if (localStorage.getItem("competition") != null) {
       const competition = JSON.parse(localStorage.getItem("competition"));
-      const competition_id = competition["id"];
+      const competition_id = competition["_id"];
       this.refreshCompetition(competition_id);
     } else {
       console.log("No competition in localstorage!");
@@ -1079,7 +1079,7 @@ export default {
     },
     addInput() {
       this.inputs.push({
-        index: this.inputs.length,
+        id: this.inputs.length,
         name: "",
         multiplier: 1,
         minsize: "0",
@@ -1124,15 +1124,12 @@ export default {
       this.inputs = [];
       this.fish_specs.forEach((fish, index) => {
         this.inputs.push({
-          index: index,
+          id: index,
           name: fish.name,
           multiplier: parseInt(fish.multiplier),
           minsize: fish.minsize,
           weights: parseInt(fish.weights),
           color: fish.color,
-          original_name: fish.name,
-          original_multiplier: parseInt(fish.multiplier),
-          original_minsize: fish.minsize,
         });
       });
       this.name = this.competition.name;
@@ -1332,30 +1329,6 @@ export default {
         this.competition.end_date = end_date;
         this.competition.start_time = this.start_time;
         this.competition.end_time = this.end_time;
-
-        this.inputs.forEach((input) => {
-          // Change only the key names for each fish for biggest_fishes and biggest_amounts, if the name has been changed
-          if (input.name !== input.original_name) {
-            if (this.competition.biggest_fishes[input.original_name]) {
-              delete Object.assign(this.competition.biggest_fishes, {
-                [input.name]:
-                  this.competition.biggest_fishes[input.original_name],
-              })[input.original_name];
-            }
-
-            if (this.competition.biggest_amounts[input.original_name]) {
-              delete Object.assign(this.competition.biggest_amounts, {
-                [input.name]:
-                  this.competition.biggest_amounts[input.original_name],
-              })[input.original_name];
-            }
-
-            // Change the original values to current ones, if the variables gets changed in the future
-            input.original_name = input.name;
-            input.original_multiplier = input.multiplier;
-            input.original_minsize = input.minsize;
-          }
-        });
         //Update to database, calculate current standings and points in case multipliers have been changed
         this.competition.fishes = this.fish_specs = this.inputs;
         this.updateCompetition(this.competition);

@@ -10,7 +10,7 @@
           class="row"
           v-if="
             normal_points.length ||
-            (signees.length && selected_normal === 'Ilmoittautuneet')
+            (results.length && selected_normal === 'Ilmoittautuneet')
           "
         >
           <v-col md="12">
@@ -37,7 +37,7 @@
                   <v-chip
                     :outlined="$store.getters.getTheme"
                     :color="getColor(item.placement)"
-                    >{{ item.placement }}.</v-chip
+                    >{{ item.placement }}</v-chip
                   >
                 </template>
                 <template
@@ -46,6 +46,7 @@
                 >
                   <v-chip>{{ item.boat_number }}</v-chip>
                 </template>
+
                 <template v-slot:[`item.total_points`]="{ item }">
                   <v-chip>{{ item.total_points.toLocaleString() }}</v-chip>
                 </template>

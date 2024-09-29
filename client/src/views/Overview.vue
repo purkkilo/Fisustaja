@@ -256,7 +256,7 @@ export default {
     if (localStorage.getItem("competition") != null) {
       // update from database
       const competition = JSON.parse(localStorage.getItem("competition"));
-      const competition_id = competition["id"];
+      const competition_id = competition["_id"];
       this.refreshCompetition(competition_id);
     } else {
       console.log("No competition in localstorage!");
@@ -276,6 +276,7 @@ export default {
         // IF competition found from database
         if (competition) {
           this.competition = competition;
+
           // Get results === signees
           await ResultService.getResults({ competition_id: competition._id })
             .then((r) => {

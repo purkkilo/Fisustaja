@@ -784,8 +784,8 @@
                     class="white--text"
                     @click="allFinished"
                     :loading="loading"
-                    ><v-icon>mdi-check-outline</v-icon>Kaikki saapuneet
-                    maaliin</v-btn
+                    ><v-icon>mdi-check-outline</v-icon>Merkitse kaikki
+                    saapuneeksi maaliin</v-btn
                   >
                 </v-col>
               </v-row>
@@ -946,10 +946,16 @@ export default {
     },
   },
   created() {
+    // Focus on top of the page when changing pages
+    location.href = "#";
+    location.href = "#app";
+    // IF competition on localstorage
     if (localStorage.getItem("competition") != null) {
-      this.competition = JSON.parse(localStorage.getItem("competition"));
-      this.loading_site = true;
-      this.refreshCompetition(this.competition._id);
+      // update from database
+      const competition = JSON.parse(localStorage.getItem("competition"));
+      this.refreshCompetition(competition._id);
+    } else {
+      console.log("No competition in localstorage!");
     }
   },
   mounted() {
@@ -1016,17 +1022,17 @@ export default {
     async refreshCompetition(competition_id) {
       this.refreshing = true;
       try {
-        let competitions = await CompetitionService.getCompetitions({
+        let competition = await CompetitionService.getCompetitions({
           _id: competition_id,
         });
-        if (competitions.length) {
-          this.competition = competitions[0];
+        if (competition) {
+          this.competition = competition;
           // Update to vuex, Assing variables and arrays from vuex (see client/store/index.js)
           this.calculateNormalResults(this.competition);
           this.inputs = [];
           this.competition.fishes.forEach((fish) => {
             this.inputs.push({
-              index: fish.index,
+              id: fish.id,
               name: fish.name,
               value: null,
               dialog: false,
@@ -1107,7 +1113,7 @@ export default {
         if (this.competition_boat.fishes.length) {
           // find the fish weights based on the fish_name, from signees weights array
           let fish_weights = this.competition_boat.fishes.find(
-            (fish) => fish.index === input.index
+            (fish) => fish.id === input.id
           ).weights;
           // Assign the value to input
           if (fish_weights) {
@@ -1148,6 +1154,9 @@ export default {
       // If name for biggest fish, boat number and weight for biggest fish all have been selected
       if (this.selected_fish && this.boat_number_input && this.biggest_fish) {
         try {
+          let comp_fish = this.competition.fishes.find(
+            (cf) => cf.name === this.selected_fish
+          );
           this.loading_fish = true;
           // TODO Check if there is already a biggest fish,
           // If yes then update
@@ -1155,7 +1164,7 @@ export default {
           let query = {
             boat_number: this.boat_number_input.boat_number,
             competition_id: this.boat_number_input.competition_id,
-            name: this.selected_fish,
+            fish_id: comp_fish.id,
           };
           await FishService.getFishes(query).then((r) => {
             if (r.length) found_fish = r[0];
@@ -1165,6 +1174,7 @@ export default {
             await FishService.updateFish(found_fish._id, found_fish);
           } else {
             let fish = {
+              fish_id: comp_fish.id,
               boat_number: this.boat_number_input.boat_number,
               captain_name: this.boat_number_input.captain_name,
               name: this.selected_fish,
@@ -1212,8 +1222,7 @@ export default {
           fish_weight = parseInt(input.value ? input.value : 0); // If input empty, replace with 0
           // Add fish object to array
           fish_weights.push({
-            index: input.index,
-            name: input.name,
+            id: input.id,
             weights: fish_weight,
           });
           total_points += fish_weight * input.multiplier;
@@ -1282,7 +1291,7 @@ export default {
         if (s.fishes.length) {
           s.fishes.forEach((f) => {
             let competition_fish = competition.fishes.find(
-              (cf) => cf.index === f.index
+              (cf) => cf.id === f.id
             );
             s.total_points += f.weights * competition_fish.multiplier;
           });

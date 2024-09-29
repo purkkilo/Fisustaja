@@ -856,7 +856,7 @@ export default {
       localStorage.setItem(
         "competition",
         JSON.stringify({
-          id: competition._id,
+          _id: competition._id,
           start_date: competition.start_date,
           end_date: competition.end_date,
         })

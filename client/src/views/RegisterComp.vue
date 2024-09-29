@@ -1026,27 +1026,27 @@ export default {
         {
           text: "Ahven",
           color: "blue lighten-1",
-          index: 0,
+          id: 0,
         },
         {
           text: "Hauki",
           color: "red lighten-1",
-          index: 1,
+          id: 1,
         },
         {
           text: "Kuha",
           color: "green lighten-1",
-          index: 2,
+          id: 2,
         },
         {
           text: "Lohi",
           color: "purple lighten-1",
-          index: 3,
+          id: 3,
         },
         {
           text: "Taimen",
           color: "indigo lighten-1",
-          index: 4,
+          id: 4,
         },
       ],
       editing: null,
@@ -1092,7 +1092,7 @@ export default {
           v = {
             text: v,
             color: this.colors[colorIndex],
-            index: i,
+            id: i,
           };
 
           this.options.push(v);
@@ -1412,6 +1412,7 @@ export default {
       for (let i = 1; i < this.selected.length + 1; i++) {
         // Fish object
         let fish_spec = {
+          id: i - 1,
           name: document
             .getElementById(`fish_${i}_name`)
             .innerHTML.replace(`${i}. `, ""),

@@ -585,7 +585,7 @@ export default {
   mounted() {
     if (localStorage.getItem("competition") != null) {
       const competition = JSON.parse(localStorage.getItem("competition"));
-      this.competition_id = competition["id"];
+      this.competition_id = competition["_id"];
       this.loading_site = true;
       this.refreshCompetition(this.competition_id);
       /*
@@ -634,6 +634,7 @@ export default {
           await ResultService.getResults({ competition_id: competition._id })
             .then((r) => {
               competition.signees = r;
+              this.signees = r;
             })
             .catch((e) => {
               console.log(e);
@@ -641,7 +642,7 @@ export default {
           // Update to vuex, Assing variables and arrays from vuex (see client/store/index.js)
           this.$store.commit("refreshCompetition", competition);
           this.isTeamCompetition = this.$store.getters.isTeamCompetition;
-          this.signees = this.$store.getters.getSignees;
+
           this.teams = this.$store.getters.getTeams;
           // Get max values and assign them
           if (this.signees.length) {
@@ -871,7 +872,7 @@ export default {
 
       // Create competition object
       let comp = this.$store.getters.getCompetition;
-      this.signees = this.$store.getters.getSignees;
+      this.signees = this.results = this.signees;
       // Store to vuex
       comp.signees = this.signees;
       comp.state = "Ilmoittautuminen";

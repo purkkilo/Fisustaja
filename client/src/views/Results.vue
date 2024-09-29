@@ -669,7 +669,7 @@ export default {
       //called whenever switch1 changes
       if (newValue) {
         const competition = JSON.parse(localStorage.getItem("competition"));
-        const competition_id = competition["id"];
+        const competition_id = competition["_id"];
         this.timer_refresh = setInterval(
           () => this.refreshCompetition(competition_id),
           this.interval
@@ -698,7 +698,7 @@ export default {
     /* eslint-disable no-unused-vars */
     if (localStorage.getItem("competition") != null) {
       const competition = JSON.parse(localStorage.getItem("competition"));
-      const competition_id = competition["id"];
+      const competition_id = competition["_id"];
       //Update competition every minute
       this.refreshCompetition(competition_id);
     }
@@ -808,7 +808,7 @@ export default {
 
                   s.fishes.forEach((f) => {
                     let fish = this.competition.fishes.find(
-                      (cf) => cf.index === f.index
+                      (cf) => cf.id === f.id
                     );
                     s.total_points += f.weights * fish.multiplier;
                     this.competition.total_weights += f.weights;
@@ -832,7 +832,7 @@ export default {
                 } else {
                   // Fix for pdf
                   this.competition.fishes.forEach((cf) => {
-                    s.fishes.push({ name: cf.name, weights: 0 });
+                    s.fishes.push({ id: cf.id, name: cf.name, weights: "-" });
                   });
                 }
               });
@@ -1007,19 +1007,12 @@ export default {
           cup_points_total: cup_points_total,
         });
         //For showing fish weights, "Kalat" on v-select
-        let temp_dict = {};
-        temp_dict.placement = placement;
-        temp_dict.boat_number = signee.boat_number;
-        temp_dict.captain_name = signee.captain_name;
-
-        // For each fish, get the weight and fish name
-        signee.fishes.forEach((weights) => {
-          let name = weights.name;
-          let weight = weights.weights;
-          temp_dict[name] = weight;
+        signee.placement = placement;
+        // For the data-table
+        signee.fishes.forEach((f) => {
+          signee[f.id] = f.weights;
         });
-        temp_dict.total_points = signee.total_points;
-        normal_weights.push(temp_dict);
+        normal_weights.push(signee);
 
         last_placement = placement;
         last_points = signee.total_points;
@@ -1050,7 +1043,9 @@ export default {
           (this.results = this.normal_weights);
         // Get fish names and add them to headers
         this.table_fish_names.forEach((name) => {
-          this.headers.push({ text: name, value: name });
+          let f = this.competition.fishes.find((cf) => name === cf.name);
+          // IF the name of the fish has been changed, id is needed to get the right results
+          this.headers.push({ text: name, value: String(f.id) });
         });
         this.headers.push({ text: "Tulos (p)", value: "total_points" });
       }
@@ -1064,13 +1059,15 @@ export default {
     // Calculate "Suurimmat Kalat"
     async calculateBiggestFishes(competition) {
       // Get results === signees
-      await FishService.getFishes({ competition_id: competition._id })
-        .then((r) => {
-          this.biggest_fishes = r;
-        })
-        .catch((e) => {
-          console.log(e);
-        });
+      if (!this.biggest_fishes.length) {
+        await FishService.getFishes({ competition_id: competition._id })
+          .then((r) => {
+            this.biggest_fishes = r;
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+      }
 
       let placement = 1;
       this.results_found_fishes = null;

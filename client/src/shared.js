@@ -168,8 +168,8 @@ export function saveAsPDF(
       this.normal_weights.forEach((b, i) => {
         let r = [];
         r = [b.placement + ".", "(" + b.boat_number + ")", b.captain_name];
-        this.table_fish_names.forEach((name) => {
-          r.push(b[name].toLocaleString());
+        b.fishes.forEach((f) => {
+          r.push(f.weights.toLocaleString());
         });
         r.push(b.total_points.toLocaleString());
         rows[i] = r;
@@ -506,9 +506,8 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
     this.normal_weights.forEach((b, i) => {
       let r = [];
       r = [b.placement + ".", "(" + b.boat_number + ")", b.captain_name];
-
-      this.table_fish_names.forEach((name) => {
-        r.push(b[name].toLocaleString());
+      b.fishes.forEach((f) => {
+        r.push(f.weights.toLocaleString());
       });
       r.push(b.total_points.toLocaleString());
       rows[i] = r;

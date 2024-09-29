@@ -13,6 +13,10 @@ const Schema = mongoose.Schema;
 */
 
 const FishSchema = new Schema({
+  fish_id: {
+    type: Number,
+    required: true,
+  },
   boat_number: {
     type: Number,
     required: true,
