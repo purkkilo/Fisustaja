@@ -821,9 +821,9 @@
 </template>
 <script>
 "use strict";
-import CompetitionService from "../CompetitionService";
-import ResultService from "../ResultService";
-import FishService from "../FishService";
+import CompetitionService from "../services/CompetitionService";
+import ResultService from "../services/ResultService";
+import FishService from "../services/FishService";
 import Timedate from "../components/layout/Timedate";
 import CompetitionNavigation from "../components/layout/CompetitionNavigation.vue";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";

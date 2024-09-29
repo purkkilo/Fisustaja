@@ -794,12 +794,12 @@
 </template>
 <script>
 "use strict";
-import CompetitionService from "../CompetitionService";
-import CupService from "../CupService";
+import CompetitionService from "../services/CompetitionService";
+import CupService from "../services/CupService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
-import Timedate from "@/components/layout/Timedate";
+import Timedate from "../components/layout/Timedate";
 import CompetitionNavigation from "../components/layout/CompetitionNavigation.vue";
-import constants from "@/constants";
+import constants from "../data/constants";
 import draggable from "vuedraggable";
 
 export default {

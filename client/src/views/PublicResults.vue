@@ -82,23 +82,23 @@
                     </v-list-item-icon>
                     <v-list-item-content>
                       <v-list-item-title
-                        v-html="data.item.name + ', ' + data.item.locality"
-                      ></v-list-item-title>
-                      <v-list-item-subtitle
-                        class="green--text"
-                        v-html="
+                        ><span>{{
+                          data.item.name + ", " + data.item.locality
+                        }}</span></v-list-item-title
+                      >
+                      <v-list-item-subtitle class="green--text"
+                        ><span>{{
                           data.item.cup_name +
-                          ' (' +
-                          $moment(data.item.start_date).format('YYYY') +
-                          ')'
-                        "
-                      ></v-list-item-subtitle>
-                      <v-list-item-subtitle
-                        class="blue--text"
-                        v-html="
-                          $moment(data.item.start_date).format('DD.MM.YYYY')
-                        "
-                      ></v-list-item-subtitle>
+                          " (" +
+                          $moment(data.item.start_date).format("YYYY") +
+                          ")"
+                        }}</span></v-list-item-subtitle
+                      >
+                      <v-list-item-subtitle class="blue--text"
+                        ><span>{{
+                          $moment(data.item.start_date).format("DD.MM.YYYY")
+                        }}</span></v-list-item-subtitle
+                      >
                       <v-list-item-subtitle v-if="!data.item.isFinished"
                         >Kesken!</v-list-item-subtitle
                       >
@@ -525,7 +525,7 @@
 <script>
 "use strict";
 
-import CompetitionService from "../CompetitionService";
+import CompetitionService from "../services/CompetitionService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import PublicNavigation from "../components/layout/PublicNavigation.vue";
 import Stats from "../components/results/Stats.vue";

@@ -248,7 +248,7 @@
   </div>
 </template>
 <script>
-import BarChart from "@/components/BarChart";
+import BarChart from "../components/BarChart";
 import shared from "@/shared";
 export default {
   name: "CupStats",

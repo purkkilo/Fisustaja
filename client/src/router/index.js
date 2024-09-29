@@ -147,7 +147,7 @@ const routes = [
     name: "404",
     path: "/404",
     // route level code-splitting
-    component: () => import("@/views/NotFound.vue"),
+    component: () => import("../views/NotFound.vue"),
     meta: { title: "Not Found" },
   },
   {

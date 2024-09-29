@@ -226,8 +226,8 @@
   </div>
 </template>
 <script>
-import PieChart from "@/components/PieChart";
-import DoughnutChart from "@/components/DoughnutChart.vue";
+import PieChart from "../PieChart";
+import DoughnutChart from "../DoughnutChart";
 import { getMultiplierTextColor } from "@/shared";
 
 export default {

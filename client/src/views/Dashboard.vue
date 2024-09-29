@@ -311,8 +311,8 @@
 <script>
 "use strict";
 import CompCupTable from "../components/CompCupTable.vue";
-import CompetitionService from "../CompetitionService";
-import CupService from "../CupService";
+import CompetitionService from "../services/CompetitionService";
+import CupService from "../services/CupService";
 import gsap from "gsap";
 
 export default {

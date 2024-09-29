@@ -535,10 +535,10 @@
 </template>
 <script>
 "use strict";
-import CupService from "../CupService";
-import CompetitionService from "../CompetitionService";
+import CupService from "../services/CupService";
+import CompetitionService from "../services/CompetitionService";
 import "jspdf-autotable";
-import shared from "../shared";
+import shared from "@/shared";
 import CupPoints from "../components/CupPoints.vue";
 import CupStats from "../components/CupStats.vue";
 import jsPDF from "jspdf";

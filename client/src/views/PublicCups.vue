@@ -121,8 +121,8 @@
 <script>
 "use strict";
 
-import CupService from "../CupService";
-import CompetitionService from "../CompetitionService";
+import CupService from "../services/CupService";
+import CompetitionService from "../services/CompetitionService";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";

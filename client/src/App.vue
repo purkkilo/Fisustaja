@@ -26,7 +26,7 @@
 <script>
 "use strict";
 import Footer from "./components/layout/Footer";
-import UserService from "./UserService";
+import UserService from "./services/UserService";
 import Header from "./components/layout/Header.vue";
 import MainHeader from "./components/layout/MainHeader";
 export default {

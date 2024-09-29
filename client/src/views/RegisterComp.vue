@@ -962,11 +962,11 @@
 <script>
 "use strict";
 
-import CompetitionService from "../CompetitionService";
-import CupService from "../CupService";
+import CompetitionService from "../services/CompetitionService";
+import CupService from "../services/CupService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import shared from "@/shared";
-import constants from "@/constants";
+import constants from "../data/constants";
 
 export default {
   name: "RegisterComp",

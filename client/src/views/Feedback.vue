@@ -104,7 +104,7 @@
 <script>
 "use strict";
 
-import FeedbackService from "../FeedbackService";
+import FeedbackService from "../services/FeedbackService";
 
 export default {
   name: "Feedback",

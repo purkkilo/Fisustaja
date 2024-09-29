@@ -121,7 +121,7 @@
 </template>
 
 <script>
-import UserService from "../../UserService";
+import UserService from "../../services/UserService";
 
 export default {
   name: "Header",

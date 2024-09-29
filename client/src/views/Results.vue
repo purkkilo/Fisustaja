@@ -521,11 +521,11 @@
 </template>
 <script>
 "use strict";
-import CompetitionService from "@/CompetitionService";
-import ResultService from "@/ResultService";
-import FishService from "../FishService";
-import Timedate from "@/components/layout/Timedate";
-import CompetitionNavigation from "@/components/layout/CompetitionNavigation.vue";
+import CompetitionService from "../services/CompetitionService";
+import ResultService from "../services/ResultService";
+import FishService from "../services/FishService";
+import Timedate from "../components/layout/Timedate";
+import CompetitionNavigation from "../components/layout/CompetitionNavigation.vue";
 import Stats from "../components/results/Stats.vue";
 import TeamComp from "../components/results/TeamComp.vue";
 import NormalComp from "../components/results/NormalComp.vue";
@@ -537,7 +537,7 @@ export default {
   name: "Results",
   components: {
     Timedate,
-    ProgressBarQuery: () => require("@/components/layout/ProgressBarQuery"),
+    ProgressBarQuery: () => require("../components/layout/ProgressBarQuery"),
     CompetitionNavigation,
     Stats,
     TeamComp,

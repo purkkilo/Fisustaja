@@ -231,7 +231,7 @@
 
 <script>
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
-import CupService from "../CupService.js";
+import CupService from "../services/CupService.js";
 export default {
   name: "ContinueComp",
   props: ["competitions", "cups", "loading", "publishing"],

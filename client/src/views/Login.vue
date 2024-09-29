@@ -98,7 +98,7 @@
 <script>
 "use strict";
 
-import UserService from "../UserService";
+import UserService from "../services/UserService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 
 export default {

@@ -636,10 +636,10 @@
 
 <script>
 "use strict";
-import FeedbackService from "../FeedbackService";
-import CompetitionService from "../CompetitionService";
-import UserService from "../UserService";
-import CupService from "../CupService";
+import FeedbackService from "../services/FeedbackService";
+import CompetitionService from "../services/CompetitionService";
+import UserService from "../services/UserService";
+import CupService from "../services/CupService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 
 export default {

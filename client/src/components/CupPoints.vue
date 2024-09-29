@@ -234,7 +234,7 @@
   </v-row>
 </template>
 <script>
-import { getColor } from "../shared";
+import { getColor } from "@/shared";
 export default {
   name: "CupPoints",
   props: [
