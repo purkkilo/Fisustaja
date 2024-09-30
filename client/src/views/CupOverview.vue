@@ -516,6 +516,9 @@
             <cup-stats
               :competitions="competitions"
               :cup="cup"
+              :all_signees="all_signees"
+              :biggest_fishes="biggest_fishes"
+              :biggest_amounts="biggest_amounts"
               :loading="loading"
             ></cup-stats>
           </v-tab-item>
@@ -537,11 +540,14 @@
 "use strict";
 import CupService from "../services/CupService";
 import CompetitionService from "../services/CompetitionService";
+import ResultService from "../services/ResultService";
+import FishService from "../services/FishService";
 import "jspdf-autotable";
 import shared from "@/shared";
 import CupPoints from "../components/CupPoints.vue";
 import CupStats from "../components/CupStats.vue";
 import jsPDF from "jspdf";
+
 export default {
   name: "CupOverview",
   components: {
@@ -570,6 +576,7 @@ export default {
       allCompetitions: [],
       competitions: [],
       signees: [],
+      all_signees: [],
       headers: [],
       select_table: ["Kilpailut", "Ilmoittautuneet"],
       selected: "Kilpailut",
@@ -578,8 +585,8 @@ export default {
       cup_fishes_competition: [],
       cup_fishes_total: [],
       cup_signees: [],
-      cup_biggest_fishes: [],
-      cup_biggest_amounts: [],
+      biggest_fishes: [],
+      biggest_amounts: [],
       total_fishes_chart_data: null,
       competition_fishes_chart_data: null,
       cup_signees_chart_data: null,
@@ -883,6 +890,72 @@ export default {
 
       this.calculateAll(this.competitions, this.selectedCompetitions);
     },
+    // "Normaalikilpailu" results
+    calculateNormalResults(competition, signees) {
+      const placement_points = competition.cup_placement_points;
+      let cup_placement_points = placement_points[0];
+      const cup_participation_points = competition.cup_participation_points;
+      let last_points = 0;
+      let last_placement = 1;
+
+      let placement = 1;
+      let cup_points_total = 0;
+      let normal_points = [];
+      let normal_weights = [];
+      signees = signees.filter((signee) => signee.returned == true);
+      signees = signees.sort(function compare(a, b) {
+        return parseInt(b.total_points) - parseInt(a.total_points);
+      });
+      // For every signee, calculate their cup points and placing
+      //TODO rework the structure, seems more complex than it should be
+      // Placements and points now saved in every competition to cup_placement_points_array, based on placement fetch from there?
+      signees.forEach((signee, index) => {
+        // If competitor has same points as last competitor
+        if (signee.total_points === last_points) {
+          placement = last_placement;
+        }
+        // If no tie, add tied_competitors to placement, to give correct placement to next not tied competitor
+        else {
+          placement = index + 1;
+        }
+
+        // Find the placement points according to the placement
+        let p = placement_points.find((e) => e.placement === placement);
+        // If placement isn't found (placement > than provided placements), or points = 0 (no points from competition)
+        if (!p || signee.total_points === 0) {
+          cup_placement_points = 0;
+        } else {
+          cup_placement_points = p.points * competition.cup_points_multiplier;
+        }
+        // Calculate total cup points, cup points multiplier only scales the placement points
+        cup_points_total = cup_placement_points + cup_participation_points;
+        //For showing cup points, "Pisteet" on v-select
+        normal_points.push({
+          placement: placement,
+          boat_number: signee.boat_number,
+          captain_name: signee.captain_name,
+          temp_captain_name: signee.temp_captain_name,
+          locality: signee.locality,
+          total_points: signee.total_points,
+          cup_placement_points: cup_placement_points,
+          cup_participation_points: cup_participation_points,
+          cup_points_total: cup_points_total,
+        });
+        //For showing fish weights, "Kalat" on v-select
+        signee.placement = placement;
+        // For the data-table
+        signee.fishes.forEach((f) => {
+          signee[f.id] = f.weights;
+        });
+        normal_weights.push(signee);
+
+        last_placement = placement;
+        last_points = signee.total_points;
+      });
+
+      return { normal_points, normal_weights };
+    },
+
     async refreshCup(cup_id) {
       this.loading = true;
       try {
@@ -901,10 +974,51 @@ export default {
             this.allCompetitions = await CompetitionService.getCompetitions({
               cup_id: cup_id,
             });
-            this.setCompetitionData(this.cup);
-            this.selectTableData();
-            this.text = "Tiedot ajantasalla!";
-            this.snackbar = true;
+
+            this.biggest_fishes = await FishService.getFishes({
+              cup_id: cup_id,
+            });
+            this.biggest_fishes = this.biggest_fishes.sort(
+              (a, b) => b.weight - a.weight
+            );
+
+            await ResultService.getResults({ cup_id: cup_id })
+              .then((r) => {
+                r.forEach((s) => {
+                  if (s.fishes.length) {
+                    s.fishes.forEach((f) => {
+                      let comp = this.allCompetitions.find(
+                        (c) => c._id === s.competition_id
+                      );
+                      let fish = comp.fishes.find((cf) => cf.id === f.id);
+
+                      this.biggest_amounts.push({
+                        id: fish.id,
+                        competition_id: comp._id,
+                        competition_name: comp.name,
+                        boat_number: s.boat_number,
+                        captain_name: s.captain_name,
+                        name: fish.name,
+                        weight: f.weights,
+                      });
+                    });
+                  }
+                });
+
+                this.all_signees = r;
+                this.biggest_amounts = this.biggest_amounts.sort(
+                  (a, b) => b.weight - a.weight
+                );
+              })
+              .catch((e) => {
+                console.log(e);
+              })
+              .finally(() => {
+                this.setCompetitionData(this.cup);
+                this.selectTableData();
+                this.text = "Tiedot ajantasalla!";
+                this.snackbar = true;
+              });
           } catch (error) {
             console.error(error);
           }
@@ -932,10 +1046,35 @@ export default {
     },
     // Calculate all the cup points, and limit the number of races taken into account
     // If limit = 4, 4 races with highest points will be calculated, other races will have 5 points where the signee has participated
-    calculateAll(competitions, limit) {
+    async calculateAll(competitions, limit) {
       let all_results = [];
       this.isResults = false;
       competitions.forEach((competition) => {
+        let signees = this.all_signees.filter(
+          (s) => s.competition_id === competition._id
+        );
+
+        competition.total_weights = 0;
+        signees.forEach((s) => {
+          s.total_points = 0;
+          if (s.fishes.length) {
+            s.fishes.forEach((f) => {
+              let fish = competition.fishes.find((cf) => cf.id === f.id);
+              s.total_points += f.weights * fish.multiplier;
+              competition.total_weights += f.weights;
+              fish.weights += f.weights;
+            });
+          } else {
+            // Fix for pdf
+            competition.fishes.forEach((cf) => {
+              s.fishes.push({ id: cf.id, name: cf.name, weights: "-" });
+            });
+          }
+        });
+        competition.normal_points = this.calculateNormalResults(
+          competition,
+          signees
+        ).normal_points;
         // Dynamic headers, because competition names change
         //If there are any results in the competition
         if (competition.normal_points.length) {
@@ -994,34 +1133,39 @@ export default {
             }
           });
         }
-      });
-      if (all_results.length) {
-        this.isResults = true;
-        // limits the amount of competitions are taken into account in the cup
-        all_results = this.limitCompetitions(all_results, limit);
-        // Sort the array based on total cup points
-        this.results = all_results.sort(function compare(a, b) {
-          return (
-            parseInt(b.cup_results["total"]) - parseInt(a.cup_results["total"])
-          );
-        });
-        this.changeHeaders("Paikkakunta");
 
-        let final_placement = 1;
-        let last_points = -1;
-        let last_placement = -1;
-        this.results.forEach((signee) => {
-          if (last_points === signee.cup_results["total"]) {
-            signee.final_placement = last_placement;
-          } else {
-            signee.final_placement = final_placement;
-            last_points = signee.cup_results["total"];
-            last_placement = signee.final_placement;
-          }
-          signee.final_cup_points = signee.cup_results["total"];
-          final_placement++;
-        });
-      }
+        all_results.length ? (this.isResults = true) : (this.isResults = false);
+
+        if (all_results.length) {
+          // limits the amount of competitions are taken into account in the cup
+          all_results = this.limitCompetitions(all_results, limit);
+          // Sort the array based on total cup points
+          all_results = all_results.sort(function compare(a, b) {
+            return (
+              parseInt(b.cup_results["total"]) -
+              parseInt(a.cup_results["total"])
+            );
+          });
+          this.changeHeaders("Paikkakunta");
+
+          let final_placement = 1;
+          let last_points = -1;
+          let last_placement = -1;
+
+          all_results.forEach((signee) => {
+            if (last_points === signee.cup_results["total"]) {
+              signee.final_placement = last_placement;
+            } else {
+              signee.final_placement = final_placement;
+              last_points = signee.cup_results["total"];
+              last_placement = signee.final_placement;
+            }
+            signee.final_cup_points = signee.cup_results["total"];
+            final_placement++;
+          });
+          this.results = all_results;
+        }
+      });
     },
     changeHeaders(headerSelection) {
       this.headers = [];

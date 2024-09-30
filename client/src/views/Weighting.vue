@@ -1195,8 +1195,6 @@ export default {
         }
         this.text = "Isoin kala tallennettu listaan!";
         this.snackbar = true;
-      } else {
-        console.log("Jokin input tyhjänä:");
       }
     },
     // Save all weights to database
