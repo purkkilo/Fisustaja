@@ -200,7 +200,7 @@ export default {
     // Press button by enter key when focusing password_confirmation input
     var input = document.getElementById("password_confirmation");
     input.addEventListener("keyup", function (event) {
-      if (event.keyCode === 13) {
+      if (event.key === "Enter") {
         event.preventDefault();
         document.getElementById("sbtn").click();
       }
@@ -247,7 +247,7 @@ export default {
           const res = await UserService.insertUser(user);
           this.loading = false;
           if (res.success) {
-            this.showError("Käyttäjä rekisteröity!");
+            this.$router.push({ path: "/login" });
           } else {
             if (res.error.msg === "Email is already in use!") {
               this.showError("Sähköposti on jo käytössä!");

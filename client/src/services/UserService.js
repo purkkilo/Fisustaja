@@ -54,22 +54,24 @@ class UserService {
 
   // logout user
   static async logoutUser() {
-    await localStorage.removeItem("token");
-    await localStorage.removeItem("user");
+    localStorage.removeItem("jwt");
+    localStorage.removeItem("user");
+    localStorage.removeItem("auth");
     delete axios.defaults.headers.common["Authorization"];
     return;
   }
 
   // logout user
-  static async refreshToken(user) {
+  static async refreshToken(user, isAdmin) {
     let res = {};
     await axios
-      .post(refresh_token_url, { user: user })
+      .post(refresh_token_url, { user: user, is_admin: isAdmin })
       .then((response) => {
         let { user, is_admin } = updateLocalStorage(response);
         res = { user: user, is_admin: is_admin, success: true };
       })
       .catch((err) => {
+        console.log(err);
         res = {
           error: err.response.data.msg ? err.response.data : err,
           success: false,
@@ -81,17 +83,19 @@ class UserService {
 
 function updateLocalStorage(response) {
   // Check if user is admin
-  let is_admin = JSON.stringify(response.data.user.is_admin);
+  let is_admin = JSON.stringify(response.data.is_admin);
+
   let user = {
     _id: response.data.user._id,
     name: response.data.user.name,
     email: response.data.user.email,
-    is_admin: response.data.user.is_admin,
     createdAt: response.data.user.createdAt,
   };
   let token = response.data.token;
   // Set login token (jwt) and user data to localstorage and vuex
   localStorage.setItem("user", JSON.stringify(user));
+  if (is_admin) localStorage.setItem("auth", is_admin);
+  else localStorage.removeItem("auth");
   // Set preferences to vuex
   localStorage.setItem("jwt", token);
   axios.defaults.headers.common["Authorization"] = token;

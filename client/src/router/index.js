@@ -29,6 +29,7 @@ const routes = [
       import(/* webpackChunkName: "about" */ "../views/Register.vue"),
     meta: {
       requiresAuth: true,
+      is_admin: true,
     },
   },
   {
@@ -172,9 +173,9 @@ router.beforeEach((to, from, next) => {
         path: "/login",
       });
     } else {
-      let user = JSON.parse(localStorage.getItem("user"));
+      let isAdmin = JSON.parse(localStorage.getItem("auth"));
       if (to.matched.some((record) => record.meta.is_admin)) {
-        if (user.is_admin == true) {
+        if (isAdmin) {
           next();
         } else {
           router.push({ name: "404" });

@@ -57,6 +57,7 @@ export default {
   },
   async mounted() {
     const user = JSON.parse(localStorage.getItem("user"));
+    const isAdmin = JSON.parse(localStorage.getItem("auth"));
     if (user) {
       const token = localStorage.getItem("jwt");
       if (token) {
@@ -73,7 +74,7 @@ export default {
               }
             });
           } else {
-            let res = await UserService.refreshToken(user);
+            let res = await UserService.refreshToken(user, isAdmin);
             if (res.success) {
               this.$store.state.is_admin = res.is_admin;
               this.$store.state.logged_in = true;

@@ -141,7 +141,7 @@ export default {
   async mounted() {
     const user = JSON.parse(localStorage.getItem("user"));
     if (user) {
-      const isAdmin = user["is_admin"];
+      const isAdmin = JSON.parse(localStorage.getItem("auth"));
       this.$store.state.isDark = this.preferences.isDark;
       this.isDark = this.preferences.isDark;
       if (isAdmin) {
@@ -276,6 +276,7 @@ export default {
         this.user = null;
         this.text = "Kirjattu ulos onnistuneesti!";
         this.snackbar = true;
+        localStorage.removeItem("user");
       });
     },
   },

@@ -23,6 +23,7 @@ router.post("/register", (req, res) => {
 
   User.findOne({ email: email }).then((user) => {
     if (user) {
+      console.log(user);
       console.log("Email is already in use!");
       res.status(409).json({
         msg: "Email is already in use!",
@@ -107,6 +108,7 @@ router.post("/login", (req, res) => {
                 success: true,
                 token: `Bearer ${token}`,
                 user: user,
+                is_admin: user.is_admin,
                 msg: "You are now logged in!",
               });
             }
@@ -158,7 +160,7 @@ router.post(
       _id: user._id,
       name: user.name,
       email: user.email,
-      is_admin: user.is_admin,
+      is_admin: req.body.is_admin,
     };
     jwt.sign(payload, key, { expiresIn: 86400 }, (err, token) => {
       if (err) {
@@ -172,6 +174,7 @@ router.post(
           success: true,
           token: `Bearer ${token}`,
           user: user,
+          is_admin: req.body.is_admin,
           msg: "Token refreshed!",
         });
       }
