@@ -4,11 +4,7 @@
       <v-col md="10" offset-md="1" style="margin-bottom: 40px">
         <v-card :dark="$store.getters.getTheme">
           <v-card-title>
-            <p v-if="results_found_amounts" class="flow-text">
-              Suurimmat kalasaaliit ({{ selected_biggest_amount }}
-              {{ results_found_amounts }})
-            </p>
-            <p v-else class="flow-text">
+            <p class="flow-text">
               Suurimmat kalasaaliit ({{ selected_biggest_amount }})
             </p>
             <v-spacer></v-spacer>
@@ -72,7 +68,6 @@ export default {
     "fish_names",
     "selected_biggest_amount",
     "biggest_amounts_results",
-    "results_found_amounts",
     "search_amounts",
     "headers",
   ],

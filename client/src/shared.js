@@ -2,6 +2,32 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 import moment from "moment";
 
+const winner_headers = [
+  { text: "Kalalaji", value: "name" },
+  { text: "Kilp. numero", value: "boat_number" },
+  { text: "Kippari", value: "captain_name" },
+  { text: "Paino", value: "weight" },
+];
+const all_fishes_headers = [
+  { text: "Sijoitus", value: "placement" },
+  { text: "Kilp. numero", value: "boat_number" },
+  { text: "Kippari", value: "captain_name" },
+  { text: "Kala", value: "name" },
+  { text: "Paino", value: "weight" },
+];
+const biggest_headers = [
+  { text: "Sijoitus", value: "placement" },
+  { text: "Kilp. numero", value: "boat_number" },
+  { text: "Kippari", value: "captain_name" },
+  { text: "Paino", value: "weight" },
+];
+
+const headers = {
+  winner: winner_headers,
+  all: all_fishes_headers,
+  fish: biggest_headers,
+};
+
 export function addTitle(doc, title, cup, time) {
   doc.setFontSize(24);
   doc.text(10, 10, title, { align: "left" });
@@ -99,11 +125,9 @@ export function replaceAll(string, search, replace) {
 }
 
 // Returns date in format dd/mm/yyyy as string
-export function formatDate(start_date) {
-  start_date = moment(start_date);
-  let formatted_date = `${start_date.date()}.${
-    start_date.month() + 1
-  }.${start_date.year()}`;
+export function formatDate(d) {
+  d = moment(d);
+  let formatted_date = `${d.date()}.${d.month() + 1}.${d.year()}`;
 
   return formatted_date;
 }
@@ -325,7 +349,7 @@ export function saveAsPDF(
   // Save the pdf
   const fileName = `${this.$moment(
     this.competition.start_date
-  ).year()}_${this.replaceAll(
+  ).year()}_${replaceAll(
     this.competition.name,
     " ",
     ""
@@ -457,11 +481,11 @@ export function saveStatsAsPDF(competition_type, orientation = "portrait") {
   // Save the pdf
   const fileName = `${this.$moment(
     this.competition.start_date
-  ).year()}_${this.replaceAll(
-    this.competition.name,
+  ).year()}_${replaceAll(this.competition.name, " ", "")}_${replaceAll(
+    this.capitalize_words(competition_type),
     " ",
     ""
-  )}_${this.replaceAll(this.capitalize_words(competition_type), " ", "")}.pdf`;
+  )}.pdf`;
   openPdfOnNewTab(doc, fileName);
   // Set charts to be responsive again
   setChartsResponsive();
@@ -998,7 +1022,10 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
     //Suurimmat kalasaaliit (Voittajat)
     // If there are any amounts --> if someone has gotten any fish
     this.biggest_amounts_results = [];
-    this.biggest_amounts_results = this.sortDict(this.biggest_amounts);
+    this.biggest_amounts_results = sortDict(
+      this.biggest_amounts,
+      this.table_fish_names
+    );
     if (this.biggest_amounts_results.length) {
       rows = [];
       this.biggest_amounts_results.forEach((f, i) => {
@@ -1173,7 +1200,7 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
   // Save to pdf
   if (charts_loaded) {
     this.tab = current_tab;
-    const fileName = `${year}_${this.replaceAll(
+    const fileName = `${year}_${replaceAll(
       this.competition.name,
       " ",
       ""
@@ -1276,11 +1303,11 @@ export function initChartData(
 }
 
 // Sorts the dictionary based on weights
-export function sortDict(fishes) {
+export function sortDict(fishes, fish_names) {
   if (fishes) {
     let all_results = [];
     let temp_results = [];
-    this.table_fish_names.forEach((name) => {
+    fish_names.forEach((name) => {
       // If fish name is not "Voittajat"
       if (name !== "Voittajat") {
         // For every fish name, sort the array
@@ -1482,37 +1509,29 @@ export function competitionToFishes(competition) {
 }
 
 // "Normaalikilpailu" results
-export function calculateNormalResults(competition) {
+export function calculateNormalResults(competition, signees) {
   const placement_points = competition.cup_placement_points;
   let cup_placement_points = placement_points[0];
   const cup_participation_points = competition.cup_participation_points;
-  let last_points = -1;
-  let last_placement = -1;
+  let last_points = 0;
+  let last_placement = 1;
 
   let placement = 1;
   let cup_points_total = 0;
   let normal_points = [];
   let normal_weights = [];
-  let signees = competition.signees.filter((signee) => signee.returned == true);
-  // TODO calculate total points from signee.fishes
-  /*
-      signees = signees.sort(function compare(a, b) {
-        return parseInt(b.total_points) - parseInt(a.total_points);
-      });
-*/
-  // For every signee, calculate their cup points and placing
-  //TODO rework the structure, seems more complex than it should be
-  // Placements and points now saved in every competition to cup_placement_points_array, based on placement fetch from there?
+  signees = signees.sort(function compare(a, b) {
+    return parseInt(b.total_points) - parseInt(a.total_points);
+  });
+
   signees.forEach((signee, index) => {
     // If competitor has same points as last competitor
-    if (signee.total_points == last_points) {
+    if (signee.total_points === last_points) {
       placement = last_placement;
     }
     // If no tie, add tied_competitors to placement, to give correct placement to next not tied competitor
     else {
       placement = index + 1;
-      last_points = signee.total_points;
-      last_placement = signee.placement;
     }
 
     // Find the placement points according to the placement
@@ -1532,35 +1551,24 @@ export function calculateNormalResults(competition) {
       captain_name: signee.captain_name,
       temp_captain_name: signee.temp_captain_name,
       locality: signee.locality,
-      total_points: signee.total_points.toLocaleString(),
+      total_points: signee.total_points,
       cup_placement_points: cup_placement_points,
       cup_participation_points: cup_participation_points,
       cup_points_total: cup_points_total,
     });
-
     //For showing fish weights, "Kalat" on v-select
-    let temp_dict = {};
-    temp_dict.placement = placement;
-    temp_dict.boat_number = signee.boat_number;
-    temp_dict.captain_name = signee.captain_name;
-
-    // For each fish, get the weight and fish name
-    signee.weights.forEach((weights) => {
-      let name = weights.name;
-      let weight = weights.weights;
-      temp_dict[name] = weight;
+    signee.placement = placement;
+    // For the data-table
+    signee.fishes.forEach((f) => {
+      signee[f.id] = f.weights;
     });
-    temp_dict.total_points = signee.total_points;
-    normal_weights.push(temp_dict);
+    normal_weights.push(signee);
+
+    last_placement = placement;
     last_points = signee.total_points;
   });
 
-  let output = {
-    normal_points: normal_points,
-    normal_weights: normal_weights,
-  };
-
-  return output;
+  return { signees, normal_points, normal_weights };
 }
 
 export function calculateTeamResults(competition) {
@@ -1606,6 +1614,159 @@ export function calculateTeamResults(competition) {
 
   return team_results;
 }
+// Calculate "Suurimmat Kalat"
+export function calculateBiggestFishes(
+  biggest_fishes,
+  fish_names,
+  selected_fish
+) {
+  let placement = 1;
+  let header = [];
+  let results = [];
+
+  // Check v-select value, don't allow it to go null because it shows error
+  if (!selected_fish) {
+    selected_fish = "Kaikki";
+  }
+  if (selected_fish === "Voittajat") {
+    header = headers.winner;
+    fish_names.forEach((n) => {
+      let temp_fishes = biggest_fishes.filter((f) => f.name === n);
+      if (temp_fishes.length) {
+        results.push(temp_fishes.sort((a, b) => b.weight - a.weight)[0]);
+      }
+    });
+  } else if (selected_fish === "Kaikki") {
+    header = headers.all;
+
+    if (biggest_fishes.length) {
+      results = biggest_fishes.sort((a, b) => {
+        return parseInt(b.weight) - parseInt(a.weight);
+      });
+    }
+
+    let last_weight = -1;
+    let last_placement = -1;
+    results.forEach((result) => {
+      if (last_weight === result.weight) {
+        result.placement = last_placement;
+      } else {
+        result.placement = last_placement = placement;
+        last_weight = result.weight;
+      }
+      placement++;
+    });
+  } else {
+    header = headers.fish;
+    // If v-select (selected_fish) not "Voittajat", get fish related results and sort them
+    // based on the v-select fish name
+
+    results = biggest_fishes.filter((f) => f.name === selected_fish);
+
+    if (results.length) {
+      results.sort((a, b) => {
+        return parseInt(b.weight) - parseInt(a.weight);
+      });
+    }
+    let last_weight = -1;
+    let last_placement = -1;
+    results.forEach((result) => {
+      if (last_weight === result.weight) {
+        result.placement = last_placement;
+      } else {
+        result.placement = last_placement = placement;
+        last_weight = result.weight;
+      }
+      placement++;
+    });
+  }
+  return { header, results, selected_fish };
+}
+
+// Calculate "Suurimmat kalasaaliit", works exactly like the calculateBiggestFishes
+export function calculateBiggestAmounts(
+  biggest_amounts,
+  selected_amount,
+  fish_names
+) {
+  let fishes = biggest_amounts;
+  let results = [];
+  let header = [];
+  let placement = 1;
+  if (!selected_amount) {
+    selected_amount = "Kaikki";
+  }
+  if (selected_amount === "Voittajat") {
+    header = headers.winner;
+    results = sortDict(fishes, fish_names);
+  } else if (selected_amount === "Kaikki") {
+    header = headers.all;
+    // If v-select (this.selected_biggest_fish) not "Voittajat", get fish related results and sort them
+    // based on the v-select fish name
+    let fish_results = [];
+    for (const fish of Object.keys(fishes)) {
+      fishes[fish].forEach((result) => {
+        result.name = fish;
+        let previous = fish_results.find(
+          (r) => r.boat_number === result.boat_number
+        );
+        if (previous) {
+          if (previous.weight < result.weight) {
+            previous = {
+              ...result,
+              name: fish,
+            };
+          }
+        } else {
+          fish_results.push(result);
+        }
+      });
+    }
+
+    if (fish_results.length) {
+      fish_results.sort((a, b) => {
+        return parseInt(b.weight) - parseInt(a.weight);
+      });
+    }
+
+    let last_weight = -1;
+    let last_placement = -1;
+    results = fish_results;
+    results.forEach((result) => {
+      if (last_weight === result.weight) {
+        result.placement = last_placement;
+      } else {
+        result.placement = last_placement = placement;
+        last_weight = result.weight;
+      }
+      placement++;
+    });
+  } else {
+    header = headers.fish;
+    let fish_results = [];
+    if (fishes[selected_amount]) {
+      fish_results = fishes[selected_amount].sort((a, b) => {
+        return parseInt(b.weight) - parseInt(a.weight);
+      });
+      fish_results = fish_results.filter(
+        (result) => parseInt(result.weight) > 0
+      );
+    }
+    let last_weight = -1;
+    let last_placement = -1;
+    results = fish_results;
+    results.forEach((result) => {
+      if (last_weight === result.weight) {
+        result.placement = last_placement;
+      } else {
+        result.placement = last_placement = placement;
+        last_weight = result.weight;
+      }
+      placement++;
+    });
+  }
+  return { results, header, selected_amount };
+}
 
 export default {
   setChartsResponsive,
@@ -1631,4 +1792,7 @@ export default {
   replaceAllChars,
   competitionToResults,
   competitionToFishes,
+  calculateNormalResults,
+  calculateBiggestFishes,
+  calculateBiggestAmounts,
 };
