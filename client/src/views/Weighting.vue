@@ -1218,12 +1218,14 @@ export default {
         // For every fish, get values from inputs
         this.inputs.forEach((input) => {
           fish_weight = parseInt(input.value ? input.value : 0); // If input empty, replace with 0
-          // Add fish object to array
-          fish_weights.push({
-            id: input.id,
-            weights: fish_weight,
-          });
-          total_points += fish_weight * input.multiplier;
+          // Add fish object to array¨
+          if (fish_weight) {
+            fish_weights.push({
+              id: input.id,
+              weights: fish_weight,
+            });
+            total_points += fish_weight * input.multiplier;
+          }
         });
       }
 

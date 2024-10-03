@@ -737,7 +737,27 @@ export default {
     choosePrints() {
       this.dialog = false;
       if (this.selected_print.length) {
-        saveAllAsPDF(this.tab, this.isLandscape ? "landscape" : "portrait");
+        let results = saveAllAsPDF(
+          this.tab,
+          this.isLandscape ? "landscape" : "portrait",
+          this.text,
+          this.snackbar,
+          this.selected_biggest_fish,
+          this.selected_biggest_amount,
+          this.selected_print,
+          this.competition,
+          this.signees,
+          this.hasGottenFishCount,
+          this.biggest_fishes,
+          this.biggest_amounts,
+          this.normal_points,
+          this.normal_weights,
+          this.team_results,
+          this.table_fish_names
+        );
+        this.tab = results.tab;
+        this.text = results.text;
+        this.snackbar = results.snackbar;
       }
     },
     // Fetch competition from database, and update all the arrays
@@ -908,7 +928,10 @@ export default {
         : (this.competition.state = "Kesken");
 
       const newvalues = {
-        $set: { isFinished: this.competition.isFinished },
+        $set: {
+          isFinished: this.competition.isFinished,
+          state: this.competition.state,
+        },
       };
       this.updateToDatabase(this.competition, newvalues);
     },
@@ -970,11 +993,6 @@ export default {
       }
     },
     switchBiggestFishes() {
-      let headers = {
-        winner: this.winner_headers,
-        all: this.all_fishes_headers,
-        fish: this.biggest_headers,
-      };
       let results = calculateBiggestFishes(
         this.biggest_fishes,
         this.table_fish_names,

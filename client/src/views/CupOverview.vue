@@ -685,7 +685,10 @@ export default {
         ? (competition.state = "Päättynyt")
         : (competition.state = "Kesken");
       const newvalues = {
-        $set: { isFinished: competition.isFinished },
+        $set: {
+          isFinished: competition.isFinished,
+          state: competition.state,
+        },
       };
       this.updateToDatabase(competition, newvalues);
     },

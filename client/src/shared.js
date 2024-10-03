@@ -491,43 +491,61 @@ export function saveStatsAsPDF(competition_type, orientation = "portrait") {
   setChartsResponsive();
 }
 // Saves all the chosen tables to pdf
-export function saveAllAsPDF(tab, orientation = "portrait") {
+export function saveAllAsPDF(
+  tab,
+  orientation = "portrait",
+  text,
+  snackbar,
+  selected_fish,
+  selected_amount,
+  selected_print,
+  competition,
+  signees,
+  hasGottenFishCount,
+  biggest_fishes,
+  biggest_amounts,
+  normal_points,
+  normal_weights,
+  team_results,
+  fish_names
+) {
   let current_tab = tab;
   let charts_loaded = true;
-  let temp_selected_biggest_fish = this.selected_biggest_fish;
-  let temp_selected_biggest_amount = this.selected_biggest_amount;
-  let temp_selected_normal = this.selected_normal;
+
   // Format dates for easier reding
-  let temp_start_date = formatDate(this.competition.start_date);
-  let temp_end_date = formatDate(this.competition.end_date);
-  let year = this.$moment(this.competition.start_date).year();
+  let temp_start_date = formatDate(competition.start_date);
+  let temp_end_date = formatDate(competition.end_date);
+  let year = moment(competition.start_date).year();
 
   let doc = new jsPDF({ orientation: orientation });
 
   // Title
-  const title = `${this.competition.name}`;
+  const title = `${competition.name}`;
   const date =
     temp_start_date === temp_end_date
       ? String(temp_start_date)
       : `${temp_start_date} - ${temp_end_date}`;
-  const time = `${date}, Klo. ${this.competition.start_time} - ${this.competition.end_time}`;
-  addTitle(doc, title, this.competition.cup_name, time);
+  const time = `${date}, Klo. ${competition.start_time} - ${competition.end_time}`;
+  addTitle(doc, title, competition.cup_name, time);
   doc.setFontSize(18);
   // start_coord needed to keep track of y coordinates for tables (if there are no results -> no table drawn to pdf -> varying coordinates)
   let start_coord;
   let rows = [];
-  let columns;
-  //Normaalikilpailu (Pisteet), saved to pdf if it's inclued in this.selected_print array
-  if (this.selected_print.includes("normal")) {
+  let columns = [];
+  let biggest_fishes_results = [];
+  let biggest_amounts_results = [];
+
+  //Normaalikilpailu (Pisteet), saved to pdf if it's inclued in selected_print array
+  if (selected_print.includes("normal")) {
     //Normaalikilpailu (Kalat)
     columns = ["Sijoitus", "Nro.", "Kippari"];
     // Get fish names for columns
-    this.table_fish_names.forEach((name) => {
+    fish_names.forEach((name) => {
       columns.push(name + " (g)");
     });
     columns.push("Tulos (p)");
 
-    this.normal_weights.forEach((b, i) => {
+    normal_weights.forEach((b, i) => {
       let r = [];
       r = [b.placement + ".", "(" + b.boat_number + ")", b.captain_name];
       b.fishes.forEach((f) => {
@@ -568,7 +586,7 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
 
     // Other tables are generated in code so no need to wait for rendering to html
     doc.addPage();
-    addTitle(doc, title, this.competition.cup_name, time);
+    addTitle(doc, title, competition.cup_name, time);
     doc.setFontSize(18);
     columns = [
       "Sijoitus",
@@ -581,7 +599,7 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
     ];
     // Format dictionary/json to format that autotable understands (arrays in arrays);
     rows = [];
-    this.normal_points.forEach((b, i) => {
+    normal_points.forEach((b, i) => {
       rows[i] = [
         b.placement + ".",
         "(" + b.boat_number + ")",
@@ -622,17 +640,17 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
     });
   }
 
-  // Tiimikilpailu, drawn to pdf if it exists and , if it's inclued in this.selected_print array
-  if (this.isTeamCompetition && this.selected_print.includes("team")) {
+  // Tiimikilpailu, drawn to pdf if it exists and , if it's inclued in selected_print array
+  if (competition.isTeamCompetition && selected_print.includes("team")) {
     // If there is "Normaalikilpailun tulokset" selected also, start from new page
-    if (this.selected_print.includes("normal")) {
+    if (selected_print.includes("normal")) {
       doc.addPage();
     }
-    addTitle(doc, title, this.competition.cup_name, time);
+    addTitle(doc, title, competition.cup_name, time);
     doc.setFontSize(18);
     doc.text(100, 50, "Tiimikilpailun tulokset", { align: "center" });
     // Add results, if there are any
-    if (this.team_results.length) {
+    if (team_results.length) {
       // Other tables are generated in code so no need to wait for rendering to html
       columns = [
         "Sijoitus",
@@ -644,7 +662,7 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
       ];
       // Format dictionary/json to format that autotable understands (arrays in arrays);
       rows = [];
-      this.team_results.forEach((b, i) => {
+      team_results.forEach((b, i) => {
         rows[i] = [
           b.placement + ".",
           b.team,
@@ -676,33 +694,37 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
     }
   }
 
-  // Suurimmat kalat/kalasaaliit (Kaikki) to pdf if it's inclued in this.selected_print array
-  if (this.selected_print.includes("all_biggest")) {
+  // Suurimmat kalat/kalasaaliit (Kaikki) to pdf if it's inclued in selected_print array
+  if (selected_print.includes("all_biggest")) {
     // If there is content before, start from new page
-    if (
-      this.selected_print.includes("normal") ||
-      this.selected_print.includes("team")
-    ) {
+    if (selected_print.includes("normal") || selected_print.includes("team")) {
       doc.addPage();
     }
     // Suurimmat Kalat  (Kaikki)
     // Select these for calculations
-    this.selected_biggest_fish = this.selected_biggest_amount = "Kaikki";
+    selected_fish = selected_amount = "Kaikki";
+    biggest_fishes_results = calculateBiggestFishes(
+      biggest_fishes,
+      fish_names,
+      selected_fish
+    ).results;
+    biggest_amounts_results = calculateBiggestAmounts(
+      biggest_amounts,
+      fish_names,
+      selected_amount
+    ).results;
     columns = ["Sijoitus", "Veneen nro", "Kippari", "Kala", "Paino (g)"];
 
     // If there are any results, add title
-    if (
-      this.biggest_fishes_results.length ||
-      this.biggest_amounts_results.length
-    ) {
-      addTitle(doc, title, this.competition.cup_name, time);
+    if (biggest_fishes_results.length || biggest_amounts_results.length) {
+      addTitle(doc, title, competition.cup_name, time);
       doc.setFontSize(18);
     }
 
     // If there are biggest fishes
-    if (this.biggest_fishes_results.length) {
+    if (biggest_fishes_results.length) {
       rows = [];
-      this.biggest_fishes_results.forEach((f, i) => {
+      biggest_fishes_results.forEach((f, i) => {
         rows[i] = [
           f.placement + ".",
           "(" + f.boat_number + ")",
@@ -712,7 +734,7 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
         ];
       });
       doc.text(
-        "Suurimmat kalat" + ` (${this.selected_biggest_fish})`,
+        "Suurimmat kalat" + ` (${selected_fish})`,
         doc.internal.pageSize.getWidth() / 2,
         50,
         { align: "center" }
@@ -746,9 +768,9 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
 
     //Suurimmat kalasaaliit (Kaikki)
     // If there are any amounts --> if someone has gotten any fish
-    if (this.biggest_amounts_results.length) {
+    if (biggest_amounts_results.length) {
       rows = [];
-      this.biggest_amounts_results.forEach((f, i) => {
+      biggest_amounts_results.forEach((f, i) => {
         rows[i] = [
           f.placement + ".",
           "(" + f.boat_number + ")",
@@ -758,7 +780,7 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
         ];
       });
       doc.text(
-        "Suurimmat kalasaaliit" + ` (${this.selected_biggest_fish})`,
+        "Suurimmat kalasaaliit" + ` (${selected_fish})`,
         doc.internal.pageSize.getWidth() / 2,
         start_coord,
         { align: "center" }
@@ -786,35 +808,41 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
     }
   }
 
-  //"Suurimmat kalat" to pdf if it's inclued in this.selected_print array
-  if (this.selected_print.includes("biggest_fishes")) {
+  //"Suurimmat kalat" to pdf if it's inclued in selected_print array
+  if (selected_print.includes("biggest_fishes")) {
     // If there is content before, start from new page
     if (
-      this.selected_print.includes("normal") ||
-      this.selected_print.includes("team") ||
-      this.selected_print.includes("all_biggest")
+      selected_print.includes("normal") ||
+      selected_print.includes("team") ||
+      selected_print.includes("all_biggest")
     ) {
       doc.addPage();
     }
     let counter = 0;
     // For each fish, generate tables for "Suurimmat Kalat (Kala)" and "Suurimmat Kalasaaliit (Kala)"
-    this.table_fish_names.forEach((name) => {
+    fish_names.forEach((name) => {
       // Same process as above, but for every fish instead of only winners
-      this.selected_biggest_fish = name;
+      selected_fish = name;
+      biggest_fishes_results = calculateBiggestFishes(
+        biggest_fishes,
+        fish_names,
+        selected_fish
+      ).results;
+
       start_coord = 10;
 
-      if (this.biggest_fishes_results.length) {
+      if (biggest_fishes_results.length) {
         // So it doesn't add unnecessary page on the first loop
         if (counter > 0) {
           doc.addPage();
         }
-        addTitle(doc, title, this.competition.cup_name, time);
+        addTitle(doc, title, competition.cup_name, time);
         doc.setFontSize(18);
         start_coord = 50;
 
         columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino  (g)"];
         rows = [];
-        this.biggest_fishes_results.forEach((f, i) => {
+        biggest_fishes_results.forEach((f, i) => {
           rows[i] = [
             f.placement + ".",
             "(" + f.boat_number + ")",
@@ -856,29 +884,29 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
     });
   }
 
-  // Suurimmat kalasaaliit to pdf if it's inclued in this.selected_print array
-  if (this.selected_print.includes("biggest_amounts")) {
+  // Suurimmat kalasaaliit to pdf if it's inclued in selected_print array
+  if (selected_print.includes("biggest_amounts")) {
     // If there is content before, start from new page
     if (
-      this.selected_print.includes("normal") ||
-      this.selected_print.includes("team") ||
-      this.selected_print.includes("biggest_fishes") ||
-      this.selected_print.includes("all_biggest")
+      selected_print.includes("normal") ||
+      selected_print.includes("team") ||
+      selected_print.includes("biggest_fishes") ||
+      selected_print.includes("all_biggest")
     ) {
       doc.addPage();
     }
     let counter = 0;
     columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino (g)"];
-    this.table_fish_names.forEach((name) => {
-      this.selected_biggest_amount = name;
+
+    fish_names.forEach((name) => {
       start_coord = 10;
 
-      if (this.biggest_amounts[name].length) {
+      if (biggest_amounts[name].length) {
         // So it doesn't add unnecessary page on the first loop
         if (counter > 0) {
           doc.addPage();
         }
-        addTitle(doc, title, this.competition.cup_name, time);
+        addTitle(doc, title, competition.cup_name, time);
         doc.setFontSize(18);
         start_coord = 50;
         rows = [];
@@ -886,8 +914,8 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
         let last_weight = -1;
         let last_placement = -1;
         let placement = 1;
-        this.biggest_amounts[name].sort((a, b) => b.weight - a.weight);
-        this.biggest_amounts[name].forEach((f, i) => {
+        biggest_amounts[name].sort((a, b) => b.weight - a.weight);
+        biggest_amounts[name].forEach((f, i) => {
           // no placements on some amounts??? TODO FIX. Quick fix for now
           if (!f.placement) {
             if (f.weight === last_weight) {
@@ -938,27 +966,32 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
     });
   }
 
-  // "Suurimmat Kalat (Voittajat) / Suurimmat kalasaaliit (Voittajat)"" to pdf if it's inclued in this.selected_print array
-  if (this.selected_print.includes("biggest_winners")) {
+  // "Suurimmat Kalat (Voittajat) / Suurimmat kalasaaliit (Voittajat)"" to pdf if it's inclued in selected_print array
+  if (selected_print.includes("biggest_winners")) {
     // If there is content before, start from new page
     if (
-      this.selected_print.includes("normal") ||
-      this.selected_print.includes("team") ||
-      this.selected_print.includes("biggest_fishes") ||
-      this.selected_print.includes("biggest_amounts") ||
-      this.selected_print.includes("all_biggest")
+      selected_print.includes("normal") ||
+      selected_print.includes("team") ||
+      selected_print.includes("biggest_fishes") ||
+      selected_print.includes("biggest_amounts") ||
+      selected_print.includes("all_biggest")
     ) {
       doc.addPage();
     }
     // Suurimmat Kalat  (Voittajat)
     // Select these for calculations
-    this.selected_biggest_fish = this.selected_biggest_amount = "Voittajat";
-
-    this.biggest_fishes_results = [];
-    this.table_fish_names.forEach((n) => {
-      let temp_fishes = this.biggest_fishes.filter((f) => f.name === n);
+    selected_fish = selected_amount = "Voittajat";
+    biggest_amounts_results = calculateBiggestAmounts(
+      biggest_amounts,
+      fish_names,
+      selected_amount
+    ).results;
+    biggest_fishes_results = [];
+    fish_names.forEach((n) => {
+      let fish = competition.fishes.find((f) => f.name === n);
+      let temp_fishes = biggest_fishes.filter((f) => f.fish_id === fish.id);
       if (temp_fishes.length) {
-        this.biggest_fishes_results.push(
+        biggest_fishes_results.push(
           temp_fishes.sort((a, b) => b.weight - a.weight)[0]
         );
       }
@@ -967,18 +1000,15 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
     columns = ["Kalalaji", "Veneen nro", "Kippari", "Paino (g)"];
 
     // If there are any results, add title
-    if (
-      this.biggest_fishes_results.length ||
-      this.biggest_amounts_results.length
-    ) {
-      addTitle(doc, title, this.competition.cup_name, time);
+    if (biggest_fishes_results.length || biggest_amounts_results.length) {
+      addTitle(doc, title, competition.cup_name, time);
       doc.setFontSize(18);
     }
 
     // If there are biggest fishes
-    if (this.biggest_fishes_results.length) {
+    if (biggest_fishes_results.length) {
       rows = [];
-      this.biggest_fishes_results.forEach((f, i) => {
+      biggest_fishes_results.forEach((f, i) => {
         rows[i] = [
           f.name,
           "(" + f.boat_number + ")",
@@ -987,7 +1017,7 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
         ];
       });
       doc.text(
-        "Suurimmat kalat" + ` (${this.selected_biggest_fish})`,
+        "Suurimmat kalat" + ` (${selected_fish})`,
         doc.internal.pageSize.getWidth() / 2,
         50,
         { align: "center" }
@@ -1021,14 +1051,11 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
 
     //Suurimmat kalasaaliit (Voittajat)
     // If there are any amounts --> if someone has gotten any fish
-    this.biggest_amounts_results = [];
-    this.biggest_amounts_results = sortDict(
-      this.biggest_amounts,
-      this.table_fish_names
-    );
-    if (this.biggest_amounts_results.length) {
+    biggest_amounts_results = [];
+    biggest_amounts_results = sortDict(biggest_amounts, fish_names);
+    if (biggest_amounts_results.length) {
       rows = [];
-      this.biggest_amounts_results.forEach((f, i) => {
+      biggest_amounts_results.forEach((f, i) => {
         rows[i] = [
           f.name,
           "(" + f.boat_number + ")",
@@ -1037,7 +1064,7 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
         ];
       });
       doc.text(
-        "Suurimmat kalasaaliit" + ` (${this.selected_biggest_fish})`,
+        "Suurimmat kalasaaliit" + ` (${selected_fish})`,
         doc.internal.pageSize.getWidth() / 2,
         start_coord,
         { align: "center" }
@@ -1064,20 +1091,20 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
       });
     }
   }
-  // "Tilastoja" to pdf if it's inclued in this.selected_print array
-  if (this.selected_print.includes("stats")) {
+  // "Tilastoja" to pdf if it's inclued in selected_print array
+  if (selected_print.includes("stats")) {
     // If there is content before, start from new page
     if (
-      this.selected_print.includes("normal") ||
-      this.selected_print.includes("team") ||
-      this.selected_print.includes("biggest_fishes") ||
-      this.selected_print.includes("biggest_amounts") ||
-      this.selected_print.includes("biggest_winners")
+      selected_print.includes("normal") ||
+      selected_print.includes("team") ||
+      selected_print.includes("biggest_fishes") ||
+      selected_print.includes("biggest_amounts") ||
+      selected_print.includes("biggest_winners")
     ) {
       doc.addPage();
     }
     resizeChartForPDF();
-    addTitle(doc, title, this.competition.cup_name, time);
+    addTitle(doc, title, competition.cup_name, time);
     doc.setFontSize(18);
     // "Tilastot"
     // Resize charts to be better looking on a pdf
@@ -1097,9 +1124,9 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
       }
     } catch (err) {
       charts_loaded = false;
-      this.tab = "stats";
+      tab = "stats";
       // Try again after 1 sec
-      setTimeout(() => this.saveAllAsPDF(current_tab), 1000);
+      setTimeout(() => saveAllAsPDF(current_tab), 1000);
     }
     doc.text(
       "Kalalajien määritykset",
@@ -1111,7 +1138,7 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
     columns = ["Kalalaji", "Kerroin", "Alamitta", "Saalista saatu"];
     // Table generated straight from html
     rows = [];
-    this.competition.fishes.forEach((f, i) => {
+    competition.fishes.forEach((f, i) => {
       rows[i] = [
         f.name,
         "x " + f.multiplier,
@@ -1120,9 +1147,8 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
       ];
     });
     let temp =
-      Math.round(
-        (this.competition.total_weights / 1000 + Number.EPSILON) * 100
-      ) / 100;
+      Math.round((competition.total_weights / 1000 + Number.EPSILON) * 100) /
+      100;
     let total_amount = temp.toLocaleString() + " kg";
     rows.push(["Yhteensä", "", "", total_amount]);
 
@@ -1157,15 +1183,13 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
     // Generate table
     columns = ["", ""];
     rows = [
-      ["Cup pistekerroin", `x ${this.competition.cup_points_multiplier}`],
-      ["Ilmoittautuneita yhteensä", `${this.signees.length} kpl`],
+      ["Cup pistekerroin", `x ${competition.cup_points_multiplier}`],
+      ["Ilmoittautuneita yhteensä", `${signees.length} kpl`],
       [
         "Saalista saaneita",
         `${
-          Math.round(
-            (this.hasGottenFishCount / this.signees.length) * 100 * 100
-          ) / 100
-        } % (${this.hasGottenFishCount}/${this.signees.length})`,
+          Math.round((hasGottenFishCount / signees.length) * 100 * 100) / 100
+        } % (${hasGottenFishCount}/${signees.length})`,
       ],
     ];
     doc.autoTable({
@@ -1191,25 +1215,28 @@ export function saveAllAsPDF(tab, orientation = "portrait") {
     setChartsResponsive();
   }
 
-  // Reset variables
-  this.selected_biggest_fish = temp_selected_biggest_fish;
-  this.selected_biggest_amount = temp_selected_biggest_amount;
-  this.selected_normal = temp_selected_normal;
-  initChartData;
+  initChartData(
+    competition.fishes,
+    fish_names,
+    hasGottenFishCount,
+    signees.length
+  );
 
   // Save to pdf
   if (charts_loaded) {
-    this.tab = current_tab;
+    tab = current_tab;
     const fileName = `${year}_${replaceAll(
-      this.competition.name,
+      competition.name,
       " ",
       ""
     )}Tulokset.pdf`;
     openPdfOnNewTab(doc, fileName);
   } else {
-    this.text = "Kaaviot ei ruudulla, yritetään uudelleen...";
-    this.snackbar = true;
+    text = "Kaaviot ei ruudulla, yritetään uudelleen...";
+    snackbar = true;
   }
+
+  return { tab, text, snackbar };
 }
 
 export function resizeChartForPDF() {

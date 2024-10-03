@@ -1075,7 +1075,7 @@
     }
   ],
   "team_results": [],
-  "team_competition": false,
+  "isTeamCompetition": false,
   "biggest_fishes": {
     "Taimen": [
       { "boat_number": 21, "captain_name": "Jari Kosonen", "weight": "5360" },

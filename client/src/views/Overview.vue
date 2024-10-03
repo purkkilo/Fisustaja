@@ -6,11 +6,12 @@
       <v-col>
         <CompetitionNavigation></CompetitionNavigation>
       </v-col>
+    </v-row>
+    <v-row>
       <v-col>
         <Timedate />
       </v-col>
     </v-row>
-
     <v-container
       v-bind:class="{
         mobile: $vuetify.breakpoint.width < 800,

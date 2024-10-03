@@ -316,7 +316,7 @@
                       <v-spacer></v-spacer>
                       <v-col>
                         <v-radio-group
-                          v-model="team_competition"
+                          v-model="isTeamCompetition"
                           row
                           :disabled="basic_info_validated"
                         >
@@ -849,7 +849,7 @@
                     </v-list-item-icon>
                     <v-list-item-title>Onko Tiimikilpailua?</v-list-item-title>
                     <v-list-item-subtitle class="blue-text"
-                      >{{ team_competition }}
+                      >{{ isTeamCompetition }}
                     </v-list-item-subtitle>
                   </v-list-item>
                   <v-divider></v-divider>
@@ -986,7 +986,7 @@ export default {
       cup: {},
       cup_participation_points: 5,
       cup_points_multiplier: 1.0,
-      team_competition: "Ei",
+      isTeamCompetition: "Ei",
       start_date: new Date().toISOString().substr(0, 10),
       end_date: new Date().toISOString().substr(0, 10),
       start_time: null,
@@ -1365,7 +1365,7 @@ export default {
           cup_participation_points: Number(this.cup_participation_points),
           cup_placement_points: temp_placement_points,
           cup_points_multiplier: Number(this.cup_points_multiplier),
-          team_competition: this.team_competition === "Ei" ? false : true,
+          isTeamCompetition: this.isTeamCompetition === "Ei" ? false : true,
           start_date: start_date,
           end_date: end_date,
           start_time: this.start_time,
@@ -1538,7 +1538,7 @@ export default {
           cup_placement_points: this.basic_info.cup_placement_points,
           cup_participation_points: this.basic_info.cup_participation_points,
           cup_points_multiplier: this.basic_info.cup_points_multiplier,
-          team_competition: this.basic_info.team_competition,
+          isTeamCompetition: this.basic_info.isTeamCompetition,
           start_date: this.basic_info.start_date,
           end_date: this.basic_info.end_date,
           duration: this.basic_info.duration,

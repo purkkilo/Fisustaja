@@ -572,7 +572,7 @@
                   <v-col>
                     <v-radio-group
                       :dark="$store.getters.getTheme"
-                      v-model="team_competition"
+                      v-model="isTeamCompetition"
                       row
                       :disabled="basic_info_validated"
                     >
@@ -821,7 +821,7 @@ export default {
       locality: null,
       cup_participation_points: null,
       cup_points_multiplier: null,
-      team_competition: null,
+      isTeamCompetition: null,
       fish_specs: null,
       start_date: null,
       end_date: null,
@@ -962,7 +962,10 @@ export default {
         : (this.competition.state = "Kesken");
 
       const newvalues = {
-        $set: { isFinished: this.competition.isFinished },
+        $set: {
+          isFinished: this.competition.isFinished,
+          state: this.competition.state,
+        },
       };
       this.updateToDatabase(this.competition, newvalues);
     },
@@ -1136,7 +1139,7 @@ export default {
       this.locality = this.competition.locality;
       this.cup_participation_points = this.competition.cup_participation_points;
       this.cup_points_multiplier = this.competition.cup_points_multiplier;
-      this.team_competition = this.competition.team_competition
+      this.isTeamCompetition = this.competition.isTeamCompetition
         ? "Kyllä"
         : "Ei";
       this.start_date = new Date(this.competition.start_date)
@@ -1323,8 +1326,8 @@ export default {
         }
         this.competition.cup_points_multiplier = this.cup_points_multiplier;
         this.competition.cup_placement_points = temp_placement_points;
-        this.competition.team_competition =
-          this.team_competition === "Ei" ? false : true;
+        this.competition.isTeamCompetition =
+          this.isTeamCompetition === "Ei" ? false : true;
         this.competition.start_date = start_date;
         this.competition.end_date = end_date;
         this.competition.start_time = this.start_time;

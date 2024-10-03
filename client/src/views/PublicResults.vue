@@ -724,7 +724,27 @@ export default {
     choosePrints() {
       this.dialog = false;
       if (this.selected_print.length) {
-        saveAllAsPDF(this.tab, this.isLandscape ? "landscape" : "portrait");
+        let results = saveAllAsPDF(
+          this.tab,
+          this.isLandscape ? "landscape" : "portrait",
+          this.text,
+          this.snackbar,
+          this.selected_biggest_fish,
+          this.selected_biggest_amount,
+          this.selected_print,
+          this.competition,
+          this.signees,
+          this.hasGottenFishCount,
+          this.biggest_fishes,
+          this.biggest_amounts,
+          this.normal_points,
+          this.normal_weights,
+          this.team_results,
+          this.table_fish_names
+        );
+        this.tab = results.tab;
+        this.text = results.text;
+        this.snackbar = results.snackbar;
       }
     },
     changePage(route) {

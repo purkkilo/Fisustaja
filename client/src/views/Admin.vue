@@ -659,7 +659,7 @@ export default {
       cups: [],
       cup: {},
       signees_amount: 30,
-      team_competition: "Ei",
+      isTeamCompetition: "Ei",
       number_rules: [
         (value) => !!value || "Kenttä ei voi jäädä tyhjäksi!",
         (value) => !isNaN(value || "") || "Ei ole numero!",

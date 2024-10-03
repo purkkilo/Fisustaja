@@ -69,7 +69,7 @@ export default new Vuex.Store({
       return state.competition.teams;
     },
     isTeamCompetition: (state) => {
-      return state.competition.team_competition;
+      return state.competition.isTeamCompetition;
     },
     isLoggedIn: (state) => {
       return state.logged_in;

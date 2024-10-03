@@ -57,7 +57,7 @@ const CompetitionSchema = new Schema({
     type: String,
     default: "Rekisteröity",
   },
-  team_competition: {
+  isTeamCompetition: {
     type: Boolean,
     default: false,
   },
