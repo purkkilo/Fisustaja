@@ -135,30 +135,41 @@ export function formatDate(d) {
 export function saveAsPDF(
   competition_type,
   table_id,
-  orientation = "portrait"
+  orientation = "portrait",
+  competition,
+  signees,
+  selected_normal,
+  selected_biggest_fish,
+  selected_biggest_amount,
+  normal_points,
+  normal_weights,
+  biggest_fishes_results,
+  biggest_amounts_results,
+  team_results,
+  fish_names
 ) {
   // Format dates for easier reding
-  let temp_start_date = formatDate(this.competition.start_date);
-  let temp_end_date = formatDate(this.competition.end_date);
+  let temp_start_date = formatDate(competition.start_date);
+  let temp_end_date = formatDate(competition.end_date);
   let rows = [];
   let columns;
   let pdf_competition_type;
   // PDF creation
   let doc = new jsPDF({ orientation: orientation });
   // Title
-  const title = `${this.competition.name}`;
+  const title = `${competition.name}`;
   const date =
     temp_start_date === temp_end_date
       ? String(temp_start_date)
       : `${temp_start_date} - ${temp_end_date}`;
-  const time = `${date}, Klo. ${this.competition.start_time} - ${this.competition.end_time}`;
-  addTitle(doc, title, this.competition.cup_name, time);
+  const time = `${date}, Klo. ${competition.start_time} - ${competition.end_time}`;
+  addTitle(doc, title, competition.cup_name, time);
   doc.setFontSize(20);
 
   if (table_id === "#normal-table") {
-    pdf_competition_type = `Normaalikilpailu${this.selected_normal}`;
+    pdf_competition_type = `Normaalikilpailu${selected_normal}`;
     // Other tables are generated in code so no need to wait for rendering to html
-    if (this.selected_normal === "Pisteet") {
+    if (selected_normal === "Pisteet") {
       columns = [
         "Sijoitus",
         "Nro.",
@@ -168,8 +179,8 @@ export function saveAsPDF(
         "Tulos (p)",
         "Cup (p)",
       ];
-      // Format dictionary/json to format that autotable understands (arrays in arrays);
-      this.normal_points.forEach((b, i) => {
+      // Format so that autotable understands (arrays in arrays);
+      normal_points.forEach((b, i) => {
         rows[i] = [
           b.placement + ".",
           "(" + b.boat_number + ")",
@@ -181,15 +192,15 @@ export function saveAsPDF(
         ];
       });
     }
-    if (this.selected_normal === "Kalat") {
+    if (selected_normal === "Kalat") {
       columns = ["Sijoitus", "Nro.", "Kippari"];
       // Get fish names for columns
-      this.table_fish_names.forEach((name) => {
+      fish_names.forEach((name) => {
         columns.push(name + " (g)");
       });
       columns.push("Tulos (p)");
       // Format dictionary/json to format that autotable understands (arrays in arrays);
-      this.normal_weights.forEach((b, i) => {
+      normal_weights.forEach((b, i) => {
         let r = [];
         r = [b.placement + ".", "(" + b.boat_number + ")", b.captain_name];
         b.fishes.forEach((f) => {
@@ -199,7 +210,7 @@ export function saveAsPDF(
         rows[i] = r;
       });
     }
-    if (this.selected_normal === "Ilmoittautuneet") {
+    if (selected_normal === "Ilmoittautuneet") {
       columns = [
         "Kilp. numero",
         "Kippari",
@@ -207,15 +218,15 @@ export function saveAsPDF(
         "Paikkakunta",
         "Lähtöpaikka",
       ];
-      if (this.isTeamCompetition) {
+      if (competition.isTeamCompetition) {
         columns.push("Tiimi");
       }
       // Format dictionary/json to format that autotable understands (arrays in arrays);
-      this.$store.getters.getSignees.forEach((b, i) => {
+      signees.forEach((b, i) => {
         rows[i] = [
           "(" + b.boat_number + ")",
           b.captain_name,
-          b.temp_captain,
+          b.temp_captain_name,
           b.locality,
           b.starting_place,
         ];
@@ -236,7 +247,7 @@ export function saveAsPDF(
     ];
     // Format dictionary/json to format that autotable understands (arrays in arrays);
     rows = [];
-    this.team_results.forEach((b, i) => {
+    team_results.forEach((b, i) => {
       rows[i] = [
         b.placement,
         b.team,
@@ -249,11 +260,11 @@ export function saveAsPDF(
   }
 
   if (table_id === "#biggest-fishes-table") {
-    pdf_competition_type = `SuurimmatKalat${this.selected_biggest_fish}`;
+    pdf_competition_type = `SuurimmatKalat${selected_biggest_fish}`;
 
-    if (this.selected_biggest_fish === "Voittajat") {
+    if (selected_biggest_fish === "Voittajat") {
       columns = ["Kalalaji", "Veneen nro", "Kippari", "Paino (g)"];
-      this.biggest_fishes_results.forEach((f, i) => {
+      biggest_fishes_results.forEach((f, i) => {
         rows[i] = [
           f.name,
           "(" + f.boat_number + ")",
@@ -261,9 +272,9 @@ export function saveAsPDF(
           f.weight.toLocaleString(),
         ];
       });
-    } else if (this.selected_biggest_fish === "Kaikki") {
+    } else if (selected_biggest_fish === "Kaikki") {
       columns = ["Sijoitus", "Veneen nro", "Kippari", "Kala", "Paino (g)"];
-      this.biggest_fishes_results.forEach((f, i) => {
+      biggest_fishes_results.forEach((f, i) => {
         rows[i] = [
           f.placement + ".",
           "(" + f.boat_number + ")",
@@ -274,7 +285,7 @@ export function saveAsPDF(
       });
     } else {
       columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino (g)"];
-      this.biggest_fishes_results.forEach((f, i) => {
+      biggest_fishes_results.forEach((f, i) => {
         rows[i] = [
           f.placement + ".",
           "(" + f.boat_number + ")",
@@ -286,11 +297,11 @@ export function saveAsPDF(
   }
 
   if (table_id === "#biggest-amounts-table") {
-    pdf_competition_type = `SuurimmatSaaliit${this.selected_biggest_amount}`;
+    pdf_competition_type = `SuurimmatSaaliit${selected_biggest_amount}`;
 
-    if (this.selected_biggest_amount === "Voittajat") {
+    if (selected_biggest_amount === "Voittajat") {
       columns = ["Kalalaji", "Veneen nro", "Kippari", "Paino (g)"];
-      this.biggest_amounts_results.forEach((f, i) => {
+      biggest_amounts_results.forEach((f, i) => {
         rows[i] = [
           f.name,
           "(" + f.boat_number + ")",
@@ -298,9 +309,9 @@ export function saveAsPDF(
           f.weight.toLocaleString(),
         ];
       });
-    } else if (this.selected_biggest_amount === "Kaikki") {
+    } else if (selected_biggest_amount === "Kaikki") {
       columns = ["Sijoitus", "Veneen nro", "Kippari", "Kala", "Paino (g)"];
-      this.biggest_amounts_results.forEach((f, i) => {
+      biggest_amounts_results.forEach((f, i) => {
         rows[i] = [
           f.placement + ".",
           "(" + f.boat_number + ")",
@@ -311,7 +322,7 @@ export function saveAsPDF(
       });
     } else {
       columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino (g)"];
-      this.biggest_amounts_results.forEach((f, i) => {
+      biggest_amounts_results.forEach((f, i) => {
         rows[i] = [
           f.placement + ".",
           "(" + f.boat_number + ")",
@@ -347,10 +358,8 @@ export function saveAsPDF(
     margin: { top: 20 },
   });
   // Save the pdf
-  const fileName = `${this.$moment(
-    this.competition.start_date
-  ).year()}_${replaceAll(
-    this.competition.name,
+  const fileName = `${moment(competition.start_date).year()}_${replaceAll(
+    competition.name,
     " ",
     ""
   )}_${pdf_competition_type}.pdf`;
@@ -358,22 +367,28 @@ export function saveAsPDF(
   // Set charts to be responsive again
 }
 
-export function saveStatsAsPDF(competition_type, orientation = "portrait") {
+export function saveStatsAsPDF(
+  competition_type,
+  orientation = "portrait",
+  competition,
+  signees,
+  hasGottenFishCount
+) {
   resizeChartForPDF();
   // Format dates for easier reding
-  let temp_start_date = formatDate(this.competition.start_date);
-  let temp_end_date = formatDate(this.competition.end_date);
+  let temp_start_date = formatDate(competition.start_date);
+  let temp_end_date = formatDate(competition.end_date);
 
   let doc = new jsPDF({ orientation: orientation });
 
   // Title
-  const title = `${this.competition.name}`;
+  const title = `${competition.name}`;
   const date =
     temp_start_date === temp_end_date
       ? String(temp_start_date)
       : `${temp_start_date} - ${temp_end_date}`;
-  const time = `${date}, Klo. ${this.competition.start_time} - ${this.competition.end_time}`;
-  addTitle(doc, title, this.competition.cup_name, time);
+  const time = `${date}, Klo. ${competition.start_time} - ${competition.end_time}`;
+  addTitle(doc, title, competition.cup_name, time);
   doc.setFontSize(18);
 
   // "Tilastot"
@@ -402,7 +417,7 @@ export function saveStatsAsPDF(competition_type, orientation = "portrait") {
   // Generate table
   let rows = [];
 
-  this.competition.fishes.forEach((f, i) => {
+  competition.fishes.forEach((f, i) => {
     rows[i] = [
       f.name,
       "x " + f.multiplier,
@@ -411,8 +426,7 @@ export function saveStatsAsPDF(competition_type, orientation = "portrait") {
     ];
   });
   let temp =
-    Math.round((this.competition.total_weights / 1000 + Number.EPSILON) * 100) /
-    100;
+    Math.round((competition.total_weights / 1000 + Number.EPSILON) * 100) / 100;
   let total_amount = temp.toLocaleString() + " kg";
   rows.push(["Yhteensä", "", "", total_amount]);
   let columns = ["Kalalaji", "Kerroin", "Alamitta", "Saalista saatu"];
@@ -447,15 +461,13 @@ export function saveStatsAsPDF(competition_type, orientation = "portrait") {
 
   columns = ["", ""];
   rows = [
-    ["Cup pistekerroin", `x ${this.competition.cup_points_multiplier}`],
-    ["Ilmoittautuneita yhteensä", `${this.signees.length} kpl`],
+    ["Cup pistekerroin", `x ${competition.cup_points_multiplier}`],
+    ["Ilmoittautuneita yhteensä", `${signees.length} kpl`],
     [
       "Saalista saaneita",
       `${
-        Math.round(
-          (this.hasGottenFishCount / this.signees.length) * 100 * 100
-        ) / 100
-      } % (${this.hasGottenFishCount}/${this.signees.length})`,
+        Math.round((hasGottenFishCount / signees.length) * 100 * 100) / 100
+      } % (${hasGottenFishCount}/${signees.length})`,
     ],
   ];
   doc.autoTable({
@@ -479,13 +491,11 @@ export function saveStatsAsPDF(competition_type, orientation = "portrait") {
   });
 
   // Save the pdf
-  const fileName = `${this.$moment(
-    this.competition.start_date
-  ).year()}_${replaceAll(this.competition.name, " ", "")}_${replaceAll(
-    this.capitalize_words(competition_type),
+  const fileName = `${moment(competition.start_date).year()}_${replaceAll(
+    competition.name,
     " ",
     ""
-  )}.pdf`;
+  )}_${replaceAll(capitalize_words(competition_type), " ", "")}.pdf`;
   openPdfOnNewTab(doc, fileName);
   // Set charts to be responsive again
   setChartsResponsive();
@@ -1242,22 +1252,14 @@ export function saveAllAsPDF(
 export function resizeChartForPDF() {
   const Chart = require("chart.js");
   for (var id in Chart.instances) {
-    let chart = Chart.instances[id];
-    // Resize charts to fit pdf nicely
-    chart.canvas.parentNode.style.height = "400px";
-    chart.canvas.parentNode.style.width = "800px";
-    chart.resize();
+    Chart.instances[id].resize(400, 800);
   }
 }
 
 export function setChartsResponsive() {
   const Chart = require("chart.js");
   for (var id in Chart.instances) {
-    let chart = Chart.instances[id];
-    // Resize charts back to original width
-    chart.canvas.parentNode.style.height = "";
-    chart.canvas.parentNode.style.width = "";
-    chart.resize();
+    Chart.instances[id].resize();
   }
 }
 
@@ -1449,7 +1451,7 @@ export function getRandomColors(totalNumber) {
   for (var x = 0; x < totalNumber; x++) {
     let s = Math.floor(Math.random() * (max - min)) + min;
     let v = Math.floor(Math.random() * (max - min)) + min;
-    const rgb = this.HSVtoRGB(i * x, s, v);
+    const rgb = HSVtoRGB(i * x, s, v);
     colors.push(`rgb(${rgb.r},${rgb.g},${rgb.b})`); // you can also alternate the saturation and value for even more contrast between the colors
   }
   return colors;
@@ -1728,7 +1730,7 @@ export function calculateBiggestAmounts(
     results = sortDict(fishes, fish_names);
   } else if (selected_amount === "Kaikki") {
     header = headers.all;
-    // If v-select (this.selected_biggest_fish) not "Voittajat", get fish related results and sort them
+    // If v-select (selected_biggest_fish) not "Voittajat", get fish related results and sort them
     // based on the v-select fish name
     let fish_results = [];
     for (const fish of Object.keys(fishes)) {

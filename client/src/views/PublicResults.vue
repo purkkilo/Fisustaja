@@ -549,6 +549,7 @@ import {
   saveAllAsPDF,
   saveAsPDF,
   saveStatsAsPDF,
+  resizeChartForPDF,
 } from "../shared";
 
 export default {
@@ -682,35 +683,46 @@ export default {
 
   methods: {
     pdfWrapper() {
+      let comp_type = "";
+
       if (this.pdf === "Tilastoja") {
-        saveStatsAsPDF(this.pdf, this.isLandscape ? "landscape" : "portrait");
-      }
-      if (this.pdf === "#normal-table") {
-        saveAsPDF(
-          `Normaalikilpailun tulokset (${this.selected_normal})`,
+        resizeChartForPDF();
+        saveStatsAsPDF(
           this.pdf,
-          this.isLandscape ? "landscape" : "portrait"
+          this.isLandscape ? "landscape" : "portrait",
+          this.competition,
+          this.signees,
+          this.hasGottenFishCount
         );
-      }
-      if (this.pdf === "#team-table") {
+      } else {
+        if (this.pdf === "#normal-table") {
+          comp_type = `Normaalikilpailun tulokset (${this.selected_normal})`;
+        }
+        if (this.pdf === "#team-table") {
+          comp_type = `Tiimikilpailun tulokset`;
+        }
+        if (this.pdf === "#biggest-fishes-table") {
+          comp_type = `Suurimmat kalat (${this.selected_biggest_fish})`;
+        }
+        if (this.pdf === "#biggest-amounts-table") {
+          comp_type = `Suurimmat kalat (${this.selected_biggest_amount})`;
+        }
+
         saveAsPDF(
-          `Tiimikilpailun tulokset`,
-          "#team-table",
-          this.isLandscape ? "landscape" : "portrait"
-        );
-      }
-      if (this.pdf === "#biggest-fishes-table") {
-        saveAsPDF(
-          `Suurimmat kalat (${this.selected_biggest_fish})`,
-          "#biggest-fishes-table",
-          this.isLandscape ? "landscape" : "portrait"
-        );
-      }
-      if (this.pdf === "#biggest-amounts-table") {
-        saveAsPDF(
-          `Suurimmat kalat (${this.selected_biggest_amount})`,
-          "#biggest-amounts-table",
-          this.isLandscape ? "landscape" : "portrait"
+          comp_type,
+          this.pdf,
+          this.isLandscape ? "landscape" : "portrait",
+          this.competition,
+          this.signees,
+          this.selected_normal,
+          this.selected_biggest_fish,
+          this.selected_biggest_amount,
+          this.normal_points,
+          this.normal_weights,
+          this.biggest_fishes_results,
+          this.biggest_amounts_results,
+          this.team_results,
+          this.table_fish_names
         );
       }
     },
@@ -755,7 +767,7 @@ export default {
       localStorage.removeItem("competition");
     },
     // "Wrapper" to calculate all the results at once
-    async calculateAll() {
+    calculateAll() {
       let results = calculateNormalResults(this.competition, this.signees);
       this.signees = results.signees;
       this.normal_points = results.normal_points;
