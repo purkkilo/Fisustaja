@@ -1,5 +1,5 @@
 <template>
-  <v-row align="center">
+  <v-row align="center" style="margin: 0">
     <v-col>
       <v-card
         style="background: transparent"
@@ -119,7 +119,7 @@ export default {
         clearInterval(this.timer_clock);
       }
     },
-    setDate: function () {
+    setDate() {
       if (document.getElementById("date")) {
         const today = new Date();
         let day = today.getDate();
@@ -133,7 +133,7 @@ export default {
         clearInterval(this.timer_date);
       }
     },
-    remainingTime: function () {
+    remainingTime() {
       if (document.getElementById("comp-left")) {
         if (this.competition) {
           let start_dateTime = this.$moment(this.competition.start_date);
@@ -205,9 +205,4 @@ export default {
 };
 </script>
 
-<style scoped>
-.valign-wrapper.time {
-  margin-top: 50px;
-  min-height: 100px;
-}
-</style>
+<style scoped></style>

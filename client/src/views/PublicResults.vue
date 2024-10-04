@@ -2,8 +2,6 @@
   <!-- /public-results -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <div>
-    <PublicNavigation></PublicNavigation>
-
     <v-container
       v-bind:class="{
         mobile: $vuetify.breakpoint.width < 800,
@@ -538,7 +536,6 @@ import ResultService from "../services/ResultService";
 import FishService from "../services/FishService";
 
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
-import PublicNavigation from "../components/layout/PublicNavigation.vue";
 import Stats from "../components/results/Stats.vue";
 import TeamComp from "../components/results/TeamComp.vue";
 import NormalComp from "../components/results/NormalComp.vue";
@@ -558,7 +555,6 @@ export default {
   name: "PublicResults",
   components: {
     ProgressBarQuery,
-    PublicNavigation,
     Stats,
     TeamComp,
     NormalComp,
@@ -682,9 +678,6 @@ export default {
       console.error(error.message);
     }
     this.loading = false;
-    // Focus on top of the page when changing pages
-    location.href = "#";
-    location.href = "#app";
   },
 
   methods: {
@@ -987,17 +980,19 @@ export default {
       }
     },
     pickCompetition() {
-      this.$store.commit("refreshCompetition", this.selected_competition);
-      this.competition = this.selected_competition;
-      localStorage.setItem(
-        "competition",
-        JSON.stringify({
-          _id: this.competition._id,
-          start_date: this.competition.start_date,
-          end_date: this.competition.end_date,
-        })
-      );
-      this.refreshCompetition(true, this.competition);
+      if (this.selected_competition) {
+        this.$store.commit("refreshCompetition", this.selected_competition);
+        this.competition = this.selected_competition;
+        localStorage.setItem(
+          "competition",
+          JSON.stringify({
+            _id: this.competition._id,
+            start_date: this.competition.start_date,
+            end_date: this.competition.end_date,
+          })
+        );
+        this.refreshCompetition(true, this.competition);
+      }
     },
   },
 };

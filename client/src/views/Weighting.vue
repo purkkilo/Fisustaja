@@ -2,14 +2,7 @@
   <!-- /weighting -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <div>
-    <v-row>
-      <v-col>
-        <CompetitionNavigation></CompetitionNavigation>
-      </v-col>
-      <v-col>
-        <Timedate />
-      </v-col>
-    </v-row>
+    <Timedate />
 
     <v-container
       v-bind:class="{
@@ -825,7 +818,6 @@ import CompetitionService from "../services/CompetitionService";
 import ResultService from "../services/ResultService";
 import FishService from "../services/FishService";
 import Timedate from "../components/layout/Timedate";
-import CompetitionNavigation from "../components/layout/CompetitionNavigation.vue";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 
 export default {
@@ -833,7 +825,6 @@ export default {
   components: {
     Timedate,
     ProgressBarQuery,
-    CompetitionNavigation,
   },
   data() {
     return {
@@ -946,9 +937,6 @@ export default {
     },
   },
   created() {
-    // Focus on top of the page when changing pages
-    location.href = "#";
-    location.href = "#app";
     // IF competition on localstorage
     if (localStorage.getItem("competition") != null) {
       // update from database
@@ -957,15 +945,6 @@ export default {
     } else {
       console.log("No competition in localstorage!");
     }
-  },
-  mounted() {
-    // Focus on top of the page when changing pages
-    location.href = "#";
-    location.href = "#app";
-  },
-  beforeDestroy() {
-    // Clear timer
-    //clearInterval(this.timer_refresh);
   },
   methods: {
     getBoatTotalPoints() {

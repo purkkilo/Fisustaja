@@ -693,9 +693,6 @@ export default {
   // Called everytime page is opened
   async mounted() {
     //Check if user is logged in has admin status, update header
-    // Focus on top of the page
-    location.href = "#";
-    location.href = "#app";
     // Show loading progressbars
     this.loading =
       this.loading_users =

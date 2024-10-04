@@ -447,10 +447,6 @@ export default {
         createdAt.month() + 1
       }.${createdAt.year()}`;
     }
-
-    // Focus on top of the page when changing pages
-    location.href = "#";
-    location.href = "#app";
   },
   methods: {
     //filter other characters out for number inputs

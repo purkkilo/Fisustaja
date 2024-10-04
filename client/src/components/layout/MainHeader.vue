@@ -121,8 +121,7 @@ export default {
     },
   },
   methods: {
-    openDrawer: function () {
-      location.href = "#app";
+    openDrawer() {
       this.drawer = !this.drawer;
     },
     changePage: function (route) {

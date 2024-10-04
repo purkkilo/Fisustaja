@@ -1,17 +1,9 @@
 <template>
   <!-- /overview -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <div>
-    <v-row>
-      <v-col>
-        <CompetitionNavigation></CompetitionNavigation>
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col>
-        <Timedate />
-      </v-col>
-    </v-row>
+  <div style="padding: 0px">
+    <Timedate />
+
     <v-container
       v-bind:class="{
         mobile: $vuetify.breakpoint.width < 800,
@@ -198,7 +190,7 @@
 import CompetitionService from "../services/CompetitionService";
 import ResultService from "../services/ResultService.js";
 import Timedate from "../components/layout/Timedate";
-import CompetitionNavigation from "../components/layout/CompetitionNavigation.vue";
+
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 
 export default {
@@ -206,7 +198,6 @@ export default {
   components: {
     Timedate,
     ProgressBarQuery,
-    CompetitionNavigation,
   },
   data() {
     return {
@@ -250,9 +241,6 @@ export default {
     };
   },
   created() {
-    // Focus on top of the page when changing pages
-    location.href = "#";
-    location.href = "#app";
     // IF competition on localstorage
     if (localStorage.getItem("competition") != null) {
       // update from database

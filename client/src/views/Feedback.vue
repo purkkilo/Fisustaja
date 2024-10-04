@@ -127,11 +127,6 @@ export default {
       vm.prevRoute = from;
     });
   },
-  mounted() {
-    // Focus on top of the page when changing pages
-    location.href = "#";
-    location.href = "#app";
-  },
   methods: {
     async sendFeedback() {
       // If type not set

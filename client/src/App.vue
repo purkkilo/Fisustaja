@@ -3,22 +3,22 @@
   <!-- html and js autoinjects to here (on index.html in server) -->
   <v-app id="app" style="background: rgba(0, 0, 0, 0)">
     <!-- Sizes your content based upon application components -->
+    <!-- If using vue-router -->
+    <Header v-if="$store.state.logged_in" />
+    <MainHeader v-else />
+
     <v-main>
-      <!-- If using vue-router -->
-      <Header v-if="$store.state.logged_in" />
-      <MainHeader v-else />
       <router-view></router-view>
-      <v-snackbar v-model="snackbar" :timeout="timeout">
-        {{ text }}
-
-        <template v-slot:action="{ attrs }">
-          <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
-            Close
-          </v-btn>
-        </template>
-      </v-snackbar>
     </v-main>
+    <v-snackbar v-model="snackbar" :timeout="timeout">
+      {{ text }}
 
+      <template v-slot:action="{ attrs }">
+        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
     <Footer />
   </v-app>
 </template>

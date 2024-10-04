@@ -124,9 +124,6 @@ export default {
         document.getElementById("sbtn").click();
       }
     });
-    // Focus on top of the page when changing pages
-    location.href = "#";
-    location.href = "#app";
   },
   methods: {
     // Add error to error array and direct user to it

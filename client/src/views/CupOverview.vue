@@ -647,10 +647,6 @@ export default {
     } else {
       console.log("No cup in localstorage!");
     }
-
-    // Focus on top of the page when changing pages
-    location.href = "#";
-    location.href = "#app";
   },
   methods: {
     sortUnfinished() {

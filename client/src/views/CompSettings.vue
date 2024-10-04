@@ -2,14 +2,8 @@
   <!-- /comp-settings -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <div>
-    <v-row>
-      <v-col>
-        <CompetitionNavigation></CompetitionNavigation>
-      </v-col>
-      <v-col>
-        <Timedate />
-      </v-col>
-    </v-row>
+    <Timedate />
+
     <v-container
       v-bind:class="{
         mobile: $vuetify.breakpoint.width < 800,
@@ -798,7 +792,6 @@ import CompetitionService from "../services/CompetitionService";
 import CupService from "../services/CupService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import Timedate from "../components/layout/Timedate";
-import CompetitionNavigation from "../components/layout/CompetitionNavigation.vue";
 import constants from "../data/constants";
 import draggable from "vuedraggable";
 
@@ -807,7 +800,6 @@ export default {
   components: {
     ProgressBarQuery,
     Timedate,
-    CompetitionNavigation,
     draggable,
   },
   data() {
@@ -891,9 +883,7 @@ export default {
     } else {
       console.log("No competition in localstorage!");
     }
-    // Focus on top of the page when changing pages
-    location.href = "#";
-    location.href = "#app";
+
     this.placement_points_array = JSON.parse(
       JSON.stringify(constants.placement_points)
     );
@@ -1161,8 +1151,6 @@ export default {
     // Add error to error array and direct user to it
     showError: function (error) {
       this.errors.push(error);
-      location.href = "#";
-      location.href = "#app";
     },
     // Check competitions basic information (Perustiedot)
     checkBasicInformation() {

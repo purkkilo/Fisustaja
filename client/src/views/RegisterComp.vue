@@ -1071,9 +1071,6 @@ export default {
   mounted() {
     this.getCups();
 
-    // Focus on top of the page when changing pages
-    location.href = "#";
-    location.href = "#app";
     this.placement_points_array = JSON.parse(
       JSON.stringify(constants.placement_points)
     );
@@ -1229,13 +1226,13 @@ export default {
       }
     },
     // Add error to error array and direct user to it
-    showError: function (error) {
+    showError(error) {
       this.errors.push(error);
       location.href = "#";
       location.href = "#app";
     },
     // Check competitions basic information (Perustiedot)
-    checkBasicInformation: function () {
+    checkBasicInformation() {
       this.errors = [];
       this.basic_info_validated = false;
       this.validated = false;

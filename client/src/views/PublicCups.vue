@@ -2,7 +2,6 @@
   <!-- /cup-overview -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <div>
-    <PublicNavigation></PublicNavigation>
     <v-container
       v-bind:class="{
         mobile: $vuetify.breakpoint.width < 800,
@@ -24,7 +23,7 @@
         <v-row v-if="cups.length" class="scroll_table">
           <v-col md="4" offset-md="4">
             <!-- TODO add v-autocompelete, but so that it popsup the keyboad on mobile only when pressing search button? -->
-            <v-select
+            <v-autocomplete
               :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
               dark
               v-model="selected_cup"
@@ -36,7 +35,7 @@
               @input="pickCup"
               return-object
               single-line
-            ></v-select>
+            ></v-autocomplete>
           </v-col>
         </v-row>
         <v-row v-else>
@@ -128,7 +127,7 @@ import FishService from "../services/FishService";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
-import PublicNavigation from "../components/layout/PublicNavigation.vue";
+
 import CupPoints from "../components/CupPoints.vue";
 import { sortBy, openPdfOnNewTab, cupDictToArray } from "@/shared";
 
@@ -137,7 +136,6 @@ export default {
   components: {
     ProgressBarQuery,
     CupPoints,
-    PublicNavigation,
   },
   data() {
     return {
@@ -191,10 +189,6 @@ export default {
         cup.select = `${cup.name} (${cup.year})`;
       });
     }
-
-    // Focus on top of the page when changing pages
-    location.href = "#";
-    location.href = "#app";
   },
   methods: {
     selectTableData() {
@@ -475,65 +469,67 @@ export default {
       this.calculateAll(this.competitions, this.selectedCompetitions);
     },
     async refreshCup(cup) {
-      this.cup = cup;
-      this.loading = true;
-      // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
-      //TODO make a test for this?
-      // Update to vuex, Assing variables from vuex (see client/store/index.js)
-      this.$store.commit("refreshCup", this.cup);
-      try {
-        this.allCompetitions = await CompetitionService.getCompetitions({
-          cup_id: cup._id,
-          isPublic: true,
-        });
-
-        this.biggest_fishes = await FishService.getFishes({
-          cup_id: cup._id,
-        });
-        this.biggest_fishes = this.biggest_fishes.sort(
-          (a, b) => b.weight - a.weight
-        );
-
-        await ResultService.getResults({ cup_id: cup._id })
-          .then((r) => {
-            r.forEach((s) => {
-              if (s.fishes.length) {
-                s.fishes.forEach((f) => {
-                  let comp = this.allCompetitions.find(
-                    (c) => c._id === s.competition_id
-                  );
-                  let fish = comp.fishes.find((cf) => cf.id === f.id);
-
-                  this.biggest_amounts.push({
-                    id: fish.id,
-                    competition_id: comp._id,
-                    competition_name: comp.name,
-                    boat_number: s.boat_number,
-                    captain_name: s.captain_name,
-                    name: fish.name,
-                    weight: f.weights,
-                  });
-                });
-              }
-            });
-
-            this.all_signees = r;
-            this.biggest_amounts = this.biggest_amounts.sort(
-              (a, b) => b.weight - a.weight
-            );
-          })
-          .catch((e) => {
-            console.log(e);
-          })
-          .finally(() => {
-            this.setCompetitionData(this.cup);
-            this.selectTableData();
-            this.loading = false;
-            this.text = "Tiedot ajantasalla!";
-            this.snackbar = true;
+      if (this.selected_cup) {
+        this.cup = cup;
+        this.loading = true;
+        // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
+        //TODO make a test for this?
+        // Update to vuex, Assing variables from vuex (see client/store/index.js)
+        this.$store.commit("refreshCup", this.cup);
+        try {
+          this.allCompetitions = await CompetitionService.getCompetitions({
+            cup_id: cup._id,
+            isPublic: true,
           });
-      } catch (error) {
-        console.error(error);
+
+          this.biggest_fishes = await FishService.getFishes({
+            cup_id: cup._id,
+          });
+          this.biggest_fishes = this.biggest_fishes.sort(
+            (a, b) => b.weight - a.weight
+          );
+
+          await ResultService.getResults({ cup_id: cup._id })
+            .then((r) => {
+              r.forEach((s) => {
+                if (s.fishes.length) {
+                  s.fishes.forEach((f) => {
+                    let comp = this.allCompetitions.find(
+                      (c) => c._id === s.competition_id
+                    );
+                    let fish = comp.fishes.find((cf) => cf.id === f.id);
+
+                    this.biggest_amounts.push({
+                      id: fish.id,
+                      competition_id: comp._id,
+                      competition_name: comp.name,
+                      boat_number: s.boat_number,
+                      captain_name: s.captain_name,
+                      name: fish.name,
+                      weight: f.weights,
+                    });
+                  });
+                }
+              });
+
+              this.all_signees = r;
+              this.biggest_amounts = this.biggest_amounts.sort(
+                (a, b) => b.weight - a.weight
+              );
+            })
+            .catch((e) => {
+              console.log(e);
+            })
+            .finally(() => {
+              this.setCompetitionData(this.cup);
+              this.selectTableData();
+              this.loading = false;
+              this.text = "Tiedot ajantasalla!";
+              this.snackbar = true;
+            });
+        } catch (error) {
+          console.error(error);
+        }
       }
     },
     getCompetitionFinishedColor(isFinished) {

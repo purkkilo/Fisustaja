@@ -112,7 +112,7 @@ export default {
             text: "Dashboard",
             icon: "mdi-view-dashboard",
             path: "/dashboard",
-            color: "blue lighten-1",
+            color: "primary",
           },
         ];
       } else {
@@ -131,9 +131,7 @@ export default {
     localStorage.removeItem("competition");
     this.$store.commit("refreshCup", null);
     localStorage.removeItem("cup");
-    // Focus on top of the page when changing pages
-    location.href = "#";
-    location.href = "#app";
+
     this.links = this.items;
     if (this.$store.state.logged_in) {
       this.links = [

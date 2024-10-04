@@ -32,14 +32,8 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <v-row>
-      <v-col>
-        <CompetitionNavigation></CompetitionNavigation>
-      </v-col>
-      <v-col>
-        <Timedate />
-      </v-col>
-    </v-row>
+
+    <Timedate />
 
     <v-container
       v-bind:class="{
@@ -523,7 +517,6 @@ import CompetitionService from "../services/CompetitionService";
 import ResultService from "../services/ResultService";
 import FishService from "../services/FishService";
 import Timedate from "../components/layout/Timedate";
-import CompetitionNavigation from "../components/layout/CompetitionNavigation.vue";
 import Stats from "../components/results/Stats.vue";
 import TeamComp from "../components/results/TeamComp.vue";
 import NormalComp from "../components/results/NormalComp.vue";
@@ -544,7 +537,6 @@ export default {
   components: {
     Timedate,
     ProgressBarQuery: () => require("../components/layout/ProgressBarQuery"),
-    CompetitionNavigation,
     Stats,
     TeamComp,
     NormalComp,
@@ -676,10 +668,6 @@ export default {
       //Update competition every minute
       this.refreshCompetition(competition_id);
     }
-
-    // Focus on top of the page when changing pages
-    location.href = "#";
-    location.href = "#app";
   },
   mounted() {},
   beforeDestroy() {

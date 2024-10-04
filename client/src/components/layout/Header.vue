@@ -4,6 +4,7 @@
       app
       color="white"
       :dark="isDark"
+      elevate-on-scroll
       v-bind:class="{
         'grey darken-4': $store.getters.getTheme,
         'primary lighten-1': !$store.getters.getTheme,
@@ -19,7 +20,14 @@
           ><v-icon>mdi-home</v-icon></v-btn
         ></router-link
       >
+      <template v-slot:extension v-if="isPublicPage || isCompetitionPage">
+        <sub-navigation
+          :items="bottom_navigation_items"
+          :type="type"
+        ></sub-navigation>
+      </template>
     </v-app-bar>
+
     <v-navigation-drawer
       v-model="drawer"
       app
@@ -108,6 +116,7 @@
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
+
     <v-snackbar v-model="snackbar" :timeout="timeout">
       {{ text }}
 
@@ -122,9 +131,12 @@
 
 <script>
 import UserService from "../../services/UserService";
-
+import SubNavigation from "./SubNavigation.vue";
 export default {
   name: "Header",
+  components: {
+    SubNavigation,
+  },
   data() {
     return {
       user: null,
@@ -136,9 +148,60 @@ export default {
       snackbar: false,
       text: "",
       timeout: 5000,
+      isCompetitionPage: false,
+      isPublicPage: false,
+      competition_pages: [
+        "/overview",
+        "/comp-settings",
+        "/signing",
+        "/weighting",
+        "/results",
+      ],
+      public_pages: ["/public-results", "/public-cups"],
+      bottom_navigation_items: [],
+      type: "public",
+      public_items: [
+        {
+          text: "Kilpailujen tuloksia",
+          icon: "mdi-seal",
+          path: "/public-results",
+        },
+        {
+          text: "Cuppien tuloksia",
+          icon: "mdi-trophy",
+          path: "/public-cups",
+        },
+      ],
+      competition_items: [
+        {
+          text: "Yleisnäkymä",
+          icon: "mdi-magnify-expand",
+          path: "/overview",
+        },
+        {
+          text: "Määritykset",
+          icon: "mdi-tune",
+          path: "/comp-settings",
+        },
+        {
+          text: "Ilmoittautuminen",
+          icon: "mdi-draw",
+          path: "/signing",
+        },
+        {
+          text: "Punnitus",
+          icon: "mdi-dumbbell",
+          path: "/weighting",
+        },
+        {
+          text: "Tulokset",
+          icon: "mdi-seal",
+          path: "/results",
+        },
+      ],
     };
   },
-  async mounted() {
+  created() {
     const user = JSON.parse(localStorage.getItem("user"));
     if (user) {
       const isAdmin = JSON.parse(localStorage.getItem("auth"));
@@ -205,6 +268,8 @@ export default {
         ];
       }
     }
+
+    this.setSubNavigation(this.$router.currentRoute);
   },
   computed: {
     isOverviewPage() {
@@ -239,6 +304,10 @@ export default {
     },
   },
   watch: {
+    $route(to) {
+      this.setSubNavigation(to);
+    },
+
     isDark(newValue) {
       //called whenever isDark switch changes
       this.$store.state.isDark = newValue;
@@ -247,11 +316,27 @@ export default {
     },
   },
   methods: {
-    openDrawer: function () {
-      location.href = "#";
+    openDrawer() {
       this.drawer = !this.drawer;
     },
-    changePage: function (route) {
+    setSubNavigation(route) {
+      if (this.competition_pages.includes(route.path)) {
+        this.isCompetitionPage = true;
+        this.bottom_navigation_items = this.competition_items;
+        this.type = "competition";
+      } else {
+        this.isCompetitionPage = false;
+      }
+
+      if (this.public_pages.includes(route.path)) {
+        this.isPublicPage = true;
+        this.bottom_navigation_items = this.public_items;
+        this.type = "public";
+      } else {
+        this.isPublicPage = false;
+      }
+    },
+    changePage(route) {
       if (this.$router.currentRoute.path !== route) {
         this.$router.push(route);
         this.drawer = !this.drawer;

@@ -16,44 +16,20 @@
           <v-icon>{{ item.icon }}</v-icon>
         </v-btn>
       </template>
-      <span>Kilpailun {{ item.text }}</span>
+      <span v-if="type == 'public'">{{ item.text }}</span>
+      <span v-else>Kilpailun {{ item.text }}</span>
     </v-tooltip>
   </v-bottom-navigation>
 </template>
 
 <script>
 export default {
-  name: "CompetitionNavigation",
+  name: "PublicNavigation",
+  props: ["items", "type"],
   data() {
     return {
       selectedItem: 0,
-      items: [
-        {
-          text: "Yleisnäkymä",
-          icon: "mdi-magnify-expand",
-          path: "/overview",
-        },
-        {
-          text: "Määritykset",
-          icon: "mdi-tune",
-          path: "/comp-settings",
-        },
-        {
-          text: "Ilmoittautuminen",
-          icon: "mdi-draw",
-          path: "/signing",
-        },
-        {
-          text: "Punnitus",
-          icon: "mdi-dumbbell",
-          path: "/weighting",
-        },
-        {
-          text: "Tulokset",
-          icon: "mdi-seal",
-          path: "/results",
-        },
-      ],
+
       snackbar: false,
       text: "",
       timeout: 5000,
