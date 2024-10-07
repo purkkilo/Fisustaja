@@ -118,8 +118,30 @@
                     />
                   </v-col>
                 </v-row>
-
-                <v-row v-if="cup.name" align="center" justify="end">
+                <v-row v-if="cup.name" justify="center" align="center">
+                  <v-col cols="6" class="input-fields">
+                    <span class="white--text">Kuuluuko kilpailu cuppiin?</span>
+                    <v-row justify="center" align="center">
+                      <v-spacer></v-spacer>
+                      <v-col>
+                        <v-radio-group
+                          v-model="isCupCompetition"
+                          row
+                          :disabled="basic_info_validated"
+                        >
+                          <v-radio label="Kyllä" value="Kyllä"></v-radio>
+                          <v-radio label="Ei" value="Ei"></v-radio>
+                        </v-radio-group>
+                      </v-col>
+                      <v-spacer></v-spacer>
+                    </v-row>
+                  </v-col>
+                </v-row>
+                <v-row
+                  v-if="cup.name && isCupCompetition === 'Kyllä'"
+                  align="center"
+                  justify="end"
+                >
                   <v-col cols="6" class="input-fields">
                     <v-subheader class="white--text"> Valitse Cup </v-subheader>
                     <v-select
@@ -151,7 +173,10 @@
                     >
                   </v-col>
                 </v-row>
-                <v-row v-else class="valign-wrapper">
+                <v-row
+                  v-if="!cup.name && isCupCompetition === 'Kyllä'"
+                  class="valign-wrapper"
+                >
                   <v-col md="6" offset-md="2" style="margin-top: 20px">
                     <p
                       class="flow-text"
@@ -173,7 +198,7 @@
                   </v-col>
                 </v-row>
                 <v-row
-                  v-if="cup.name"
+                  v-if="cup.name && isCupCompetition === 'Kyllä'"
                   justify="center"
                   style="margin-top: 20px; margin-bottom: 20px"
                 >
@@ -253,7 +278,10 @@
                   </v-col>
                 </v-row>
 
-                <v-row v-if="cup.name" justify="center">
+                <v-row
+                  v-if="cup.name && isCupCompetition === 'Kyllä'"
+                  justify="center"
+                >
                   <v-col cols="6" class="input-fields">
                     <v-text-field
                       :dark="$store.getters.getTheme"
@@ -281,7 +309,10 @@
                   </v-col>
                 </v-row>
 
-                <v-row v-if="cup.name" justify="center">
+                <v-row
+                  v-if="cup.name && isCupCompetition === 'Kyllä'"
+                  justify="center"
+                >
                   <v-col cols="6" class="input-fields">
                     <v-text-field
                       :dark="$store.getters.getTheme"
@@ -983,6 +1014,7 @@ export default {
       cup_participation_points: 5,
       cup_points_multiplier: 1.0,
       isTeamCompetition: "Ei",
+      isCupCompetition: "Kyllä",
       start_date: new Date().toISOString().substring(0, 10),
       end_date: new Date().toISOString().substring(0, 10),
       start_time: null,
@@ -1317,20 +1349,26 @@ export default {
             temp_placement_points = [...this.placement_points_array];
           }
 
-          // Competition object, basic info
           this.basic_info = {
             name: this.name,
             locality: this.locality,
-            cup_name: this.cup.name,
-            cup_participation_points: Number(this.cup_participation_points),
-            cup_placement_points: temp_placement_points,
-            cup_points_multiplier: Number(this.cup_points_multiplier),
             isTeamCompetition: this.isTeamCompetition === "Ei" ? false : true,
+            isCupCompetition: this.isCupCompetition === "Ei" ? false : true,
             start_date: start_date.toISOString(),
             end_date: end_date.toISOString(),
             start_time: this.start_time,
             end_time: this.end_time,
           };
+          if (this.isCupCompetition === "Kyllä") {
+            this.basic_info = {
+              ...this.basic_info,
+              cup_name: this.cup.name,
+              cup_participation_points: Number(this.cup_participation_points),
+              cup_placement_points: temp_placement_points,
+              cup_points_multiplier: Number(this.cup_points_multiplier),
+            };
+          }
+
           // Enable next tab and open it
           // Disable current tab's inputs
           this.disableInputs(true);
@@ -1489,25 +1527,13 @@ export default {
         const user_id = user["_id"];
 
         // Whole competition object
-        let cup_id = this.cup._id;
         const competition = {
-          cup_id: cup_id,
           user_id: user_id,
-          name: this.basic_info.name,
-          locality: this.basic_info.locality,
-          cup_name: this.basic_info.cup_name,
-          cup_placement_points: this.basic_info.cup_placement_points,
-          cup_participation_points: this.basic_info.cup_participation_points,
-          cup_points_multiplier: this.basic_info.cup_points_multiplier,
-          isTeamCompetition: this.basic_info.isTeamCompetition,
-          start_date: this.basic_info.start_date,
-          end_date: this.basic_info.end_date,
-          duration: this.basic_info.duration,
-          start_time: this.basic_info.start_time,
-          end_time: this.basic_info.end_time,
+          ...this.basic_info,
           fishes: this.completed_fish_specs,
           state: "Rekisteröity",
         };
+
         try {
           //Submit competition to database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
           await CompetitionService.insertCompetitions([competition]);

@@ -3,4 +3,3 @@ Todos:
   ☐ Add qr code possibility to signing/weighting (rfid)
   ☐ Add possibility to get weights via usb from weighting thing
   ☐ Add possibility to add competitions without belonging to a cup
-  ☐ improve chunk creation with webpack

@@ -64,7 +64,7 @@
                       </v-list-item-subtitle>
                     </v-list-item>
                     <v-divider></v-divider>
-                    <v-list-item>
+                    <v-list-item v-if="competition.isCupCompetition">
                       <v-list-item-icon>
                         <v-icon color="yellow darken-4">mdi-trophy</v-icon>
                       </v-list-item-icon>
@@ -111,7 +111,7 @@
                       </v-list-item-subtitle>
                     </v-list-item>
                     <v-divider></v-divider>
-                    <v-list-item>
+                    <v-list-item v-if="competition.isCupCompetition">
                       <v-list-item-icon>
                         <v-icon color="green">mdi-clipboard-check</v-icon>
                       </v-list-item-icon>
@@ -146,7 +146,7 @@
                       </v-list-item-content>
                     </v-list-item>
                     <v-divider></v-divider>
-                    <v-list-item>
+                    <v-list-item v-if="competition.isCupCompetition">
                       <v-list-item-icon>
                         <v-icon color="green darken-2"
                           >mdi-clipboard-check</v-icon
@@ -161,7 +161,7 @@
                       </v-list-item-subtitle>
                     </v-list-item>
                     <v-divider></v-divider>
-                    <v-list-item>
+                    <v-list-item v-if="competition.isCupCompetition">
                       <v-list-item-icon>
                         <v-icon color="green darken-1"
                           >mdi-calculator-variant-outline</v-icon
@@ -380,7 +380,26 @@
                 <ProgressBarQuery />
               </v-col>
             </v-row>
-            <v-row v-if="!cups">
+            <v-row v-if="competition" justify="center" align="center">
+              <v-col cols="6" class="input-fields">
+                <span class="white--text">Kuuluuko kilpailu cuppiin?</span>
+                <v-row justify="center" align="center">
+                  <v-spacer></v-spacer>
+                  <v-col>
+                    <v-radio-group
+                      v-model="isCupCompetition"
+                      row
+                      :disabled="basic_info_validated"
+                    >
+                      <v-radio label="Kyllä" value="Kyllä"></v-radio>
+                      <v-radio label="Ei" value="Ei"></v-radio>
+                    </v-radio-group>
+                  </v-col>
+                  <v-spacer></v-spacer>
+                </v-row>
+              </v-col>
+            </v-row>
+            <v-row v-if="!cups.length">
               <v-col>
                 <h2
                   v-bind:class="{
@@ -391,7 +410,7 @@
                 </h2>
               </v-col>
             </v-row>
-            <v-row v-if="!competition.cup_name">
+            <v-row v-if="!competition.cup_name && competition.isCupCompetition">
               <v-col>
                 <h2
                   v-bind:class="{
@@ -402,7 +421,11 @@
                 </h2>
               </v-col>
             </v-row>
-            <v-row v-else align="center" justify="center">
+            <v-row
+              v-if="competition && isCupCompetition === 'Kyllä'"
+              align="center"
+              justify="center"
+            >
               <v-col cols="6" class="input-fields">
                 <v-subheader class="white--text"> Valitse Cup </v-subheader>
                 <v-select
@@ -420,7 +443,10 @@
                 ></v-select>
               </v-col>
             </v-row>
-            <v-row v-if="competition" justify="center">
+            <v-row
+              v-if="competition && isCupCompetition === 'Kyllä'"
+              justify="center"
+            >
               <v-col cols="6">
                 <h2 class="white--text">Kilpailun sijoittumispisteet</h2>
                 <v-list
@@ -504,7 +530,10 @@
               </v-col>
             </v-row>
 
-            <v-row v-if="competition" justify="center">
+            <v-row
+              v-if="competition && isCupCompetition === 'Kyllä'"
+              justify="center"
+            >
               <v-col cols="6" class="input-fields">
                 <v-text-field
                   :dark="$store.getters.getTheme"
@@ -532,7 +561,10 @@
               </v-col>
             </v-row>
 
-            <v-row v-if="competition" justify="center">
+            <v-row
+              v-if="competition && isCupCompetition === 'Kyllä'"
+              justify="center"
+            >
               <v-col cols="6" class="input-fields">
                 <v-text-field
                   :dark="$store.getters.getTheme"
@@ -814,6 +846,7 @@ export default {
       competition: null,
       name: null,
       locality: null,
+      isCupCompetition: null,
       cup_participation_points: null,
       cup_points_multiplier: null,
       isTeamCompetition: null,
@@ -987,13 +1020,13 @@ export default {
           this.cups.forEach((cup) => {
             cup.select = `${cup.name} (${cup.year})`;
           });
-          let temp_cup = this.cups.find((cup) => {
-            return this.competition.cup_id === cup._id;
-          });
-          if (temp_cup) {
-            this.cup = temp_cup;
-          } else {
-            console.log("No cup found on competition!");
+          if (this.competition.isCupCompetition) {
+            let temp_cup = this.cups.find((cup) => {
+              return this.competition.cup_id === cup._id;
+            });
+            if (temp_cup) {
+              this.cup = temp_cup;
+            }
           }
         }
       } catch (err) {
@@ -1016,9 +1049,7 @@ export default {
           // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
           //TODO make a test for this?
           this.competition = competition;
-          this.placement_points_array = [
-            ...this.competition.cup_placement_points,
-          ];
+          console.log(this.competition);
           // Update to vuex, Assing variables from vuex (see client/store/index.js)
           this.$store.commit("refreshCompetition", competition);
           this.fish_specs = this.$store.getters.getCompetitionFishes;
@@ -1121,11 +1152,26 @@ export default {
       });
       this.name = this.competition.name;
       this.locality = this.competition.locality;
-      this.cup_participation_points = this.competition.cup_participation_points;
-      this.cup_points_multiplier = this.competition.cup_points_multiplier;
+
       this.isTeamCompetition = this.competition.isTeamCompetition
         ? "Kyllä"
         : "Ei";
+      this.isCupCompetition = this.competition.isCupCompetition
+        ? "Kyllä"
+        : "Ei";
+
+      if (this.competition.isCupCompetition) {
+        this.placement_points_array = [
+          ...this.competition.cup_placement_points,
+        ];
+        this.cup_participation_points =
+          this.competition.cup_participation_points;
+        this.cup_points_multiplier = this.competition.cup_points_multiplier;
+      } else {
+        this.placement_points_array = constants.placement_points;
+        this.cup_participation_points = 5;
+        this.cup_points_multiplier = 1;
+      }
       this.start_date = new Date(this.competition.start_date)
         .toISOString()
         .substring(0, 10);
@@ -1146,9 +1192,6 @@ export default {
     showError(error) {
       location.href = "#app";
       this.errors.push(error);
-    },
-    formatDate(date) {
-      return new Date(date).toLocaleDateString();
     },
     // Check competitions basic information (Perustiedot)
     checkBasicInformation() {
@@ -1173,21 +1216,24 @@ export default {
         this.showError("Kilpailun paikkakunta puuttuu!");
       }
 
-      if (!this.cup._id) {
-        this.showError("Cuppia ei valittuna!");
+      if (this.isCupCompetition === "Kyllä") {
+        if (!this.cup._id) {
+          this.showError("Cuppia ei valittuna!");
+        }
+        if (!this.placement_points_array.length) {
+          this.showError("Lisää osallistumispisteet kiljailijoille");
+        }
+        if (!this.cup_participation_points) {
+          this.showError("Määritä kilpailun Cup osallistumispisteet!");
+        }
+        if (!this.cup_points_multiplier) {
+          this.showError("Kilpailun pistekerroin puuttuu!");
+        }
+        if (this.cup_points_multiplier < 0.1) {
+          this.showError("Kilpailun pistekerroin pitää olla vähintään 0.1!");
+        }
       }
-      if (!this.placement_points_array.length) {
-        this.showError("Lisää osallistumispisteet kiljailijoille");
-      }
-      if (!this.cup_participation_points) {
-        this.showError("Määritä kilpailun Cup osallistumispisteet!");
-      }
-      if (!this.cup_points_multiplier) {
-        this.showError("Kilpailun pistekerroin puuttuu!");
-      }
-      if (this.cup_points_multiplier < 0.1) {
-        this.showError("Kilpailun pistekerroin pitää olla vähintään 0.1!");
-      }
+
       if (!this.start_time || !isStartTimeValid) {
         !this.start_time == true
           ? this.showError("Kilpailun alkamisnaika puuttuu!")
@@ -1245,37 +1291,41 @@ export default {
             "Kilpailun päättymispäivämäärä ja kellonaika ei voi olla ennen alkamispäivämäärää!"
           );
         } else {
-          // Basic info, change all the competition variables with values from inputs
-          this.competition.cup_id = this.cup._id;
-          this.competition.cup_name = this.cup.name;
+          if (this.isCupCompetition === "Kyllä") {
+            // Basic info, change all the competition variables with values from inputs
+            this.competition.cup_id = this.cup._id;
+            this.competition.cup_name = this.cup.name;
+            this.competition.cup_participation_points = Number(
+              this.cup_participation_points
+            );
+            let temp_placement_points = [];
+            // IF the multiplier has been changed, and is different from 1, calculate new points, else just use template array
+            if (
+              this.competition.cup_points_multiplier !==
+                this.cup_points_multiplier &&
+              this.cup_points_multiplier !== 1.0
+            ) {
+              let temp_placement = 1;
+              this.placement_points_array.forEach((placement_point) => {
+                temp_placement_points.push({
+                  placement: temp_placement,
+                  points: placement_point.points * this.cup_points_multiplier,
+                });
+                temp_placement++;
+              });
+            } else {
+              temp_placement_points = [...this.placement_points_array];
+            }
+            this.competition.cup_points_multiplier = this.cup_points_multiplier;
+            this.competition.cup_placement_points = temp_placement_points;
+          }
+
           this.competition.name = this.name;
           this.competition.locality = this.locality;
-          this.competition.cup_participation_points = Number(
-            this.cup_participation_points
-          );
-
-          let temp_placement_points = [];
-          // IF the multiplier has been changed, and is different from 1, calculate new points, else just use template array
-          if (
-            this.competition.cup_points_multiplier !==
-              this.cup_points_multiplier &&
-            this.cup_points_multiplier !== 1.0
-          ) {
-            let temp_placement = 1;
-            this.placement_points_array.forEach((placement_point) => {
-              temp_placement_points.push({
-                placement: temp_placement,
-                points: placement_point.points * this.cup_points_multiplier,
-              });
-              temp_placement++;
-            });
-          } else {
-            temp_placement_points = [...this.placement_points_array];
-          }
-          this.competition.cup_points_multiplier = this.cup_points_multiplier;
-          this.competition.cup_placement_points = temp_placement_points;
           this.competition.isTeamCompetition =
             this.isTeamCompetition === "Ei" ? false : true;
+          this.competition.isCupCompetition =
+            this.isCupCompetition === "Ei" ? false : true;
           this.competition.start_date = start_date.toISOString();
           this.competition.end_date = end_date.toISOString();
           this.competition.start_time = this.start_time;

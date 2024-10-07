@@ -53,7 +53,7 @@
                       }}</v-chip>
                     </template>
                     <template v-slot:[`item.cup_name`]="{ item }">
-                      <v-chip
+                      <v-chip v-if="item.cup_id"
                         >{{ item.cup_name }} ({{
                           getYear(item.start_date)
                         }})</v-chip
@@ -61,6 +61,7 @@
                     </template>
                     <template v-slot:[`item.cup_points_multiplier`]="{ item }">
                       <v-chip
+                        v-if="item.cup_id"
                         :color="getColor(item.cup_points_multiplier)"
                         :outlined="$store.getters.getTheme"
                         >{{ item.cup_points_multiplier }}x</v-chip

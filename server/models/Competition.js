@@ -10,7 +10,6 @@ const CompetitionSchema = new Schema({
   },
   cup_id: {
     type: String,
-    required: true,
   },
   name: {
     type: String,
@@ -22,18 +21,15 @@ const CompetitionSchema = new Schema({
   },
   cup_name: {
     type: String,
-    required: true,
   },
   cup_placement_points: {
     type: [Schema.Types.Mixed],
   },
   cup_participation_points: {
     type: Number,
-    default: 5,
   },
   cup_points_multiplier: {
     type: Number,
-    default: 1,
   },
   start_date: {
     type: Date,
@@ -60,6 +56,10 @@ const CompetitionSchema = new Schema({
   isTeamCompetition: {
     type: Boolean,
     default: false,
+  },
+  isCupCompetition: {
+    type: Boolean,
+    default: true,
   },
   isPublic: {
     type: Boolean,
