@@ -1,9 +1,6 @@
 Todos:
-  ☐ Reimplement backend for competitions, cups and feedback (like users)
-    ☐ Own database table for competition results
-    ☐ Own database table for biggest fishes
-  ☐ Add cup stats to publicCups.vue
-  ☐ Refactor dictToArray from shared.js to be like cupDictToArray  
   ☐ Add tests!
   ☐ Add qr code possibility to signing/weighting (rfid)
   ☐ Add possibility to get weights via usb from weighting thing
+  ☐ Add possibility to add competitions without belonging to a cup
+  ☐ improve chunk creation with webpack

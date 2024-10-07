@@ -18,7 +18,6 @@
     "jspdf-autotable": "^3.5.24",
     "vue": "^2.6.14",
     "vue-chartjs": "^4.0.0",
-    "vue-material": "^1.0.0-beta-15",
     "vue-router": "^3.5.3",
     "vue-select": "^3.20.3",
     "vue-simple-alert": "^1.1.1",
