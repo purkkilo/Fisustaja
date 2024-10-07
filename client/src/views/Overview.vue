@@ -53,22 +53,13 @@
                   </v-list-item-icon>
                   <v-list-item-title>Päivämäärä</v-list-item-title>
                   <v-list-item-subtitle class="blue--text">
-                    <b>{{ formatted_start_date }} - {{ formatted_end_date }}</b>
-                  </v-list-item-subtitle>
-                </v-list-item>
-                <v-divider></v-divider>
-                <v-list-item>
-                  <v-list-item-icon>
-                    <v-icon>mdi-clock-time-four</v-icon>
-                  </v-list-item-icon>
-                  <v-list-item-title>Kilpailuaika</v-list-item-title>
-                  <v-list-item-subtitle class="blue--text">
                     <b
-                      >{{ competition.start_time }} -
-                      {{ competition.end_time }}</b
+                      >{{ formatDate(competition.start_date) }} -
+                      {{ formatDate(competition.end_date) }}</b
                     >
                   </v-list-item-subtitle>
                 </v-list-item>
+                <v-divider></v-divider>
                 <v-divider></v-divider>
                 <v-list-item>
                   <v-list-item-icon>
@@ -190,8 +181,8 @@
 import CompetitionService from "../services/CompetitionService";
 import ResultService from "../services/ResultService.js";
 import Timedate from "../components/layout/Timedate";
-
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
+import { formatDate } from "../shared";
 
 export default {
   name: "Overview",
@@ -253,6 +244,7 @@ export default {
   },
   mounted() {},
   methods: {
+    formatDate: formatDate,
     // fetch/update competition from database
     async refreshCompetition(competition_id) {
       this.loading = true;
@@ -283,14 +275,14 @@ export default {
           // Update to vuex, Assing variables from vuex (see client/store/index.js)
           this.$store.commit("refreshCompetition", this.competition);
           localStorage.setItem("cup", this.competition.cup_id);
-          let start_date = this.$moment(this.competition.start_date);
-          let end_date = this.$moment(this.competition.end_date);
-          this.formatted_start_date = `${start_date.date()}.${
-            start_date.month() + 1
-          }.${start_date.year()}`;
-          this.formatted_end_date = `${end_date.date()}.${
-            end_date.month() + 1
-          }.${end_date.year()}`;
+          let start_date = new Date(this.competition.start_date);
+          let end_date = new Date(this.competition.end_date);
+          this.formatted_start_date = `${start_date.getDate()}.${
+            start_date.getMonth() + 1
+          }.${start_date.getFullYear()}`;
+          this.formatted_end_date = `${end_date.getDate()}.${
+            end_date.getMonth() + 1
+          }.${end_date.getFullYear()}`;
 
           this.hasNotReturnedPercentage =
             Math.round(

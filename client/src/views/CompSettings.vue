@@ -59,9 +59,7 @@
                       <v-list-item-title>Kilpailu</v-list-item-title>
                       <v-list-item-subtitle class="blue-text">
                         <b
-                          >{{ competition.name }} ({{
-                            competition.locality
-                          }})</b
+                          >{{ competition.name }}, {{ competition.locality }}</b
                         >
                       </v-list-item-subtitle>
                     </v-list-item>
@@ -82,7 +80,9 @@
                       </v-list-item-icon>
                       <v-list-item-title>Aloituspäivä</v-list-item-title>
                       <v-list-item-subtitle class="blue-text">
-                        <b>{{ formatted_start_date }}</b>
+                        <b>{{
+                          formatDateToLocaleDateString(competition.start_date)
+                        }}</b>
                       </v-list-item-subtitle>
                     </v-list-item>
                     <v-divider></v-divider>
@@ -92,7 +92,9 @@
                       </v-list-item-icon>
                       <v-list-item-title>Lopetuspäivä</v-list-item-title>
                       <v-list-item-subtitle class="blue-text">
-                        <b>{{ formatted_end_date }}</b>
+                        <b>{{
+                          formatDateToLocaleDateString(competition.end_date)
+                        }}</b>
                       </v-list-item-subtitle>
                     </v-list-item>
                     <v-divider></v-divider>
@@ -794,6 +796,7 @@ import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import Timedate from "../components/layout/Timedate";
 import constants from "../data/constants";
 import draggable from "vuedraggable";
+import { validateTime, formatDateToLocaleDateString } from "../shared";
 
 export default {
   name: "CompSettings",
@@ -817,8 +820,6 @@ export default {
       fish_specs: null,
       start_date: null,
       end_date: null,
-      formatted_start_date: null,
-      formatted_end_date: null,
       start_time: null,
       end_time: null,
       loading: false,
@@ -890,6 +891,7 @@ export default {
   },
   mounted() {},
   methods: {
+    formatDateToLocaleDateString: formatDateToLocaleDateString,
     addPlacement() {
       const lastItem =
         this.placement_points_array[this.placement_points_array.length - 1];
@@ -1020,14 +1022,6 @@ export default {
           // Update to vuex, Assing variables from vuex (see client/store/index.js)
           this.$store.commit("refreshCompetition", competition);
           this.fish_specs = this.$store.getters.getCompetitionFishes;
-          let temp_start_date = this.$moment(this.competition.start_date);
-          let temp_end_date = this.$moment(this.competition.end_date);
-          this.formatted_start_date = `${temp_start_date.date()}.${
-            temp_start_date.month() + 1
-          }.${temp_start_date.year()}`;
-          this.formatted_end_date = `${temp_end_date.date()}.${
-            temp_end_date.month() + 1
-          }.${temp_end_date.year()}`;
           this.setOriginalValues();
           if (!this.cups.length) {
             this.getCups();
@@ -1134,10 +1128,10 @@ export default {
         : "Ei";
       this.start_date = new Date(this.competition.start_date)
         .toISOString()
-        .substr(0, 10);
+        .substring(0, 10);
       this.end_date = new Date(this.competition.end_date)
         .toISOString()
-        .substr(0, 10);
+        .substring(0, 10);
       this.start_time = this.competition.start_time;
       this.end_time = this.competition.end_time;
       this.basic_info_validated = true;
@@ -1149,8 +1143,12 @@ export default {
       return randomColor;
     },
     // Add error to error array and direct user to it
-    showError: function (error) {
+    showError(error) {
+      location.href = "#app";
       this.errors.push(error);
+    },
+    formatDate(date) {
+      return new Date(date).toLocaleDateString();
     },
     // Check competitions basic information (Perustiedot)
     checkBasicInformation() {
@@ -1158,26 +1156,12 @@ export default {
       this.errors = [];
       this.basic_info_validated = false;
       this.validated = false;
-      // Check if the given dates and times are valid with moment
-      var isDateValid = this.$moment(
-        this.start_date,
-        "YYYY-MM-DD",
-        true
-      ).isValid();
 
-      var isEndDateValid = this.$moment(
-        this.end_date,
-        "YYYY-MM-DD",
-        true
-      ).isValid();
+      var isDateValid = !isNaN(new Date(this.start_date).getTime());
+      var isEndDateValid = !isNaN(new Date(this.end_date).getTime());
 
-      var isStartTimeValid = this.$moment(
-        this.start_time,
-        "HH:mm",
-        true
-      ).isValid();
-
-      var isEndTimeValid = this.$moment(this.end_time, "HH:mm", true).isValid();
+      var isStartTimeValid = validateTime(this.start_time);
+      var isEndTimeValid = validateTime(this.end_time);
 
       // Check other variables
       if (!this.name) {
@@ -1221,36 +1205,10 @@ export default {
             );
       }
       if (!this.start_date || !isDateValid) {
-        !this.start_date == true
-          ? this.showError("Päivämäärää ei ole valittu!")
-          : this.showError(
-              'Syötä päivämäärä muodossa "PP.KK.VVVV (esim: 06.02.2020)'
-            );
+        this.showError("Aloitus päivämäärää ei ole valittu!");
       }
       if (!this.end_date || !isEndDateValid) {
-        !this.end_date == true
-          ? this.showError("Päivämäärää ei ole valittu!")
-          : this.showError(
-              'Syötä päivämäärä muodossa "PP.KK.VVVV (esim: 06.02.2020)'
-            );
-      } else {
-        let temp_start = this.$moment(this.start_date).format("DD.MM.YYYY");
-        let temp_end = this.$moment(this.end_date).format("DD.MM.YYYY");
-        // If dates are valid, check that start_date is before end_date
-        let start_date = this.$moment(
-          `${temp_start} ${this.start_time}`,
-          "DD.MM.YYYY HH:mm"
-        );
-        let end_date = this.$moment(
-          `${temp_end} ${this.end_time}`,
-          "DD.MM.YYYY HH:mm"
-        );
-
-        if (end_date.isBefore(start_date, "minutes")) {
-          this.showError(
-            "Kilpailun päättymispäivämäärä ja kellonaika ei voi olla ennen alkamispäivämäärää!"
-          );
-        }
+        this.showError("Lopetus päivämäärää ei ole valittu!");
       }
 
       // Check all the inputs
@@ -1274,56 +1232,59 @@ export default {
 
       // If all inputs validated
       if (!this.errors.length) {
-        let temp_start = this.$moment(this.start_date).format("DD.MM.YYYY");
-        let temp_end = this.$moment(this.end_date).format("DD.MM.YYYY");
-        let start_date = this.$moment(
-          `${temp_start} ${this.start_time}`,
-          "DD.MM.YYYY HH:mm"
-        );
-        let end_date = this.$moment(
-          `${temp_end} ${this.end_time}`,
-          "DD.MM.YYYY HH:mm"
-        );
+        // If dates are valid, check that start_date is before end_date
+        let start_date = new Date(this.start_date);
+        let start_time = this.start_time.split(":").map(Number);
+        start_date.setHours(start_time[0], start_time[1]);
 
-        // Basic info, change all the competition variables with values from inputs
-        this.competition.cup_id = this.cup._id;
-        this.competition.cup_name = this.cup.name;
-        this.competition.name = this.name;
-        this.competition.locality = this.locality;
-        this.competition.cup_participation_points = Number(
-          this.cup_participation_points
-        );
-
-        let temp_placement_points = [];
-        // IF the multiplier has been changed, and is different from 1, calculate new points, else just use template array
-        if (
-          this.competition.cup_points_multiplier !==
-            this.cup_points_multiplier &&
-          this.cup_points_multiplier !== 1.0
-        ) {
-          let temp_placement = 1;
-          this.placement_points_array.forEach((placement_point) => {
-            temp_placement_points.push({
-              placement: temp_placement,
-              points: placement_point.points * this.cup_points_multiplier,
-            });
-            temp_placement++;
-          });
+        let end_date = new Date(this.end_date);
+        let end_time = this.end_time.split(":").map(Number);
+        end_date.setHours(end_time[0], end_time[1]);
+        if (end_date < start_date) {
+          this.showError(
+            "Kilpailun päättymispäivämäärä ja kellonaika ei voi olla ennen alkamispäivämäärää!"
+          );
         } else {
-          temp_placement_points = [...this.placement_points_array];
+          // Basic info, change all the competition variables with values from inputs
+          this.competition.cup_id = this.cup._id;
+          this.competition.cup_name = this.cup.name;
+          this.competition.name = this.name;
+          this.competition.locality = this.locality;
+          this.competition.cup_participation_points = Number(
+            this.cup_participation_points
+          );
+
+          let temp_placement_points = [];
+          // IF the multiplier has been changed, and is different from 1, calculate new points, else just use template array
+          if (
+            this.competition.cup_points_multiplier !==
+              this.cup_points_multiplier &&
+            this.cup_points_multiplier !== 1.0
+          ) {
+            let temp_placement = 1;
+            this.placement_points_array.forEach((placement_point) => {
+              temp_placement_points.push({
+                placement: temp_placement,
+                points: placement_point.points * this.cup_points_multiplier,
+              });
+              temp_placement++;
+            });
+          } else {
+            temp_placement_points = [...this.placement_points_array];
+          }
+          this.competition.cup_points_multiplier = this.cup_points_multiplier;
+          this.competition.cup_placement_points = temp_placement_points;
+          this.competition.isTeamCompetition =
+            this.isTeamCompetition === "Ei" ? false : true;
+          this.competition.start_date = start_date.toISOString();
+          this.competition.end_date = end_date.toISOString();
+          this.competition.start_time = this.start_time;
+          this.competition.end_time = this.end_time;
+          //Update to database, calculate current standings and points in case multipliers have been changed
+          this.competition.fishes = this.fish_specs = this.inputs;
+          this.updateCompetition(this.competition);
+          this.basic_info_validated = true;
         }
-        this.competition.cup_points_multiplier = this.cup_points_multiplier;
-        this.competition.cup_placement_points = temp_placement_points;
-        this.competition.isTeamCompetition =
-          this.isTeamCompetition === "Ei" ? false : true;
-        this.competition.start_date = start_date;
-        this.competition.end_date = end_date;
-        this.competition.start_time = this.start_time;
-        this.competition.end_time = this.end_time;
-        //Update to database, calculate current standings and points in case multipliers have been changed
-        this.competition.fishes = this.fish_specs = this.inputs;
-        this.updateCompetition(this.competition);
-        this.basic_info_validated = true;
       }
     },
     // Update competition to database

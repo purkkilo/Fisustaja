@@ -86,7 +86,7 @@
               selectedCompetitions = options.selectedCompetitions;
               isLandscape = options.isLandscape;
               showInfoInPdf = options.showInfoInPdf;
-              saveAsPDF(`Tulokset`);
+              pdfWrapper(`Tulokset`);
             }
           "
           @sort="
@@ -124,12 +124,10 @@ import CupService from "../services/CupService";
 import CompetitionService from "../services/CompetitionService";
 import ResultService from "../services/ResultService";
 import FishService from "../services/FishService";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 
 import CupPoints from "../components/CupPoints.vue";
-import { sortBy, openPdfOnNewTab, cupDictToArray } from "@/shared";
+import { sortBy, saveCupAsPDF } from "@/shared";
 
 export default {
   name: "PublicCups",
@@ -215,6 +213,21 @@ export default {
         this.text = "Olet jo tällä sivulla!";
         this.snackbar = true;
       }
+    },
+    pdfWrapper(table_title) {
+      saveCupAsPDF(
+        table_title,
+        this.isLandscape,
+        this.cup,
+        this.competitions,
+        this.showUnfinishedCompetitions,
+        this.showInfoInPdf,
+        this.selectedCompetitions,
+        this.headers,
+        this.results,
+        this.signees
+      );
+      this.dialog = false;
     },
     // Calculate all the cup points, and limit the number of races taken into account
     // If limit = 4, 4 races with highest points will be calculated, other races will have 5 points where the signee has participated
@@ -439,17 +452,17 @@ export default {
     },
     setCompetitionData(cup) {
       this.selectNumbers = [];
-      // Convert dates to moment objects
+      // Convert dates
       let counter = 1;
       this.allCompetitions.forEach((competition) => {
-        competition.start_date = this.$moment(competition.start_date);
-        competition.end_date = this.$moment(competition.end_date);
+        competition.start_date = new Date(competition.start_date);
+        competition.end_date = new Date(competition.end_date);
         // Index for competition
         competition.key_name = counter;
         counter++;
       });
       this.allCompetitions.sort((a, b) => {
-        return b.start_date.isBefore(a.start_date);
+        return b.start_date < a.start_date;
       });
       this.signees = this.cup.signees.sort(sortBy("boat_number", true));
       this.signees.forEach((signee) => {
@@ -649,100 +662,6 @@ export default {
           return txt.toUpperCase();
         }
       );
-    },
-    // Convert the charts and the tables to pdf
-    async saveAsPDF(table_title) {
-      // Format dates for easier reding
-      // PDF creation
-      let doc = new jsPDF({
-        orientation: this.isLandscape ? "landscape" : "portrait",
-      });
-
-      // Title
-      const title = `${this.selected_cup.name} (${this.selected_cup.year})`;
-      let sub_title;
-      let columns = [];
-      let rows;
-      let startY;
-      // Find last competition from the array which has finished
-      let temp_array = [...this.competitions];
-      var index = temp_array
-        .slice()
-        .reverse()
-        .findIndex((competition) => competition.isFinished === true);
-      var count = temp_array.length - 1;
-      var finalIndex = index >= 0 ? count - index : index;
-      const last_competition = temp_array[finalIndex];
-      const start_date = this.$moment(last_competition.start_date);
-      const formatted_date = `${start_date.date()}.${
-        start_date.month() + 1
-      }.${start_date.year()}`;
-      doc.setFontSize(24);
-      doc.text(13, 15, title, { align: "left" });
-      doc.line(0, 20, 400, 20);
-      doc.setFontSize(14);
-      // Table, based on given table_id, and table title based on competition_type
-      let finished_competitions = 0;
-      let unfinished_competitions = 0;
-      this.competitions.forEach((competition) => {
-        competition.isFinished
-          ? finished_competitions++
-          : unfinished_competitions++;
-      });
-
-      if (unfinished_competitions === 0) {
-        sub_title = `Tulokset ${formatted_date}`;
-      } else {
-        sub_title = `Tilanne ${formatted_date}, ${last_competition.name} (${last_competition.locality}) jälkeen (${unfinished_competitions} kpl kilpailuja kesken)`;
-      }
-      doc.text(13, 30, sub_title, { align: "left" });
-      if (this.showInfoInPdf) {
-        doc.text(
-          13,
-          40,
-          table_title +
-            ` (${this.selectedCompetitions}/${this.competitions.length} parasta kilpailua otettu huomioon)`,
-          { align: "left" }
-        );
-      }
-      this.headers.forEach((header) => {
-        columns.push(header.text);
-      });
-      rows = cupDictToArray(
-        this.results,
-        this.competitions,
-        "cup_total_points"
-      );
-      startY = 45;
-
-      doc.autoTable({
-        head: [columns],
-        body: rows,
-        styles: {
-          overflow: "linebreak",
-          halign: "justify",
-          fontSize: "8",
-          lineColor: 100,
-          lineWidth: 0.25,
-        },
-        columnStyles: { cellwidth: "auto" },
-        headStyles: {
-          cellwidth: "wrap",
-        },
-        theme: "striped",
-        pageBreak: "auto",
-        tableWidth: "auto",
-        startY: startY,
-        margin: { top: 20 },
-      });
-
-      // Save the pdf
-      const fileName = `${this.selected_cup.year}_${this.replaceAll(
-        "Cup",
-        " ",
-        ""
-      )}_${this.replaceAll(this.capitalize_words(table_title), " ", "")}.pdf`;
-      openPdfOnNewTab(doc, fileName);
     },
   },
 };

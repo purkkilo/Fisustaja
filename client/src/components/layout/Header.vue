@@ -356,7 +356,8 @@ export default {
         // Do something with the module.
         this.$store.state.logged_in = false;
         this.$store.state.is_admin = false;
-        this.$router.push({ path: "/" });
+        if (this.$router.currentRoute.path !== "/")
+          this.$router.push({ path: "/" });
         this.$store.commit("refreshCompetition", null);
         this.user = null;
         this.text = "Kirjattu ulos onnistuneesti!";

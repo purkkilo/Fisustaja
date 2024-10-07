@@ -1,6 +1,5 @@
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-import moment from "moment";
 
 const winner_headers = [
   { text: "Kalalaji", value: "name" },
@@ -27,6 +26,26 @@ const headers = {
   all: all_fishes_headers,
   fish: biggest_headers,
 };
+
+export function formatDateToLocaleDateString(datestring) {
+  return new Date(datestring).toLocaleDateString();
+}
+// Returns date in format dd/mm/yyyy as string
+export function formatDate(datestring) {
+  let d = new Date(datestring);
+  return `${d.getDate()}.${
+    d.getMonth() + 1
+  }.${d.getFullYear()}, ${d.getHours()}:${d.getMinutes()}`;
+}
+
+export function getTime(datestring) {
+  let d = new Date(datestring);
+  console.log(datestring);
+  return `${d.getHours()}:${d.getMinutes()}`;
+}
+export function getYear(date) {
+  return new Date(date).getFullYear();
+}
 
 export function addTitle(doc, title, cup, time) {
   doc.setFontSize(24);
@@ -124,13 +143,142 @@ export function replaceAll(string, search, replace) {
   return string.split(search).join(replace);
 }
 
-// Returns date in format dd/mm/yyyy as string
-export function formatDate(d) {
-  d = moment(d);
-  let formatted_date = `${d.date()}.${d.month() + 1}.${d.year()}`;
+    // Convert the charts and the tables to pdf
+    export function saveCupAsPDF(
+      table_title,
+      isLandscape,
+      cup,
+      competitions,
+      showUnfinishedCompetitions,
+      showInfoInPdf,
+      selectedCompetitions,
+      headers,
+      results,
+      signees
+    ) {
+      // Format dates for easier reding
+      // PDF creation
+      let doc = new jsPDF({
+        orientation: isLandscape ? "landscape" : "portrait",
+      });
 
-  return formatted_date;
-}
+      // Title
+      const title = `${cup.name} (${cup.year})`;
+      let sub_title;
+      let columns = [];
+      let rows;
+      let startY;
+      // Find last competition from the array which has finished
+      let temp_array = [...competitions];
+      var index = temp_array
+        .slice()
+        .reverse()
+        .findIndex((competition) => competition.isFinished === true);
+      var count = temp_array.length - 1;
+      var finalIndex = index >= 0 ? count - index : index;
+      const last_competition = temp_array[finalIndex]
+        ? temp_array[finalIndex]
+        : null;
+      let last_competition_string = "";
+      let start_date = new Date();
+      if (last_competition) {
+        last_competition_string = `${last_competition.name} (${last_competition.locality})`;
+        start_date = last_competition.start_date;
+      }
+      const formatted_date = formatDateToLocaleDateString(start_date);
+
+      doc.setFontSize(24);
+      doc.text(13, 15, title, { align: "left" });
+      doc.line(0, 20, 400, 20);
+      doc.setFontSize(14);
+      // Table, based on given table_id, and table title based on competition_type
+      let finished_competitions = 0;
+      let unfinished_competitions = 0;
+      competitions.forEach((competition) => {
+        competition.isFinished
+          ? finished_competitions++
+          : unfinished_competitions++;
+      });
+      if (table_title === "Tulokset") {
+        if (unfinished_competitions === 0 || !showUnfinishedCompetitions) {
+          sub_title = `Tulokset ${formatted_date}`;
+        } else {
+          sub_title = `Tilanne ${formatted_date}, ${last_competition_string}  (${unfinished_competitions} kpl kilpailuja kesken)`;
+        }
+        doc.text(13, 30, sub_title, { align: "left" });
+        if (showInfoInPdf) {
+          doc.text(
+            13,
+            40,
+            table_title +
+              ` (${selectedCompetitions}/${competitions.length} parasta kilpailua otettu huomioon)`,
+            { align: "left" }
+          );
+        }
+
+        headers.forEach((header) => {
+          columns.push(header.text);
+        });
+        rows = cupDictToArray(results, competitions, "cup_total_points");
+        startY = 45;
+      } else {
+        if (unfinished_competitions === 0) {
+          sub_title = `Cuppiin ilmoittautuneet ${cup.year}`;
+        } else {
+          sub_title = `Cupin kilpailijat ${formatted_date} ${last_competition_string}`;
+        }
+        doc.text(13, 30, sub_title, { align: "left" });
+        doc.setFontSize(8);
+
+        columns = ["Kilp. numero", "Kippari", "Varakippari", "Paikkakunta"];
+        signees = cup.signees.sort(sortBy("boat_number", true));
+        rows = cupDictToArray(signees, competitions, "signees");
+        /* eslint-disable no-unused-vars */
+        // Just add some empty rows for new signees
+        if (rows.length) {
+          let last_number = Number(rows[rows.length - 1][0]) + 1;
+          for (let i of range(last_number, last_number + 10)) {
+            rows.push([i, "", "", ""]);
+          }
+        } else {
+          // If no signees, just add 20 empty rows
+          for (let i of range(1, 20)) {
+            rows.push([i, "", "", ""]);
+            doc.text(13, 35, "Cupissa ei vielä ilmoittautuneita", {
+              align: "left",
+            });
+          }
+        }
+        /* eslint-enable no-unused-vars */
+        startY = 37;
+      }
+
+      doc.autoTable({
+        head: [columns],
+        body: rows,
+        styles: {
+          overflow: "linebreak",
+          halign: "justify",
+          fontSize: "8",
+          lineColor: 100,
+          lineWidth: 0.25,
+        },
+        columnStyles: { text: { cellwidth: "auto" } },
+        headStyles: { text: { cellwidth: "wrap" } },
+        theme: "striped",
+        pageBreak: "auto",
+        tableWidth: "auto",
+        startY: startY,
+        margin: { top: 20 },
+      });
+      const fileName = `${cup.year}_${replaceAll("Cup", " ", "")}_${replaceAll(
+        capitalize_words(table_title),
+        " ",
+        ""
+      )}.pdf`;
+      openPdfOnNewTab(doc, fileName);
+    }
+
 // Convert the charts and the tables to pdf
 export function saveAsPDF(
   competition_type,
@@ -149,8 +297,8 @@ export function saveAsPDF(
   fish_names
 ) {
   // Format dates for easier reding
-  let temp_start_date = formatDate(competition.start_date);
-  let temp_end_date = formatDate(competition.end_date);
+  let temp_start_date = formatDateToLocaleDateString(competition.start_date);
+  let temp_end_date = formatDateToLocaleDateString(competition.end_date);
   let rows = [];
   let columns;
   let pdf_competition_type;
@@ -358,7 +506,9 @@ export function saveAsPDF(
     margin: { top: 20 },
   });
   // Save the pdf
-  const fileName = `${moment(competition.start_date).year()}_${replaceAll(
+  const fileName = `${new Date(
+    competition.start_date
+  ).getFullYear()}_${replaceAll(
     competition.name,
     " ",
     ""
@@ -376,8 +526,8 @@ export function saveStatsAsPDF(
 ) {
   resizeChartForPDF();
   // Format dates for easier reding
-  let temp_start_date = formatDate(competition.start_date);
-  let temp_end_date = formatDate(competition.end_date);
+  let temp_start_date = formatDateToLocaleDateString(competition.start_date);
+  let temp_end_date = formatDateToLocaleDateString(competition.end_date);
 
   let doc = new jsPDF({ orientation: orientation });
 
@@ -491,11 +641,13 @@ export function saveStatsAsPDF(
   });
 
   // Save the pdf
-  const fileName = `${moment(competition.start_date).year()}_${replaceAll(
-    competition.name,
+  const fileName = `${new Date(
+    competition.start_date
+  ).getFullYear()}_${replaceAll(competition.name, " ", "")}_${replaceAll(
+    capitalize_words(competition_type),
     " ",
     ""
-  )}_${replaceAll(capitalize_words(competition_type), " ", "")}.pdf`;
+  )}.pdf`;
   openPdfOnNewTab(doc, fileName);
   // Set charts to be responsive again
   setChartsResponsive();
@@ -523,9 +675,9 @@ export function saveAllAsPDF(
   let charts_loaded = true;
 
   // Format dates for easier reding
-  let temp_start_date = formatDate(competition.start_date);
-  let temp_end_date = formatDate(competition.end_date);
-  let year = moment(competition.start_date).year();
+  let temp_start_date = formatDateToLocaleDateString(competition.start_date);
+  let temp_end_date = formatDateToLocaleDateString(competition.end_date);
+  let year = new Date(competition.start_date).getFullYear();
 
   let doc = new jsPDF({ orientation: orientation });
 
@@ -1797,16 +1949,25 @@ export function calculateBiggestAmounts(
   return { results, header, selected_amount };
 }
 
+export function validateTime(input) {
+  return /^([0-1]?[0-9]|2[0-4]):([0-5][0-9])(:[0-5][0-9])?$/.test(input);
+}
+
 export default {
+  formatDateToLocaleDateString,
+  formatDate,
+  getTime,
+  getYear,
+  validateTime,
   setChartsResponsive,
   resizeChartForPDF,
   saveAllAsPDF,
   saveStatsAsPDF,
+  saveCupAsPDF,
   saveAsPDF,
   cupDictToArray,
   capitalize_words,
   replaceAll,
-  formatDate,
   range,
   getMultiplierColor,
   getMultiplierTextColor,

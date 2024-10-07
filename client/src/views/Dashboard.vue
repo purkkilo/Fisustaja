@@ -377,15 +377,13 @@ export default {
       .then((response) => {
         this.competitions = response;
         this.competitionsAmount = this.competitions.length;
-        // Convert dates to moment objects
+        // Convert dates
         this.competitions.forEach((competition) => {
-          competition.start_date = this.$moment(competition.start_date);
-          competition.end_date = this.$moment(competition.end_date);
+          competition.start_date = new Date(competition.start_date);
+          competition.end_date = new Date(competition.end_date);
         });
         // Sort them based on start_date so the oldest competitions are the last
-        this.competitions.sort(function compare(a, b) {
-          return b.start_date.isAfter(a.start_date);
-        });
+        this.competitions.sort((a, b) => a.start_date < b.start_date);
       })
       .catch((err) => {
         if (err.response) {
@@ -409,7 +407,7 @@ export default {
         this.cups = response;
         this.cupsAmount = this.cups.length;
         this.cups.sort((a, b) => {
-          return this.$moment(b.year).isAfter(this.$moment(a.year));
+          return parseInt(a.year) < parseInt(b.year);
         });
       })
       .catch((err) => {
@@ -442,10 +440,10 @@ export default {
     // Get user info form localstorage
     if (localStorage.getItem("user") != null) {
       this.user = JSON.parse(localStorage.getItem("user"));
-      let createdAt = this.$moment(this.user.createdAt);
-      this.created = `${createdAt.date()}.${
-        createdAt.month() + 1
-      }.${createdAt.year()}`;
+      let createdAt = new Date(this.user.createdAt);
+      this.created = `${createdAt.getDate()}.${
+        createdAt.getMonth() + 1
+      }.${createdAt.getFullYear()}`;
     }
   },
   methods: {
@@ -546,7 +544,7 @@ export default {
           this.cups.push(cup);
           this.cupsAmount = this.cups.length;
           this.cups.sort((a, b) => {
-            return this.$moment(b.year).isAfter(this.$moment(a.year));
+            return parseInt(a.year) < parseInt(b.year);
           });
           this.loading = false;
           this.year = null;

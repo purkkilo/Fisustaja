@@ -450,7 +450,7 @@
                   >
                     <template v-slot:[`item.start_date`]="{ item }">
                       <v-chip color="primary darken-2">{{
-                        item.start_date.format("DD.MM.YYYY")
+                        formatDateToLocaleDateString(item.start_date)
                       }}</v-chip>
                     </template>
                     <template v-slot:[`item.cup_points_multiplier`]="{ item }">
@@ -641,6 +641,7 @@ import CompetitionService from "../services/CompetitionService";
 import UserService from "../services/UserService";
 import CupService from "../services/CupService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
+import { formatDateToLocaleDateString } from "../shared";
 
 export default {
   data() {
@@ -709,7 +710,7 @@ export default {
       await UserService.getUsers()
         .then(async (res) => {
           this.feedback = await FeedbackService.getFeedback();
-          console.log(this.feedback);
+          await this.getCups();
           this.loading = false;
           this.users = res;
           this.users.forEach((user) => {
@@ -719,14 +720,13 @@ export default {
           // No query, get all competitions
           this.all_competitions = await CompetitionService.getCompetitions();
           this.all_competitions.forEach((competition) => {
+            let cup = this.all_cups.find((c) => c._id === competition.cup_id);
             competition.username = this.users.find(
               (user) => user._id === competition.user_id
             ).name;
-            competition.start_date = this.$moment(competition.start_date);
-            competition.end_date = this.$moment(competition.end_date);
-            competition.cup_name = `${
-              competition.cup_name
-            } (${competition.start_date.format("YYYY")})`;
+            competition.cup_name = `${cup.name} (${cup.year})`;
+            competition.start_date = new Date(competition.start_date);
+            competition.end_date = new Date(competition.end_date);
           });
 
           this.competitions = this.all_competitions.filter(
@@ -734,9 +734,8 @@ export default {
           );
           // Sort them based on start_date so the oldest competitions are the last
           this.all_competitions.sort(function compare(a, b) {
-            return b.start_date.isAfter(a.start_date);
+            return a.start_date < b.start_date;
           });
-          this.getCups();
           this.loading_competitions = false;
         })
         .catch(async (err) => {
@@ -759,6 +758,7 @@ export default {
     }
   },
   methods: {
+    formatDateToLocaleDateString: formatDateToLocaleDateString,
     getColor(multiplier) {
       if (multiplier > 1) return "red";
       if (multiplier === 1) return "green";

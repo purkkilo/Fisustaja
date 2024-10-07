@@ -76,13 +76,41 @@ export default {
   data: () => ({
     options: {
       plugins: {
+        tooltip: {
+          callbacks: {
+            title: (context) => {
+              return context[0].label;
+            },
+            label: (context) => {
+              let sum = context.dataset.data.reduce(function (a, b) {
+                return a + b;
+              }, 0);
+              let percentage = (context.parsed.y / sum) * 100;
+              percentage =
+                Math.round((percentage + Number.EPSILON) * 100) / 100;
+
+              let lbl = "";
+              if (context.dataset.label === "Kilpailijamäärä") {
+                lbl = `${
+                  context.dataset.label
+                }: ${context.parsed.y.toLocaleString()} kpl`;
+              } else {
+                lbl = `${context.dataset.label}: ${(
+                  context.parsed.y / 1000
+                ).toLocaleString()} kg ( ${percentage}% kaloista )`;
+              }
+
+              return lbl;
+            },
+          },
+        },
         datalabels: {
           labels: {
             value: {
-              color: "blue",
+              color: "#133E71",
               font: {
                 weight: "bold",
-                size: 14,
+                size: 16,
                 family: '"Lucida Console", Monaco, monospace',
               },
             },
@@ -92,79 +120,18 @@ export default {
       maintainAspectRatio: false,
       responsive: true,
       scales: {
-        yAxes: [
-          {
-            ticks: {
-              beginAtZero: true,
-              // Include a dollar sign in the ticks
-              callback: function (value) {
-                let output = value < 1000 ? value : value / 1000 + "kg";
-                return output;
-              },
+        y: {
+          ticks: {
+            beginAtZero: true,
+            // Include a dollar sign in the ticks
+            callback: function (value) {
+              let output = value < 1000 ? value : value / 1000 + "kg";
+              return output;
             },
           },
-        ],
+        },
       },
-      tooltips: {
-        callbacks: {
-          title: (tooltipItem, data) => {
-            return data.labels[tooltipItem[0].index];
-          },
-          label: (tooltipItem, data) => {
-            let sum = data.datasets[tooltipItem.datasetIndex].data.reduce(
-              function (a, b) {
-                return a + b;
-              },
-              0
-            );
-            let percentage =
-              (data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] /
-                sum) *
-              100;
-            percentage = Math.round((percentage + Number.EPSILON) * 100) / 100;
-            let lbl = "";
-            if (
-              data.datasets[tooltipItem.datasetIndex].label ===
-              "Kilpailijamäärä"
-            ) {
-              lbl = `${
-                data.datasets[tooltipItem.datasetIndex].label
-              }: ${data.datasets[tooltipItem.datasetIndex].data[
-                tooltipItem.index
-              ].toLocaleString()} kpl`;
-            } else {
-              lbl = `${data.datasets[tooltipItem.datasetIndex].label}: ${(
-                data.datasets[tooltipItem.datasetIndex].data[
-                  tooltipItem.index
-                ] / 1000
-              ).toLocaleString()} kg ( ${percentage}% kaloista )`;
-            }
 
-            return lbl;
-          },
-        },
-      },
-      /*
-      plugins: {
-        labels: {
-          render: function (args) {
-            // args will be something like:
-            // { label: 'Label', value: 123, percentage: 50, index: 0, dataset: {...} }
-            // return object if it is image
-            // return { src: 'image.png', width: 16, height: 16 };
-            if (args.dataset.label === "Kilpailijamäärä") {
-              return args.value;
-            } else {
-              return `${(args.value / 1000).toLocaleString()} kg`;
-            }
-          },
-          fontSize: 8,
-          fontStyle: "bold",
-          fontFamily: '"Lucida Console", Monaco, monospace',
-          precision: 2,
-        },
-      },
-      */
       legend: {
         display: true,
       },

@@ -57,7 +57,11 @@
                 Peruuta
               </v-btn>
               <v-spacer></v-spacer>
-              <v-btn color="primary" text @click="saveAsPDF(`Ilmoittautuneet`)">
+              <v-btn
+                color="primary"
+                text
+                @click="pdfWrapper(`Ilmoittautuneet`)"
+              >
                 Lataa
               </v-btn>
             </v-card-actions>
@@ -152,7 +156,7 @@
                   >
                     <template v-slot:[`item.start_date`]="{ item }">
                       <v-chip color="primary darken-2">{{
-                        item.start_date.format("DD.MM.YYYY")
+                        formatDateToLocaleDateString(item.start_date)
                       }}</v-chip>
                     </template>
                     <template v-slot:[`item.isFinished`]="{ item }">
@@ -501,7 +505,7 @@
                   selectedCompetitions = options.selectedCompetitions;
                   isLandscape = options.isLandscape;
                   showInfoInPdf = options.showInfoInPdf;
-                  saveAsPDF(`Tulokset`);
+                  pdfWrapper(`Tulokset`);
                 }
               "
               @sort="
@@ -543,10 +547,15 @@ import CompetitionService from "../services/CompetitionService";
 import ResultService from "../services/ResultService";
 import FishService from "../services/FishService";
 import "jspdf-autotable";
-import shared from "@/shared";
 import CupPoints from "../components/CupPoints.vue";
 import CupStats from "../components/CupStats.vue";
-import jsPDF from "jspdf";
+import {
+  capitalize_words,
+  sortBy,
+  getMultiplierColor,
+  formatDateToLocaleDateString,
+  saveCupAsPDF,
+} from "../shared";
 
 export default {
   name: "CupOverview",
@@ -811,20 +820,18 @@ export default {
         if (!new_captain_name) {
           this.errors.push("Kipparin nimi puuttuu!");
         } else {
-          signee.captain_name = shared.capitalize_words(signee.captain_name);
+          signee.captain_name = capitalize_words(signee.captain_name);
         }
 
         if (!new_temp_captain_name) {
           new_temp_captain_name = signee.temp_captain_name = "-";
         } else {
-          signee.temp_captain_name = shared.capitalize_words(
-            signee.temp_captain_name
-          );
+          signee.temp_captain_name = capitalize_words(signee.temp_captain_name);
         }
         if (!new_locality) {
           this.errors.push("Seura/Paikkakunta puuttuu!");
         } else {
-          signee.locality = shared.capitalize_words(signee.locality);
+          signee.locality = capitalize_words(signee.locality);
         }
         // No errors left
         if (!this.errors.length) {
@@ -859,17 +866,17 @@ export default {
     },
     setCompetitionData(cup) {
       this.selectNumbers = [];
-      // Convert dates to moment objects
+      // Convert dates
       this.allCompetitions.forEach((competition, i) => {
-        competition.start_date = this.$moment(competition.start_date);
-        competition.end_date = this.$moment(competition.end_date);
+        competition.start_date = new Date(competition.start_date);
+        competition.end_date = new Date(competition.end_date);
         // Index for competition
         competition.key_name = i + 1;
       });
       this.allCompetitions.sort((a, b) => {
-        return b.start_date.isBefore(a.start_date);
+        return a.start_date < b.start_date;
       });
-      this.signees = this.cup.signees.sort(shared.sortBy("boat_number", true));
+      this.signees = this.cup.signees.sort(sortBy("boat_number", true));
       this.signees.forEach((signee) => {
         signee.dialog = false;
       });
@@ -1279,148 +1286,24 @@ export default {
       // Return sorted results
       return results;
     },
+    formatDateToLocaleDateString: formatDateToLocaleDateString,
 
-    // Convert the charts and the tables to pdf
-    saveAsPDF(table_title) {
-      // Format dates for easier reding
-      // PDF creation
-      let doc = new jsPDF({
-        orientation: this.isLandscape ? "landscape" : "portrait",
-      });
-
-      // Title
-      const title = `${this.cup.name} (${this.cup.year})`;
-      let sub_title;
-      let columns = [];
-      let rows;
-      let startY;
-      // Find last competition from the array which has finished
-      let temp_array = [...this.competitions];
-      var index = temp_array
-        .slice()
-        .reverse()
-        .findIndex((competition) => competition.isFinished === true);
-      var count = temp_array.length - 1;
-      var finalIndex = index >= 0 ? count - index : index;
-      const last_competition = temp_array[finalIndex]
-        ? temp_array[finalIndex]
-        : null;
-      let last_competition_string = "";
-      let start_date = this.$moment();
-      if (last_competition) {
-        last_competition_string = `${last_competition.name} (${last_competition.locality})`;
-        start_date = this.$moment(last_competition.start_date);
-      }
-      const formatted_date = `${start_date.date()}.${
-        start_date.month() + 1
-      }.${start_date.year()}`;
-      doc.setFontSize(24);
-      doc.text(13, 15, title, { align: "left" });
-      doc.line(0, 20, 400, 20);
-      doc.setFontSize(14);
-      // Table, based on given table_id, and table title based on competition_type
-      let finished_competitions = 0;
-      let unfinished_competitions = 0;
-      this.competitions.forEach((competition) => {
-        competition.isFinished
-          ? finished_competitions++
-          : unfinished_competitions++;
-      });
-      if (table_title === "Tulokset") {
-        if (unfinished_competitions === 0 || !this.showUnfinishedCompetitions) {
-          sub_title = `Tulokset ${formatted_date}`;
-        } else {
-          sub_title = `Tilanne ${formatted_date}, ${last_competition_string}  (${unfinished_competitions} kpl kilpailuja kesken)`;
-        }
-        doc.text(13, 30, sub_title, { align: "left" });
-        if (this.showInfoInPdf) {
-          doc.text(
-            13,
-            40,
-            table_title +
-              ` (${this.selectedCompetitions}/${this.competitions.length} parasta kilpailua otettu huomioon)`,
-            { align: "left" }
-          );
-        }
-
-        this.headers.forEach((header) => {
-          columns.push(header.text);
-        });
-        rows = shared.cupDictToArray(
-          this.results,
-          this.competitions,
-          "cup_total_points"
-        );
-        startY = 45;
-      } else {
-        if (unfinished_competitions === 0) {
-          sub_title = `Cuppiin ilmoittautuneet ${this.cup.year}`;
-        } else {
-          sub_title = `Cupin kilpailijat ${formatted_date} ${last_competition_string}`;
-        }
-        doc.text(13, 30, sub_title, { align: "left" });
-        doc.setFontSize(8);
-
-        columns = ["Kilp. numero", "Kippari", "Varakippari", "Paikkakunta"];
-        this.signees = this.cup.signees.sort(
-          shared.sortBy("boat_number", true)
-        );
-        rows = shared.cupDictToArray(
-          this.signees,
-          this.competitions,
-          "signees"
-        );
-        /* eslint-disable no-unused-vars */
-        // Just add some empty rows for new signees
-        if (rows.length) {
-          let last_number = Number(rows[rows.length - 1][0]) + 1;
-          for (let i of shared.range(last_number, last_number + 10)) {
-            rows.push([i, "", "", ""]);
-          }
-        } else {
-          // If no signees, just add 20 empty rows
-          for (let i of shared.range(1, 20)) {
-            rows.push([i, "", "", ""]);
-            doc.text(13, 35, "Cupissa ei vielä ilmoittautuneita", {
-              align: "left",
-            });
-          }
-        }
-        /* eslint-enable no-unused-vars */
-        startY = 37;
-      }
-
-      doc.autoTable({
-        head: [columns],
-        body: rows,
-        styles: {
-          overflow: "linebreak",
-          halign: "justify",
-          fontSize: "8",
-          lineColor: 100,
-          lineWidth: 0.25,
-        },
-        columnStyles: { text: { cellwidth: "auto" } },
-        headStyles: { text: { cellwidth: "wrap" } },
-        theme: "striped",
-        pageBreak: "auto",
-        tableWidth: "auto",
-        startY: startY,
-        margin: { top: 20 },
-      });
-      const fileName = `${this.cup.year}_${shared.replaceAll(
-        "Cup",
-        " ",
-        ""
-      )}_${shared.replaceAll(
-        shared.capitalize_words(table_title),
-        " ",
-        ""
-      )}.pdf`;
+    pdfWrapper(table_title) {
+      saveCupAsPDF(
+        table_title,
+        this.isLandscape,
+        this.cup,
+        this.competitions,
+        this.showUnfinishedCompetitions,
+        this.showInfoInPdf,
+        this.selectedCompetitions,
+        this.headers,
+        this.results,
+        this.signees
+      );
       this.dialog = false;
-      shared.openPdfOnNewTab(doc, fileName);
     },
-    getMultiplierColor: shared.getMultiplierColor,
+    getMultiplierColor: getMultiplierColor,
   },
 };
 </script>

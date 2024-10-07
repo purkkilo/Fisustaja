@@ -88,13 +88,13 @@
                         ><span>{{
                           data.item.cup_name +
                           " (" +
-                          $moment(data.item.start_date).format("YYYY") +
+                          getYear(data.item.start_date) +
                           ")"
                         }}</span></v-list-item-subtitle
                       >
                       <v-list-item-subtitle class="blue--text"
                         ><span>{{
-                          $moment(data.item.start_date).format("DD.MM.YYYY")
+                          formatDateToLocaleDateString(data.item.start_date)
                         }}</span></v-list-item-subtitle
                       >
                       <v-list-item-subtitle v-if="!data.item.isFinished"
@@ -550,6 +550,8 @@ import {
   saveAsPDF,
   saveStatsAsPDF,
   resizeChartForPDF,
+  formatDateToLocaleDateString,
+  getYear,
 } from "../shared";
 
 export default {
@@ -658,17 +660,17 @@ export default {
       this.competitions = await CompetitionService.getCompetitions(query);
       if (this.competitions.length) {
         this.competitions.forEach((competition) => {
-          competition.start_date = this.$moment(competition.start_date);
-          competition.end_date = this.$moment(competition.end_date);
+          competition.start_date = new Date(competition.start_date);
+          competition.end_date = new Date(competition.end_date);
           competition.select = `${
             competition.name
-          }, ${competition.start_date.format("DD.MM.YYYY")} (${
+          }, ${formatDateToLocaleDateString(competition.start_date)} (${
             competition.cup_name ? competition.cup_name : ""
           })`;
         });
         // Sort them based on start_date so the oldest competitions are the last
         this.competitions.sort((a, b) => {
-          return b.start_date.isAfter(a.start_date);
+          return a.start_date < b.start_date;
         });
       } else {
         this.signees = [];
@@ -682,6 +684,8 @@ export default {
   },
 
   methods: {
+    getYear: getYear,
+    formatDateToLocaleDateString: formatDateToLocaleDateString,
     pdfWrapper() {
       let comp_type = "";
 

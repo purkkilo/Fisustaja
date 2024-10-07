@@ -49,13 +49,13 @@
                   >
                     <template v-slot:[`item.start_date`]="{ item }">
                       <v-chip color="primary darken-2">{{
-                        item.start_date.format("DD.MM.YYYY")
+                        formatDateToLocaleDateString(item.start_date)
                       }}</v-chip>
                     </template>
                     <template v-slot:[`item.cup_name`]="{ item }">
                       <v-chip
                         >{{ item.cup_name }} ({{
-                          item.start_date.format("YYYY")
+                          getYear(item.start_date)
                         }})</v-chip
                       >
                     </template>
@@ -232,6 +232,8 @@
 <script>
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import CupService from "../services/CupService.js";
+import { formatDateToLocaleDateString } from "../shared";
+
 export default {
   name: "ContinueComp",
   props: ["competitions", "cups", "loading", "publishing"],
@@ -268,6 +270,10 @@ export default {
 
   mounted() {},
   methods: {
+    formatDateToLocaleDateString: formatDateToLocaleDateString,
+    getYear(date) {
+      return new Date(date).getFullYear();
+    },
     getColor(multiplier) {
       if (multiplier > 1) return "red";
       if (multiplier === 1) return "green";

@@ -670,6 +670,7 @@
                           maxlength="4"
                           value="1"
                           type="number"
+                          min="0"
                           @paste.prevent
                           :counter="4"
                           @keypress="isNumber($event, true)"
@@ -748,6 +749,7 @@
             'inputarea-dark': $store.getters.getTheme,
           }"
           :value="'summary'"
+          v-if="basic_info"
         >
           <v-container v-if="!loading">
             <v-row>
@@ -770,7 +772,7 @@
                     </v-list-item-icon>
                     <v-list-item-title>Kilpailu</v-list-item-title>
                     <v-list-item-subtitle class="blue-text">
-                      <b>{{ name }} ({{ locality }})</b>
+                      <b>{{ basic_info.name }} ({{ basic_info.locality }})</b>
                     </v-list-item-subtitle>
                   </v-list-item>
                   <v-divider></v-divider>
@@ -827,7 +829,7 @@
                       >Kilpailijoiden Cup osallistumispisteet
                     </v-list-item-title>
                     <v-list-item-subtitle class="blue-text">
-                      <b>{{ cup_participation_points }}</b>
+                      <b>{{ basic_info.cup_participation_points }}</b>
                     </v-list-item-subtitle>
                   </v-list-item>
                   <v-divider></v-divider>
@@ -839,7 +841,7 @@
                       >Kilpailun Cup pistekerroin</v-list-item-title
                     >
                     <v-list-item-subtitle class="blue-text">
-                      <b>{{ cup_points_multiplier }}</b>
+                      <b>{{ basic_info.cup_points_multiplier }}</b>
                     </v-list-item-subtitle>
                   </v-list-item>
                   <v-divider></v-divider>
@@ -859,19 +861,13 @@
                     </v-list-item-icon>
                     <v-list-item-title>Päivämäärä</v-list-item-title>
                     <v-list-item-subtitle class="blue-text">
-                      <b>{{ start_date }} - {{ end_date }}</b>
+                      <b
+                        >{{ formatDate(basic_info.start_date) }} -
+                        {{ formatDate(basic_info.end_date) }}</b
+                      >
                     </v-list-item-subtitle>
                   </v-list-item>
                   <v-divider></v-divider>
-                  <v-list-item>
-                    <v-list-item-icon>
-                      <v-icon>mdi-clock-time-four</v-icon>
-                    </v-list-item-icon>
-                    <v-list-item-title>Kilpailuaika</v-list-item-title>
-                    <v-list-item-subtitle class="blue-text">
-                      <b>{{ start_time }} - {{ end_time }}</b>
-                    </v-list-item-subtitle>
-                  </v-list-item>
                 </v-list>
               </v-col>
             </v-row>
@@ -965,7 +961,7 @@
 import CompetitionService from "../services/CompetitionService";
 import CupService from "../services/CupService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
-import shared from "@/shared";
+import { getRandomColors, validateTime, formatDate } from "../shared";
 import constants from "../data/constants";
 
 export default {
@@ -987,8 +983,8 @@ export default {
       cup_participation_points: 5,
       cup_points_multiplier: 1.0,
       isTeamCompetition: "Ei",
-      start_date: new Date().toISOString().substr(0, 10),
-      end_date: new Date().toISOString().substr(0, 10),
+      start_date: new Date().toISOString().substring(0, 10),
+      end_date: new Date().toISOString().substring(0, 10),
       start_time: null,
       end_time: null,
       basic_info: null,
@@ -1101,6 +1097,7 @@ export default {
     },
   },
   methods: {
+    formatDate: formatDate,
     addPlacement() {
       const lastItem =
         this.placement_points_array[this.placement_points_array.length - 1];
@@ -1236,26 +1233,12 @@ export default {
       this.errors = [];
       this.basic_info_validated = false;
       this.validated = false;
-      // Check if the given dates and times are valid with moment
-      var isDateValid = this.$moment(
-        this.start_date,
-        "YYYY-MM-DD",
-        true
-      ).isValid();
 
-      var isEndDateValid = this.$moment(
-        this.end_date,
-        "YYYY-MM-DD",
-        true
-      ).isValid();
+      var isDateValid = !isNaN(new Date(this.start_date).getTime());
+      var isEndDateValid = !isNaN(new Date(this.end_date).getTime());
 
-      var isStartTimeValid = this.$moment(
-        this.start_time,
-        "HH:mm",
-        true
-      ).isValid();
-
-      var isEndTimeValid = this.$moment(this.end_time, "HH:mm", true).isValid();
+      var isStartTimeValid = validateTime(this.start_time);
+      var isEndTimeValid = validateTime(this.end_time);
 
       // Check other variables
       if (!this.name) {
@@ -1269,6 +1252,9 @@ export default {
 
       if (!this.cup._id) {
         this.showError("Cuppia ei valittuna!");
+      }
+      if (!this.placement_points_array.length) {
+        this.showError("Lisää osallistumispisteet kiljailijoille");
       }
       if (!this.cup_participation_points) {
         this.showError("Määritä kilpailun Cup osallistumispisteet!");
@@ -1296,83 +1282,61 @@ export default {
             );
       }
       if (!this.start_date || !isDateValid) {
-        !this.start_date == true
-          ? this.showError("Päivämäärää ei ole valittu!")
-          : this.showError(
-              'Syötä päivämäärä muodossa "PP.KK.VVVV (esim: 06.02.2020)'
-            );
+        this.showError("Aloitus päivämäärää ei ole valittu!");
       }
       if (!this.end_date || !isEndDateValid) {
-        !this.end_date == true
-          ? this.showError("Päivämäärää ei ole valittu!")
-          : this.showError(
-              'Syötä päivämäärä muodossa "PP.KK.VVVV (esim: 06.02.2020)'
-            );
-      } else {
-        let temp_start = this.$moment(this.start_date).format("DD.MM.YYYY");
-        let temp_end = this.$moment(this.end_date).format("DD.MM.YYYY");
-        // If dates are valid, check that start_date is before end_date
-        let start_date = this.$moment(
-          `${temp_start} ${this.start_time}`,
-          "DD.MM.YYYY HH:mm"
-        );
-        let end_date = this.$moment(
-          `${temp_end} ${this.end_time}`,
-          "DD.MM.YYYY HH:mm"
-        );
+        this.showError("Lopetus päivämäärää ei ole valittu!");
+      }
 
-        if (end_date.isBefore(start_date, "minutes")) {
+      // If all inputs validated
+      if (!this.errors.length) {
+        // If dates are valid, check that start_date is before end_date
+        let start_date = new Date(this.start_date);
+        let start_time = this.start_time.split(":").map(Number);
+        start_date.setHours(start_time[0], start_time[1]);
+
+        let end_date = new Date(this.end_date);
+        let end_time = this.end_time.split(":").map(Number);
+        end_date.setHours(end_time[0], end_time[1]);
+        if (end_date < start_date) {
           this.showError(
             "Kilpailun päättymispäivämäärä ja kellonaika ei voi olla ennen alkamispäivämäärää!"
           );
-        }
-      }
-      // If all inputs validated
-      if (!this.errors.length) {
-        let temp_start = this.$moment(this.start_date).format("DD.MM.YYYY");
-        let temp_end = this.$moment(this.end_date).format("DD.MM.YYYY");
-        let start_date = this.$moment(
-          `${temp_start} ${this.start_time}`,
-          "DD.MM.YYYY HH:mm"
-        );
-        let end_date = this.$moment(
-          `${temp_end} ${this.end_time}`,
-          "DD.MM.YYYY HH:mm"
-        );
-
-        let temp_placement_points = [];
-        if (this.cup_points_multiplier !== 1) {
-          let temp_placement = 1;
-          this.placement_points_array.forEach((placement_point) => {
-            temp_placement_points.push({
-              placement: temp_placement,
-              points: placement_point.points * this.cup_points_multiplier,
-            });
-            temp_placement++;
-          });
         } else {
-          temp_placement_points = [...this.placement_points_array];
-        }
+          let temp_placement_points = [];
+          if (this.cup_points_multiplier !== 1) {
+            let temp_placement = 1;
+            this.placement_points_array.forEach((placement_point) => {
+              temp_placement_points.push({
+                placement: temp_placement,
+                points: placement_point.points * this.cup_points_multiplier,
+              });
+              temp_placement++;
+            });
+          } else {
+            temp_placement_points = [...this.placement_points_array];
+          }
 
-        // Competition object, basic info
-        this.basic_info = {
-          name: this.name,
-          locality: this.locality,
-          cup_name: this.cup.name,
-          cup_participation_points: Number(this.cup_participation_points),
-          cup_placement_points: temp_placement_points,
-          cup_points_multiplier: Number(this.cup_points_multiplier),
-          isTeamCompetition: this.isTeamCompetition === "Ei" ? false : true,
-          start_date: start_date,
-          end_date: end_date,
-          start_time: this.start_time,
-          end_time: this.end_time,
-        };
-        // Enable next tab and open it
-        // Disable current tab's inputs
-        this.disableInputs(true);
-        // Open next tab
-        this.tab = "fishes";
+          // Competition object, basic info
+          this.basic_info = {
+            name: this.name,
+            locality: this.locality,
+            cup_name: this.cup.name,
+            cup_participation_points: Number(this.cup_participation_points),
+            cup_placement_points: temp_placement_points,
+            cup_points_multiplier: Number(this.cup_points_multiplier),
+            isTeamCompetition: this.isTeamCompetition === "Ei" ? false : true,
+            start_date: start_date.toISOString(),
+            end_date: end_date.toISOString(),
+            start_time: this.start_time,
+            end_time: this.end_time,
+          };
+          // Enable next tab and open it
+          // Disable current tab's inputs
+          this.disableInputs(true);
+          // Open next tab
+          this.tab = "fishes";
+        }
       }
     },
     // Check chosen fish species (Kilpailun Kalalajit)
@@ -1403,7 +1367,7 @@ export default {
     // Validate fish specifications from "Pistekertoimet ja alamitat" tab
     checkFishSpecs: function () {
       this.completed_fish_specs = [];
-      let colors = shared.getRandomColors(this.selected.length);
+      let colors = getRandomColors(this.selected.length);
       this.errors = [];
       // Create fish objects
       for (let i = 1; i < this.selected.length + 1; i++) {

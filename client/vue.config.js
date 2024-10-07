@@ -25,7 +25,6 @@ module.exports = {
       //new BundleAnalyzerPlugin(),
       new webpack.IgnorePlugin({
         resourceRegExp: /^\.\/locale$/,
-        contextRegExp: /moment$/,
       }),
     ],
   },

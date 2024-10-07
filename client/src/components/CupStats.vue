@@ -388,7 +388,6 @@ export default {
       });
 
       cup_fishes = Array.from(new Set(cup_fishes));
-      console.log(cup_fishes);
 
       cup_fishes.forEach((name) => {
         let fishes = this.biggest_fishes.filter((f) => f.name === name);
