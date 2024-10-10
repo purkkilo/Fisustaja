@@ -124,7 +124,7 @@ export default {
           ticks: {
             beginAtZero: true,
             // Include a dollar sign in the ticks
-            callback: function (value) {
+            callback(value) {
               let output = value < 1000 ? value : value / 1000 + "kg";
               return output;
             },

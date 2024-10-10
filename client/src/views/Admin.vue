@@ -765,7 +765,7 @@ export default {
       else return "grey";
     },
 
-    fallbackCopyToClipboard: function (text) {
+    fallbackCopyToClipboard(text) {
       var textArea = document.createElement("textarea");
       textArea.value = text;
       // Avoid scrolling to bottom
@@ -785,7 +785,7 @@ export default {
 
       document.body.removeChild(textArea);
     },
-    copyToClipboard: function (text, user) {
+    copyToClipboard(text, user) {
       // If clipboard not there, create create input and copy it from there using doxument.execCommand("copy");
       if (!navigator.clipboard) {
         this.fallbackCopyToClipboard(text);
@@ -845,7 +845,7 @@ export default {
         console.error(err.message);
       }
     },
-    pickCompetition: function (competition) {
+    pickCompetition(competition) {
       // Pick competition for the app to use
       //NOTE Store competition to vuex, redundant?
       this.$store.state.competition = competition;

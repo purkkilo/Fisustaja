@@ -770,15 +770,6 @@ export default {
         this.snackbar = results.snackbar;
       }
     },
-    changePage(route) {
-      if (this.$router.currentRoute.path !== route) {
-        this.$router.push(route);
-        this.drawer = !this.drawer;
-      } else {
-        this.text = "Olet jo tällä sivulla!";
-        this.snackbar = true;
-      }
-    },
     cancelSelection() {
       this.competition = null;
       this.selected_competition = null;

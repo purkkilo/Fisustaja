@@ -964,15 +964,7 @@ export default {
       );
       this.editPoints = !this.editPoints;
     },
-    changePage(route) {
-      if (this.$router.currentRoute.path !== route) {
-        this.$router.push(route);
-        this.drawer = !this.drawer;
-      } else {
-        this.text = "Olet jo tällä sivulla!";
-        this.snackbar = true;
-      }
-    },
+
     async publishCompetition(isPublic) {
       this.competition.isPublic = !isPublic;
       const newvalues = {
@@ -1065,7 +1057,7 @@ export default {
       this.loading = false;
     },
     //filter other characters out for number inputs
-    isNumber: function (evt, isDate) {
+    isNumber(evt, isDate) {
       var charToCheckCode = 46; // --> .
       var charToCheck = ".";
 
@@ -1104,7 +1096,7 @@ export default {
         color: this.generateRandomColor(),
       });
     },
-    deleteFish: function (index, fish_name, confirmed) {
+    deleteFish(index, fish_name, confirmed) {
       if (confirmed) {
         try {
           this.inputs.splice(index, 1);
@@ -1183,7 +1175,7 @@ export default {
     },
     // Generate random colors for the fish chart in Result.vue (since adding fishes is dynamic)
     //TODO look for 8-15 good colors to add/choose from, maybe with color picker next to fish name
-    generateRandomColor: function () {
+    generateRandomColor() {
       var randomColor = "#" + Math.floor(Math.random() * 16777215).toString(16);
       return randomColor;
     },

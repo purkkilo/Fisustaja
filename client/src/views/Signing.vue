@@ -588,17 +588,7 @@ export default {
       this.competition_id = competition["_id"];
       this.loading_site = true;
       this.refreshCompetition(this.competition_id);
-      /*
-      this.timer_refresh = setInterval(
-        () => this.refreshCompetition(competition_id),
-        this.interval
-      );
-      */
     }
-  },
-  beforeDestroy() {
-    // Clear timer
-    //clearInterval(this.timer_refresh);
   },
   methods: {
     // Select row from table, if selected --> unselect
@@ -607,15 +597,6 @@ export default {
       this.selected_id = item._id;
       this.selected_row = row;
       this.searchSelected();
-    },
-    changePage(route) {
-      if (this.$router.currentRoute.path !== route) {
-        this.$router.push(route);
-        this.drawer = !this.drawer;
-      } else {
-        this.text = "Olet jo tällä sivulla!";
-        this.snackbar = true;
-      }
     },
     // Fetch competition from database, and update variables
     async refreshCompetition(competition_id) {
@@ -669,7 +650,7 @@ export default {
       this.refreshing = false;
     },
     // Check if input value is number, and only accept numbers to inputs
-    isNumber: function (evt) {
+    isNumber(evt) {
       evt = evt ? evt : window.event;
       var charCode = evt.which ? evt.which : evt.keyCode;
       if (
@@ -687,7 +668,7 @@ export default {
       }
     },
     // Capitalize all the words in given string. Takes account all the characters like "-", "'" etc.
-    capitalize_words: function (str) {
+    capitalize_words(str) {
       return str.replace(
         /(?:^|\s|['`‘’.-])[^\x60^\x7B-\xDF](?!(\s|$))/g,
         function (txt) {
@@ -696,7 +677,7 @@ export default {
       );
     },
     // Clear all selections and inputs and errors
-    clearInputs: function () {
+    clearInputs() {
       this.boat_number = null;
       this.starting_place = null;
       this.captain_name = null;
@@ -851,11 +832,11 @@ export default {
     },
     // Fetch signee from vuex based on boat number
     // Check client\src\store\index.js for implementation
-    searchBoatNumber: function (boat_number) {
+    searchBoatNumber(boat_number) {
       return this.$store.getters.getSigneeByBoatNumber(parseInt(boat_number));
     },
     // Utility function for showing error
-    showError: function (error) {
+    showError(error) {
       this.errors.push(error);
       location.href = "#";
       location.href = "#app";

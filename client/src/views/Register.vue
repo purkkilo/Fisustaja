@@ -208,7 +208,7 @@ export default {
   },
   methods: {
     // Add error to error array and direct user to it
-    showError: function (error) {
+    showError(error) {
       this.errors.push(error);
       location.href = "#";
       location.href = "#app";

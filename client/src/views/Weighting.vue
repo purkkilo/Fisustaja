@@ -987,15 +987,6 @@ export default {
       }
       return idx;
     },
-    changePage(route) {
-      if (this.$router.currentRoute.path !== route) {
-        this.$router.push(route);
-        this.drawer = !this.drawer;
-      } else {
-        this.text = "Olet jo tällä sivulla!";
-        this.snackbar = true;
-      }
-    },
     // Fetch competition from database, and update variables
     async refreshCompetition(competition_id) {
       this.refreshing = true;
@@ -1053,7 +1044,7 @@ export default {
       }
     },
     // Check if input value is number, and only accept numbers to inputs
-    isNumber: function (evt) {
+    isNumber(evt) {
       evt = evt ? evt : window.event;
       var charCode = evt.which ? evt.which : evt.keyCode;
       if (
@@ -1085,7 +1076,7 @@ export default {
       this.searchSelected();
     },
     // Set input weights for each fish for the signee
-    setInputWeights: function () {
+    setInputWeights() {
       // Loop trhough all the competition fishes
       this.inputs.forEach((input) => {
         if (this.competition_boat.fishes.length) {
@@ -1298,7 +1289,7 @@ export default {
         signee.placement = placement;
       });
     },
-    calculateTeamResults: function () {
+    calculateTeamResults() {
       var team_names = [];
       let team_results = [];
       // Get all the team names
@@ -1342,7 +1333,7 @@ export default {
     },
 
     // Clear all inputs and selections
-    clearInputs: function () {
+    clearInputs() {
       this.text = "Pyyhitään inputit ja valinnat...";
       this.snackbar = true;
       this.inputs.forEach((input) => {

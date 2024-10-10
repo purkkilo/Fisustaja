@@ -71,14 +71,10 @@ export default {
     "search_amounts",
     "headers",
   ],
-  data() {
-    return {};
-  },
   created() {
     this.getColorPoints = getColorPoints;
     this.getColor = getColor;
   },
-  methods: {},
 };
 </script>
 <style scoped></style>

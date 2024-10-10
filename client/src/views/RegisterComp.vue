@@ -1225,7 +1225,7 @@ export default {
       this.loading = false;
     },
     //filter other characters out for number inputs
-    isNumber: function (evt, isDate) {
+    isNumber(evt, isDate) {
       var charToCheckCode = 46; // --> .
       var charToCheck = ".";
 

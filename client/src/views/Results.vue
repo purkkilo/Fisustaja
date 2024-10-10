@@ -735,15 +735,6 @@ export default {
         );
       }
     },
-    changePage(route) {
-      if (this.$router.currentRoute.path !== route) {
-        this.$router.push(route);
-        this.drawer = !this.drawer;
-      } else {
-        this.text = "Olet jo tällä sivulla!";
-        this.snackbar = true;
-      }
-    },
     choosePrints() {
       this.dialog = false;
       if (this.selected_print.length) {

@@ -318,8 +318,10 @@ export default {
     isDark(newValue) {
       //called whenever isDark switch changes
       this.$store.state.isDark = newValue;
-      // Update values to database, NOTE no support for language yet but added here already to support it in the future
-      this.updatePreferences(newValue, "fi");
+      localStorage.setItem(
+        "preferences",
+        JSON.stringify({ isDark: newValue, lang: "fi" })
+      );
     },
   },
   methods: {
@@ -351,12 +353,6 @@ export default {
         this.text = "Olet jo tällä sivulla!";
         this.snackbar = true;
       }
-    },
-    updatePreferences(isDark, lang) {
-      localStorage.setItem(
-        "preferences",
-        JSON.stringify({ isDark: isDark, lang: lang })
-      );
     },
     async logout() {
       await UserService.logoutUser().then(() => {

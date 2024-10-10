@@ -511,7 +511,7 @@
               @sort="
                 (show) => {
                   showUnfinishedCompetitions = show;
-                  sortUnfinished();
+                  setCompetitionData(cup);
                 }
               "
             ></cup-points>
@@ -645,7 +645,6 @@ export default {
       vm.prevRoute = from;
     });
   },
-  created() {},
   mounted() {
     this.competition = localStorage.getItem("competition");
     // IF competition on localstorage
@@ -658,9 +657,8 @@ export default {
     }
   },
   methods: {
-    sortUnfinished() {
-      this.setCompetitionData(this.cup);
-    },
+    formatDateToLocaleDateString: formatDateToLocaleDateString,
+    getMultiplierColor: getMultiplierColor,
     async publishCup(isPublic) {
       this.cup.isPublic = !isPublic;
 
@@ -712,7 +710,7 @@ export default {
         query: { cup: localStorage.getItem("cup") },
       });
     },
-    isNumber: function (evt) {
+    isNumber(evt) {
       evt = evt ? evt : window.event;
       var charCode = evt.which ? evt.which : evt.keyCode;
       if (
@@ -874,7 +872,7 @@ export default {
         competition.key_name = i + 1;
       });
       this.allCompetitions.sort((a, b) => {
-        return a.start_date < b.start_date;
+        return b.start_date < a.start_date;
       });
       this.signees = this.cup.signees.sort(sortBy("boat_number", true));
       this.signees.forEach((signee) => {
@@ -1034,7 +1032,7 @@ export default {
       }
       this.loading = false;
     },
-    pickCompetition: function (competition) {
+    pickCompetition(competition) {
       // Pick competition for the app to use
       //NOTE Store competition to vuex, redundant?
       this.$store.state.competition = competition;
@@ -1174,35 +1172,37 @@ export default {
       });
     },
     changeHeaders(headerSelection) {
-      this.headers = [];
-      this.headers.push({
-        text: "Sijoitus",
-        highlight: false,
-        align: "center",
-        value: "final_placement",
-        isFinished: true,
-      });
-      this.headers.push({
-        text: "Kilp. Nro",
-        align: "center",
-        highlight: false,
-        value: "boat_number",
-        isFinished: true,
-      });
-      this.headers.push({
-        text: "Kippari",
-        align: "center",
-        highlight: false,
-        value: "captain_name",
-        isFinished: true,
-      });
-      this.headers.push({
-        text: "Paikkakunta",
-        align: "center",
-        highlight: false,
-        value: "locality",
-        isFinished: true,
-      });
+      this.headers = [
+        {
+          text: "Sijoitus",
+          highlight: false,
+          align: "center",
+          value: "final_placement",
+          isFinished: true,
+        },
+        {
+          text: "Kilp. Nro",
+          align: "center",
+          highlight: false,
+          value: "boat_number",
+          isFinished: true,
+        },
+        {
+          text: "Kippari",
+          align: "center",
+          highlight: false,
+          value: "captain_name",
+          isFinished: true,
+        },
+        {
+          text: "Paikkakunta",
+          align: "center",
+          highlight: false,
+          value: "locality",
+          isFinished: true,
+        },
+      ];
+
       this.notFinishedCount = 0;
       this.competitions.forEach((competition) => {
         // Keep track if there are unfinished competitions
@@ -1286,8 +1286,6 @@ export default {
       // Return sorted results
       return results;
     },
-    formatDateToLocaleDateString: formatDateToLocaleDateString,
-
     pdfWrapper(table_title) {
       saveCupAsPDF(
         table_title,
@@ -1303,7 +1301,6 @@ export default {
       );
       this.dialog = false;
     },
-    getMultiplierColor: getMultiplierColor,
   },
 };
 </script>

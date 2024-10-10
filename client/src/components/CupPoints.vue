@@ -266,9 +266,7 @@ export default {
     else this.selectedCompetitions = this.competitions.length;
   },
   methods: {
-    getColor(placement) {
-      return getColor(placement);
-    },
+    getColor: getColor,
   },
 };
 </script>

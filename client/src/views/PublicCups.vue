@@ -92,7 +92,7 @@
           @sort="
             (show) => {
               showUnfinishedCompetitions = show;
-              sortUnfinished();
+              setCompetitionData(cup);
             }
           "
         ></cup-points>
@@ -198,21 +198,8 @@ export default {
         this.selected_headers = this.headers_signees;
       }
     },
-    sortUnfinished() {
-      this.setCompetitionData(this.cup);
-    },
     pickCup() {
       this.refreshCup(this.selected_cup);
-    },
-
-    changePage(route) {
-      if (this.$router.currentRoute.path !== route) {
-        this.$router.push(route);
-        this.drawer = !this.drawer;
-      } else {
-        this.text = "Olet jo tällä sivulla!";
-        this.snackbar = true;
-      }
     },
     pdfWrapper(table_title) {
       saveCupAsPDF(
@@ -634,7 +621,7 @@ export default {
         value: "final_cup_points",
       });
     },
-    pickCompetition: function (competition) {
+    pickCompetition(competition) {
       // Pick competition for the app to use
       //NOTE Store competition to vuex, redundant?
       this.$store.state.competition = competition;
@@ -651,11 +638,11 @@ export default {
       this.$router.push({ path: "/overview" });
     },
     // For naming the pdf, replace certain characters
-    replaceAll: function (string, search, replace) {
+    replaceAll(string, search, replace) {
       return string.split(search).join(replace);
     },
     // Capitalize all the words in given string. Takes account all the characters like "-", "'" etc.
-    capitalize_words: function (str) {
+    capitalize_words(str) {
       return str.replace(
         /(?:^|\s|['`‘’.-])[^\x60^\x7B-\xDF](?!(\s|$))/g,
         function (txt) {

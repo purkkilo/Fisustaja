@@ -242,7 +242,6 @@ export default {
       console.log("No competition in localstorage!");
     }
   },
-  mounted() {},
   methods: {
     formatDate: formatDate,
     // fetch/update competition from database

@@ -33,7 +33,6 @@
 "use strict";
 export default {
   name: "Notfound",
-  components: {},
   data() {
     return {
       prevRoute: null,
@@ -49,7 +48,5 @@ export default {
       vm.prevRoute = from;
     });
   },
-
-  methods: {},
 };
 </script>

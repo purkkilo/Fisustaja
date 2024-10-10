@@ -89,14 +89,10 @@ export default {
   name: "TeamComp",
   components: {},
   props: ["team_results", "search_team", "loading", "headers"],
-  data() {
-    return {};
-  },
   created() {
     this.getColorPoints = getColorPoints;
     this.getColor = getColor;
   },
-  methods: {},
 };
 </script>
 <style scoped></style>

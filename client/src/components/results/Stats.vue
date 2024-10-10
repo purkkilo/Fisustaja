@@ -248,13 +248,9 @@ export default {
     "signee_chart_title",
     "signee_chart_data",
   ],
-  data() {
-    return {};
-  },
   created() {
     this.getMultiplierTextColor = getMultiplierTextColor;
   },
-  methods: {},
 };
 </script>
 <style scoped></style>

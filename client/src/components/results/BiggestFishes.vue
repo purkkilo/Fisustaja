@@ -70,14 +70,10 @@ export default {
     "search_fishes",
     "headers",
   ],
-  data() {
-    return {};
-  },
   created() {
     this.getColorPoints = getColorPoints;
     this.getColor = getColor;
   },
-  methods: {},
 };
 </script>
 <style scoped></style>

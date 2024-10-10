@@ -110,14 +110,10 @@ export default {
     "selected_normal",
     "normal_points",
   ],
-  data() {
-    return {};
-  },
   created() {
     this.getColorPoints = getColorPoints;
     this.getColor = getColor;
   },
-  methods: {},
 };
 </script>
 <style scoped></style>
