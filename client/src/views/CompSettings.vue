@@ -1049,7 +1049,6 @@ export default {
           // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
           //TODO make a test for this?
           this.competition = competition;
-          console.log(this.competition);
           // Update to vuex, Assing variables from vuex (see client/store/index.js)
           this.$store.commit("refreshCompetition", competition);
           this.fish_specs = this.$store.getters.getCompetitionFishes;
@@ -1318,6 +1317,16 @@ export default {
             }
             this.competition.cup_points_multiplier = this.cup_points_multiplier;
             this.competition.cup_placement_points = temp_placement_points;
+          } else {
+            delete this.competition.cup_id;
+            delete this.competition.cup_name;
+            delete this.competition.cup_points_multiplier;
+            delete this.competition.cup_placement_points;
+            delete this.competition.cup_participation_points;
+          }
+
+          if (this.isCupCompetition === "Ei") {
+            delete this.competition.teams;
           }
 
           this.competition.name = this.name;

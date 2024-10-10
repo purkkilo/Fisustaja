@@ -930,7 +930,6 @@ export default {
           last_points = signee.total_points;
           last_placement = placement;
         }
-        //For showing cup points, "Pisteet" on v-select
         signee.placement = placement;
       });
       return signees;
@@ -1296,7 +1295,6 @@ export default {
           last_points = signee.total_points;
           last_placement = placement;
         }
-        //For showing cup points, "Pisteet" on v-select
         signee.placement = placement;
       });
     },

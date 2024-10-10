@@ -47,7 +47,6 @@ const ResultSchema = new Schema({
   },
   cup_id: {
     type: String,
-    required: true,
   },
   returned: {
     type: Boolean,

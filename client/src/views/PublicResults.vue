@@ -84,7 +84,9 @@
                           data.item.name + ", " + data.item.locality
                         }}</span></v-list-item-title
                       >
-                      <v-list-item-subtitle class="green--text"
+                      <v-list-item-subtitle
+                        class="green--text"
+                        v-if="data.item.isCupCompetition"
                         ><span>{{
                           data.item.cup_name +
                           " (" +
@@ -597,7 +599,7 @@ export default {
       selected_normal: null,
       fishes_chart: null,
       signees_chart: null,
-      normal_options: ["Pisteet", "Kalat", "Ilmoittautuneet"],
+      normal_options: ["Kalat", "Pisteet", "Ilmoittautuneet"],
       headers: [],
       biggest_fishes_headers: [],
       biggest_amounts_headers: [],
@@ -608,8 +610,20 @@ export default {
         { text: "Varakippari", value: "temp_captain_name" },
         { text: "Paikkakunta", value: "locality" },
         { text: "Tulos", value: "total_points" },
-        { text: "Cup pisteet", value: "cup_points_total" },
       ],
+      cup_headers: [
+        { text: "Sijoitus", value: "placement" },
+        { text: "Kilp. numero", value: "boat_number" },
+        { text: "Kippari", value: "captain_name" },
+        { text: "Varakippari", value: "temp_captain_name" },
+        { text: "Paikkakunta", value: "locality" },
+        { text: "Tulos", value: "total_points" },
+        {
+          text: "Cup (p)",
+          value: "cup_points_total",
+        },
+      ],
+      weight_headers: [],
       signee_headers: [],
       team_headers: [
         { text: "Sijoitus", value: "placement" },
@@ -773,40 +787,32 @@ export default {
     // "Wrapper" to calculate all the results at once
     calculateAll() {
       let results = calculateNormalResults(this.competition, this.signees);
-      this.signees = results.signees;
+      this.signees = results.signees.sort(
+        (a, b) => a.boat_number - b.boat_number
+      );
       this.normal_points = results.normal_points;
       this.normal_weights = results.normal_weights;
+
       this.switchNormalResults();
       this.switchBiggestFishes();
       this.switchBiggestAmounts();
     },
     // Switch table headers and columns based on this.selected_normal value (v-select)
     switchNormalResults() {
-      // Prevent v-select having no value, would show error
-      if (!this.selected_normal) {
-        this.selected_normal = "Pisteet";
-      }
       // If "Pisteet" selected in v-select, update headers and this.results (table data)
+      if (!this.selected_normal) this.selected_normal = "Kalat";
       if (this.selected_normal === "Pisteet") {
-        this.headers = this.normal_headers;
         this.results = this.normal_points;
+        if (this.competition.isCupCompetition) {
+          this.headers = this.cup_headers;
+        } else {
+          this.headers = this.normal_headers;
+        }
       }
       // If "Kalat" selected in v-select, update headers and this.results (table data)
       if (this.selected_normal === "Kalat") {
-        this.headers = [
-          { text: "Sijoitus", value: "placement" },
-          { text: "Kilp. numero", value: "boat_number" },
-          { text: "Kippari", value: "captain_name" },
-        ];
+        this.headers = this.weight_headers;
         this.results = this.normal_weights;
-
-        // Get fish names and add them to headers
-        this.table_fish_names.forEach((name) => {
-          let f = this.competition.fishes.find((cf) => name === cf.name);
-          // IF the name of the fish has been changed, id is needed to get the right results
-          this.headers.push({ text: name, value: String(f.id) });
-        });
-        this.headers.push({ text: "Tulos", value: "total_points" });
       }
       if (this.selected_normal === "Ilmoittautuneet") {
         this.headers = this.signee_headers;
@@ -843,6 +849,30 @@ export default {
           // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
           //TODO make a test for this?
           this.competition = comp;
+          // Else update and calculate from picked competition
+          this.fish_names = []; // Fish names, including "Voittajat"
+          this.fish_amount_names = [];
+          this.table_fish_names = []; // only fish names
+
+          this.fish_names.push("Kaikki");
+          this.fish_amount_names.push("Kaikki");
+          this.weight_headers = [
+            { text: "Sijoitus", value: "placement" },
+            { text: "Kilp. numero", value: "boat_number" },
+            { text: "Kippari", value: "captain_name" },
+          ];
+          this.competition.fishes.forEach((fish) => {
+            this.fish_names.push(fish.name);
+            this.fish_amount_names.push(fish.name);
+            this.table_fish_names.push(fish.name);
+            this.weight_headers.push({
+              text: fish.name,
+              value: String(fish.id),
+            });
+          });
+          this.fish_names.push("Voittajat");
+          this.fish_amount_names.push("Voittajat");
+          this.weight_headers.push({ text: "Tulos", value: "total_points" });
 
           await FishService.getFishes({ competition_id: this.competition._id })
             .then((r) => {
@@ -913,10 +943,6 @@ export default {
             });
         }
 
-        // Else update and calculate from picked competition
-        this.fish_names = []; // Fish names, including "Voittajat"
-        this.fish_amount_names = [];
-        this.table_fish_names = []; // only fish names
         this.selected_print = [];
         this.signee_headers = [
           { text: "Kilp. numero", value: "boat_number" },
@@ -927,10 +953,7 @@ export default {
         ];
         let placement = 1;
         try {
-          this.isTeamCompetition = this.$store.getters.isTeamCompetition;
-          this.selected_normal = "Pisteet";
-
-          if (this.isTeamCompetition) {
+          if (this.competition.isTeamCompetition) {
             this.signee_headers.push({ text: "Tiimi", value: "team" });
             this.team_results = this.competition.team_results;
             let last_points = -1;
@@ -945,18 +968,6 @@ export default {
               placement++;
             });
           }
-
-          let temp_fish_names = this.$store.getters.getCompetitionFishes;
-          this.fish_names.push("Kaikki");
-          this.fish_amount_names.push("Kaikki");
-
-          temp_fish_names.forEach((fish) => {
-            this.fish_names.push(fish.name);
-            this.fish_amount_names.push(fish.name);
-            this.table_fish_names.push(fish.name);
-          });
-          this.fish_names.push("Voittajat");
-          this.fish_amount_names.push("Voittajat");
 
           if (this.fishes_chart && this.signees_chart) {
             this.fishes_chart.destroy();
@@ -976,14 +987,6 @@ export default {
             this.signee_chart_data = charts.signee_chart.data;
           });
 
-          if (this.normal_points.length) {
-            this.results = this.normal_points;
-            this.headers = this.normal_headers;
-          } else {
-            this.results = this.signees;
-            this.headers = this.signee_headers;
-            this.selected_normal = "Ilmoittautuneet";
-          }
           if (reload) {
             this.text = "Tiedot ajantasalla!";
             this.snackbar = true;

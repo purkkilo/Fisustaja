@@ -69,7 +69,7 @@
         </v-list-item>
 
         <v-list-item
-          v-if="isCompetitionSet"
+          v-if="isCompetitionSet && isCupCompetition"
           @click="changePage('/cup-overview')"
         >
           <v-list-item-icon>
@@ -297,6 +297,13 @@ export default {
     },
     isCompetitionSet() {
       if (this.$store.getters.getCompetition) {
+        return true;
+      } else {
+        return false;
+      }
+    },
+    isCupCompetition() {
+      if (this.$store.getters.getCompetition.isCupCompetition) {
         return true;
       } else {
         return false;

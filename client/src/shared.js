@@ -51,9 +51,14 @@ export function addTitle(doc, title, cup, time) {
   doc.setFontSize(24);
   doc.text(10, 10, title, { align: "left" });
   doc.setFontSize(14);
-  doc.text(10, 20, cup, { align: "left" });
-  doc.text(10, 30, time, { align: "left" });
-  doc.line(0, 35, 400, 35);
+  let y = 20;
+  if (cup) {
+    doc.text(10, 20, cup, { align: "left" });
+    y = 30;
+  }
+
+  doc.text(10, y, time, { align: "left" });
+  doc.line(0, y + 5, 400, y + 5);
 }
 
 export function cupDictToArray(results, competitions, type) {
@@ -143,141 +148,141 @@ export function replaceAll(string, search, replace) {
   return string.split(search).join(replace);
 }
 
-    // Convert the charts and the tables to pdf
-    export function saveCupAsPDF(
-      table_title,
-      isLandscape,
-      cup,
-      competitions,
-      showUnfinishedCompetitions,
-      showInfoInPdf,
-      selectedCompetitions,
-      headers,
-      results,
-      signees
-    ) {
-      // Format dates for easier reding
-      // PDF creation
-      let doc = new jsPDF({
-        orientation: isLandscape ? "landscape" : "portrait",
-      });
+// Convert the charts and the tables to pdf
+export function saveCupAsPDF(
+  table_title,
+  isLandscape,
+  cup,
+  competitions,
+  showUnfinishedCompetitions,
+  showInfoInPdf,
+  selectedCompetitions,
+  headers,
+  results,
+  signees
+) {
+  // Format dates for easier reding
+  // PDF creation
+  let doc = new jsPDF({
+    orientation: isLandscape ? "landscape" : "portrait",
+  });
 
-      // Title
-      const title = `${cup.name} (${cup.year})`;
-      let sub_title;
-      let columns = [];
-      let rows;
-      let startY;
-      // Find last competition from the array which has finished
-      let temp_array = [...competitions];
-      var index = temp_array
-        .slice()
-        .reverse()
-        .findIndex((competition) => competition.isFinished === true);
-      var count = temp_array.length - 1;
-      var finalIndex = index >= 0 ? count - index : index;
-      const last_competition = temp_array[finalIndex]
-        ? temp_array[finalIndex]
-        : null;
-      let last_competition_string = "";
-      let start_date = new Date();
-      if (last_competition) {
-        last_competition_string = `${last_competition.name} (${last_competition.locality})`;
-        start_date = last_competition.start_date;
-      }
-      const formatted_date = formatDateToLocaleDateString(start_date);
+  // Title
+  const title = `${cup.name} (${cup.year})`;
+  let sub_title;
+  let columns = [];
+  let rows;
+  let startY;
+  // Find last competition from the array which has finished
+  let temp_array = [...competitions];
+  var index = temp_array
+    .slice()
+    .reverse()
+    .findIndex((competition) => competition.isFinished === true);
+  var count = temp_array.length - 1;
+  var finalIndex = index >= 0 ? count - index : index;
+  const last_competition = temp_array[finalIndex]
+    ? temp_array[finalIndex]
+    : null;
+  let last_competition_string = "";
+  let start_date = new Date();
+  if (last_competition) {
+    last_competition_string = `${last_competition.name} (${last_competition.locality})`;
+    start_date = last_competition.start_date;
+  }
+  const formatted_date = formatDateToLocaleDateString(start_date);
 
-      doc.setFontSize(24);
-      doc.text(13, 15, title, { align: "left" });
-      doc.line(0, 20, 400, 20);
-      doc.setFontSize(14);
-      // Table, based on given table_id, and table title based on competition_type
-      let finished_competitions = 0;
-      let unfinished_competitions = 0;
-      competitions.forEach((competition) => {
-        competition.isFinished
-          ? finished_competitions++
-          : unfinished_competitions++;
-      });
-      if (table_title === "Tulokset") {
-        if (unfinished_competitions === 0 || !showUnfinishedCompetitions) {
-          sub_title = `Tulokset ${formatted_date}`;
-        } else {
-          sub_title = `Tilanne ${formatted_date}, ${last_competition_string}  (${unfinished_competitions} kpl kilpailuja kesken)`;
-        }
-        doc.text(13, 30, sub_title, { align: "left" });
-        if (showInfoInPdf) {
-          doc.text(
-            13,
-            40,
-            table_title +
-              ` (${selectedCompetitions}/${competitions.length} parasta kilpailua otettu huomioon)`,
-            { align: "left" }
-          );
-        }
-
-        headers.forEach((header) => {
-          columns.push(header.text);
-        });
-        rows = cupDictToArray(results, competitions, "cup_total_points");
-        startY = 45;
-      } else {
-        if (unfinished_competitions === 0) {
-          sub_title = `Cuppiin ilmoittautuneet ${cup.year}`;
-        } else {
-          sub_title = `Cupin kilpailijat ${formatted_date} ${last_competition_string}`;
-        }
-        doc.text(13, 30, sub_title, { align: "left" });
-        doc.setFontSize(8);
-
-        columns = ["Kilp. numero", "Kippari", "Varakippari", "Paikkakunta"];
-        signees = cup.signees.sort(sortBy("boat_number", true));
-        rows = cupDictToArray(signees, competitions, "signees");
-        /* eslint-disable no-unused-vars */
-        // Just add some empty rows for new signees
-        if (rows.length) {
-          let last_number = Number(rows[rows.length - 1][0]) + 1;
-          for (let i of range(last_number, last_number + 10)) {
-            rows.push([i, "", "", ""]);
-          }
-        } else {
-          // If no signees, just add 20 empty rows
-          for (let i of range(1, 20)) {
-            rows.push([i, "", "", ""]);
-            doc.text(13, 35, "Cupissa ei vielä ilmoittautuneita", {
-              align: "left",
-            });
-          }
-        }
-        /* eslint-enable no-unused-vars */
-        startY = 37;
-      }
-
-      doc.autoTable({
-        head: [columns],
-        body: rows,
-        styles: {
-          overflow: "linebreak",
-          halign: "justify",
-          fontSize: "8",
-          lineColor: 100,
-          lineWidth: 0.25,
-        },
-        columnStyles: { text: { cellwidth: "auto" } },
-        headStyles: { text: { cellwidth: "wrap" } },
-        theme: "striped",
-        pageBreak: "auto",
-        tableWidth: "auto",
-        startY: startY,
-        margin: { top: 20 },
-      });
-      const fileName = `${cup.year}_${replaceAll("Cup", " ", "")}_${replaceAll(
-        capitalize_words(table_title),
-        " ",
-        ""
-      )}.pdf`;
-      openPdfOnNewTab(doc, fileName);
+  doc.setFontSize(24);
+  doc.text(13, 15, title, { align: "left" });
+  doc.line(0, 20, 400, 20);
+  doc.setFontSize(14);
+  // Table, based on given table_id, and table title based on competition_type
+  let finished_competitions = 0;
+  let unfinished_competitions = 0;
+  competitions.forEach((competition) => {
+    competition.isFinished
+      ? finished_competitions++
+      : unfinished_competitions++;
+  });
+  if (table_title === "Tulokset") {
+    if (unfinished_competitions === 0 || !showUnfinishedCompetitions) {
+      sub_title = `Tulokset ${formatted_date}`;
+    } else {
+      sub_title = `Tilanne ${formatted_date}, ${last_competition_string}  (${unfinished_competitions} kpl kilpailuja kesken)`;
     }
+    doc.text(13, 30, sub_title, { align: "left" });
+    if (showInfoInPdf) {
+      doc.text(
+        13,
+        40,
+        table_title +
+          ` (${selectedCompetitions}/${competitions.length} parasta kilpailua otettu huomioon)`,
+        { align: "left" }
+      );
+    }
+
+    headers.forEach((header) => {
+      columns.push(header.text);
+    });
+    rows = cupDictToArray(results, competitions, "cup_total_points");
+    startY = 45;
+  } else {
+    if (unfinished_competitions === 0) {
+      sub_title = `Cuppiin ilmoittautuneet ${cup.year}`;
+    } else {
+      sub_title = `Cupin kilpailijat ${formatted_date} ${last_competition_string}`;
+    }
+    doc.text(13, 30, sub_title, { align: "left" });
+    doc.setFontSize(8);
+
+    columns = ["Kilp. numero", "Kippari", "Varakippari", "Paikkakunta"];
+    signees = cup.signees.sort(sortBy("boat_number", true));
+    rows = cupDictToArray(signees, competitions, "signees");
+    /* eslint-disable no-unused-vars */
+    // Just add some empty rows for new signees
+    if (rows.length) {
+      let last_number = Number(rows[rows.length - 1][0]) + 1;
+      for (let i of range(last_number, last_number + 10)) {
+        rows.push([i, "", "", ""]);
+      }
+    } else {
+      // If no signees, just add 20 empty rows
+      for (let i of range(1, 20)) {
+        rows.push([i, "", "", ""]);
+        doc.text(13, 35, "Cupissa ei vielä ilmoittautuneita", {
+          align: "left",
+        });
+      }
+    }
+    /* eslint-enable no-unused-vars */
+    startY = 37;
+  }
+
+  doc.autoTable({
+    head: [columns],
+    body: rows,
+    styles: {
+      overflow: "linebreak",
+      halign: "justify",
+      fontSize: "8",
+      lineColor: 100,
+      lineWidth: 0.25,
+    },
+    columnStyles: { text: { cellwidth: "auto" } },
+    headStyles: { text: { cellwidth: "wrap" } },
+    theme: "striped",
+    pageBreak: "auto",
+    tableWidth: "auto",
+    startY: startY,
+    margin: { top: 20 },
+  });
+  const fileName = `${cup.year}_${replaceAll("Cup", " ", "")}_${replaceAll(
+    capitalize_words(table_title),
+    " ",
+    ""
+  )}.pdf`;
+  openPdfOnNewTab(doc, fileName);
+}
 
 // Convert the charts and the tables to pdf
 export function saveAsPDF(
@@ -325,8 +330,10 @@ export function saveAsPDF(
         "Varakippari",
         "Paikkakunta",
         "Tulos (p)",
-        "Cup (p)",
       ];
+      if (competition.isCupCompetition) {
+        columns.push("Cup (p)");
+      }
       // Format so that autotable understands (arrays in arrays);
       normal_points.forEach((b, i) => {
         rows[i] = [
@@ -336,8 +343,10 @@ export function saveAsPDF(
           b.temp_captain_name,
           b.locality,
           b.total_points.toLocaleString(),
-          b.cup_points_total,
         ];
+        if (competition.isCupCompetition) {
+          rows[i].push(b.cup_points_total);
+        }
       });
     }
     if (selected_normal === "Kalat") {
@@ -757,8 +766,10 @@ export function saveAllAsPDF(
       "Varakippari",
       "Paikkakunta",
       "Tulos (p)",
-      "Cup (p)",
     ];
+    if (competition.isCupCompetition) {
+      columns.push("Cup (p)");
+    }
     // Format dictionary/json to format that autotable understands (arrays in arrays);
     rows = [];
     normal_points.forEach((b, i) => {
@@ -769,8 +780,10 @@ export function saveAllAsPDF(
         b.temp_captain_name,
         b.locality,
         b.total_points.toLocaleString(),
-        b.cup_points_total,
       ];
+      if (competition.isCupCompetition) {
+        rows[i].push(b.cup_points_total);
+      }
     });
     doc.text(
       "Normaalikilpailun tulokset (Pisteet)",

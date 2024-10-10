@@ -213,13 +213,22 @@
                   </v-row>
 
                   <v-row>
-                    <v-col md="2" offset-md="2" style="margin-top: 20px">
+                    <v-col
+                      md="2"
+                      offset-md="2"
+                      style="margin-top: 20px"
+                      v-if="cup"
+                    >
                       <v-btn large block color="blue" @click="searchFromCup"
                         ><v-icon>find_replace</v-icon>Hae cupista</v-btn
                       >
                     </v-col>
 
-                    <v-col md="2" offset-md="2" style="margin-top: 20px">
+                    <v-col
+                      md="2"
+                      :offset-md="cup ? 2 : 4"
+                      style="margin-top: 20px"
+                    >
                       <v-btn large block color="indigo" @click="searchSelected"
                         ><v-icon>mdi-magnify</v-icon>Hae
                         ilmoittautuneista</v-btn
@@ -529,7 +538,7 @@ export default {
         { text: "Seura/Paikkakunta", value: "locality" },
       ],
       search: "",
-      cup: [],
+      cup: null,
       teams: [],
       maxlength: 40,
       isTeamCompetition: false,
@@ -644,12 +653,11 @@ export default {
             // Otherwise init with 1
             this.boat_number = 1;
           }
-          // Fetch cup info, to check signee from cups signees array
-          let cup = await CupService.getCups({
-            _id: competition.cup_id,
-          });
-          if (cup) {
-            this.cup = cup;
+
+          if (competition.isCupCompetition) {
+            this.cup = await CupService.getCups({
+              _id: competition.cup_id,
+            });
           }
         } else {
           console.log("No competition found on database...");
@@ -864,33 +872,38 @@ export default {
       comp.signees = this.signees;
       comp.state = "Ilmoittautuminen";
 
-      let index = this.cup.signees.findIndex(
-        (signee) => new_signee.boat_number === signee.boat_number
-      );
-      //If the signee is not found on cup, add it
-      if (index === -1) {
-        this.cup.signees.push({
-          boat_number: new_signee.boat_number,
-          captain_name: new_signee.captain_name,
-          temp_captain_name: new_signee.temp_captain_name,
-          locality: new_signee.locality,
-          competition_id: comp._id,
-        });
-        // Update signees to cup
-        let newvalues = {
-          $set: { signees: this.cup.signees },
-        };
-        await CupService.updateValues(comp.cup_id, newvalues);
-      } else {
-        // First competition for the signee, so update cup values
-        if (this.cup.signees[index].competition_id === comp._id) {
-          this.cup.signees[index] = { ...new_signee, competition_id: comp._id };
-
+      if (comp.isCupCompetition) {
+        let index = this.cup.signees.findIndex(
+          (signee) => new_signee.boat_number === signee.boat_number
+        );
+        //If the signee is not found on cup, add it
+        if (index === -1) {
+          this.cup.signees.push({
+            boat_number: new_signee.boat_number,
+            captain_name: new_signee.captain_name,
+            temp_captain_name: new_signee.temp_captain_name,
+            locality: new_signee.locality,
+            competition_id: comp._id,
+          });
           // Update signees to cup
           let newvalues = {
             $set: { signees: this.cup.signees },
           };
           await CupService.updateValues(comp.cup_id, newvalues);
+        } else {
+          // First competition for the signee, so update cup values
+          if (this.cup.signees[index].competition_id === comp._id) {
+            this.cup.signees[index] = {
+              ...new_signee,
+              competition_id: comp._id,
+            };
+
+            // Update signees to cup
+            let newvalues = {
+              $set: { signees: this.cup.signees },
+            };
+            await CupService.updateValues(comp.cup_id, newvalues);
+          }
         }
       }
 
@@ -1014,7 +1027,7 @@ export default {
       }
     },
     // TODO serverside input validation
-    validateInfo: function () {
+    validateInfo() {
       this.notification = null;
       this.errors = [];
 

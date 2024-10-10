@@ -280,7 +280,7 @@ export default {
       if (multiplier === 1) return "green";
       else return "grey";
     },
-    pickCompetition: function (competition) {
+    pickCompetition(competition) {
       // Pick competition for the app to use
       //NOTE Store competition to vuex, redundant?
       this.$store.state.competition = competition;
@@ -300,7 +300,6 @@ export default {
       // Pick cup for the app to use
       // Set cup._id to localstorage for database queries
       localStorage.setItem("cup", cup._id);
-      console.log(cup);
       // redirect to /cup-overview
       this.$router.push({ path: "/cup-overview" });
     },

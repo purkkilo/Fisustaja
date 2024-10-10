@@ -807,7 +807,7 @@
                     </v-list-item-subtitle>
                   </v-list-item>
                   <v-divider></v-divider>
-                  <v-list-item>
+                  <v-list-item v-if="basic_info.isCupCompetition">
                     <v-list-item-icon>
                       <v-icon color="yellow darken-1">mdi-medal</v-icon>
                     </v-list-item-icon>
@@ -816,8 +816,8 @@
                       <b>{{ cup.name }}</b>
                     </v-list-item-subtitle>
                   </v-list-item>
-                  <v-divider></v-divider>
-                  <v-list-item>
+                  <v-divider v-if="basic_info.isCupCompetition"></v-divider>
+                  <v-list-item v-if="basic_info.isCupCompetition">
                     <v-list-item-icon>
                       <v-icon color="green">mdi-clipboard-check</v-icon>
                     </v-list-item-icon>
@@ -851,8 +851,8 @@
                       </v-list>
                     </v-list-item-content>
                   </v-list-item>
-                  <v-divider></v-divider>
-                  <v-list-item>
+                  <v-divider v-if="basic_info.isCupCompetition"></v-divider>
+                  <v-list-item v-if="basic_info.isCupCompetition">
                     <v-list-item-icon>
                       <v-icon color="green darken-1">mdi-scoreboard</v-icon>
                     </v-list-item-icon>
@@ -863,8 +863,8 @@
                       <b>{{ basic_info.cup_participation_points }}</b>
                     </v-list-item-subtitle>
                   </v-list-item>
-                  <v-divider></v-divider>
-                  <v-list-item>
+                  <v-divider v-if="basic_info.isCupCompetition"></v-divider>
+                  <v-list-item v-if="basic_info.isCupCompetition">
                     <v-list-item-icon>
                       <v-icon>mdi-close-outline</v-icon>
                     </v-list-item-icon>
@@ -875,8 +875,8 @@
                       <b>{{ basic_info.cup_points_multiplier }}</b>
                     </v-list-item-subtitle>
                   </v-list-item>
-                  <v-divider></v-divider>
-                  <v-list-item>
+                  <v-divider v-if="basic_info.isCupCompetition"></v-divider>
+                  <v-list-item v-if="basic_info.isTeamCompetition">
                     <v-list-item-icon>
                       <v-icon>mdi-account-multiple-outline</v-icon>
                     </v-list-item-icon>
@@ -898,7 +898,7 @@
                       >
                     </v-list-item-subtitle>
                   </v-list-item>
-                  <v-divider></v-divider>
+                  <v-divider v-if="basic_info.isTeamCompetition"></v-divider>
                 </v-list>
               </v-col>
             </v-row>
@@ -1403,7 +1403,7 @@ export default {
     },
 
     // Validate fish specifications from "Pistekertoimet ja alamitat" tab
-    checkFishSpecs: function () {
+    checkFishSpecs() {
       this.completed_fish_specs = [];
       let colors = getRandomColors(this.selected.length);
       this.errors = [];
@@ -1488,7 +1488,7 @@ export default {
             <v-tab href="#points">3. Pistekertoimet ja alamitat</v-tab>
             <v-tab href="#summary">4. Yhteenveto</v-tab>
         */
-    disableInputs: function (disable) {
+    disableInputs(disable) {
       if (this.tab === "basic-info") {
         if (disable) {
           this.basic_info_validated = true;
@@ -1533,7 +1533,7 @@ export default {
           fishes: this.completed_fish_specs,
           state: "Rekisteröity",
         };
-
+        console.log(competition);
         try {
           //Submit competition to database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
           await CompetitionService.insertCompetitions([competition]);
