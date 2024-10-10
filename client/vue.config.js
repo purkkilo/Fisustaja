@@ -1,7 +1,7 @@
 const webpack = require("webpack");
-const BundleAnalyzerPlugin =
+/*const BundleAnalyzerPlugin =
   require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
-
+*/
 module.exports = {
   outputDir: "../server/public",
   devServer: {
@@ -22,7 +22,7 @@ module.exports = {
       },
     },
     plugins: [
-      new BundleAnalyzerPlugin(),
+      //new BundleAnalyzerPlugin(),
       new webpack.IgnorePlugin({
         resourceRegExp: /^\.\/locale$/,
       }),

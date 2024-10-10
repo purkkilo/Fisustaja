@@ -979,7 +979,7 @@ export default {
       }
       // If "Pisteet" selected in v-select, update headers and this.results (table data)
       if (this.selected_normal === "Pisteet") {
-        this.results = this.normal_points;
+        this.results = this.normal_points; // sfdsad
         if (this.competition.isCupCompetition) {
           this.headers = this.cup_headers;
         } else {
