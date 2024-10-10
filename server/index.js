@@ -40,7 +40,8 @@ app.use(
 app.use(express.static(path.join(__dirname, "public")));
 
 let url = "";
-let db = "fisustaja";
+//TODO Change to fisustaja after modidying old db
+let db = "fisustaja-dev";
 if (process.env.NODE_ENV === "production") {
   url = process.env.MONGODB_URI;
 } else {
