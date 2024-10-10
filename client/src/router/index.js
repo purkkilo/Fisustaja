@@ -17,7 +17,7 @@ const routes = [
     path: "/login",
     name: "login",
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/Login.vue"),
+      import(/* webpackChunkName: "non-login" */ "../views/Login.vue"),
     meta: {
       requiresAuth: false,
     },
@@ -26,16 +26,17 @@ const routes = [
     path: "/register",
     name: "register",
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/Register.vue"),
+      import(/* webpackChunkName: "admin" */ "../views/Register.vue"),
     meta: {
       requiresAuth: true,
+      is_admin: true,
     },
   },
   {
     path: "/public-results",
     name: "PublicResults",
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/PublicResults.vue"),
+      import(/* webpackChunkName: "non-login" */ "../views/PublicResults.vue"),
     meta: {
       requiresAuth: false,
     },
@@ -44,7 +45,7 @@ const routes = [
     path: "/public-cups",
     name: "PublicCups",
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/PublicCups.vue"),
+      import(/* webpackChunkName: "non-login" */ "../views/PublicCups.vue"),
     meta: {
       requiresAuth: false,
     },
@@ -53,7 +54,7 @@ const routes = [
     path: "/dashboard",
     name: "dashboard",
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/Dashboard.vue"),
+      import(/* webpackChunkName: "login" */ "../views/Dashboard.vue"),
     meta: {
       requiresAuth: true,
     },
@@ -62,7 +63,7 @@ const routes = [
     path: "/admin",
     name: "admin",
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/Admin.vue"),
+      import(/* webpackChunkName: "admin" */ "../views/Admin.vue"),
     meta: {
       requiresAuth: true,
       is_admin: true,
@@ -75,7 +76,7 @@ const routes = [
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/Feedback.vue"),
+      import(/* webpackChunkName: "login" */ "../views/Feedback.vue"),
     meta: {
       requiresAuth: true,
     },
@@ -84,7 +85,7 @@ const routes = [
     path: "/cup-overview",
     name: "CupOverview",
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/CupOverview.vue"),
+      import(/* webpackChunkName: "login" */ "../views/CupOverview.vue"),
     meta: {
       requiresAuth: true,
     },
@@ -93,7 +94,7 @@ const routes = [
     path: "/register-comp",
     name: "RegisterComp",
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/RegisterComp.vue"),
+      import(/* webpackChunkName: "login" */ "../views/RegisterComp.vue"),
     meta: {
       requiresAuth: true,
     },
@@ -102,7 +103,7 @@ const routes = [
     path: "/weighting",
     name: "Weighting",
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/Weighting.vue"),
+      import(/* webpackChunkName: "competition" */ "../views/Weighting.vue"),
     meta: {
       requiresAuth: true,
     },
@@ -111,7 +112,7 @@ const routes = [
     path: "/overview",
     name: "Overview",
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/Overview.vue"),
+      import(/* webpackChunkName: "competition" */ "../views/Overview.vue"),
     meta: {
       requiresAuth: true,
     },
@@ -120,7 +121,7 @@ const routes = [
     path: "/comp-settings",
     name: "CompSettings",
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/CompSettings.vue"),
+      import(/* webpackChunkName: "competition" */ "../views/CompSettings.vue"),
     meta: {
       requiresAuth: true,
     },
@@ -129,7 +130,7 @@ const routes = [
     path: "/results",
     name: "Results",
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/Results.vue"),
+      import(/* webpackChunkName: "competition" */ "../views/Results.vue"),
     meta: {
       requiresAuth: true,
     },
@@ -138,7 +139,7 @@ const routes = [
     path: "/signing",
     name: "Signing",
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/Signing.vue"),
+      import(/* webpackChunkName: "competition" */ "../views/Signing.vue"),
     meta: {
       requiresAuth: true,
     },
@@ -147,7 +148,8 @@ const routes = [
     name: "404",
     path: "/404",
     // route level code-splitting
-    component: () => import("@/views/NotFound.vue"),
+    component: () =>
+      import(/* webpackChunkName: "non-login" */ "../views/NotFound.vue"),
     meta: { title: "Not Found" },
   },
   {
@@ -172,9 +174,9 @@ router.beforeEach((to, from, next) => {
         path: "/login",
       });
     } else {
-      let user = JSON.parse(localStorage.getItem("user"));
+      let isAdmin = JSON.parse(localStorage.getItem("auth"));
       if (to.matched.some((record) => record.meta.is_admin)) {
-        if (user.is_admin == true) {
+        if (isAdmin) {
           next();
         } else {
           router.push({ name: "404" });

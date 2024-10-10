@@ -99,8 +99,10 @@ export default {
     updateSwitch(newValue) {
       //called whenever isDark switch changes
       this.$store.state.isDark = newValue;
-      // Update values to database, NOTE no support for language yet but added here already to support it in the future
-      this.updatePreferences(newValue, "fi");
+      localStorage.setItem(
+        "preferences",
+        JSON.stringify({ isDark: newValue, lang: "fi" })
+      );
     },
   },
   computed: {
@@ -121,11 +123,10 @@ export default {
     },
   },
   methods: {
-    openDrawer: function () {
-      location.href = "#app";
+    openDrawer() {
       this.drawer = !this.drawer;
     },
-    changePage: function (route) {
+    changePage(route) {
       if (this.$router.currentRoute.path !== route) {
         this.$router.push(route);
         this.drawer = !this.drawer;
@@ -133,12 +134,6 @@ export default {
         this.text = "Olet jo tällä sivulla!";
         this.snackbar = true;
       }
-    },
-    updatePreferences(isDark, lang) {
-      localStorage.setItem(
-        "preferences",
-        JSON.stringify({ isDark: isDark, lang: lang })
-      );
     },
   },
 };

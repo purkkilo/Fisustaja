@@ -89,7 +89,7 @@ export default {
           },
         },
         datalabels: {
-          display: function (context) {
+          display (context) {
             let sum = context.dataset.data.reduce(function (a, b) {
               return a + b;
             }, 0);
@@ -97,7 +97,7 @@ export default {
               (context.dataset.data[context.dataIndex] / sum) * 100;
             return percentage > 1; // display labels for data that are larger than 1%
           },
-          formatter: function (value, context) {
+          formatter (value, context) {
             let sum = context.dataset.data.reduce(function (a, b) {
               return a + b;
             }, 0);
@@ -127,26 +127,6 @@ export default {
 
       maintainAspectRatio: false,
       responsive: true,
-      /*
-            plugins: {
-        labels: {
-          // convert grams to kilograms and add "kg" to end of the label
-          render: function (args) {
-            return ((args.value / (1000 + Number.EPSILON)) * 100) / 100 + " kg";
-          },
-          // Other options
-          fontSize: 14,
-          fontStyle: "bold",
-          // draw text shadows under labels, default is false
-          textShadow: true,
-          position: "border",
-          textmargin: 1,
-
-          fontColor: "#000",
-          fontFamily: '"Lucida Console", Monaco, monospace',
-        },
-      },
-      */
     },
   }),
   mounted() {},

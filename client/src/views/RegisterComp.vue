@@ -79,7 +79,7 @@
           <v-container v-if="!loading">
             <v-row>
               <v-col>
-                <p class="white--text">Kilpailun perustiedot</p>
+                <h2 class="white--text">Perustiedot</h2>
                 <p
                   v-if="basic_info_validated"
                   class="yellow lighten-1 black--text"
@@ -118,8 +118,30 @@
                     />
                   </v-col>
                 </v-row>
-
-                <v-row v-if="cup.name" align="center" justify="end">
+                <v-row v-if="cup.name" justify="center" align="center">
+                  <v-col cols="6" class="input-fields">
+                    <span class="white--text">Kuuluuko kilpailu cuppiin?</span>
+                    <v-row justify="center" align="center">
+                      <v-spacer></v-spacer>
+                      <v-col>
+                        <v-radio-group
+                          v-model="isCupCompetition"
+                          row
+                          :disabled="basic_info_validated"
+                        >
+                          <v-radio label="Kyllä" value="Kyllä"></v-radio>
+                          <v-radio label="Ei" value="Ei"></v-radio>
+                        </v-radio-group>
+                      </v-col>
+                      <v-spacer></v-spacer>
+                    </v-row>
+                  </v-col>
+                </v-row>
+                <v-row
+                  v-if="cup.name && isCupCompetition === 'Kyllä'"
+                  align="center"
+                  justify="end"
+                >
                   <v-col cols="6" class="input-fields">
                     <v-subheader class="white--text"> Valitse Cup </v-subheader>
                     <v-select
@@ -151,7 +173,10 @@
                     >
                   </v-col>
                 </v-row>
-                <v-row v-else class="valign-wrapper">
+                <v-row
+                  v-if="!cup.name && isCupCompetition === 'Kyllä'"
+                  class="valign-wrapper"
+                >
                   <v-col md="6" offset-md="2" style="margin-top: 20px">
                     <p
                       class="flow-text"
@@ -173,12 +198,12 @@
                   </v-col>
                 </v-row>
                 <v-row
-                  v-if="cup.name"
+                  v-if="cup.name && isCupCompetition === 'Kyllä'"
                   justify="center"
                   style="margin-top: 20px; margin-bottom: 20px"
                 >
                   <v-col cols="6">
-                    <h2 class="white--text">Kilpailun sijoittumispisteet</h2>
+                    <h2 class="white--text">Sijoittumispisteet</h2>
                     <v-list
                       :dark="$store.getters.getTheme"
                       elevation="20"
@@ -253,7 +278,10 @@
                   </v-col>
                 </v-row>
 
-                <v-row v-if="cup.name" justify="center">
+                <v-row
+                  v-if="cup.name && isCupCompetition === 'Kyllä'"
+                  justify="center"
+                >
                   <v-col cols="6" class="input-fields">
                     <v-text-field
                       :dark="$store.getters.getTheme"
@@ -281,7 +309,10 @@
                   </v-col>
                 </v-row>
 
-                <v-row v-if="cup.name" justify="center">
+                <v-row
+                  v-if="cup.name && isCupCompetition === 'Kyllä'"
+                  justify="center"
+                >
                   <v-col cols="6" class="input-fields">
                     <v-text-field
                       :dark="$store.getters.getTheme"
@@ -316,7 +347,7 @@
                       <v-spacer></v-spacer>
                       <v-col>
                         <v-radio-group
-                          v-model="team_competition"
+                          v-model="isTeamCompetition"
                           row
                           :disabled="basic_info_validated"
                         >
@@ -336,7 +367,7 @@
                   align="center"
                 >
                   <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
-                    <span class="white--text">Kilpailun Aloituspäivä</span>
+                    <h2 class="white--text">Aloituspäivä</h2>
                     <v-date-picker
                       :dark="$store.getters.getTheme"
                       style="height: 480px"
@@ -350,7 +381,7 @@
                     ></v-date-picker>
                   </v-col>
                   <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
-                    <span class="white--text">Kilpailun Lopetuspäivä</span>
+                    <h2 class="white--text">Lopetuspäivä</h2>
                     <v-date-picker
                       :dark="$store.getters.getTheme"
                       style="height: 480px"
@@ -372,7 +403,7 @@
                   align="center"
                 >
                   <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
-                    <span class="white--text">Kilpailun alkamismisaika</span>
+                    <h2 class="white--text">Alkamismisaika</h2>
 
                     <v-time-picker
                       :dark="$store.getters.getTheme"
@@ -385,7 +416,7 @@
                     ></v-time-picker>
                   </v-col>
                   <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
-                    <span class="white--text">Kilpailun loppumisaika</span>
+                    <h2 class="white--text">Loppumisaika</h2>
                     <v-time-picker
                       :dark="$store.getters.getTheme"
                       v-model="end_time"
@@ -670,6 +701,7 @@
                           maxlength="4"
                           value="1"
                           type="number"
+                          min="0"
                           @paste.prevent
                           :counter="4"
                           @keypress="isNumber($event, true)"
@@ -748,6 +780,7 @@
             'inputarea-dark': $store.getters.getTheme,
           }"
           :value="'summary'"
+          v-if="basic_info"
         >
           <v-container v-if="!loading">
             <v-row>
@@ -770,11 +803,11 @@
                     </v-list-item-icon>
                     <v-list-item-title>Kilpailu</v-list-item-title>
                     <v-list-item-subtitle class="blue-text">
-                      <b>{{ name }} ({{ locality }})</b>
+                      <b>{{ basic_info.name }} ({{ basic_info.locality }})</b>
                     </v-list-item-subtitle>
                   </v-list-item>
                   <v-divider></v-divider>
-                  <v-list-item>
+                  <v-list-item v-if="basic_info.isCupCompetition">
                     <v-list-item-icon>
                       <v-icon color="yellow darken-1">mdi-medal</v-icon>
                     </v-list-item-icon>
@@ -783,8 +816,8 @@
                       <b>{{ cup.name }}</b>
                     </v-list-item-subtitle>
                   </v-list-item>
-                  <v-divider></v-divider>
-                  <v-list-item>
+                  <v-divider v-if="basic_info.isCupCompetition"></v-divider>
+                  <v-list-item v-if="basic_info.isCupCompetition">
                     <v-list-item-icon>
                       <v-icon color="green">mdi-clipboard-check</v-icon>
                     </v-list-item-icon>
@@ -818,8 +851,8 @@
                       </v-list>
                     </v-list-item-content>
                   </v-list-item>
-                  <v-divider></v-divider>
-                  <v-list-item>
+                  <v-divider v-if="basic_info.isCupCompetition"></v-divider>
+                  <v-list-item v-if="basic_info.isCupCompetition">
                     <v-list-item-icon>
                       <v-icon color="green darken-1">mdi-scoreboard</v-icon>
                     </v-list-item-icon>
@@ -827,11 +860,11 @@
                       >Kilpailijoiden Cup osallistumispisteet
                     </v-list-item-title>
                     <v-list-item-subtitle class="blue-text">
-                      <b>{{ cup_participation_points }}</b>
+                      <b>{{ basic_info.cup_participation_points }}</b>
                     </v-list-item-subtitle>
                   </v-list-item>
-                  <v-divider></v-divider>
-                  <v-list-item>
+                  <v-divider v-if="basic_info.isCupCompetition"></v-divider>
+                  <v-list-item v-if="basic_info.isCupCompetition">
                     <v-list-item-icon>
                       <v-icon>mdi-close-outline</v-icon>
                     </v-list-item-icon>
@@ -839,17 +872,17 @@
                       >Kilpailun Cup pistekerroin</v-list-item-title
                     >
                     <v-list-item-subtitle class="blue-text">
-                      <b>{{ cup_points_multiplier }}</b>
+                      <b>{{ basic_info.cup_points_multiplier }}</b>
                     </v-list-item-subtitle>
                   </v-list-item>
-                  <v-divider></v-divider>
-                  <v-list-item>
+                  <v-divider v-if="basic_info.isCupCompetition"></v-divider>
+                  <v-list-item v-if="basic_info.isTeamCompetition">
                     <v-list-item-icon>
                       <v-icon>mdi-account-multiple-outline</v-icon>
                     </v-list-item-icon>
                     <v-list-item-title>Onko Tiimikilpailua?</v-list-item-title>
                     <v-list-item-subtitle class="blue-text"
-                      >{{ team_competition }}
+                      >{{ isTeamCompetition }}
                     </v-list-item-subtitle>
                   </v-list-item>
                   <v-divider></v-divider>
@@ -859,19 +892,13 @@
                     </v-list-item-icon>
                     <v-list-item-title>Päivämäärä</v-list-item-title>
                     <v-list-item-subtitle class="blue-text">
-                      <b>{{ start_date }} - {{ end_date }}</b>
+                      <b
+                        >{{ formatDate(basic_info.start_date) }} -
+                        {{ formatDate(basic_info.end_date) }}</b
+                      >
                     </v-list-item-subtitle>
                   </v-list-item>
-                  <v-divider></v-divider>
-                  <v-list-item>
-                    <v-list-item-icon>
-                      <v-icon>mdi-clock-time-four</v-icon>
-                    </v-list-item-icon>
-                    <v-list-item-title>Kilpailuaika</v-list-item-title>
-                    <v-list-item-subtitle class="blue-text">
-                      <b>{{ start_time }} - {{ end_time }}</b>
-                    </v-list-item-subtitle>
-                  </v-list-item>
+                  <v-divider v-if="basic_info.isTeamCompetition"></v-divider>
                 </v-list>
               </v-col>
             </v-row>
@@ -962,11 +989,11 @@
 <script>
 "use strict";
 
-import CompetitionService from "../CompetitionService";
-import CupService from "../CupService";
+import CompetitionService from "../services/CompetitionService";
+import CupService from "../services/CupService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
-import shared from "@/shared";
-import constants from "@/constants";
+import { getRandomColors, validateTime, formatDate } from "../shared";
+import constants from "../data/constants";
 
 export default {
   name: "RegisterComp",
@@ -986,9 +1013,10 @@ export default {
       cup: {},
       cup_participation_points: 5,
       cup_points_multiplier: 1.0,
-      team_competition: "Ei",
-      start_date: new Date().toISOString().substr(0, 10),
-      end_date: new Date().toISOString().substr(0, 10),
+      isTeamCompetition: "Ei",
+      isCupCompetition: "Kyllä",
+      start_date: new Date().toISOString().substring(0, 10),
+      end_date: new Date().toISOString().substring(0, 10),
       start_time: null,
       end_time: null,
       basic_info: null,
@@ -1026,27 +1054,27 @@ export default {
         {
           text: "Ahven",
           color: "blue lighten-1",
-          index: 0,
+          id: 0,
         },
         {
           text: "Hauki",
           color: "red lighten-1",
-          index: 1,
+          id: 1,
         },
         {
           text: "Kuha",
           color: "green lighten-1",
-          index: 2,
+          id: 2,
         },
         {
           text: "Lohi",
           color: "purple lighten-1",
-          index: 3,
+          id: 3,
         },
         {
           text: "Taimen",
           color: "indigo lighten-1",
-          index: 4,
+          id: 4,
         },
       ],
       editing: null,
@@ -1071,9 +1099,6 @@ export default {
   mounted() {
     this.getCups();
 
-    // Focus on top of the page when changing pages
-    location.href = "#";
-    location.href = "#app";
     this.placement_points_array = JSON.parse(
       JSON.stringify(constants.placement_points)
     );
@@ -1092,7 +1117,7 @@ export default {
           v = {
             text: v,
             color: this.colors[colorIndex],
-            index: i,
+            id: i,
           };
 
           this.options.push(v);
@@ -1104,6 +1129,7 @@ export default {
     },
   },
   methods: {
+    formatDate: formatDate,
     addPlacement() {
       const lastItem =
         this.placement_points_array[this.placement_points_array.length - 1];
@@ -1187,7 +1213,7 @@ export default {
           // If localstorage has cup, select it
           if (this.$route.query.cup) {
             this.cup = this.cups.find(
-              (cup) => cup.id === this.$route.query.cup
+              (cup) => cup._id === this.$route.query.cup
             );
           } else {
             this.cup = this.cups[this.cups.length - 1];
@@ -1199,7 +1225,7 @@ export default {
       this.loading = false;
     },
     //filter other characters out for number inputs
-    isNumber: function (evt, isDate) {
+    isNumber(evt, isDate) {
       var charToCheckCode = 46; // --> .
       var charToCheck = ".";
 
@@ -1229,36 +1255,22 @@ export default {
       }
     },
     // Add error to error array and direct user to it
-    showError: function (error) {
+    showError(error) {
       this.errors.push(error);
       location.href = "#";
       location.href = "#app";
     },
     // Check competitions basic information (Perustiedot)
-    checkBasicInformation: function () {
+    checkBasicInformation() {
       this.errors = [];
       this.basic_info_validated = false;
       this.validated = false;
-      // Check if the given dates and times are valid with moment
-      var isDateValid = this.$moment(
-        this.start_date,
-        "YYYY-MM-DD",
-        true
-      ).isValid();
 
-      var isEndDateValid = this.$moment(
-        this.end_date,
-        "YYYY-MM-DD",
-        true
-      ).isValid();
+      var isDateValid = !isNaN(new Date(this.start_date).getTime());
+      var isEndDateValid = !isNaN(new Date(this.end_date).getTime());
 
-      var isStartTimeValid = this.$moment(
-        this.start_time,
-        "HH:mm",
-        true
-      ).isValid();
-
-      var isEndTimeValid = this.$moment(this.end_time, "HH:mm", true).isValid();
+      var isStartTimeValid = validateTime(this.start_time);
+      var isEndTimeValid = validateTime(this.end_time);
 
       // Check other variables
       if (!this.name) {
@@ -1270,8 +1282,11 @@ export default {
         this.showError("Kilpailun paikkakunta puuttuu!");
       }
 
-      if (!this.cup.id) {
+      if (!this.cup._id) {
         this.showError("Cuppia ei valittuna!");
+      }
+      if (!this.placement_points_array.length) {
+        this.showError("Lisää osallistumispisteet kiljailijoille");
       }
       if (!this.cup_participation_points) {
         this.showError("Määritä kilpailun Cup osallistumispisteet!");
@@ -1289,9 +1304,6 @@ export default {
               'Syötä aika muodossa "hh:mm" (esim: 13:00). Syötetty aika oli: ' +
                 this.start_time
             );
-        console.log(this.start_time);
-        console.log(isStartTimeValid);
-        console.log(this.$moment(this.start_time, "H:mm", true).invalidAt());
       }
       if (!this.end_time || !isEndTimeValid) {
         !this.end_time == true
@@ -1302,83 +1314,67 @@ export default {
             );
       }
       if (!this.start_date || !isDateValid) {
-        !this.start_date == true
-          ? this.showError("Päivämäärää ei ole valittu!")
-          : this.showError(
-              'Syötä päivämäärä muodossa "PP.KK.VVVV (esim: 06.02.2020)'
-            );
+        this.showError("Aloitus päivämäärää ei ole valittu!");
       }
       if (!this.end_date || !isEndDateValid) {
-        !this.end_date == true
-          ? this.showError("Päivämäärää ei ole valittu!")
-          : this.showError(
-              'Syötä päivämäärä muodossa "PP.KK.VVVV (esim: 06.02.2020)'
-            );
-      } else {
-        let temp_start = this.$moment(this.start_date).format("DD.MM.YYYY");
-        let temp_end = this.$moment(this.end_date).format("DD.MM.YYYY");
-        // If dates are valid, check that start_date is before end_date
-        let start_date = this.$moment(
-          `${temp_start} ${this.start_time}`,
-          "DD.MM.YYYY HH:mm"
-        );
-        let end_date = this.$moment(
-          `${temp_end} ${this.end_time}`,
-          "DD.MM.YYYY HH:mm"
-        );
+        this.showError("Lopetus päivämäärää ei ole valittu!");
+      }
 
-        if (end_date.isBefore(start_date, "minutes")) {
+      // If all inputs validated
+      if (!this.errors.length) {
+        // If dates are valid, check that start_date is before end_date
+        let start_date = new Date(this.start_date);
+        let start_time = this.start_time.split(":").map(Number);
+        start_date.setHours(start_time[0], start_time[1]);
+
+        let end_date = new Date(this.end_date);
+        let end_time = this.end_time.split(":").map(Number);
+        end_date.setHours(end_time[0], end_time[1]);
+        if (end_date < start_date) {
           this.showError(
             "Kilpailun päättymispäivämäärä ja kellonaika ei voi olla ennen alkamispäivämäärää!"
           );
-        }
-      }
-      // If all inputs validated
-      if (!this.errors.length) {
-        let temp_start = this.$moment(this.start_date).format("DD.MM.YYYY");
-        let temp_end = this.$moment(this.end_date).format("DD.MM.YYYY");
-        let start_date = this.$moment(
-          `${temp_start} ${this.start_time}`,
-          "DD.MM.YYYY HH:mm"
-        );
-        let end_date = this.$moment(
-          `${temp_end} ${this.end_time}`,
-          "DD.MM.YYYY HH:mm"
-        );
-
-        let temp_placement_points = [];
-        if (this.cup_points_multiplier !== 1) {
-          let temp_placement = 1;
-          this.placement_points_array.forEach((placement_point) => {
-            temp_placement_points.push({
-              placement: temp_placement,
-              points: placement_point.points * this.cup_points_multiplier,
-            });
-            temp_placement++;
-          });
         } else {
-          temp_placement_points = [...this.placement_points_array];
-        }
+          let temp_placement_points = [];
+          if (this.cup_points_multiplier !== 1) {
+            let temp_placement = 1;
+            this.placement_points_array.forEach((placement_point) => {
+              temp_placement_points.push({
+                placement: temp_placement,
+                points: placement_point.points * this.cup_points_multiplier,
+              });
+              temp_placement++;
+            });
+          } else {
+            temp_placement_points = [...this.placement_points_array];
+          }
 
-        // Competition object, basic info
-        this.basic_info = {
-          name: this.name,
-          locality: this.locality,
-          cup_name: this.cup.name,
-          cup_participation_points: Number(this.cup_participation_points),
-          cup_placement_points_array: temp_placement_points,
-          cup_points_multiplier: Number(this.cup_points_multiplier),
-          team_competition: this.team_competition === "Ei" ? false : true,
-          start_date: start_date,
-          end_date: end_date,
-          start_time: this.start_time,
-          end_time: this.end_time,
-        };
-        // Enable next tab and open it
-        // Disable current tab's inputs
-        this.disableInputs(true);
-        // Open next tab
-        this.tab = "fishes";
+          this.basic_info = {
+            name: this.name,
+            locality: this.locality,
+            isTeamCompetition: this.isTeamCompetition === "Ei" ? false : true,
+            isCupCompetition: this.isCupCompetition === "Ei" ? false : true,
+            start_date: start_date.toISOString(),
+            end_date: end_date.toISOString(),
+            start_time: this.start_time,
+            end_time: this.end_time,
+          };
+          if (this.isCupCompetition === "Kyllä") {
+            this.basic_info = {
+              ...this.basic_info,
+              cup_name: this.cup.name,
+              cup_participation_points: Number(this.cup_participation_points),
+              cup_placement_points: temp_placement_points,
+              cup_points_multiplier: Number(this.cup_points_multiplier),
+            };
+          }
+
+          // Enable next tab and open it
+          // Disable current tab's inputs
+          this.disableInputs(true);
+          // Open next tab
+          this.tab = "fishes";
+        }
       }
     },
     // Check chosen fish species (Kilpailun Kalalajit)
@@ -1407,14 +1403,15 @@ export default {
     },
 
     // Validate fish specifications from "Pistekertoimet ja alamitat" tab
-    checkFishSpecs: function () {
+    checkFishSpecs() {
       this.completed_fish_specs = [];
-      let colors = shared.getRandomColors(this.selected.length);
+      let colors = getRandomColors(this.selected.length);
       this.errors = [];
       // Create fish objects
       for (let i = 1; i < this.selected.length + 1; i++) {
         // Fish object
         let fish_spec = {
+          id: i - 1,
           name: document
             .getElementById(`fish_${i}_name`)
             .innerHTML.replace(`${i}. `, ""),
@@ -1491,7 +1488,7 @@ export default {
             <v-tab href="#points">3. Pistekertoimet ja alamitat</v-tab>
             <v-tab href="#summary">4. Yhteenveto</v-tab>
         */
-    disableInputs: function (disable) {
+    disableInputs(disable) {
       if (this.tab === "basic-info") {
         if (disable) {
           this.basic_info_validated = true;
@@ -1530,35 +1527,16 @@ export default {
         const user_id = user["_id"];
 
         // Whole competition object
-        let cup_id = this.cup.id;
         const competition = {
-          cup_id: cup_id,
           user_id: user_id,
-          name: this.basic_info.name,
-          locality: this.basic_info.locality,
-          cup_name: this.basic_info.cup_name,
-          cup_placement_points_array:
-            this.basic_info.cup_placement_points_array,
-          cup_participation_points: this.basic_info.cup_participation_points,
-          cup_points_multiplier: this.basic_info.cup_points_multiplier,
-          team_competition: this.basic_info.team_competition,
-          start_date: this.basic_info.start_date,
-          end_date: this.basic_info.end_date,
-          duration: this.basic_info.duration,
-          start_time: this.basic_info.start_time,
-          end_time: this.basic_info.end_time,
+          ...this.basic_info,
           fishes: this.completed_fish_specs,
           state: "Rekisteröity",
-          total_weights: 0,
-          signees: [],
-          results: [],
-          teams: [],
-          biggest_fishes: {},
-          biggest_amounts: {},
         };
+        console.log(competition);
         try {
           //Submit competition to database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
-          await CompetitionService.insertCompetition(competition);
+          await CompetitionService.insertCompetitions([competition]);
           this.text = "Kilpailu lisätty tietokantaan!";
           this.snackbar = true;
           this.$router.push({ path: "/dashboard" });

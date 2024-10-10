@@ -4,6 +4,7 @@
       app
       color="white"
       :dark="isDark"
+      elevate-on-scroll
       v-bind:class="{
         'grey darken-4': $store.getters.getTheme,
         'primary lighten-1': !$store.getters.getTheme,
@@ -19,7 +20,14 @@
           ><v-icon>mdi-home</v-icon></v-btn
         ></router-link
       >
+      <template v-slot:extension v-if="isPublicPage || isCompetitionPage">
+        <sub-navigation
+          :items="bottom_navigation_items"
+          :type="type"
+        ></sub-navigation>
+      </template>
     </v-app-bar>
+
     <v-navigation-drawer
       v-model="drawer"
       app
@@ -61,7 +69,7 @@
         </v-list-item>
 
         <v-list-item
-          v-if="isCompetitionSet"
+          v-if="isCompetitionSet && isCupCompetition"
           @click="changePage('/cup-overview')"
         >
           <v-list-item-icon>
@@ -108,6 +116,7 @@
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
+
     <v-snackbar v-model="snackbar" :timeout="timeout">
       {{ text }}
 
@@ -121,10 +130,13 @@
 </template>
 
 <script>
-import UserService from "../../UserService";
-
+import UserService from "../../services/UserService";
+import SubNavigation from "./SubNavigation.vue";
 export default {
   name: "Header",
+  components: {
+    SubNavigation,
+  },
   data() {
     return {
       user: null,
@@ -136,12 +148,63 @@ export default {
       snackbar: false,
       text: "",
       timeout: 5000,
+      isCompetitionPage: false,
+      isPublicPage: false,
+      competition_pages: [
+        "/overview",
+        "/comp-settings",
+        "/signing",
+        "/weighting",
+        "/results",
+      ],
+      public_pages: ["/public-results", "/public-cups"],
+      bottom_navigation_items: [],
+      type: "public",
+      public_items: [
+        {
+          text: "Kilpailujen tuloksia",
+          icon: "mdi-seal",
+          path: "/public-results",
+        },
+        {
+          text: "Cuppien tuloksia",
+          icon: "mdi-trophy",
+          path: "/public-cups",
+        },
+      ],
+      competition_items: [
+        {
+          text: "Yleisnäkymä",
+          icon: "mdi-magnify-expand",
+          path: "/overview",
+        },
+        {
+          text: "Määritykset",
+          icon: "mdi-tune",
+          path: "/comp-settings",
+        },
+        {
+          text: "Ilmoittautuminen",
+          icon: "mdi-draw",
+          path: "/signing",
+        },
+        {
+          text: "Punnitus",
+          icon: "mdi-dumbbell",
+          path: "/weighting",
+        },
+        {
+          text: "Tulokset",
+          icon: "mdi-seal",
+          path: "/results",
+        },
+      ],
     };
   },
-  async mounted() {
+  created() {
     const user = JSON.parse(localStorage.getItem("user"));
     if (user) {
-      const isAdmin = user["is_admin"];
+      const isAdmin = JSON.parse(localStorage.getItem("auth"));
       this.$store.state.isDark = this.preferences.isDark;
       this.isDark = this.preferences.isDark;
       if (isAdmin) {
@@ -205,6 +268,8 @@ export default {
         ];
       }
     }
+
+    this.setSubNavigation(this.$router.currentRoute);
   },
   computed: {
     isOverviewPage() {
@@ -237,21 +302,50 @@ export default {
         return false;
       }
     },
+    isCupCompetition() {
+      if (this.$store.getters.getCompetition.isCupCompetition) {
+        return true;
+      } else {
+        return false;
+      }
+    },
   },
   watch: {
+    $route(to) {
+      this.setSubNavigation(to);
+    },
+
     isDark(newValue) {
       //called whenever isDark switch changes
       this.$store.state.isDark = newValue;
-      // Update values to database, NOTE no support for language yet but added here already to support it in the future
-      this.updatePreferences(newValue, "fi");
+      localStorage.setItem(
+        "preferences",
+        JSON.stringify({ isDark: newValue, lang: "fi" })
+      );
     },
   },
   methods: {
-    openDrawer: function () {
-      location.href = "#";
+    openDrawer() {
       this.drawer = !this.drawer;
     },
-    changePage: function (route) {
+    setSubNavigation(route) {
+      if (this.competition_pages.includes(route.path)) {
+        this.isCompetitionPage = true;
+        this.bottom_navigation_items = this.competition_items;
+        this.type = "competition";
+      } else {
+        this.isCompetitionPage = false;
+      }
+
+      if (this.public_pages.includes(route.path)) {
+        this.isPublicPage = true;
+        this.bottom_navigation_items = this.public_items;
+        this.type = "public";
+      } else {
+        this.isPublicPage = false;
+      }
+    },
+    changePage(route) {
       if (this.$router.currentRoute.path !== route) {
         this.$router.push(route);
         this.drawer = !this.drawer;
@@ -260,22 +354,18 @@ export default {
         this.snackbar = true;
       }
     },
-    updatePreferences(isDark, lang) {
-      localStorage.setItem(
-        "preferences",
-        JSON.stringify({ isDark: isDark, lang: lang })
-      );
-    },
     async logout() {
       await UserService.logoutUser().then(() => {
         // Do something with the module.
         this.$store.state.logged_in = false;
         this.$store.state.is_admin = false;
-        this.$router.push({ path: "/" });
+        if (this.$router.currentRoute.path !== "/")
+          this.$router.push({ path: "/" });
         this.$store.commit("refreshCompetition", null);
         this.user = null;
         this.text = "Kirjattu ulos onnistuneesti!";
         this.snackbar = true;
+        localStorage.removeItem("user");
       });
     },
   },

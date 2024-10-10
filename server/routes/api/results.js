@@ -1,23 +1,18 @@
 const express = require("express");
 const mongodb = require("mongodb");
 const router = express.Router();
-const Competition = require("../../models/Competition");
+const Result = require("../../models/Result");
 
-// Get competitions with given query
+// Get results with given query
 router.get("/", async (req, res) => {
   let query = req.query;
   try {
-    if (req.query.isPublic) {
-      // Transform string into boolean
-      let boolean = req.query.isPublic === "true" ? true : false;
-      query = { ...query, isPublic: boolean };
-    }
-    // Fetch by competition._id, only find one competition
+    // Fetch by _id
     if (req.query._id) {
       query = { _id: mongodb.ObjectId.createFromHexString(req.query._id) };
-      await Competition.findOne(query)
-        .then((comps) => {
-          res.status(200).send(comps);
+      await Result.findOne(query)
+        .then((results) => {
+          res.status(200).send(results);
         })
         .catch((err) => {
           console.log(err);
@@ -25,9 +20,9 @@ router.get("/", async (req, res) => {
     }
     // Otherwise return an array of all the competitions that match query
     else {
-      await Competition.find(query)
-        .then((comps) => {
-          res.status(200).send(comps);
+      await Result.find(query)
+        .then((results) => {
+          res.status(200).send(results);
         })
         .catch((err) => {
           console.log(err);
@@ -38,36 +33,40 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Add Competition
+// Add results
 router.post("/", async (req, res) => {
   try {
+    let newResult = {};
     if (!req.body.length) {
       res.status(400).send("No results in request");
       return;
     }
+
     if (req.body.length === 1) {
-      let newComp = new Competition(req.body[0]);
-      await newComp.save().catch((err) => {
+      newResult = new Result(req.body[0]);
+      await newResult.save().catch((err) => {
         console.log(err);
       });
     } else {
-      await Competition.insertMany(req.body);
+      await Result.insertMany(req.body).catch((err) => {
+        console.log(err);
+      });
     }
 
     res.status(201).json({
       success: true,
-      msg: "Competitions saved",
+      msg: "Results saved",
+      id: newResult._id,
     });
-    res.status(201).send();
   } catch (error) {
     res.status(400).send(error);
   }
 });
 
-// Update one competition
+// Update one result
 router.put("/:id/update", async (req, res) => {
   try {
-    await Competition.updateOne(
+    await Result.updateOne(
       { _id: mongodb.ObjectId.createFromHexString(req.params.id) },
       req.body
     ).catch((err) => {
@@ -79,11 +78,29 @@ router.put("/:id/update", async (req, res) => {
   }
 });
 
-// Replace one competition
+// Update many results
+router.put("/update-many", async (req, res) => {
+  try {
+    await Result.updateMany(
+      {
+        _id: {
+          $in: req.body.ids,
+        },
+      },
+      req.body.valueToSet
+    ).catch((err) => {
+      console.log(err);
+    });
+    res.status(204).send();
+  } catch (error) {
+    res.status(400).send(error);
+  }
+});
+
+// Replace one result
 router.put("/:id/replace", async (req, res) => {
   try {
-    delete req.body._id;
-    await Competition.replaceOne(
+    await Result.replaceOne(
       { _id: mongodb.ObjectId.createFromHexString(req.params.id) },
       req.body
     ).catch((err) => {
@@ -95,10 +112,10 @@ router.put("/:id/replace", async (req, res) => {
   }
 });
 
-// Delete Competition
+// Delete results
 router.delete("/:id", async (req, res) => {
   try {
-    await Competition.deleteOne({
+    await Result.deleteOne({
       _id: mongodb.ObjectId.createFromHexString(req.params.id),
     }).catch((err) => {
       console.log(err);

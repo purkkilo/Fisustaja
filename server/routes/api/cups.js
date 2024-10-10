@@ -1,120 +1,113 @@
 const express = require("express");
 const mongodb = require("mongodb");
 const router = express.Router();
+const Cup = require("../../models/Cup");
 
 // Get all cups
 router.get("/", async (req, res) => {
-  const cups = await loadCupsCollection();
-  if (cups) {
-    let query = req.query;
-    try {
-      if (req.query.isPublic) {
-        // Transform string into boolean
-        let boolean = req.query.isPublic === "true" ? true : false;
-        query = { isPublic: boolean };
-      }
-      // Fetch by cup._id, only find one cup
-      if (req.query._id) {
-        query = { _id: new mongodb.ObjectId(req.query._id) };
-        res.status(200).send(await cups.findOne(query));
-      }
-      // Otherwise return an array of all the cups that match query
-      else {
-        res.status(200).send(await cups.find(query).toArray());
-      }
-    } catch (error) {
-      res.status(400).send(error);
+  let query = req.query;
+  try {
+    if (req.query.isPublic) {
+      // Transform string into boolean
+      let boolean = req.query.isPublic === "true" ? true : false;
+      query = { ...query, isPublic: boolean };
     }
-  } else {
-    // Connection timed out
-    res.status(408).send();
+    // Fetch by _id
+    if (req.query._id) {
+      query = { _id: mongodb.ObjectId.createFromHexString(req.query._id) };
+      await Cup.findOne(query)
+        .then((cups) => {
+          res.status(200).send(cups);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+    // Otherwise return an array of all the competitions that match query
+    else {
+      await Cup.find(query)
+        .then((cups) => {
+          res.status(200).send(cups);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+  } catch (error) {
+    res.status(400).send(error);
   }
 });
 
 // Add Cup
 router.post("/", async (req, res) => {
-  const cups = await loadCupsCollection();
-  if (cups) {
-    await cups.insertOne({
-      user_id: req.body.user_id,
-      name: req.body.name,
-      year: req.body.year,
-      signees: req.body.signees,
-      isPublic: req.body.isPublic,
-      createdAt: new Date(),
-      meaningful_competitions: req.body.meaningful_competitions,
-    });
+  try {
+    if (!req.body.length) {
+      res.status(400).send("No results in request");
+      return;
+    }
+    if (req.body.length === 1) {
+      let newCup = new Cup(req.body[0]);
+      await newCup.save().catch((err) => {
+        console.log(err);
+      });
+    } else {
+      await Cup.insertMany(req.body).catch((err) => {
+        console.log(err);
+      });
+    }
 
-    res.status(201).send();
-  } else {
-    // Connection timed out
-    res.status(408).send();
+    res.status(201).json({
+      success: true,
+      msg: "Cups saved",
+    });
+  } catch (error) {
+    res.status(400).send(error);
   }
 });
 
 // Update one competition
 router.put("/:id/update", async (req, res) => {
-  const cups = await loadCupsCollection();
-  if (cups) {
-    const newvalues = req.body;
-    await cups.updateOne(
-      { _id: new mongodb.ObjectId(req.params.id) },
-      newvalues
-    );
+  try {
+    await Cup.updateOne(
+      { _id: mongodb.ObjectId.createFromHexString(req.params.id) },
+      req.body
+    ).catch((err) => {
+      console.log(err);
+    });
     res.status(204).send();
-  } else {
-    // Connection timed out
-    res.status(408).send();
+  } catch (error) {
+    res.status(400).send(error);
   }
 });
 
 // Replace one competition
 router.put("/:id/replace", async (req, res) => {
-  const cups = await loadCupsCollection();
-  if (cups) {
-    const cup = req.body;
-    delete cup._id;
-    await cups.replaceOne({ _id: new mongodb.ObjectId(req.params.id) }, cup);
+  try {
+    delete req.body._id;
+    await Cup.replaceOne(
+      { _id: mongodb.ObjectId.createFromHexString(req.params.id) },
+      req.body
+    ).catch((err) => {
+      console.log(err);
+    });
     res.status(204).send();
-  } else {
-    // Connection timed out
-    res.status(408).send();
+  } catch (error) {
+    res.status(400).send(error);
   }
 });
 
 // Delete Cup
 router.delete("/:id", async (req, res) => {
-  const cups = await loadCupsCollection();
-  if (cups) {
-    await cups.deleteOne({ _id: new mongodb.ObjectId(req.params.id) });
+  try {
+    await Cup.deleteOne({
+      _id: mongodb.ObjectId.createFromHexString(req.params.id),
+    }).catch((err) => {
+      console.log(err);
+    });
     res.status(200).send();
-  } else {
-    // Connection timed out
-    res.status(408).send();
+  } catch (error) {
+    res.status(400).send(error);
   }
 });
-
-async function loadCupsCollection() {
-  let mongodb_url = "";
-  let db = "fisustaja";
-
-  if (process.env.NODE_ENV === "production") {
-    mongodb_url = process.env.MONGODB_URI;
-  } else {
-    const config = require("../../config/config.json");
-    mongodb_url = config.mongodb_url;
-    if (config.use_dev_db) {
-      db = "fisustaja-dev";
-    }
-  }
-
-  try {
-    const client = await mongodb.MongoClient.connect(mongodb_url);
-
-    return client.db(db).collection("cups");
-  } catch (err) {
-    console.log(err.message);
-  }
-}
 
 module.exports = router;

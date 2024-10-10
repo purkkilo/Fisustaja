@@ -79,7 +79,6 @@ export default {
   components: {},
   data() {
     return {
-      updateSwitch: this.$store.getters.getTheme,
       items: [
         {
           text: "Cuppien tuloksia",
@@ -100,10 +99,6 @@ export default {
     };
   },
   watch: {
-    updateSwitch(newValue) {
-      //called whenever isDark switch changes
-      this.$store.state.isDark = newValue;
-    },
     "$store.state.logged_in"(newValue) {
       if (newValue) {
         this.links = [
@@ -112,17 +107,12 @@ export default {
             text: "Dashboard",
             icon: "mdi-view-dashboard",
             path: "/dashboard",
-            color: "blue lighten-1",
+            color: "blue darken-4",
           },
         ];
       } else {
         this.links = this.items;
       }
-    },
-  },
-  computed: {
-    getTheme() {
-      return this.$store.getters.getTheme;
     },
   },
   mounted() {
@@ -131,9 +121,7 @@ export default {
     localStorage.removeItem("competition");
     this.$store.commit("refreshCup", null);
     localStorage.removeItem("cup");
-    // Focus on top of the page when changing pages
-    location.href = "#";
-    location.href = "#app";
+
     this.links = this.items;
     if (this.$store.state.logged_in) {
       this.links = [
@@ -147,7 +135,6 @@ export default {
       ];
     }
   },
-  methods: {},
 };
 </script>
 <style scoped>

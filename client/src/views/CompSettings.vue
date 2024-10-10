@@ -2,14 +2,8 @@
   <!-- /comp-settings -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <div>
-    <v-row>
-      <v-col>
-        <CompetitionNavigation></CompetitionNavigation>
-      </v-col>
-      <v-col>
-        <Timedate />
-      </v-col>
-    </v-row>
+    <Timedate />
+
     <v-container
       v-bind:class="{
         mobile: $vuetify.breakpoint.width < 800,
@@ -65,14 +59,12 @@
                       <v-list-item-title>Kilpailu</v-list-item-title>
                       <v-list-item-subtitle class="blue-text">
                         <b
-                          >{{ competition.name }} ({{
-                            competition.locality
-                          }})</b
+                          >{{ competition.name }}, {{ competition.locality }}</b
                         >
                       </v-list-item-subtitle>
                     </v-list-item>
                     <v-divider></v-divider>
-                    <v-list-item>
+                    <v-list-item v-if="competition.isCupCompetition">
                       <v-list-item-icon>
                         <v-icon color="yellow darken-4">mdi-trophy</v-icon>
                       </v-list-item-icon>
@@ -88,7 +80,9 @@
                       </v-list-item-icon>
                       <v-list-item-title>Aloituspäivä</v-list-item-title>
                       <v-list-item-subtitle class="blue-text">
-                        <b>{{ formatted_start_date }}</b>
+                        <b>{{
+                          formatDateToLocaleDateString(competition.start_date)
+                        }}</b>
                       </v-list-item-subtitle>
                     </v-list-item>
                     <v-divider></v-divider>
@@ -98,7 +92,9 @@
                       </v-list-item-icon>
                       <v-list-item-title>Lopetuspäivä</v-list-item-title>
                       <v-list-item-subtitle class="blue-text">
-                        <b>{{ formatted_end_date }}</b>
+                        <b>{{
+                          formatDateToLocaleDateString(competition.end_date)
+                        }}</b>
                       </v-list-item-subtitle>
                     </v-list-item>
                     <v-divider></v-divider>
@@ -115,7 +111,7 @@
                       </v-list-item-subtitle>
                     </v-list-item>
                     <v-divider></v-divider>
-                    <v-list-item>
+                    <v-list-item v-if="competition.isCupCompetition">
                       <v-list-item-icon>
                         <v-icon color="green">mdi-clipboard-check</v-icon>
                       </v-list-item-icon>
@@ -150,7 +146,7 @@
                       </v-list-item-content>
                     </v-list-item>
                     <v-divider></v-divider>
-                    <v-list-item>
+                    <v-list-item v-if="competition.isCupCompetition">
                       <v-list-item-icon>
                         <v-icon color="green darken-2"
                           >mdi-clipboard-check</v-icon
@@ -165,7 +161,7 @@
                       </v-list-item-subtitle>
                     </v-list-item>
                     <v-divider></v-divider>
-                    <v-list-item>
+                    <v-list-item v-if="competition.isCupCompetition">
                       <v-list-item-icon>
                         <v-icon color="green darken-1"
                           >mdi-calculator-variant-outline</v-icon
@@ -384,7 +380,26 @@
                 <ProgressBarQuery />
               </v-col>
             </v-row>
-            <v-row v-if="!cups">
+            <v-row v-if="competition" justify="center" align="center">
+              <v-col cols="6" class="input-fields">
+                <span class="white--text">Kuuluuko kilpailu cuppiin?</span>
+                <v-row justify="center" align="center">
+                  <v-spacer></v-spacer>
+                  <v-col>
+                    <v-radio-group
+                      v-model="isCupCompetition"
+                      row
+                      :disabled="basic_info_validated"
+                    >
+                      <v-radio label="Kyllä" value="Kyllä"></v-radio>
+                      <v-radio label="Ei" value="Ei"></v-radio>
+                    </v-radio-group>
+                  </v-col>
+                  <v-spacer></v-spacer>
+                </v-row>
+              </v-col>
+            </v-row>
+            <v-row v-if="!cups.length">
               <v-col>
                 <h2
                   v-bind:class="{
@@ -395,7 +410,7 @@
                 </h2>
               </v-col>
             </v-row>
-            <v-row v-if="!competition.cup_name">
+            <v-row v-if="!competition.cup_name && competition.isCupCompetition">
               <v-col>
                 <h2
                   v-bind:class="{
@@ -406,7 +421,11 @@
                 </h2>
               </v-col>
             </v-row>
-            <v-row v-else align="center" justify="center">
+            <v-row
+              v-if="competition && isCupCompetition === 'Kyllä'"
+              align="center"
+              justify="center"
+            >
               <v-col cols="6" class="input-fields">
                 <v-subheader class="white--text"> Valitse Cup </v-subheader>
                 <v-select
@@ -424,7 +443,10 @@
                 ></v-select>
               </v-col>
             </v-row>
-            <v-row v-if="competition" justify="center">
+            <v-row
+              v-if="competition && isCupCompetition === 'Kyllä'"
+              justify="center"
+            >
               <v-col cols="6">
                 <h2 class="white--text">Kilpailun sijoittumispisteet</h2>
                 <v-list
@@ -508,7 +530,10 @@
               </v-col>
             </v-row>
 
-            <v-row v-if="competition" justify="center">
+            <v-row
+              v-if="competition && isCupCompetition === 'Kyllä'"
+              justify="center"
+            >
               <v-col cols="6" class="input-fields">
                 <v-text-field
                   :dark="$store.getters.getTheme"
@@ -536,7 +561,10 @@
               </v-col>
             </v-row>
 
-            <v-row v-if="competition" justify="center">
+            <v-row
+              v-if="competition && isCupCompetition === 'Kyllä'"
+              justify="center"
+            >
               <v-col cols="6" class="input-fields">
                 <v-text-field
                   :dark="$store.getters.getTheme"
@@ -572,7 +600,7 @@
                   <v-col>
                     <v-radio-group
                       :dark="$store.getters.getTheme"
-                      v-model="team_competition"
+                      v-model="isTeamCompetition"
                       row
                       :disabled="basic_info_validated"
                     >
@@ -794,20 +822,19 @@
 </template>
 <script>
 "use strict";
-import CompetitionService from "../CompetitionService";
-import CupService from "../CupService";
+import CompetitionService from "../services/CompetitionService";
+import CupService from "../services/CupService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
-import Timedate from "@/components/layout/Timedate";
-import CompetitionNavigation from "../components/layout/CompetitionNavigation.vue";
-import constants from "@/constants";
+import Timedate from "../components/layout/Timedate";
+import constants from "../data/constants";
 import draggable from "vuedraggable";
+import { validateTime, formatDateToLocaleDateString } from "../shared";
 
 export default {
   name: "CompSettings",
   components: {
     ProgressBarQuery,
     Timedate,
-    CompetitionNavigation,
     draggable,
   },
   data() {
@@ -819,14 +846,13 @@ export default {
       competition: null,
       name: null,
       locality: null,
+      isCupCompetition: null,
       cup_participation_points: null,
       cup_points_multiplier: null,
-      team_competition: null,
+      isTeamCompetition: null,
       fish_specs: null,
       start_date: null,
       end_date: null,
-      formatted_start_date: null,
-      formatted_end_date: null,
       start_time: null,
       end_time: null,
       loading: false,
@@ -886,20 +912,19 @@ export default {
   created() {
     if (localStorage.getItem("competition") != null) {
       const competition = JSON.parse(localStorage.getItem("competition"));
-      const competition_id = competition["id"];
+      const competition_id = competition["_id"];
       this.refreshCompetition(competition_id);
     } else {
       console.log("No competition in localstorage!");
     }
-    // Focus on top of the page when changing pages
-    location.href = "#";
-    location.href = "#app";
+
     this.placement_points_array = JSON.parse(
       JSON.stringify(constants.placement_points)
     );
   },
   mounted() {},
   methods: {
+    formatDateToLocaleDateString: formatDateToLocaleDateString,
     addPlacement() {
       const lastItem =
         this.placement_points_array[this.placement_points_array.length - 1];
@@ -939,15 +964,7 @@ export default {
       );
       this.editPoints = !this.editPoints;
     },
-    changePage(route) {
-      if (this.$router.currentRoute.path !== route) {
-        this.$router.push(route);
-        this.drawer = !this.drawer;
-      } else {
-        this.text = "Olet jo tällä sivulla!";
-        this.snackbar = true;
-      }
-    },
+
     async publishCompetition(isPublic) {
       this.competition.isPublic = !isPublic;
       const newvalues = {
@@ -962,7 +979,10 @@ export default {
         : (this.competition.state = "Kesken");
 
       const newvalues = {
-        $set: { isFinished: this.competition.isFinished },
+        $set: {
+          isFinished: this.competition.isFinished,
+          state: this.competition.state,
+        },
       };
       this.updateToDatabase(this.competition, newvalues);
     },
@@ -992,13 +1012,13 @@ export default {
           this.cups.forEach((cup) => {
             cup.select = `${cup.name} (${cup.year})`;
           });
-          let temp_cup = this.cups.find((cup) => {
-            return this.competition.cup_id === cup.id;
-          });
-          if (temp_cup) {
-            this.cup = temp_cup;
-          } else {
-            console.log("No cup found on competition!");
+          if (this.competition.isCupCompetition) {
+            let temp_cup = this.cups.find((cup) => {
+              return this.competition.cup_id === cup._id;
+            });
+            if (temp_cup) {
+              this.cup = temp_cup;
+            }
           }
         }
       } catch (err) {
@@ -1021,20 +1041,9 @@ export default {
           // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
           //TODO make a test for this?
           this.competition = competition;
-          this.placement_points_array = [
-            ...this.competition.cup_placement_points_array,
-          ];
           // Update to vuex, Assing variables from vuex (see client/store/index.js)
           this.$store.commit("refreshCompetition", competition);
           this.fish_specs = this.$store.getters.getCompetitionFishes;
-          let temp_start_date = this.$moment(this.competition.start_date);
-          let temp_end_date = this.$moment(this.competition.end_date);
-          this.formatted_start_date = `${temp_start_date.date()}.${
-            temp_start_date.month() + 1
-          }.${temp_start_date.year()}`;
-          this.formatted_end_date = `${temp_end_date.date()}.${
-            temp_end_date.month() + 1
-          }.${temp_end_date.year()}`;
           this.setOriginalValues();
           if (!this.cups.length) {
             this.getCups();
@@ -1048,7 +1057,7 @@ export default {
       this.loading = false;
     },
     //filter other characters out for number inputs
-    isNumber: function (evt, isDate) {
+    isNumber(evt, isDate) {
       var charToCheckCode = 46; // --> .
       var charToCheck = ".";
 
@@ -1079,7 +1088,7 @@ export default {
     },
     addInput() {
       this.inputs.push({
-        index: this.inputs.length,
+        id: this.inputs.length,
         name: "",
         multiplier: 1,
         minsize: "0",
@@ -1087,7 +1096,7 @@ export default {
         color: this.generateRandomColor(),
       });
     },
-    deleteFish: function (index, fish_name, confirmed) {
+    deleteFish(index, fish_name, confirmed) {
       if (confirmed) {
         try {
           this.inputs.splice(index, 1);
@@ -1124,45 +1133,56 @@ export default {
       this.inputs = [];
       this.fish_specs.forEach((fish, index) => {
         this.inputs.push({
-          index: index,
+          id: index,
           name: fish.name,
           multiplier: parseInt(fish.multiplier),
           minsize: fish.minsize,
           weights: parseInt(fish.weights),
           color: fish.color,
-          original_name: fish.name,
-          original_multiplier: parseInt(fish.multiplier),
-          original_minsize: fish.minsize,
         });
       });
       this.name = this.competition.name;
       this.locality = this.competition.locality;
-      this.cup_participation_points = this.competition.cup_participation_points;
-      this.cup_points_multiplier = this.competition.cup_points_multiplier;
-      this.team_competition = this.competition.team_competition
+
+      this.isTeamCompetition = this.competition.isTeamCompetition
         ? "Kyllä"
         : "Ei";
+      this.isCupCompetition = this.competition.isCupCompetition
+        ? "Kyllä"
+        : "Ei";
+
+      if (this.competition.isCupCompetition) {
+        this.placement_points_array = [
+          ...this.competition.cup_placement_points,
+        ];
+        this.cup_participation_points =
+          this.competition.cup_participation_points;
+        this.cup_points_multiplier = this.competition.cup_points_multiplier;
+      } else {
+        this.placement_points_array = constants.placement_points;
+        this.cup_participation_points = 5;
+        this.cup_points_multiplier = 1;
+      }
       this.start_date = new Date(this.competition.start_date)
         .toISOString()
-        .substr(0, 10);
+        .substring(0, 10);
       this.end_date = new Date(this.competition.end_date)
         .toISOString()
-        .substr(0, 10);
+        .substring(0, 10);
       this.start_time = this.competition.start_time;
       this.end_time = this.competition.end_time;
       this.basic_info_validated = true;
     },
     // Generate random colors for the fish chart in Result.vue (since adding fishes is dynamic)
     //TODO look for 8-15 good colors to add/choose from, maybe with color picker next to fish name
-    generateRandomColor: function () {
+    generateRandomColor() {
       var randomColor = "#" + Math.floor(Math.random() * 16777215).toString(16);
       return randomColor;
     },
     // Add error to error array and direct user to it
-    showError: function (error) {
-      this.errors.push(error);
-      location.href = "#";
+    showError(error) {
       location.href = "#app";
+      this.errors.push(error);
     },
     // Check competitions basic information (Perustiedot)
     checkBasicInformation() {
@@ -1170,26 +1190,12 @@ export default {
       this.errors = [];
       this.basic_info_validated = false;
       this.validated = false;
-      // Check if the given dates and times are valid with moment
-      var isDateValid = this.$moment(
-        this.start_date,
-        "YYYY-MM-DD",
-        true
-      ).isValid();
 
-      var isEndDateValid = this.$moment(
-        this.end_date,
-        "YYYY-MM-DD",
-        true
-      ).isValid();
+      var isDateValid = !isNaN(new Date(this.start_date).getTime());
+      var isEndDateValid = !isNaN(new Date(this.end_date).getTime());
 
-      var isStartTimeValid = this.$moment(
-        this.start_time,
-        "HH:mm",
-        true
-      ).isValid();
-
-      var isEndTimeValid = this.$moment(this.end_time, "HH:mm", true).isValid();
+      var isStartTimeValid = validateTime(this.start_time);
+      var isEndTimeValid = validateTime(this.end_time);
 
       // Check other variables
       if (!this.name) {
@@ -1201,21 +1207,24 @@ export default {
         this.showError("Kilpailun paikkakunta puuttuu!");
       }
 
-      if (!this.cup.id) {
-        this.showError("Cuppia ei valittuna!");
+      if (this.isCupCompetition === "Kyllä") {
+        if (!this.cup._id) {
+          this.showError("Cuppia ei valittuna!");
+        }
+        if (!this.placement_points_array.length) {
+          this.showError("Lisää osallistumispisteet kiljailijoille");
+        }
+        if (!this.cup_participation_points) {
+          this.showError("Määritä kilpailun Cup osallistumispisteet!");
+        }
+        if (!this.cup_points_multiplier) {
+          this.showError("Kilpailun pistekerroin puuttuu!");
+        }
+        if (this.cup_points_multiplier < 0.1) {
+          this.showError("Kilpailun pistekerroin pitää olla vähintään 0.1!");
+        }
       }
-      if (!this.placement_points_array.length) {
-        this.showError("Lisää osallistumispisteet kiljailijoille");
-      }
-      if (!this.cup_participation_points) {
-        this.showError("Määritä kilpailun Cup osallistumispisteet!");
-      }
-      if (!this.cup_points_multiplier) {
-        this.showError("Kilpailun pistekerroin puuttuu!");
-      }
-      if (this.cup_points_multiplier < 0.1) {
-        this.showError("Kilpailun pistekerroin pitää olla vähintään 0.1!");
-      }
+
       if (!this.start_time || !isStartTimeValid) {
         !this.start_time == true
           ? this.showError("Kilpailun alkamisnaika puuttuu!")
@@ -1233,36 +1242,10 @@ export default {
             );
       }
       if (!this.start_date || !isDateValid) {
-        !this.start_date == true
-          ? this.showError("Päivämäärää ei ole valittu!")
-          : this.showError(
-              'Syötä päivämäärä muodossa "PP.KK.VVVV (esim: 06.02.2020)'
-            );
+        this.showError("Aloitus päivämäärää ei ole valittu!");
       }
       if (!this.end_date || !isEndDateValid) {
-        !this.end_date == true
-          ? this.showError("Päivämäärää ei ole valittu!")
-          : this.showError(
-              'Syötä päivämäärä muodossa "PP.KK.VVVV (esim: 06.02.2020)'
-            );
-      } else {
-        let temp_start = this.$moment(this.start_date).format("DD.MM.YYYY");
-        let temp_end = this.$moment(this.end_date).format("DD.MM.YYYY");
-        // If dates are valid, check that start_date is before end_date
-        let start_date = this.$moment(
-          `${temp_start} ${this.start_time}`,
-          "DD.MM.YYYY HH:mm"
-        );
-        let end_date = this.$moment(
-          `${temp_end} ${this.end_time}`,
-          "DD.MM.YYYY HH:mm"
-        );
-
-        if (end_date.isBefore(start_date, "minutes")) {
-          this.showError(
-            "Kilpailun päättymispäivämäärä ja kellonaika ei voi olla ennen alkamispäivämäärää!"
-          );
-        }
+        this.showError("Lopetus päivämäärää ei ole valittu!");
       }
 
       // Check all the inputs
@@ -1286,162 +1269,73 @@ export default {
 
       // If all inputs validated
       if (!this.errors.length) {
-        let temp_start = this.$moment(this.start_date).format("DD.MM.YYYY");
-        let temp_end = this.$moment(this.end_date).format("DD.MM.YYYY");
-        let start_date = this.$moment(
-          `${temp_start} ${this.start_time}`,
-          "DD.MM.YYYY HH:mm"
-        );
-        let end_date = this.$moment(
-          `${temp_end} ${this.end_time}`,
-          "DD.MM.YYYY HH:mm"
-        );
+        // If dates are valid, check that start_date is before end_date
+        let start_date = new Date(this.start_date);
+        let start_time = this.start_time.split(":").map(Number);
+        start_date.setHours(start_time[0], start_time[1]);
 
-        // Basic info, change all the competition variables with values from inputs
-        this.competition.cup_id = this.cup.id;
-        this.competition.cup_name = this.cup.name;
-        this.competition.name = this.name;
-        this.competition.locality = this.locality;
-        this.competition.cup_participation_points = Number(
-          this.cup_participation_points
-        );
-
-        let temp_placement_points = [];
-        // IF the multiplier has been changed, and is different from 1, calculate new points, else just use template array
-        if (
-          this.competition.cup_points_multiplier !==
-            this.cup_points_multiplier &&
-          this.cup_points_multiplier !== 1.0
-        ) {
-          let temp_placement = 1;
-          this.placement_points_array.forEach((placement_point) => {
-            temp_placement_points.push({
-              placement: temp_placement,
-              points: placement_point.points * this.cup_points_multiplier,
-            });
-            temp_placement++;
-          });
+        let end_date = new Date(this.end_date);
+        let end_time = this.end_time.split(":").map(Number);
+        end_date.setHours(end_time[0], end_time[1]);
+        if (end_date < start_date) {
+          this.showError(
+            "Kilpailun päättymispäivämäärä ja kellonaika ei voi olla ennen alkamispäivämäärää!"
+          );
         } else {
-          temp_placement_points = [...this.placement_points_array];
-        }
-        this.competition.cup_points_multiplier = this.cup_points_multiplier;
-        this.competition.cup_placement_points_array = temp_placement_points;
-        this.competition.team_competition =
-          this.team_competition === "Ei" ? false : true;
-        this.competition.start_date = start_date;
-        this.competition.end_date = end_date;
-        this.competition.start_time = this.start_time;
-        this.competition.end_time = this.end_time;
-
-        // Change values for each signee (so that only the changed variables change), if the name/multiplier/minsize has been changed
-        this.competition.signees.forEach((signee) => {
-          if (signee.weights.length) {
-            this.inputs.forEach((input) => {
-              // If one of these input values are changed, handle variable changes to database
-              if (
-                input.name !== input.original_name ||
-                input.multiplier !== input.original_multiplier ||
-                input.minsize !== input.original_minsize
-              ) {
-                let index = signee.weights.findIndex((fish) => {
-                  return fish.name === input.original_name;
+          if (this.isCupCompetition === "Kyllä") {
+            // Basic info, change all the competition variables with values from inputs
+            this.competition.cup_id = this.cup._id;
+            this.competition.cup_name = this.cup.name;
+            this.competition.cup_participation_points = Number(
+              this.cup_participation_points
+            );
+            let temp_placement_points = [];
+            // IF the multiplier has been changed, and is different from 1, calculate new points, else just use template array
+            if (
+              this.competition.cup_points_multiplier !==
+                this.cup_points_multiplier &&
+              this.cup_points_multiplier !== 1.0
+            ) {
+              let temp_placement = 1;
+              this.placement_points_array.forEach((placement_point) => {
+                temp_placement_points.push({
+                  placement: temp_placement,
+                  points: placement_point.points * this.cup_points_multiplier,
                 });
-                if (index > -1) {
-                  // Replace name, and calculate points in case the multiplier has been changed
-                  signee.weights[index].name = input.name;
-                  // Remove old points from total points
-                  signee.total_points -= signee.weights[index].points;
-                  // Calculate new points
-                  signee.weights[index].points =
-                    signee.weights[index].weights * input.multiplier;
-                  // Add new points
-                  signee.total_points += signee.weights[index].points;
-
-                  if (this.competition.normal_weights.length) {
-                    // Update signee values on competition.normal_weights
-                    let weight_index =
-                      this.competition.normal_weights.findIndex((results) => {
-                        return (
-                          parseInt(results.boat_number) ===
-                          parseInt(signee.boat_number)
-                        );
-                      });
-                    if (weight_index > -1) {
-                      let normal_weight =
-                        this.competition.normal_weights[weight_index];
-                      // Assing total_points here too
-                      normal_weight.total_points = signee.total_points;
-                      // If name has changed, replace old key with new one, so only name changes, not the values apart from total_points
-                      if (input.name !== input.original_name) {
-                        delete Object.assign(normal_weight, {
-                          [input.name]: normal_weight[input.original_name],
-                        })[input.original_name];
-                      }
-                    }
-
-                    // Update signee values on competition.normal_points
-                    let point_index = this.competition.normal_points.findIndex(
-                      (results) => {
-                        return (
-                          parseInt(results.boat_number) ===
-                          parseInt(signee.boat_number)
-                        );
-                      }
-                    );
-                    if (point_index > -1) {
-                      let normal_point =
-                        this.competition.normal_points[point_index];
-                      // Assing total_points here too, so no need to calculate points again
-                      normal_point.total_points = signee.total_points;
-                    }
-                  }
-                }
-                // New fish, add to signee.weights
-                else {
-                  signee.weights.push({
-                    name: input.name,
-                    weights: 0,
-                    points: 0,
-                  });
-                }
-              }
-            });
-          }
-        });
-
-        this.inputs.forEach((input) => {
-          // Change only the key names for each fish for biggest_fishes and biggest_amounts, if the name has been changed
-          if (input.name !== input.original_name) {
-            if (this.competition.biggest_fishes[input.original_name]) {
-              delete Object.assign(this.competition.biggest_fishes, {
-                [input.name]:
-                  this.competition.biggest_fishes[input.original_name],
-              })[input.original_name];
+                temp_placement++;
+              });
+            } else {
+              temp_placement_points = [...this.placement_points_array];
             }
-
-            if (this.competition.biggest_amounts[input.original_name]) {
-              delete Object.assign(this.competition.biggest_amounts, {
-                [input.name]:
-                  this.competition.biggest_amounts[input.original_name],
-              })[input.original_name];
-            }
-
-            // Change the original values to current ones, if the variables gets changed in the future
-            input.original_name = input.name;
-            input.original_multiplier = input.multiplier;
-            input.original_minsize = input.minsize;
+            this.competition.cup_points_multiplier = this.cup_points_multiplier;
+            this.competition.cup_placement_points = temp_placement_points;
+          } else {
+            delete this.competition.cup_id;
+            delete this.competition.cup_name;
+            delete this.competition.cup_points_multiplier;
+            delete this.competition.cup_placement_points;
+            delete this.competition.cup_participation_points;
           }
-        });
-        //Update to database, calculate current standings and points in case multipliers have been changed
-        this.competition.fishes = this.fish_specs = this.inputs;
-        let normal_results = this.calculateNormalResults(this.competition);
-        this.competition.normal_points = normal_results.normal_points;
-        this.competition.normal_weights = normal_results.normal_weights;
-        if (this.competition.team_competition) {
-          this.competition.team_results = this.calculateTeamResults();
+
+          if (this.isCupCompetition === "Ei") {
+            delete this.competition.teams;
+          }
+
+          this.competition.name = this.name;
+          this.competition.locality = this.locality;
+          this.competition.isTeamCompetition =
+            this.isTeamCompetition === "Ei" ? false : true;
+          this.competition.isCupCompetition =
+            this.isCupCompetition === "Ei" ? false : true;
+          this.competition.start_date = start_date.toISOString();
+          this.competition.end_date = end_date.toISOString();
+          this.competition.start_time = this.start_time;
+          this.competition.end_time = this.end_time;
+          //Update to database, calculate current standings and points in case multipliers have been changed
+          this.competition.fishes = this.fish_specs = this.inputs;
+          this.updateCompetition(this.competition);
+          this.basic_info_validated = true;
         }
-        this.updateCompetition(this.competition);
-        this.basic_info_validated = true;
       }
     },
     // Update competition to database
@@ -1493,129 +1387,6 @@ export default {
             }
           });
       }
-    },
-    // "Normaalikilpailu" results
-    calculateNormalResults(competition) {
-      const placement_points = competition.cup_placement_points_array;
-      let cup_placement_points = placement_points[0];
-      const cup_participation_points = competition.cup_participation_points;
-      let last_points = -1;
-      let last_placement = -1;
-
-      let placement = 1;
-      let cup_points_total = 0;
-      let normal_points = [];
-      let normal_weights = [];
-      this.signees = competition.signees.filter(
-        (signee) => signee.returned == true
-      );
-      this.signees = this.signees.sort(function compare(a, b) {
-        return parseInt(b.total_points) - parseInt(a.total_points);
-      });
-      // For every signee, calculate their cup points and placing
-      //TODO rework the structure, seems more complex than it should be
-      // Placements and points now saved in every competition to cup_placement_points_array, based on placement fetch from there?
-      this.signees.forEach((signee, index) => {
-        // If competitor has same points as last competitor
-        if (signee.total_points == last_points) {
-          placement = last_placement;
-        }
-        // If no tie, add tied_competitors to placement, to give correct placement to next not tied competitor
-        else {
-          placement = index + 1;
-          last_points = signee.total_points;
-          last_placement = signee.placement;
-        }
-
-        // Find the placement points according to the placement
-        let p = placement_points.find((e) => e.placement === placement);
-        // If placement isn't found (placement > than provided placements), or points = 0 (no points from competition)
-        if (!p || signee.total_points === 0) {
-          cup_placement_points = 0;
-        } else {
-          cup_placement_points = p.points * competition.cup_points_multiplier;
-        }
-        // Calculate total cup points, cup points multiplier only scales the placement points
-        cup_points_total = cup_placement_points + cup_participation_points;
-        //For showing cup points, "Pisteet" on v-select
-        normal_points.push({
-          placement: placement,
-          boat_number: signee.boat_number,
-          captain_name: signee.captain_name,
-          temp_captain_name: signee.temp_captain_name,
-          locality: signee.locality,
-          total_points: signee.total_points.toLocaleString(),
-          cup_placement_points: cup_placement_points,
-          cup_participation_points: cup_participation_points,
-          cup_points_total: cup_points_total,
-        });
-
-        //For showing fish weights, "Kalat" on v-select
-        let temp_dict = {};
-        temp_dict.placement = placement;
-        temp_dict.boat_number = signee.boat_number;
-        temp_dict.captain_name = signee.captain_name;
-
-        // For each fish, get the weight and fish name
-        signee.weights.forEach((weights) => {
-          let name = weights.name;
-          let weight = weights.weights;
-          temp_dict[name] = weight;
-        });
-        temp_dict.total_points = signee.total_points;
-        normal_weights.push(temp_dict);
-        last_points = signee.total_points;
-      });
-
-      let output = {
-        normal_points: normal_points,
-        normal_weights: normal_weights,
-      };
-
-      return output;
-    },
-    calculateTeamResults: function () {
-      let signees = this.competition.signees;
-      var team_names = [];
-      let team_results = [];
-      // Get all the team names
-      signees.forEach((signee) => {
-        if (signee.team !== "-" && signee.team !== null) {
-          team_names.push(signee.team);
-        }
-      });
-      // Only unique ones needed
-      team_names = [...new Set(team_names)];
-
-      // Get all the members of each team and add up their points
-      team_names.forEach((team_name) => {
-        let team = signees.filter((signee) => signee.team == team_name);
-        let team_points = 0;
-        let members = [];
-
-        team.forEach((member) => {
-          members.push(member.captain_name);
-          team_points += member.total_points;
-        });
-
-        // If there aren't 3 members in a team, add "-"'s as members for nicer looking table
-        if (members.length === 1) {
-          members.push("-");
-          members.push("-");
-        }
-        if (members.length === 2) {
-          members.push("-");
-        }
-        team_results.push({
-          name: team_name,
-          captain_name_1: members[0],
-          captain_name_2: members[1],
-          captain_name_3: members[2],
-          points: team_points.toLocaleString(),
-        });
-      });
-
-      return team_results;
     },
   },
 };

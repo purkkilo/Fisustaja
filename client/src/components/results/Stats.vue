@@ -22,12 +22,9 @@
         >
       </v-col>
     </v-row>
-    <v-row v-if="competition">
+    <v-row v-if="competition && normal_points">
       <v-col>
-        <v-row
-          style="min-height: 400px"
-          v-if="competition.normal_points.length"
-        >
+        <v-row style="min-height: 400px" v-if="normal_points.length">
           <v-col sm="12" md="5" offset-md="1" style="margin-bottom: 50px">
             <div v-if="fishes_chart_data">
               <v-hover v-slot="{ hover }">
@@ -104,7 +101,7 @@
                   ><p class="display-1">Kalalajien määritykset</p></v-card-title
                 >
                 <v-list outlined>
-                  <div v-for="(fish, index) in calculated_weights" :key="index">
+                  <div v-for="(fish, index) in competition.fishes" :key="index">
                     <v-list-item>
                       <v-list-item-title>{{ fish.name }}</v-list-item-title>
                       <v-divider vertical></v-divider>
@@ -144,7 +141,9 @@
                         <b
                           >{{
                             Math.round(
-                              (calculated_total / 1000 + Number.EPSILON) * 100
+                              (competition.total_weights / 1000 +
+                                Number.EPSILON) *
+                                100
                             ) / 100
                           }}
                           kg</b
@@ -164,7 +163,7 @@
                 :dark="$store.getters.getTheme"
                 :elevation="hover ? 20 : 5"
                 :class="{ 'on-hover': hover }"
-                style="padding: 20px"
+                style="padding: 20px; margin-bottom: 20px"
               >
                 <v-card-title class="text-center"
                   ><p class="display-1">Yleisiä tilastoja</p></v-card-title
@@ -202,19 +201,15 @@
                     </v-list-item-title>
                     <v-divider vertical></v-divider>
                     <v-list-item-subtitle
-                      v-if="$store.getters.getPointSignees.length"
+                      v-if="hasGottenFishCount"
                       class="green--text"
                     >
                       <b
                         >{{
                           Math.round(
-                            ($store.getters.getPointSignees.length /
-                              competition.signees.length) *
-                              100 *
-                              100
+                            (hasGottenFishCount / signees.length) * 100 * 100
                           ) / 100
-                        }}% ({{ $store.getters.getPointSignees.length }} /
-                        {{ signees.length }})</b
+                        }}% ({{ hasGottenFishCount }} / {{ signees.length }})</b
                       >
                     </v-list-item-subtitle>
                     <v-list-item-subtitle class="red-text" v-else
@@ -231,8 +226,8 @@
   </div>
 </template>
 <script>
-import PieChart from "@/components/PieChart";
-import DoughnutChart from "@/components/DoughnutChart.vue";
+import PieChart from "../PieChart";
+import DoughnutChart from "../DoughnutChart";
 import { getMultiplierTextColor } from "@/shared";
 
 export default {
@@ -243,6 +238,8 @@ export default {
   },
   props: [
     "competition",
+    "normal_points",
+    "hasGottenFishCount",
     "signees",
     "loading",
     "biggest_amounts",
@@ -250,16 +247,10 @@ export default {
     "fishes_chart_data",
     "signee_chart_title",
     "signee_chart_data",
-    "calculated_weights",
-    "calculated_total",
   ],
-  data() {
-    return {};
-  },
   created() {
     this.getMultiplierTextColor = getMultiplierTextColor;
   },
-  methods: {},
 };
 </script>
 <style scoped></style>

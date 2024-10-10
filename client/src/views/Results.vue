@@ -32,14 +32,8 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <v-row>
-      <v-col>
-        <CompetitionNavigation></CompetitionNavigation>
-      </v-col>
-      <v-col>
-        <Timedate />
-      </v-col>
-    </v-row>
+
+    <Timedate />
 
     <v-container
       v-bind:class="{
@@ -167,7 +161,7 @@
                           <v-checkbox
                             v-model="selected_print"
                             :disabled="
-                              !biggest_amounts_results.length &&
+                              !biggest_fishes_results.length &&
                               !biggest_amounts_results.length
                             "
                             label="Suurimmat yksittäiset kalat / kalasaaliit (Voittajat eritelty)"
@@ -250,13 +244,13 @@
             </v-col>
           </v-row>
           <stats
-            v-else
+            v-if="!loading && competition"
             :competition="competition"
+            :normal_points="normal_points"
+            :hasGottenFishCount="hasGottenFishCount"
             :signees="signees"
             :loading="loading"
             :biggest_amounts="biggest_amounts_results"
-            :calculated_weights="calculated_fish_weights"
-            :calculated_total="calculated_total_weights"
             :fishes_chart_title="fishes_chart_title"
             :fishes_chart_data="fishes_chart_data"
             :signee_chart_title="signee_chart_title"
@@ -360,7 +354,7 @@
                 :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
                 label="Valitse näytettävät tulokset"
                 outlined
-                @input="calculateBiggestFishes"
+                @input="switchBiggestFishes"
                 v-model="selected_biggest_fish"
                 :items="fish_names"
               />
@@ -386,7 +380,6 @@
             :fish_names="fish_names"
             :loading="loading"
             :headers="biggest_fishes_headers"
-            :results_found_fishes="results_found_fishes"
             :search_fishes="search_fishes"
             :selected_biggest_fish="selected_biggest_fish"
           ></biggest-fishes>
@@ -407,7 +400,7 @@
                 :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
                 label="Valitse näytettävät tulokset"
                 outlined
-                @input="calculateBiggestAmounts"
+                @input="switchBiggestAmounts"
                 v-model="selected_biggest_amount"
                 :items="fish_amount_names"
               />
@@ -433,7 +426,6 @@
             :fish_names="fish_names"
             :headers="biggest_amounts_headers"
             :loading="loading"
-            :results_found_amounts="results_found_amounts"
             :search_amounts="search_amounts"
             :selected_biggest_amount="selected_biggest_amount"
           ></biggest-amounts>
@@ -521,23 +513,30 @@
 </template>
 <script>
 "use strict";
-import CompetitionService from "@/CompetitionService";
-import Timedate from "@/components/layout/Timedate";
-import CompetitionNavigation from "@/components/layout/CompetitionNavigation.vue";
-import ProgressBarQuery from "@/components/layout/ProgressBarQuery";
+import CompetitionService from "../services/CompetitionService";
+import ResultService from "../services/ResultService";
+import FishService from "../services/FishService";
+import Timedate from "../components/layout/Timedate";
 import Stats from "../components/results/Stats.vue";
 import TeamComp from "../components/results/TeamComp.vue";
 import NormalComp from "../components/results/NormalComp.vue";
 import BiggestFishes from "../components/results/BiggestFishes.vue";
 import BiggestAmounts from "../components/results/BiggestAmounts.vue";
-import shared from "@/shared";
+import {
+  calculateNormalResults,
+  calculateBiggestFishes,
+  calculateBiggestAmounts,
+  initChartData,
+  saveAllAsPDF,
+  saveAsPDF,
+  saveStatsAsPDF,
+} from "../shared";
 
 export default {
   name: "Results",
   components: {
     Timedate,
-    ProgressBarQuery,
-    CompetitionNavigation,
+    ProgressBarQuery: () => require("../components/layout/ProgressBarQuery"),
     Stats,
     TeamComp,
     NormalComp,
@@ -566,18 +565,14 @@ export default {
       biggest_amounts: {},
       biggest_amounts_results: [],
       selected_biggest_amount: null,
-      results_found_fishes: "",
-      results_found_amounts: "",
       competition: null,
       isTeamCompetition: false,
-      calculated_total_weights: null,
-      calculated_fish_weights: null,
       selected_normal: null,
       fishes_chart: null,
       signees_chart: null,
       timer_refresh: null,
       interval: 60000,
-      normal_options: ["Pisteet", "Kalat", "Ilmoittautuneet"],
+      normal_options: ["Kalat", "Pisteet", "Ilmoittautuneet"],
       headers: [],
       biggest_fishes_headers: [],
       biggest_amounts_headers: [],
@@ -587,9 +582,21 @@ export default {
         { text: "Kippari", value: "captain_name" },
         { text: "Varakippari", value: "temp_captain_name" },
         { text: "Paikkakunta", value: "locality" },
-        { text: "Tulos", value: "total_points" },
-        { text: "Cup pisteet", value: "cup_points_total" },
+        { text: "Tulos (p)", value: "total_points" },
       ],
+      cup_headers: [
+        { text: "Sijoitus", value: "placement" },
+        { text: "Kilp. numero", value: "boat_number" },
+        { text: "Kippari", value: "captain_name" },
+        { text: "Varakippari", value: "temp_captain_name" },
+        { text: "Paikkakunta", value: "locality" },
+        { text: "Tulos", value: "total_points" },
+        {
+          text: "Cup (p)",
+          value: "cup_points_total",
+        },
+      ],
+      weight_headers: [],
       signee_headers: [],
       team_headers: [
         { text: "Sijoitus", value: "placement" },
@@ -598,25 +605,6 @@ export default {
         { text: "Jäsen 2", value: "captain_name_2" },
         { text: "Jäsen 3", value: "captain_name_3" },
         { text: "Pisteet", value: "points" },
-      ],
-      winner_headers: [
-        { text: "Kalalaji", value: "name" },
-        { text: "Kilp. numero", value: "boat_number" },
-        { text: "Kippari", value: "captain_name" },
-        { text: "Paino", value: "weight" },
-      ],
-      all_fishes_headers: [
-        { text: "Sijoitus", value: "placement" },
-        { text: "Kilp. numero", value: "boat_number" },
-        { text: "Kippari", value: "captain_name" },
-        { text: "Kala", value: "fish" },
-        { text: "Paino", value: "weight" },
-      ],
-      biggest_headers: [
-        { text: "Sijoitus", value: "placement" },
-        { text: "Kilp. numero", value: "boat_number" },
-        { text: "Kippari", value: "captain_name" },
-        { text: "Paino", value: "weight" },
       ],
       search: "",
       search_team: "",
@@ -662,6 +650,7 @@ export default {
       pdf: null,
       pdfDialog: false,
       isLandscape: false,
+      hasGottenFishCount: 0,
     };
   },
   watch: {
@@ -669,7 +658,7 @@ export default {
       //called whenever switch1 changes
       if (newValue) {
         const competition = JSON.parse(localStorage.getItem("competition"));
-        const competition_id = competition["id"];
+        const competition_id = competition["_id"];
         this.timer_refresh = setInterval(
           () => this.refreshCompetition(competition_id),
           this.interval
@@ -684,32 +673,15 @@ export default {
     },
   },
   created() {
-    this.saveAllAsPDF = shared.saveAllAsPDF;
-    this.saveStatsAsPDF = shared.saveStatsAsPDF;
-    this.saveAsPDF = shared.saveAsPDF;
-    this.dictToArray = shared.dictToArray;
-    this.capitalize_words = shared.capitalize_words;
-    this.replaceAll = shared.replaceAll;
-    this.formatDate = shared.formatDate;
-    this.range = shared.range;
-    this.getColorPoints = shared.getColorPoints;
-    this.getColor = shared.getColor;
-    this.initChartData = shared.initChartData;
-    this.sortDict = shared.sortDict;
-  },
-  mounted() {
     /* eslint-disable no-unused-vars */
     if (localStorage.getItem("competition") != null) {
       const competition = JSON.parse(localStorage.getItem("competition"));
-      const competition_id = competition["id"];
+      const competition_id = competition["_id"];
       //Update competition every minute
       this.refreshCompetition(competition_id);
     }
-
-    // Focus on top of the page when changing pages
-    location.href = "#";
-    location.href = "#app";
   },
+  mounted() {},
   beforeDestroy() {
     // Clear timer
     clearInterval(this.timer_refresh);
@@ -721,57 +693,72 @@ export default {
       else return "red";
     },
     pdfWrapper() {
+      let comp_type = "";
+
       if (this.pdf === "Tilastoja") {
-        this.saveStatsAsPDF(
+        saveStatsAsPDF(
           this.pdf,
-          this.isLandscape ? "landscape" : "portrait"
+          this.isLandscape ? "landscape" : "portrait",
+          this.competition,
+          this.signees,
+          this.hasGottenFishCount
         );
-      }
-      if (this.pdf === "#normal-table") {
-        this.saveAsPDF(
-          `Normaalikilpailun tulokset (${this.selected_normal})`,
-          this.pdf,
-          this.isLandscape ? "landscape" : "portrait"
-        );
-      }
-      if (this.pdf === "#team-table") {
-        this.saveAsPDF(
-          `Tiimikilpailun tulokset`,
-          "#team-table",
-          this.isLandscape ? "landscape" : "portrait"
-        );
-      }
-      if (this.pdf === "#biggest-fishes-table") {
-        this.saveAsPDF(
-          `Suurimmat kalat (${this.selected_biggest_fish})`,
-          "#biggest-fishes-table",
-          this.isLandscape ? "landscape" : "portrait"
-        );
-      }
-      if (this.pdf === "#biggest-amounts-table") {
-        this.saveAsPDF(
-          `Suurimmat kalat (${this.selected_biggest_amount})`,
-          "#biggest-amounts-table",
-          this.isLandscape ? "landscape" : "portrait"
-        );
-      }
-    },
-    changePage(route) {
-      if (this.$router.currentRoute.path !== route) {
-        this.$router.push(route);
-        this.drawer = !this.drawer;
       } else {
-        this.text = "Olet jo tällä sivulla!";
-        this.snackbar = true;
+        if (this.pdf === "#normal-table") {
+          comp_type = `Normaalikilpailun tulokset (${this.selected_normal})`;
+        }
+        if (this.pdf === "#team-table") {
+          comp_type = `Tiimikilpailun tulokset`;
+        }
+        if (this.pdf === "#biggest-fishes-table") {
+          comp_type = `Suurimmat kalat (${this.selected_biggest_fish})`;
+        }
+        if (this.pdf === "#biggest-amounts-table") {
+          comp_type = `Suurimmat kalat (${this.selected_biggest_amount})`;
+        }
+
+        saveAsPDF(
+          comp_type,
+          this.pdf,
+          this.isLandscape ? "landscape" : "portrait",
+          this.competition,
+          this.signees,
+          this.selected_normal,
+          this.selected_biggest_fish,
+          this.selected_biggest_amount,
+          this.normal_points,
+          this.normal_weights,
+          this.biggest_fishes_results,
+          this.biggest_amounts_results,
+          this.team_results,
+          this.table_fish_names
+        );
       }
     },
     choosePrints() {
       this.dialog = false;
       if (this.selected_print.length) {
-        this.saveAllAsPDF(
+        let results = saveAllAsPDF(
           this.tab,
-          this.isLandscape ? "landscape" : "portrait"
+          this.isLandscape ? "landscape" : "portrait",
+          this.text,
+          this.snackbar,
+          this.selected_biggest_fish,
+          this.selected_biggest_amount,
+          this.selected_print,
+          this.competition,
+          this.signees,
+          this.hasGottenFishCount,
+          this.biggest_fishes,
+          this.biggest_amounts,
+          this.normal_points,
+          this.normal_weights,
+          this.team_results,
+          this.table_fish_names
         );
+        this.tab = results.tab;
+        this.text = results.text;
+        this.snackbar = results.snackbar;
       }
     },
     // Fetch competition from database, and update all the arrays
@@ -797,14 +784,90 @@ export default {
         if (competition) {
           // Pick first result (the array should only have one, since id's are unique)
           this.competition = competition;
+          // Else update and calculate from picked competition
+          this.fish_names = []; // Fish names, including "Voittajat"
+          this.fish_amount_names = [];
+          this.table_fish_names = []; // only fish names
+
+          this.fish_names.push("Kaikki");
+          this.fish_amount_names.push("Kaikki");
+          this.weight_headers = [
+            { text: "Sijoitus", value: "placement" },
+            { text: "Kilp. numero", value: "boat_number" },
+            { text: "Kippari", value: "captain_name" },
+          ];
+          this.competition.fishes.forEach((fish) => {
+            this.fish_names.push(fish.name);
+            this.fish_amount_names.push(fish.name);
+            this.table_fish_names.push(fish.name);
+            this.weight_headers.push({
+              text: fish.name,
+              value: String(fish.id),
+            });
+          });
+          this.fish_names.push("Voittajat");
+          this.fish_amount_names.push("Voittajat");
+          this.weight_headers.push({ text: "Tulos", value: "total_points" });
+          // Get results === signees
+          await ResultService.getResults({ competition_id: competition._id })
+            .then((r) => {
+              this.competition.total_weights = 0;
+              this.hasGottenFishCount = 0;
+              r.forEach((s) => {
+                s.total_points = 0;
+                if (s.fishes.length) {
+                  this.hasGottenFishCount++;
+
+                  s.fishes.forEach((f) => {
+                    let fish = this.competition.fishes.find(
+                      (cf) => cf.id === f.id
+                    );
+                    s.total_points += f.weights * fish.multiplier;
+                    this.competition.total_weights += f.weights;
+                    fish.weights += f.weights;
+                    if (this.biggest_amounts[fish.name]) {
+                      this.biggest_amounts[fish.name].push({
+                        boat_number: s.boat_number,
+                        captain_name: s.captain_name,
+                        weight: f.weights,
+                      });
+                    } else {
+                      this.biggest_amounts[fish.name] = [
+                        {
+                          boat_number: s.boat_number,
+                          captain_name: s.captain_name,
+                          weight: f.weights,
+                        },
+                      ];
+                    }
+                  });
+                } else {
+                  // Fix for pdf
+                  this.competition.fishes.forEach((cf) => {
+                    s.fishes.push({ id: cf.id, name: cf.name, weights: "-" });
+                  });
+                }
+              });
+              this.signees = r;
+            })
+            .catch((e) => {
+              console.log(e);
+            });
+
+          await FishService.getFishes({ competition_id: competition._id })
+            .then((r) => {
+              this.biggest_fishes = r;
+            })
+            .catch((e) => {
+              console.log(e);
+            });
+
+          this.calculateAll();
+
           // Update to vuex, Assing variables and arrays from vuex (see client/store/index.js)
           this.$store.commit("refreshCompetition", this.competition);
-          this.isTeamCompetition = this.$store.getters.isTeamCompetition;
-          this.signees = this.$store.getters.getResultSignees;
-          this.selected_normal = "Pisteet";
-          this.normal_points = this.competition.normal_points;
-          this.normal_weights = this.competition.normal_weights;
-          if (this.isTeamCompetition) {
+
+          if (this.competition.isTeamCompetition) {
             this.signee_headers.push({ text: "Tiimi", value: "team" });
             this.team_results = this.competition.team_results;
             let last_points = -1;
@@ -819,32 +882,17 @@ export default {
               placement++;
             });
           }
-          this.biggest_fishes = this.$store.getters.getBiggestFishes;
-          this.biggest_amounts = this.$store.getters.getBiggestAmounts;
-          this.calculated_total_weights =
-            this.$store.getters.getCompetitionTotalWeights;
-          this.calculated_fish_weights = this.competition.fishes;
 
-          let temp_fish_names = this.$store.getters.getCompetitionFishes;
-          this.fish_names.push("Voittajat");
-          this.fish_amount_names.push("Voittajat");
-          this.fish_names.push("Kaikki");
-          this.fish_amount_names.push("Kaikki");
-          temp_fish_names.forEach((fish) => {
-            this.fish_names.push(fish.name);
-            this.fish_amount_names.push(fish.name);
-            this.table_fish_names.push(fish.name);
-          });
-          this.calculateAll();
           if (this.fishes_chart && this.signees_chart) {
             this.fishes_chart.destroy();
             this.signees_chart.destroy();
           }
+
           this.$nextTick(() => {
-            let charts = this.initChartData(
-              this.calculated_fish_weights,
+            let charts = initChartData(
+              this.competition.fishes,
               this.table_fish_names,
-              this.$store.getters.getPointSignees.length,
+              this.hasGottenFishCount,
               this.signees.length
             );
 
@@ -854,14 +902,6 @@ export default {
             this.signee_chart_data = charts.signee_chart.data;
           });
 
-          if (this.normal_points.length) {
-            this.results = this.normal_points;
-            this.headers = this.normal_headers;
-          } else {
-            this.results = this.$store.getters.getSignees;
-            this.headers = this.signee_headers;
-            this.selected_normal = "Ilmoittautuneet";
-          }
           this.text = "Tiedot ajantasalla!";
           this.snackbar = true;
         } else {
@@ -871,9 +911,10 @@ export default {
           console.log("No competition found on database...");
         }
       } catch (err) {
-        console.error(err.message);
+        console.error(err);
       }
       this.loading = false;
+      this.tab = "stats";
     },
     async publishCompetition(isPublic) {
       this.competition.isPublic = !isPublic;
@@ -889,16 +930,19 @@ export default {
         : (this.competition.state = "Kesken");
 
       const newvalues = {
-        $set: { isFinished: this.competition.isFinished },
+        $set: {
+          isFinished: this.competition.isFinished,
+          state: this.competition.state,
+        },
       };
       this.updateToDatabase(this.competition, newvalues);
     },
 
     async updateToDatabase(competition, newvalues) {
       try {
-        this.$store.commit("refreshCompetition", this.competition);
+        this.$store.commit("refreshCompetition", competition);
         this.updating = true;
-        await CompetitionService.updateValues(this.competition._id, newvalues);
+        await CompetitionService.updateValues(competition._id, newvalues);
       } catch (err) {
         console.error(err.message);
       }
@@ -907,199 +951,62 @@ export default {
 
     // "Wrapper" to calculate all the results at once
     async calculateAll() {
-      this.calculateBiggestFishes();
-      this.calculateBiggestAmounts();
+      let results = calculateNormalResults(this.competition, this.signees);
+      this.signees = results.signees.sort(
+        (a, b) => a.boat_number - b.boat_number
+      );
+      this.normal_points = results.normal_points;
+      this.normal_weights = results.normal_weights;
+      this.switchNormalResults();
+      this.switchBiggestFishes();
+      this.switchBiggestAmounts();
     },
 
     // Switch table headers and columns based on this.selected_normal value (v-select)
-    switchNormalResults: function () {
+    switchNormalResults() {
       // Prevent v-select having no value, would show error
       if (!this.selected_normal) {
-        this.selected_normal = "Pisteet";
+        this.selected_normal = "Kalat";
       }
       // If "Pisteet" selected in v-select, update headers and this.results (table data)
       if (this.selected_normal === "Pisteet") {
-        this.headers = this.normal_headers;
-        this.results = this.normal_points;
+        this.results = this.normal_points; // sfdsad
+        if (this.competition.isCupCompetition) {
+          this.headers = this.cup_headers;
+        } else {
+          this.headers = this.normal_headers;
+        }
       }
       // If "Kalat" selected in v-select, update headers and this.results (table data)
       if (this.selected_normal === "Kalat") {
-        (this.headers = [
-          { text: "Sijoitus", value: "placement" },
-          { text: "Kilp. numero", value: "boat_number" },
-          { text: "Kippari", value: "captain_name" },
-        ]),
-          (this.results = this.normal_weights);
-        // Get fish names and add them to headers
-        this.table_fish_names.forEach((name) => {
-          this.headers.push({ text: name, value: name });
-        });
-        this.headers.push({ text: "Tulos", value: "total_points" });
+        this.headers = this.weight_headers;
+        this.results = this.normal_weights;
       }
       if (this.selected_normal === "Ilmoittautuneet") {
         this.headers = this.signee_headers;
-        this.results = this.$store.getters.getSignees;
+        this.results = this.signees;
       }
     },
-    // Calculate "Suurimmat Kalat"
-    calculateBiggestFishes() {
-      let fishes = this.biggest_fishes;
-      let placement = 1;
-      this.results_found_fishes = null;
-
-      // Check v-select value, don't allow it to go null because it shows error
-      if (!this.selected_biggest_fish) {
-        this.selected_biggest_fish = "Voittajat";
-      }
-      if (this.selected_biggest_fish === "Voittajat") {
-        this.biggest_fishes_headers = this.winner_headers;
+    switchBiggestFishes() {
+      let results = calculateBiggestFishes(
         this.biggest_fishes,
-          (this.biggest_fishes_results = this.sortDict(fishes));
-      } else if (this.selected_biggest_fish === "Kaikki") {
-        this.biggest_fishes_headers = this.all_fishes_headers;
-        // If v-select (this.selected_biggest_fish) not "Voittajat", get fish related results and sort them
-        // based on the v-select fish name
-        let fish_results = [];
-        for (const fish of Object.keys(fishes)) {
-          fishes[fish].forEach((result) => {
-            result.fish = fish;
-            fish_results.push(result);
-          });
-        }
-
-        if (fish_results.length) {
-          fish_results.sort((a, b) => {
-            return parseInt(b.weight) - parseInt(a.weight);
-          });
-          this.results_found_amounts = "";
-        } else {
-          this.results_found_fishes = "- Ei tuloksia";
-        }
-
-        let last_weight = -1;
-        let last_placement = -1;
-        this.biggest_fishes_results = fish_results;
-        this.biggest_fishes_results.forEach((result) => {
-          if (last_weight === result.weight) {
-            result.placement = last_placement;
-          } else {
-            result.placement = last_placement = placement;
-            last_weight = result.weight;
-          }
-          placement++;
-        });
-      } else {
-        this.biggest_fishes_headers = this.biggest_headers;
-        // If v-select (this.selected_biggest_fish) not "Voittajat", get fish related results and sort them
-        // based on the v-select fish name
-        let fish_results = [];
-        if (fishes[this.selected_biggest_fish]) {
-          fish_results = fishes[this.selected_biggest_fish].sort((a, b) => {
-            return parseInt(b.weight) - parseInt(a.weight);
-          });
-          this.results_found_amounts = "";
-        } else {
-          this.results_found_fishes = "- Ei tuloksia";
-        }
-        let last_weight = -1;
-        let last_placement = -1;
-        this.biggest_fishes_results = fish_results;
-        this.biggest_fishes_results.forEach((result) => {
-          if (last_weight === result.weight) {
-            result.placement = last_placement;
-          } else {
-            result.placement = last_placement = placement;
-            last_weight = result.weight;
-          }
-          placement++;
-        });
-      }
+        this.table_fish_names,
+        this.selected_biggest_fish
+      );
+      this.selected_biggest_fish = results.selected_fish;
+      this.biggest_fishes_headers = results.header;
+      this.biggest_fishes_results = results.results;
     },
-    // Calculate "Suurimmat kalasaaliit", works exactly like the calculateBiggestFishes
-    //TODO make these 2 to one function
-    calculateBiggestAmounts() {
-      let fishes = this.biggest_amounts;
-      let placement = 1;
-      this.results_found_amount = "";
-      if (!this.selected_biggest_amount) {
-        this.selected_biggest_amount = "Voittajat";
-      }
-      if (this.selected_biggest_amount === "Voittajat") {
-        this.biggest_amounts_headers = this.winner_headers;
+
+    switchBiggestAmounts() {
+      let results = calculateBiggestAmounts(
         this.biggest_amounts,
-          (this.biggest_amounts_results = this.sortDict(fishes));
-      } else if (this.selected_biggest_amount === "Kaikki") {
-        this.biggest_amounts_headers = this.all_fishes_headers;
-        // If v-select (this.selected_biggest_fish) not "Voittajat", get fish related results and sort them
-        // based on the v-select fish name
-        let fish_results = [];
-        for (const fish of Object.keys(fishes)) {
-          fishes[fish].forEach((result) => {
-            result.fish = fish;
-            let previous = fish_results.find(
-              (r) => r.boat_number === result.boat_number
-            );
-            if (previous) {
-              if (previous.weight < result.weight) {
-                previous = {
-                  ...result,
-                  fish: fish,
-                };
-              }
-            } else {
-              fish_results.push(result);
-            }
-          });
-        }
-
-        if (fish_results.length) {
-          fish_results.sort((a, b) => {
-            return parseInt(b.weight) - parseInt(a.weight);
-          });
-          this.results_found_amounts = "";
-        } else {
-          this.results_found_amount = "- Ei tuloksia";
-        }
-
-        let last_weight = -1;
-        let last_placement = -1;
-        this.biggest_amounts_results = fish_results;
-        this.biggest_amounts_results.forEach((result) => {
-          if (last_weight === result.weight) {
-            result.placement = last_placement;
-          } else {
-            result.placement = last_placement = placement;
-            last_weight = result.weight;
-          }
-          placement++;
-        });
-      } else {
-        this.biggest_amounts_headers = this.biggest_headers;
-        let fish_results = [];
-        if (fishes[this.selected_biggest_amount]) {
-          fish_results = fishes[this.selected_biggest_amount].sort((a, b) => {
-            return parseInt(b.weight) - parseInt(a.weight);
-          });
-          fish_results = fish_results.filter(
-            (result) => parseInt(result.weight) > 0
-          );
-          this.results_found_amounts = "";
-        } else {
-          this.results_found_amount = "- Ei tuloksia";
-        }
-        let last_weight = -1;
-        let last_placement = -1;
-        this.biggest_amounts_results = fish_results;
-        this.biggest_amounts_results.forEach((result) => {
-          if (last_weight === result.weight) {
-            result.placement = last_placement;
-          } else {
-            result.placement = last_placement = placement;
-            last_weight = result.weight;
-          }
-          placement++;
-        });
-      }
+        this.selected_biggest_amount,
+        this.table_fish_names
+      );
+      this.selected_biggest_amount = results.selected_amount;
+      this.biggest_amounts_headers = results.header;
+      this.biggest_amounts_results = results.results;
     },
   },
 };

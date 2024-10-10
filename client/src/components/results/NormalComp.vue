@@ -10,7 +10,7 @@
           class="row"
           v-if="
             normal_points.length ||
-            (signees.length && selected_normal === 'Ilmoittautuneet')
+            (results.length && selected_normal === 'Ilmoittautuneet')
           "
         >
           <v-col md="12">
@@ -37,7 +37,7 @@
                   <v-chip
                     :outlined="$store.getters.getTheme"
                     :color="getColor(item.placement)"
-                    >{{ item.placement }}.</v-chip
+                    >{{ item.placement }}</v-chip
                   >
                 </template>
                 <template
@@ -46,8 +46,9 @@
                 >
                   <v-chip>{{ item.boat_number }}</v-chip>
                 </template>
+
                 <template v-slot:[`item.total_points`]="{ item }">
-                  <v-chip>{{ item.total_points.toLocaleString() }} p</v-chip>
+                  <v-chip>{{ item.total_points.toLocaleString() }}</v-chip>
                 </template>
                 <template v-slot:[`item.cup_points_total`]="{ item }">
                   <v-tooltip bottom color="primary">
@@ -56,7 +57,7 @@
                         v-bind="attrs"
                         v-on="on"
                         :color="getColorPoints(item.cup_points_total)"
-                        >{{ item.cup_points_total }} p</v-chip
+                        >{{ item.cup_points_total }}</v-chip
                       >
                     </template>
                     <span>
@@ -109,14 +110,10 @@ export default {
     "selected_normal",
     "normal_points",
   ],
-  data() {
-    return {};
-  },
   created() {
     this.getColorPoints = getColorPoints;
     this.getColor = getColor;
   },
-  methods: {},
 };
 </script>
 <style scoped></style>

@@ -234,7 +234,7 @@
   </v-row>
 </template>
 <script>
-import { getColor } from "../shared";
+import { getColor } from "@/shared";
 export default {
   name: "CupPoints",
   props: [
@@ -266,9 +266,7 @@ export default {
     else this.selectedCompetitions = this.competitions.length;
   },
   methods: {
-    getColor(placement) {
-      return getColor(placement);
-    },
+    getColor: getColor,
   },
 };
 </script>

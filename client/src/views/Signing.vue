@@ -2,14 +2,7 @@
   <!-- /signing -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <div>
-    <v-row>
-      <v-col>
-        <CompetitionNavigation></CompetitionNavigation>
-      </v-col>
-      <v-col>
-        <Timedate />
-      </v-col>
-    </v-row>
+    <Timedate />
 
     <v-container
       v-bind:class="{
@@ -80,18 +73,7 @@
           :value="'signing'"
         >
           <v-row v-if="!loading_site">
-            <v-col>
-              <v-row style="margin-top: 20px">
-                <v-col md="10" offset-md="1">
-                  <p
-                    class="flow-text"
-                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
-                  >
-                    Ilmoittautuminen
-                  </p>
-                </v-col>
-              </v-row>
-
+            <v-col style="margin-top: 20px">
               <v-row v-if="notification">
                 <v-col md="8" offset-md="2">
                   <v-alert type="info" class="flow-text">
@@ -231,13 +213,22 @@
                   </v-row>
 
                   <v-row>
-                    <v-col md="2" offset-md="2" style="margin-top: 20px">
+                    <v-col
+                      md="2"
+                      offset-md="2"
+                      style="margin-top: 20px"
+                      v-if="cup"
+                    >
                       <v-btn large block color="blue" @click="searchFromCup"
                         ><v-icon>find_replace</v-icon>Hae cupista</v-btn
                       >
                     </v-col>
 
-                    <v-col md="2" offset-md="2" style="margin-top: 20px">
+                    <v-col
+                      md="2"
+                      :offset-md="cup ? 2 : 4"
+                      style="margin-top: 20px"
+                    >
                       <v-btn large block color="indigo" @click="searchSelected"
                         ><v-icon>mdi-magnify</v-icon>Hae
                         ilmoittautuneista</v-btn
@@ -316,11 +307,11 @@
                             :disabled="data.disabled"
                             @click:close="data.parent.selectItem(data.item)"
                           >
-                            <v-avatar
-                              class="accent white--text"
-                              left
-                              v-text="data.item.slice(0, 1).toUpperCase()"
-                            ></v-avatar>
+                            <v-avatar class="accent white--text" left
+                              ><span>{{
+                                data.item.slice(0, 1).toUpperCase()
+                              }}</span></v-avatar
+                            >
                             {{ data.item }}
                           </v-chip>
                         </template>
@@ -350,7 +341,8 @@
                             large
                             tile
                             color="red"
-                            @click="deleteSignee(false, -1)"
+                            @click="deleteSignee(false, selected_id)"
+                            :disabled="!found"
                             :loading="refreshing"
                             ><v-icon>mdi-delete</v-icon>Poista Venekunta</v-btn
                           >
@@ -373,6 +365,12 @@
                             color="green"
                             @click="validateInfo"
                             :loading="refreshing"
+                            :disabled="
+                              refreshing ||
+                              !boat_number ||
+                              !captain_name ||
+                              !temp_captain_name
+                            "
                             id="sbtn"
                             ><v-icon>mdi-content-save</v-icon>Tallenna</v-btn
                           >
@@ -432,7 +430,7 @@
           <v-row>
             <v-col>
               <v-row style="margin-top: 20px">
-                <v-col class="title" offset-md="4" md="4">
+                <v-col offset-md="4" md="4">
                   <p
                     class="flow-text"
                     v-bind:class="{ 'white--text': $store.getters.getTheme }"
@@ -446,6 +444,20 @@
                   <v-card :dark="$store.getters.getTheme">
                     <v-card-title>
                       <p class="flow-text">Ilmoittautuneet</p>
+                      <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-icon
+                            v-bind="attrs"
+                            v-on="on"
+                            style="margin: 0px 0px 20px 5px"
+                            >mdi-chat-question-outline</v-icon
+                          >
+                        </template>
+                        <span
+                          >Voit katsella/muuttaa venekunnan tietoja myös
+                          klikkaamalla haluamaasi riviä taulukosta.</span
+                        >
+                      </v-tooltip>
                       <v-spacer></v-spacer>
                       <v-text-field
                         v-model="search"
@@ -461,36 +473,11 @@
                       :items="signees"
                       :search="search"
                     >
+                      <template v-slot:[`item.boat_number`]="{ item }">
+                        <v-chip>{{ item.boat_number }}</v-chip>
+                      </template>
                     </v-data-table>
                   </v-card>
-                </v-col>
-              </v-row>
-              <v-row v-if="selected_id">
-                <v-col style="margin-top: 20px; margin-bottom: 20px">
-                  <v-btn large tile color="blue" @click="searchSelected"
-                    ><v-icon>mdi-information</v-icon>Näytä valitun
-                    ilmoittautumistiedot</v-btn
-                  >
-                </v-col>
-              </v-row>
-              <v-row v-else>
-                <v-col style="margin: 20px 50px">
-                  <p
-                    v-if="signees.length"
-                    class="flow-text"
-                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
-                  >
-                    Voit katsella venekunnan tietoja myös klikkaamalla
-                    haluamaasi riviä taulukosta ja painamalla ilmestyvää
-                    nappulaa
-                  </p>
-                  <h3
-                    v-else
-                    class="center-align"
-                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
-                  >
-                    Ei ilmoittautuneita!
-                  </h3>
                 </v-col>
               </v-row>
             </v-col>
@@ -511,10 +498,10 @@
 </template>
 <script>
 "use strict";
-import CompetitionService from "../CompetitionService";
-import CupService from "../CupService";
+import CompetitionService from "../services/CompetitionService";
+import ResultService from "../services/ResultService.js";
+import CupService from "../services/CupService";
 import Timedate from "../components/layout/Timedate";
-import CompetitionNavigation from "../components/layout/CompetitionNavigation.vue";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 
 export default {
@@ -522,7 +509,6 @@ export default {
   components: {
     Timedate,
     ProgressBarQuery,
-    CompetitionNavigation,
   },
   data() {
     return {
@@ -537,7 +523,6 @@ export default {
       team: null,
       selected_id: null,
       selected_row: null,
-      id: 1,
       new_signee: null,
       notification: null,
       loading: false,
@@ -553,7 +538,7 @@ export default {
         { text: "Seura/Paikkakunta", value: "locality" },
       ],
       search: "",
-      cup: [],
+      cup: null,
       teams: [],
       maxlength: 40,
       isTeamCompetition: false,
@@ -594,39 +579,24 @@ export default {
       snackbar: false,
       text: "",
       timeout: 5000,
+      found: false,
     };
   },
   mounted() {
     if (localStorage.getItem("competition") != null) {
       const competition = JSON.parse(localStorage.getItem("competition"));
-      this.competition_id = competition["id"];
+      this.competition_id = competition["_id"];
       this.loading_site = true;
       this.refreshCompetition(this.competition_id);
-      /*
-      this.timer_refresh = setInterval(
-        () => this.refreshCompetition(competition_id),
-        this.interval
-      );
-      */
     }
-
-    // Focus on top of the page when changing pages
-    location.href = "#";
-    location.href = "#app";
-  },
-  beforeDestroy() {
-    // Clear timer
-    //clearInterval(this.timer_refresh);
   },
   methods: {
-    changePage: function (route) {
-      if (this.$router.currentRoute.path !== route) {
-        this.$router.push(route);
-        this.drawer = !this.drawer;
-      } else {
-        this.text = "Olet jo tällä sivulla!";
-        this.snackbar = true;
-      }
+    // Select row from table, if selected --> unselect
+    // selected_id bound to selected css class (on App.vue)
+    rowClick(item, row) {
+      this.selected_id = item._id;
+      this.selected_row = row;
+      this.searchSelected();
     },
     // Fetch competition from database, and update variables
     async refreshCompetition(competition_id) {
@@ -637,10 +607,19 @@ export default {
           _id: competition_id,
         });
         if (competition) {
+          // Get results === signees
+          await ResultService.getResults({ competition_id: competition._id })
+            .then((r) => {
+              competition.signees = r;
+              this.signees = r;
+            })
+            .catch((e) => {
+              console.log(e);
+            });
           // Update to vuex, Assing variables and arrays from vuex (see client/store/index.js)
           this.$store.commit("refreshCompetition", competition);
           this.isTeamCompetition = this.$store.getters.isTeamCompetition;
-          this.signees = this.$store.getters.getSignees;
+
           this.teams = this.$store.getters.getTeams;
           // Get max values and assign them
           if (this.signees.length) {
@@ -651,24 +630,15 @@ export default {
                   return o.boat_number;
                 })
               ) + 1;
-            this.id =
-              Math.max.apply(
-                Math,
-                this.signees.map(function (o) {
-                  return o.id;
-                })
-              ) + 1;
           } else {
             // Otherwise init with 1
             this.boat_number = 1;
-            this.id = 1;
           }
-          // Fetch cup info, to check signee from cups signees array
-          let cup = await CupService.getCups({
-            _id: competition.cup_id,
-          });
-          if (cup) {
-            this.cup = cup;
+
+          if (competition.isCupCompetition) {
+            this.cup = await CupService.getCups({
+              _id: competition.cup_id,
+            });
           }
         } else {
           console.log("No competition found on database...");
@@ -680,7 +650,7 @@ export default {
       this.refreshing = false;
     },
     // Check if input value is number, and only accept numbers to inputs
-    isNumber: function (evt) {
+    isNumber(evt) {
       evt = evt ? evt : window.event;
       var charCode = evt.which ? evt.which : evt.keyCode;
       if (
@@ -698,7 +668,7 @@ export default {
       }
     },
     // Capitalize all the words in given string. Takes account all the characters like "-", "'" etc.
-    capitalize_words: function (str) {
+    capitalize_words(str) {
       return str.replace(
         /(?:^|\s|['`‘’.-])[^\x60^\x7B-\xDF](?!(\s|$))/g,
         function (txt) {
@@ -707,7 +677,7 @@ export default {
       );
     },
     // Clear all selections and inputs and errors
-    clearInputs: function () {
+    clearInputs() {
       this.boat_number = null;
       this.starting_place = null;
       this.captain_name = null;
@@ -716,13 +686,11 @@ export default {
       this.team = null;
       this.errors = [];
       this.old_info = null;
+      this.found = false;
       this.notification = "";
     },
     // Handle overwriting user data based on user answer
-    overwriteSignee: function (signee, overwrite) {
-      overwrite === true
-        ? console.log("Overwrite!")
-        : console.log("Don't overwrite!");
+    overwriteSignee(signee, overwrite) {
       // User chose to overwrite data
       if (overwrite) {
         // Remove old data
@@ -753,13 +721,6 @@ export default {
           // Save signee to database and clear inputs
           this.saveToDatabase(signee, true);
           this.clearInputs();
-          this.boat_number =
-            Math.max.apply(
-              Math,
-              this.signees.map(function (o) {
-                return o.boat_number;
-              })
-            ) + 1;
           this.notification = "Tiedot korvattu uusilla!";
         }
       }
@@ -778,7 +739,7 @@ export default {
       }
     },
     // If user selected from input/table, search from array and assing values to inputs
-    searchSelected: function () {
+    searchSelected() {
       this.notification = null;
       this.errors = [];
       // Searched from Signing tab, from button
@@ -787,8 +748,9 @@ export default {
           let found_signee = this.searchBoatNumber(this.boat_number);
           // If signee found
           if (found_signee) {
+            this.found = true;
             this.notification = `Venekunta löydetty!\n(${found_signee.boat_number}) : ${found_signee.captain_name}, ${found_signee.temp_captain_name}`;
-            this.selected_id = found_signee.id;
+            this.selected_id = found_signee._id;
             this.boat_number = found_signee.boat_number;
             this.starting_place = found_signee.starting_place;
             this.captain_name = found_signee.captain_name;
@@ -810,49 +772,37 @@ export default {
       } else {
         // Searched from Signees tab (this.tab === 'signees'), from table
         if (this.selected_id) {
-          let search_id = this.selected_id;
-          // Signee found based on id
-          if (search_id) {
-            var found_signee = this.$store.getters.getSigneeById(search_id);
-
-            if (found_signee) {
-              this.notification = `Venekunnan tiedot:\n(${found_signee.boat_number}) : ${found_signee.captain_name}, ${found_signee.temp_captain_name}`;
-              this.boat_number = found_signee.boat_number;
-              this.starting_place = found_signee.starting_place;
-              this.captain_name = found_signee.captain_name;
-              this.temp_captain_name = found_signee.temp_captain_name;
-              this.locality = found_signee.locality;
-              this.team = found_signee.team;
-              this.tab = "signing";
-            } else {
-              // Nothing found
-              let temp_boat_number = this.boat_number;
-              this.clearInputs();
-              this.boat_number = temp_boat_number;
-              this.notification =
-                "Tällä numerolla ei ole vielä ilmoitettu venekuntaa!";
-              this.selected_id = null;
-            }
-          }
-          // Signee not found --> somehow selected signee from table that doesn't exist
-          else {
-            this.showError("Tätä venekuntaa ei ole olemassa!?");
-          }
-        }
-        // No signee selected
-        else {
-          this.showError(
-            "Valitse ilmoittautuneideiden listalta venekunta ennen hakemista!"
+          var found_signee = this.signees.find(
+            (s) => this.selected_id === s._id
           );
+
+          if (found_signee) {
+            this.notification = `Venekunnan tiedot:\n(${found_signee.boat_number}) : ${found_signee.captain_name}, ${found_signee.temp_captain_name}`;
+            this.boat_number = found_signee.boat_number;
+            this.starting_place = found_signee.starting_place;
+            this.captain_name = found_signee.captain_name;
+            this.temp_captain_name = found_signee.temp_captain_name;
+            this.locality = found_signee.locality;
+            this.team = found_signee.team;
+            this.tab = "signing";
+          } else {
+            // Nothing found
+            let temp_boat_number = this.boat_number;
+            this.clearInputs();
+            this.boat_number = temp_boat_number;
+            this.notification =
+              "Tällä numerolla ei ole vielä ilmoitettu venekuntaa!";
+            this.selected_id = null;
+          }
         }
       }
     },
     async searchFromCup() {
       this.selected_id = null;
       if (this.boat_number) {
-        let found_signee = this.cup.signees.find((signee) => {
-          return parseInt(this.boat_number) === parseInt(signee.boat_number);
-        });
+        let found_signee = this.cup.signees.find(
+          (signee) => this.boat_number === signee.boat_number
+        );
         //If the signee is not found on cup, add it
         if (found_signee) {
           this.notification = "Cupista löydetty seuraavat tiedot:";
@@ -861,6 +811,14 @@ export default {
           this.locality = found_signee.locality;
           this.team = found_signee.team;
           this.starting_place = found_signee.starting_place;
+
+          let f = this.signees.find(
+            (s) => s.boat_number === found_signee.boat_number
+          );
+          if (f) {
+            this.found = true;
+            this.selected_id = f._id;
+          }
         } else {
           // Nothing found
           let temp_boat_number = this.boat_number;
@@ -872,34 +830,13 @@ export default {
         this.notification = "Syötä venekunnan numero ennen hakemista!";
       }
     },
-    // Select row from table, if selected --> unselect
-    // selected_id bound to selected css class (on App.vue)
-    rowClick: function (item, row) {
-      if (item.id == this.selected_id) {
-        this.selected_id = null;
-        row.select(false);
-      } else {
-        if (this.selected_row) {
-          this.selected_row.select(false);
-        }
-        this.selected_id = item.id;
-        row.select(true);
-        this.selected_row = row;
-      }
-    },
     // Fetch signee from vuex based on boat number
     // Check client\src\store\index.js for implementation
-    searchBoatNumber: function (boat_number) {
+    searchBoatNumber(boat_number) {
       return this.$store.getters.getSigneeByBoatNumber(parseInt(boat_number));
     },
-    // Fetch signee from vuex based on id
-    // Check client\src\store\index.js for implementation
-    searchId: function (id) {
-      var search_id = parseInt(id);
-      return this.$store.getters.getSigneeById(search_id);
-    },
     // Utility function for showing error
-    showError: function (error) {
+    showError(error) {
       this.errors.push(error);
       location.href = "#";
       location.href = "#app";
@@ -907,45 +844,79 @@ export default {
     // Save signee to database
     async saveToDatabase(new_signee, replace) {
       // if replace == true, replace existing info, otherwise add new signee
-      replace === true
-        ? this.$store.commit("replaceSignee", new_signee)
-        : this.$store.commit("addSignee", new_signee);
-      let index = this.cup.signees.findIndex((signee) => {
-        return (
-          parseInt(new_signee.boat_number) === parseInt(signee.boat_number)
-        );
-      });
-      //If the signee is not found on cup, add it
-      if (index === -1) {
-        this.cup.signees.push({
-          boat_number: new_signee.boat_number,
-          captain_name: new_signee.captain_name,
-          temp_captain_name: new_signee.temp_captain_name,
-          locality: new_signee.locality,
-          starting_place: new_signee.starting_place,
-        });
-      }
+      if (replace) this.$store.commit("replaceSignee", new_signee);
+
       // Create competition object
       let comp = this.$store.getters.getCompetition;
-      this.signees = this.$store.getters.getSignees;
+      this.signees = this.results = this.signees;
       // Store to vuex
       comp.signees = this.signees;
       comp.state = "Ilmoittautuminen";
+
+      if (comp.isCupCompetition) {
+        let index = this.cup.signees.findIndex(
+          (signee) => new_signee.boat_number === signee.boat_number
+        );
+        //If the signee is not found on cup, add it
+        if (index === -1) {
+          this.cup.signees.push({
+            boat_number: new_signee.boat_number,
+            captain_name: new_signee.captain_name,
+            temp_captain_name: new_signee.temp_captain_name,
+            locality: new_signee.locality,
+            competition_id: comp._id,
+          });
+          // Update signees to cup
+          let newvalues = {
+            $set: { signees: this.cup.signees },
+          };
+          await CupService.updateValues(comp.cup_id, newvalues);
+        } else {
+          // First competition for the signee, so update cup values
+          if (this.cup.signees[index].competition_id === comp._id) {
+            this.cup.signees[index] = {
+              ...new_signee,
+              competition_id: comp._id,
+            };
+
+            // Update signees to cup
+            let newvalues = {
+              $set: { signees: this.cup.signees },
+            };
+            await CupService.updateValues(comp.cup_id, newvalues);
+          }
+        }
+      }
+
       this.$store.commit("refreshCompetition", comp);
       try {
         this.loading = true;
-        // Update signees and state to competition
-        let newvalues = {
-          $set: { signees: comp.signees, state: comp.state },
+        // Add result
+        new_signee = {
+          ...new_signee,
+          competition_id: comp._id,
+          cup_id: comp.cup_id,
         };
+
+        if (replace) {
+          await ResultService.updateResult(new_signee._id, new_signee);
+        } else {
+          let res = await ResultService.insertResults([new_signee]);
+          new_signee._id = res.data.id;
+          this.$store.commit("addSignee", new_signee);
+        }
+
         //await CompetitionService.updateCompetition(comp._id, comp);
-        await CompetitionService.updateValues(comp._id, newvalues);
+        await CompetitionService.updateValues(comp._id, { state: comp.state });
         this.loading = false;
-        // Update signees to cup
-        newvalues = {
-          $set: { signees: this.cup.signees },
-        };
-        await CupService.updateValues(comp.cup_id, newvalues);
+
+        this.boat_number =
+          Math.max.apply(
+            Math,
+            this.signees.map(function (o) {
+              return o.boat_number;
+            })
+          ) + 1;
       } catch (err) {
         console.error(err.message);
       }
@@ -953,6 +924,8 @@ export default {
     // Delete signee from vuex and database
     async deleteSignee(confirmed, id) {
       this.errors = [];
+      // If id on signees
+      let found_signee = this.signees.find((s) => s._id === id);
 
       if (!confirmed) {
         if (!this.boat_number) {
@@ -960,9 +933,7 @@ export default {
         }
         if (!this.errors.length) {
           // If selected on the signees list or with the search button
-          if (this.selected_id) {
-            // If id on signees
-            let found_signee = this.searchId(this.selected_id);
+          if (id) {
             if (found_signee) {
               // Ask confirmation
               this.$confirm(
@@ -973,7 +944,7 @@ export default {
                 .then((r) => {
                   if (r) {
                     // Deletion confirmed by user, call function again with confirmed == true
-                    this.deleteSignee(r, found_signee.id);
+                    this.deleteSignee(r, found_signee._id);
                   }
                 })
                 .catch((error) => {
@@ -994,7 +965,7 @@ export default {
                 .then((r) => {
                   if (r) {
                     // Deletion confirmed by user, call function again with confirmed == true
-                    this.deleteSignee(r, temp_boat.id);
+                    this.deleteSignee(r, temp_boat._id);
                   }
                 })
                 .catch((error) => {
@@ -1008,24 +979,12 @@ export default {
       }
       // Deletion confirmed, delete signee
       else {
-        // Double check that correct user is selected
-        let found_signee = this.searchId(id);
         if (found_signee) {
           // Remove from vuex
           this.$store.commit("removeSignee", found_signee);
-          // Create competition object and update values to vuex and database
-          let comp = this.$store.getters.getCompetition;
-          //TODO only update signees array to database?
-          this.signees = this.$store.getters.getSignees;
-          comp.signees = this.signees;
-          this.$store.commit("refreshCompetition", comp);
           try {
             this.loading = true;
-            let newvalues = {
-              $set: { signees: comp.signees },
-            };
-            //await CompetitionService.updateCompetition(comp._id, comp);
-            await CompetitionService.updateValues(comp._id, newvalues);
+            await ResultService.deleteResult(id).catch((e) => console.log(e));
             this.loading = false;
             this.clearInputs();
             // Update values for next signee
@@ -1049,7 +1008,7 @@ export default {
       }
     },
     // TODO serverside input validation
-    validateInfo: function () {
+    validateInfo() {
       this.notification = null;
       this.errors = [];
 
@@ -1097,12 +1056,13 @@ export default {
         // If selected on the signees list or with the search button
         if (this.selected_id) {
           // If id on signees
-          let found_signee = this.searchId(this.selected_id);
+          let found_signee = this.signees.find(
+            (s) => s._id === this.selected_id
+          );
           if (found_signee) {
             let temp_boat = this.searchBoatNumber(this.boat_number);
             // If there already exist a boat with same number, but it isn't the same id
-            if (temp_boat && temp_boat.id != found_signee.id) {
-              console.log("Boat number already exists...");
+            if (temp_boat && temp_boat._id != found_signee._id) {
               // Ask if user wants to overwrite
               this.old_info = temp_boat;
             } else {
@@ -1133,13 +1093,7 @@ export default {
                     return o.boat_number;
                   })
                 ) + 1;
-              this.id =
-                Math.max.apply(
-                  Math,
-                  this.signees.map(function (o) {
-                    return o.id;
-                  })
-                ) + 1;
+
               this.selected_id = null;
             }
           }
@@ -1147,36 +1101,19 @@ export default {
           // No selected id, so new input
           let temp_boat = this.searchBoatNumber(this.boat_number);
           // IF there is boat with same boat number, and somehow with this id
-          if (temp_boat && temp_boat.id != this.id) {
-            console.log("Boat number already exists...");
+          if (temp_boat && temp_boat._id != this._id) {
             this.notification = `Numerolla on jo olemassa venekunta, päällekirjoitetaanko?`;
             this.old_info = temp_boat;
           } else {
-            // Otherwise create new signee
-            let competition_fishes = this.$store.getters.getCompetitionFishes;
-            let weights = [];
-            // Init fish specific points and weights for signee
-            competition_fishes.forEach((element) => {
-              let fish = {
-                name: element.name,
-                weights: 0,
-                points: 0,
-              };
-              weights.push(fish);
-            });
             // Create signee object and save to database/vuex
             this.new_signee = {
-              id: this.id,
               boat_number: parseInt(this.boat_number),
               starting_place: this.starting_place,
               captain_name: this.captain_name,
               temp_captain_name: this.temp_captain_name,
               locality: this.locality,
               team: this.team,
-              total_points: 0,
-              total_weights: 0,
               returned: false,
-              weights: weights,
             };
             this.saveToDatabase(this.new_signee, false);
 
@@ -1196,13 +1133,6 @@ export default {
                 Math,
                 this.signees.map(function (o) {
                   return o.boat_number;
-                })
-              ) + 1;
-            this.id =
-              Math.max.apply(
-                Math,
-                this.signees.map(function (o) {
-                  return o.id;
                 })
               ) + 1;
             this.selected_id = null;

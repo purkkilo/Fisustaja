@@ -1,56 +1,53 @@
 <template>
-  <div style="padding: 15px">
-    <v-card
-      style="background: transparent"
-      elevation="5"
-      outlined
-      :dark="$store.getters.getTheme"
+  <v-row align="center" style="margin: 0">
+    <v-col>
+      <v-card
+        style="background: transparent"
+        elevation="5"
+        outlined
+        height="100"
+        :dark="$store.getters.getTheme"
+      >
+        <v-row>
+          <v-col>
+            <h2 class="white--text" id="comp-state">Pvm. {{ date }}</h2>
+          </v-col>
+          <v-col>
+            <h2 class="white--text" id="clock">Klo. {{ clock }}</h2>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-row align="center">
+            <v-col>
+              <h3
+                :class="
+                  competition_state === 'Kilpailu päättynyt!'
+                    ? 'red--text'
+                    : 'green--text'
+                "
+                id="date"
+              >
+                {{ competition_state }}
+              </h3>
+            </v-col>
+            <v-col>
+              <h2
+                :class="
+                  competition_state === 'Kilpailu päättynyt!'
+                    ? 'red--text'
+                    : 'green--text'
+                "
+                id="comp-left"
+                v-if="competitionChosen"
+              >
+                {{ timer_string }}
+              </h2>
+            </v-col>
+          </v-row>
+        </v-row>
+      </v-card></v-col
     >
-      <v-row>
-        <v-col>
-          <h2 class="white--text" id="comp-state">Pvm. {{ date }}</h2>
-        </v-col>
-        <v-col>
-          <h2 class="white--text" id="clock">Klo. {{ clock }}</h2>
-        </v-col>
-      </v-row>
-    </v-card>
-
-    <v-card
-      style="background: transparent"
-      elevation="5"
-      outlined
-      :dark="$store.getters.getTheme"
-    >
-      <v-row align="center">
-        <v-col cols="12" xs="6" sm="6" md="3" offset-md="2">
-          <h3
-            :class="
-              competition_state === 'Kilpailu päättynyt!'
-                ? 'red--text'
-                : 'green--text'
-            "
-            id="date"
-          >
-            {{ competition_state }}
-          </h3>
-        </v-col>
-        <v-col cols="12" xs="6" sm="6" md="6">
-          <h2
-            :class="
-              competition_state === 'Kilpailu päättynyt!'
-                ? 'red--text'
-                : 'green--text'
-            "
-            id="comp-left"
-            v-if="competitionChosen"
-          >
-            {{ timer_string }}
-          </h2>
-        </v-col>
-      </v-row>
-    </v-card>
-  </div>
+  </v-row>
 </template>
 
 <script>
@@ -106,7 +103,7 @@ export default {
     clearInterval(this.timer_date);
   },
   methods: {
-    setTime: function () {
+    setTime() {
       if (document.getElementById("clock")) {
         // Get time, parse it and change the text of the clock
         const today = new Date();
@@ -122,7 +119,7 @@ export default {
         clearInterval(this.timer_clock);
       }
     },
-    setDate: function () {
+    setDate() {
       if (document.getElementById("date")) {
         const today = new Date();
         let day = today.getDate();
@@ -136,59 +133,35 @@ export default {
         clearInterval(this.timer_date);
       }
     },
-    remainingTime: function () {
+    remainingTime() {
       if (document.getElementById("comp-left")) {
         if (this.competition) {
-          let start_dateTime = this.$moment(this.competition.start_date);
-          let end_dateTime = this.$moment(this.competition.end_date);
-
-          let timeLeft = 0;
+          let start_dateTime = new Date(this.competition.start_date);
+          let end_dateTime = new Date(this.competition.end_date);
+          let now = new Date();
           let formatted = "";
-          this.competition_started = this.$moment(this.$moment()).isAfter(
-            start_dateTime
-          );
-          this.competition_ended = this.$moment(this.$moment()).isAfter(
-            end_dateTime
-          );
+          let duration = null;
 
+          this.competition_started = start_dateTime < now;
+          this.competition_ended = end_dateTime < now;
           if (!this.competition_started && !this.competition_ended) {
-            timeLeft = this.$moment.duration(
-              start_dateTime.diff(this.$moment())
-            ); // get difference between now and timestamp
-            formatted =
-              this.checkZeros(timeLeft.hours()) +
-              "h " +
-              this.checkZeros(timeLeft.minutes()) +
-              "m " +
-              this.checkZeros(timeLeft.seconds()) +
-              "s";
-
-            if (timeLeft < 60000 * 60 * 24) {
+            duration = this.getDuration(now, start_dateTime);
+            formatted = this.durationToString(duration);
+            if (duration.days < 1) {
               // under an 24 hours
               this.competition_state = "Kilpailun alkuun";
               this.timer_string = formatted;
             } else {
-              this.calculated_time = this.$moment(this.$moment()).to(
-                start_dateTime
-              ); // Time to competition start
               this.competition_state = "Kilpailu alkaa";
-              this.timer_string = this.calculated_time;
+              this.timer_string = `${duration.days}d ` + formatted;
             }
           } else if (this.competition_started && !this.competition_ended) {
-            timeLeft = this.$moment.duration(end_dateTime.diff(this.$moment())); // get difference between now and timestamp
-            let days = timeLeft.days() ? `${timeLeft.days()}d ` : ` `;
-            formatted =
-              days +
-              this.checkZeros(timeLeft.hours()) +
-              "h " +
-              this.checkZeros(timeLeft.minutes()) +
-              "m " +
-              this.checkZeros(timeLeft.seconds()) +
-              "s";
-
+            duration = this.getDuration(now, end_dateTime);
+            let days = duration.days ? `${duration.days}d ` : ` `;
+            formatted = days + this.durationToString(duration);
             this.remaining_interval = 300;
             this.competition_state = "Kilpailua jäljellä";
-            this.timer_string = `${formatted}`;
+            this.timer_string = formatted;
           } else {
             this.timer_string = null;
             this.competition_state = `Kilpailu päättynyt!`;
@@ -198,19 +171,34 @@ export default {
         clearInterval(this.timer);
       }
     },
-    checkZeros: function (time) {
+    checkZeros(time) {
       if (time < 10) {
         time = "0" + time;
       }
       return time;
     },
+    getDuration(startDate, endDate) {
+      var seconds = Math.floor((endDate - startDate) / 1000);
+      var minutes = Math.floor(seconds / 60);
+      var hours = Math.floor(minutes / 60);
+      var days = Math.floor(hours / 24);
+      hours = hours - days * 24;
+      minutes = minutes - days * 24 * 60 - hours * 60;
+      seconds = seconds - days * 24 * 60 * 60 - hours * 60 * 60 - minutes * 60;
+      return { days, hours, minutes, seconds };
+    },
+    durationToString(duration) {
+      return (
+        this.checkZeros(duration.hours) +
+        "h " +
+        this.checkZeros(duration.minutes) +
+        "m " +
+        this.checkZeros(duration.seconds) +
+        "s"
+      );
+    },
   },
 };
 </script>
 
-<style scoped>
-.valign-wrapper.time {
-  margin-top: 50px;
-  min-height: 100px;
-}
-</style>
+<style scoped></style>

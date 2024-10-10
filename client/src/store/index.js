@@ -22,9 +22,6 @@ export default new Vuex.Store({
     getSigneesCount: (state) => {
       return state.competition.signees.length;
     },
-    getSigneeById: (state) => (id) => {
-      return state.competition.signees.find((signee) => signee.id === id);
-    },
     getSigneeByBoatNumber: (state) => (boat_number) => {
       return state.competition.signees.find(
         (signee) => signee.boat_number === boat_number
@@ -39,9 +36,6 @@ export default new Vuex.Store({
     getCompetitionSignees: (state) => {
       return state.competition.signees;
     },
-    getCompetitionTotalWeights: (state) => {
-      return state.competition.total_weights;
-    },
     getStillOnWaterSignees: (state) => {
       return state.competition.signees.filter(
         (signee) => signee.returned == false
@@ -55,11 +49,6 @@ export default new Vuex.Store({
     getFinishedSignees: (state) => {
       return state.competition.signees.filter(
         (signee) => signee.returned == true
-      );
-    },
-    getPointSignees: (state) => {
-      return state.competition.signees.filter(
-        (signee) => signee.total_points > 0
       );
     },
     getResultSignees: (state) => {
@@ -80,7 +69,7 @@ export default new Vuex.Store({
       return state.competition.teams;
     },
     isTeamCompetition: (state) => {
-      return state.competition.team_competition;
+      return state.competition.isTeamCompetition;
     },
     isLoggedIn: (state) => {
       return state.logged_in;

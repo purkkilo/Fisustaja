@@ -290,6 +290,11 @@
       :cups="cups"
       :loading="loading"
       :publishing="publishing"
+      @publish="
+        (cup) => {
+          publishCup(cup);
+        }
+      "
     ></comp-cup-table>
     <v-snackbar v-model="snackbar" :timeout="timeout">
       {{ text }}
@@ -306,8 +311,8 @@
 <script>
 "use strict";
 import CompCupTable from "../components/CompCupTable.vue";
-import CompetitionService from "../CompetitionService";
-import CupService from "../CupService";
+import CompetitionService from "../services/CompetitionService";
+import CupService from "../services/CupService";
 import gsap from "gsap";
 
 export default {
@@ -367,19 +372,18 @@ export default {
     const user_id = user["_id"];
     // Get competitions
     const query = { user_id: user_id };
+
     await CompetitionService.getCompetitions(query)
       .then((response) => {
         this.competitions = response;
         this.competitionsAmount = this.competitions.length;
-        // Convert dates to moment objects
+        // Convert dates
         this.competitions.forEach((competition) => {
-          competition.start_date = this.$moment(competition.start_date);
-          competition.end_date = this.$moment(competition.end_date);
+          competition.start_date = new Date(competition.start_date);
+          competition.end_date = new Date(competition.end_date);
         });
         // Sort them based on start_date so the oldest competitions are the last
-        this.competitions.sort(function compare(a, b) {
-          return b.start_date.isAfter(a.start_date);
-        });
+        this.competitions.sort((a, b) => a.start_date < b.start_date);
       })
       .catch((err) => {
         if (err.response) {
@@ -403,7 +407,7 @@ export default {
         this.cups = response;
         this.cupsAmount = this.cups.length;
         this.cups.sort((a, b) => {
-          return this.$moment(b.year).isAfter(this.$moment(a.year));
+          return parseInt(a.year) < parseInt(b.year);
         });
       })
       .catch((err) => {
@@ -423,6 +427,7 @@ export default {
           return console.log(err);
         }
       });
+
     this.loading = false;
   },
 
@@ -435,19 +440,15 @@ export default {
     // Get user info form localstorage
     if (localStorage.getItem("user") != null) {
       this.user = JSON.parse(localStorage.getItem("user"));
-      let createdAt = this.$moment(this.user.createdAt);
-      this.created = `${createdAt.date()}.${
-        createdAt.month() + 1
-      }.${createdAt.year()}`;
+      let createdAt = new Date(this.user.createdAt);
+      this.created = `${createdAt.getDate()}.${
+        createdAt.getMonth() + 1
+      }.${createdAt.getFullYear()}`;
     }
-
-    // Focus on top of the page when changing pages
-    location.href = "#";
-    location.href = "#app";
   },
   methods: {
     //filter other characters out for number inputs
-    isNumber: function (evt, isDate) {
+    isNumber(evt, isDate) {
       var charToCheckCode = 46; // --> .
       var charToCheck = ".";
 
@@ -484,10 +485,11 @@ export default {
         const newValues = {
           $set: { isPublic: cup.isPublic },
         };
-        await CupService.updateValues(cup.id, newValues);
+        await CupService.updateValues(cup._id, newValues);
       } catch (err) {
         console.error(err.message);
       }
+
       this.publishing = false;
     },
     // Add error to error array and direct user to it
@@ -531,7 +533,7 @@ export default {
         };
         try {
           //Submit Cup to database (check 'client\src\CupService.js' and 'server\routes\api\cups.js' to see how this works)
-          await CupService.insertCup(cup);
+          await CupService.insertCup([cup]);
           this.text = "Cup lisätty tietokantaan!";
           this.snackbar = true;
           /*
@@ -542,7 +544,7 @@ export default {
           this.cups.push(cup);
           this.cupsAmount = this.cups.length;
           this.cups.sort((a, b) => {
-            return this.$moment(b.year).isAfter(this.$moment(a.year));
+            return parseInt(a.year) < parseInt(b.year);
           });
           this.loading = false;
           this.year = null;
@@ -560,14 +562,3 @@ export default {
   },
 };
 </script>
-
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>

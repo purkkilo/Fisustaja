@@ -450,7 +450,7 @@
                   >
                     <template v-slot:[`item.start_date`]="{ item }">
                       <v-chip color="primary darken-2">{{
-                        item.start_date.format("DD.MM.YYYY")
+                        formatDateToLocaleDateString(item.start_date)
                       }}</v-chip>
                     </template>
                     <template v-slot:[`item.cup_points_multiplier`]="{ item }">
@@ -636,11 +636,12 @@
 
 <script>
 "use strict";
-import FeedbackService from "../FeedbackService";
-import CompetitionService from "../CompetitionService";
-import UserService from "../UserService";
-import CupService from "../CupService";
+import FeedbackService from "../services/FeedbackService";
+import CompetitionService from "../services/CompetitionService";
+import UserService from "../services/UserService";
+import CupService from "../services/CupService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
+import { formatDateToLocaleDateString } from "../shared";
 
 export default {
   data() {
@@ -659,7 +660,7 @@ export default {
       cups: [],
       cup: {},
       signees_amount: 30,
-      team_competition: "Ei",
+      isTeamCompetition: "Ei",
       number_rules: [
         (value) => !!value || "Kenttä ei voi jäädä tyhjäksi!",
         (value) => !isNaN(value || "") || "Ei ole numero!",
@@ -693,9 +694,6 @@ export default {
   // Called everytime page is opened
   async mounted() {
     //Check if user is logged in has admin status, update header
-    // Focus on top of the page
-    location.href = "#";
-    location.href = "#app";
     // Show loading progressbars
     this.loading =
       this.loading_users =
@@ -712,6 +710,7 @@ export default {
       await UserService.getUsers()
         .then(async (res) => {
           this.feedback = await FeedbackService.getFeedback();
+          await this.getCups();
           this.loading = false;
           this.users = res;
           this.users.forEach((user) => {
@@ -721,14 +720,13 @@ export default {
           // No query, get all competitions
           this.all_competitions = await CompetitionService.getCompetitions();
           this.all_competitions.forEach((competition) => {
+            let cup = this.all_cups.find((c) => c._id === competition.cup_id);
             competition.username = this.users.find(
               (user) => user._id === competition.user_id
             ).name;
-            competition.start_date = this.$moment(competition.start_date);
-            competition.end_date = this.$moment(competition.end_date);
-            competition.cup_name = `${
-              competition.cup_name
-            } (${competition.start_date.format("YYYY")})`;
+            competition.cup_name = `${cup.name} (${cup.year})`;
+            competition.start_date = new Date(competition.start_date);
+            competition.end_date = new Date(competition.end_date);
           });
 
           this.competitions = this.all_competitions.filter(
@@ -736,9 +734,8 @@ export default {
           );
           // Sort them based on start_date so the oldest competitions are the last
           this.all_competitions.sort(function compare(a, b) {
-            return b.start_date.isAfter(a.start_date);
+            return a.start_date < b.start_date;
           });
-          this.getCups();
           this.loading_competitions = false;
         })
         .catch(async (err) => {
@@ -761,13 +758,14 @@ export default {
     }
   },
   methods: {
+    formatDateToLocaleDateString: formatDateToLocaleDateString,
     getColor(multiplier) {
       if (multiplier > 1) return "red";
       if (multiplier === 1) return "green";
       else return "grey";
     },
 
-    fallbackCopyToClipboard: function (text) {
+    fallbackCopyToClipboard(text) {
       var textArea = document.createElement("textarea");
       textArea.value = text;
       // Avoid scrolling to bottom
@@ -787,7 +785,7 @@ export default {
 
       document.body.removeChild(textArea);
     },
-    copyToClipboard: function (text, user) {
+    copyToClipboard(text, user) {
       // If clipboard not there, create create input and copy it from there using doxument.execCommand("copy");
       if (!navigator.clipboard) {
         this.fallbackCopyToClipboard(text);
@@ -847,7 +845,7 @@ export default {
         console.error(err.message);
       }
     },
-    pickCompetition: function (competition) {
+    pickCompetition(competition) {
       // Pick competition for the app to use
       //NOTE Store competition to vuex, redundant?
       this.$store.state.competition = competition;
@@ -855,7 +853,7 @@ export default {
       localStorage.setItem(
         "competition",
         JSON.stringify({
-          id: competition._id,
+          _id: competition._id,
           start_date: competition.start_date,
           end_date: competition.end_date,
         })

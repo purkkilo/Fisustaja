@@ -42,9 +42,6 @@ export default {
       links: ["Work In Progress"],
     };
   },
-  mounted() {},
-  computed: {},
-  methods: {},
 };
 </script>
 <style scoped></style>

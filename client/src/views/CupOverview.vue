@@ -57,7 +57,11 @@
                 Peruuta
               </v-btn>
               <v-spacer></v-spacer>
-              <v-btn color="primary" text @click="saveAsPDF(`Ilmoittautuneet`)">
+              <v-btn
+                color="primary"
+                text
+                @click="pdfWrapper(`Ilmoittautuneet`)"
+              >
                 Lataa
               </v-btn>
             </v-card-actions>
@@ -152,7 +156,7 @@
                   >
                     <template v-slot:[`item.start_date`]="{ item }">
                       <v-chip color="primary darken-2">{{
-                        item.start_date.format("DD.MM.YYYY")
+                        formatDateToLocaleDateString(item.start_date)
                       }}</v-chip>
                     </template>
                     <template v-slot:[`item.isFinished`]="{ item }">
@@ -501,13 +505,13 @@
                   selectedCompetitions = options.selectedCompetitions;
                   isLandscape = options.isLandscape;
                   showInfoInPdf = options.showInfoInPdf;
-                  saveAsPDF(`Tulokset`);
+                  pdfWrapper(`Tulokset`);
                 }
               "
               @sort="
                 (show) => {
                   showUnfinishedCompetitions = show;
-                  sortUnfinished();
+                  setCompetitionData(cup);
                 }
               "
             ></cup-points>
@@ -516,6 +520,9 @@
             <cup-stats
               :competitions="competitions"
               :cup="cup"
+              :all_signees="all_signees"
+              :biggest_fishes="biggest_fishes"
+              :biggest_amounts="biggest_amounts"
               :loading="loading"
             ></cup-stats>
           </v-tab-item>
@@ -535,13 +542,21 @@
 </template>
 <script>
 "use strict";
-import CupService from "../CupService";
-import CompetitionService from "../CompetitionService";
+import CupService from "../services/CupService";
+import CompetitionService from "../services/CompetitionService";
+import ResultService from "../services/ResultService";
+import FishService from "../services/FishService";
 import "jspdf-autotable";
-import shared from "../shared";
 import CupPoints from "../components/CupPoints.vue";
 import CupStats from "../components/CupStats.vue";
-import jsPDF from "jspdf";
+import {
+  capitalize_words,
+  sortBy,
+  getMultiplierColor,
+  formatDateToLocaleDateString,
+  saveCupAsPDF,
+} from "../shared";
+
 export default {
   name: "CupOverview",
   components: {
@@ -570,6 +585,7 @@ export default {
       allCompetitions: [],
       competitions: [],
       signees: [],
+      all_signees: [],
       headers: [],
       select_table: ["Kilpailut", "Ilmoittautuneet"],
       selected: "Kilpailut",
@@ -578,8 +594,8 @@ export default {
       cup_fishes_competition: [],
       cup_fishes_total: [],
       cup_signees: [],
-      cup_biggest_fishes: [],
-      cup_biggest_amounts: [],
+      biggest_fishes: [],
+      biggest_amounts: [],
       total_fishes_chart_data: null,
       competition_fishes_chart_data: null,
       cup_signees_chart_data: null,
@@ -629,7 +645,6 @@ export default {
       vm.prevRoute = from;
     });
   },
-  created() {},
   mounted() {
     this.competition = localStorage.getItem("competition");
     // IF competition on localstorage
@@ -640,15 +655,10 @@ export default {
     } else {
       console.log("No cup in localstorage!");
     }
-
-    // Focus on top of the page when changing pages
-    location.href = "#";
-    location.href = "#app";
   },
   methods: {
-    sortUnfinished() {
-      this.setCompetitionData(this.cup);
-    },
+    formatDateToLocaleDateString: formatDateToLocaleDateString,
+    getMultiplierColor: getMultiplierColor,
     async publishCup(isPublic) {
       this.cup.isPublic = !isPublic;
 
@@ -678,7 +688,10 @@ export default {
         ? (competition.state = "Päättynyt")
         : (competition.state = "Kesken");
       const newvalues = {
-        $set: { isFinished: competition.isFinished },
+        $set: {
+          isFinished: competition.isFinished,
+          state: competition.state,
+        },
       };
       this.updateToDatabase(competition, newvalues);
     },
@@ -697,7 +710,7 @@ export default {
         query: { cup: localStorage.getItem("cup") },
       });
     },
-    isNumber: function (evt) {
+    isNumber(evt) {
       evt = evt ? evt : window.event;
       var charCode = evt.which ? evt.which : evt.keyCode;
       if (
@@ -805,20 +818,18 @@ export default {
         if (!new_captain_name) {
           this.errors.push("Kipparin nimi puuttuu!");
         } else {
-          signee.captain_name = shared.capitalize_words(signee.captain_name);
+          signee.captain_name = capitalize_words(signee.captain_name);
         }
 
         if (!new_temp_captain_name) {
           new_temp_captain_name = signee.temp_captain_name = "-";
         } else {
-          signee.temp_captain_name = shared.capitalize_words(
-            signee.temp_captain_name
-          );
+          signee.temp_captain_name = capitalize_words(signee.temp_captain_name);
         }
         if (!new_locality) {
           this.errors.push("Seura/Paikkakunta puuttuu!");
         } else {
-          signee.locality = shared.capitalize_words(signee.locality);
+          signee.locality = capitalize_words(signee.locality);
         }
         // No errors left
         if (!this.errors.length) {
@@ -853,17 +864,17 @@ export default {
     },
     setCompetitionData(cup) {
       this.selectNumbers = [];
-      // Convert dates to moment objects
+      // Convert dates
       this.allCompetitions.forEach((competition, i) => {
-        competition.start_date = this.$moment(competition.start_date);
-        competition.end_date = this.$moment(competition.end_date);
+        competition.start_date = new Date(competition.start_date);
+        competition.end_date = new Date(competition.end_date);
         // Index for competition
         competition.key_name = i + 1;
       });
       this.allCompetitions.sort((a, b) => {
-        return b.start_date.isBefore(a.start_date);
+        return b.start_date < a.start_date;
       });
-      this.signees = this.cup.signees.sort(shared.sortBy("boat_number", true));
+      this.signees = this.cup.signees.sort(sortBy("boat_number", true));
       this.signees.forEach((signee) => {
         signee.dialog = false;
       });
@@ -883,6 +894,72 @@ export default {
 
       this.calculateAll(this.competitions, this.selectedCompetitions);
     },
+    // "Normaalikilpailu" results
+    calculateNormalResults(competition, signees) {
+      const placement_points = competition.cup_placement_points;
+      let cup_placement_points = placement_points[0];
+      const cup_participation_points = competition.cup_participation_points;
+      let last_points = 0;
+      let last_placement = 1;
+
+      let placement = 1;
+      let cup_points_total = 0;
+      let normal_points = [];
+      let normal_weights = [];
+      signees = signees.filter((signee) => signee.returned == true);
+      signees = signees.sort(function compare(a, b) {
+        return parseInt(b.total_points) - parseInt(a.total_points);
+      });
+      // For every signee, calculate their cup points and placing
+      //TODO rework the structure, seems more complex than it should be
+      // Placements and points now saved in every competition to cup_placement_points_array, based on placement fetch from there?
+      signees.forEach((signee, index) => {
+        // If competitor has same points as last competitor
+        if (signee.total_points === last_points) {
+          placement = last_placement;
+        }
+        // If no tie, add tied_competitors to placement, to give correct placement to next not tied competitor
+        else {
+          placement = index + 1;
+        }
+
+        // Find the placement points according to the placement
+        let p = placement_points.find((e) => e.placement === placement);
+        // If placement isn't found (placement > than provided placements), or points = 0 (no points from competition)
+        if (!p || signee.total_points === 0) {
+          cup_placement_points = 0;
+        } else {
+          cup_placement_points = p.points * competition.cup_points_multiplier;
+        }
+        // Calculate total cup points, cup points multiplier only scales the placement points
+        cup_points_total = cup_placement_points + cup_participation_points;
+        //For showing cup points, "Pisteet" on v-select
+        normal_points.push({
+          placement: placement,
+          boat_number: signee.boat_number,
+          captain_name: signee.captain_name,
+          temp_captain_name: signee.temp_captain_name,
+          locality: signee.locality,
+          total_points: signee.total_points,
+          cup_placement_points: cup_placement_points,
+          cup_participation_points: cup_participation_points,
+          cup_points_total: cup_points_total,
+        });
+        //For showing fish weights, "Kalat" on v-select
+        signee.placement = placement;
+        // For the data-table
+        signee.fishes.forEach((f) => {
+          signee[f.id] = f.weights;
+        });
+        normal_weights.push(signee);
+
+        last_placement = placement;
+        last_points = signee.total_points;
+      });
+
+      return { normal_points, normal_weights };
+    },
+
     async refreshCup(cup_id) {
       this.loading = true;
       try {
@@ -901,10 +978,51 @@ export default {
             this.allCompetitions = await CompetitionService.getCompetitions({
               cup_id: cup_id,
             });
-            this.setCompetitionData(this.cup);
-            this.selectTableData();
-            this.text = "Tiedot ajantasalla!";
-            this.snackbar = true;
+
+            this.biggest_fishes = await FishService.getFishes({
+              cup_id: cup_id,
+            });
+            this.biggest_fishes = this.biggest_fishes.sort(
+              (a, b) => b.weight - a.weight
+            );
+
+            await ResultService.getResults({ cup_id: cup_id })
+              .then((r) => {
+                r.forEach((s) => {
+                  if (s.fishes.length) {
+                    s.fishes.forEach((f) => {
+                      let comp = this.allCompetitions.find(
+                        (c) => c._id === s.competition_id
+                      );
+                      let fish = comp.fishes.find((cf) => cf.id === f.id);
+
+                      this.biggest_amounts.push({
+                        id: fish.id,
+                        competition_id: comp._id,
+                        competition_name: comp.name,
+                        boat_number: s.boat_number,
+                        captain_name: s.captain_name,
+                        name: fish.name,
+                        weight: f.weights,
+                      });
+                    });
+                  }
+                });
+
+                this.all_signees = r;
+                this.biggest_amounts = this.biggest_amounts.sort(
+                  (a, b) => b.weight - a.weight
+                );
+              })
+              .catch((e) => {
+                console.log(e);
+              })
+              .finally(() => {
+                this.setCompetitionData(this.cup);
+                this.selectTableData();
+                this.text = "Tiedot ajantasalla!";
+                this.snackbar = true;
+              });
           } catch (error) {
             console.error(error);
           }
@@ -914,7 +1032,7 @@ export default {
       }
       this.loading = false;
     },
-    pickCompetition: function (competition) {
+    pickCompetition(competition) {
       // Pick competition for the app to use
       //NOTE Store competition to vuex, redundant?
       this.$store.state.competition = competition;
@@ -922,7 +1040,7 @@ export default {
       localStorage.setItem(
         "competition",
         JSON.stringify({
-          id: competition._id,
+          _id: competition._id,
           start_date: competition.start_date,
           end_date: competition.end_date,
         })
@@ -932,10 +1050,35 @@ export default {
     },
     // Calculate all the cup points, and limit the number of races taken into account
     // If limit = 4, 4 races with highest points will be calculated, other races will have 5 points where the signee has participated
-    calculateAll(competitions, limit) {
+    async calculateAll(competitions, limit) {
       let all_results = [];
       this.isResults = false;
       competitions.forEach((competition) => {
+        let signees = this.all_signees.filter(
+          (s) => s.competition_id === competition._id
+        );
+
+        competition.total_weights = 0;
+        signees.forEach((s) => {
+          s.total_points = 0;
+          if (s.fishes.length) {
+            s.fishes.forEach((f) => {
+              let fish = competition.fishes.find((cf) => cf.id === f.id);
+              s.total_points += f.weights * fish.multiplier;
+              competition.total_weights += f.weights;
+              fish.weights += f.weights;
+            });
+          } else {
+            // Fix for pdf
+            competition.fishes.forEach((cf) => {
+              s.fishes.push({ id: cf.id, name: cf.name, weights: "-" });
+            });
+          }
+        });
+        competition.normal_points = this.calculateNormalResults(
+          competition,
+          signees
+        ).normal_points;
         // Dynamic headers, because competition names change
         //If there are any results in the competition
         if (competition.normal_points.length) {
@@ -994,65 +1137,72 @@ export default {
             }
           });
         }
-      });
-      if (all_results.length) {
-        this.isResults = true;
-        // limits the amount of competitions are taken into account in the cup
-        all_results = this.limitCompetitions(all_results, limit);
-        // Sort the array based on total cup points
-        this.results = all_results.sort(function compare(a, b) {
-          return (
-            parseInt(b.cup_results["total"]) - parseInt(a.cup_results["total"])
-          );
-        });
-        this.changeHeaders("Paikkakunta");
 
-        let final_placement = 1;
-        let last_points = -1;
-        let last_placement = -1;
-        this.results.forEach((signee) => {
-          if (last_points === signee.cup_results["total"]) {
-            signee.final_placement = last_placement;
-          } else {
-            signee.final_placement = final_placement;
-            last_points = signee.cup_results["total"];
-            last_placement = signee.final_placement;
-          }
-          signee.final_cup_points = signee.cup_results["total"];
-          final_placement++;
-        });
-      }
+        all_results.length ? (this.isResults = true) : (this.isResults = false);
+
+        if (all_results.length) {
+          // limits the amount of competitions are taken into account in the cup
+          all_results = this.limitCompetitions(all_results, limit);
+          // Sort the array based on total cup points
+          all_results = all_results.sort(function compare(a, b) {
+            return (
+              parseInt(b.cup_results["total"]) -
+              parseInt(a.cup_results["total"])
+            );
+          });
+          this.changeHeaders("Paikkakunta");
+
+          let final_placement = 1;
+          let last_points = -1;
+          let last_placement = -1;
+
+          all_results.forEach((signee) => {
+            if (last_points === signee.cup_results["total"]) {
+              signee.final_placement = last_placement;
+            } else {
+              signee.final_placement = final_placement;
+              last_points = signee.cup_results["total"];
+              last_placement = signee.final_placement;
+            }
+            signee.final_cup_points = signee.cup_results["total"];
+            final_placement++;
+          });
+          this.results = all_results;
+        }
+      });
     },
     changeHeaders(headerSelection) {
-      this.headers = [];
-      this.headers.push({
-        text: "Sijoitus",
-        highlight: false,
-        align: "center",
-        value: "final_placement",
-        isFinished: true,
-      });
-      this.headers.push({
-        text: "Kilp. Nro",
-        align: "center",
-        highlight: false,
-        value: "boat_number",
-        isFinished: true,
-      });
-      this.headers.push({
-        text: "Kippari",
-        align: "center",
-        highlight: false,
-        value: "captain_name",
-        isFinished: true,
-      });
-      this.headers.push({
-        text: "Paikkakunta",
-        align: "center",
-        highlight: false,
-        value: "locality",
-        isFinished: true,
-      });
+      this.headers = [
+        {
+          text: "Sijoitus",
+          highlight: false,
+          align: "center",
+          value: "final_placement",
+          isFinished: true,
+        },
+        {
+          text: "Kilp. Nro",
+          align: "center",
+          highlight: false,
+          value: "boat_number",
+          isFinished: true,
+        },
+        {
+          text: "Kippari",
+          align: "center",
+          highlight: false,
+          value: "captain_name",
+          isFinished: true,
+        },
+        {
+          text: "Paikkakunta",
+          align: "center",
+          highlight: false,
+          value: "locality",
+          isFinished: true,
+        },
+      ];
+
       this.notFinishedCount = 0;
       this.competitions.forEach((competition) => {
         // Keep track if there are unfinished competitions
@@ -1136,148 +1286,21 @@ export default {
       // Return sorted results
       return results;
     },
-
-    // Convert the charts and the tables to pdf
-    saveAsPDF(table_title) {
-      // Format dates for easier reding
-      // PDF creation
-      let doc = new jsPDF({
-        orientation: this.isLandscape ? "landscape" : "portrait",
-      });
-
-      // Title
-      const title = `${this.cup.name} (${this.cup.year})`;
-      let sub_title;
-      let columns = [];
-      let rows;
-      let startY;
-      // Find last competition from the array which has finished
-      let temp_array = [...this.competitions];
-      var index = temp_array
-        .slice()
-        .reverse()
-        .findIndex((competition) => competition.isFinished === true);
-      var count = temp_array.length - 1;
-      var finalIndex = index >= 0 ? count - index : index;
-      const last_competition = temp_array[finalIndex]
-        ? temp_array[finalIndex]
-        : null;
-      let last_competition_string = "";
-      let start_date = this.$moment();
-      if (last_competition) {
-        last_competition_string = `${last_competition.name} (${last_competition.locality})`;
-        start_date = this.$moment(last_competition.start_date);
-      }
-      const formatted_date = `${start_date.date()}.${
-        start_date.month() + 1
-      }.${start_date.year()}`;
-      doc.setFontSize(24);
-      doc.text(13, 15, title, { align: "left" });
-      doc.line(0, 20, 400, 20);
-      doc.setFontSize(14);
-      // Table, based on given table_id, and table title based on competition_type
-      let finished_competitions = 0;
-      let unfinished_competitions = 0;
-      this.competitions.forEach((competition) => {
-        competition.isFinished
-          ? finished_competitions++
-          : unfinished_competitions++;
-      });
-      if (table_title === "Tulokset") {
-        if (unfinished_competitions === 0 || !this.showUnfinishedCompetitions) {
-          sub_title = `Tulokset ${formatted_date}`;
-        } else {
-          sub_title = `Tilanne ${formatted_date}, ${last_competition_string}  (${unfinished_competitions} kpl kilpailuja kesken)`;
-        }
-        doc.text(13, 30, sub_title, { align: "left" });
-        if (this.showInfoInPdf) {
-          doc.text(
-            13,
-            40,
-            table_title +
-              ` (${this.selectedCompetitions}/${this.competitions.length} parasta kilpailua otettu huomioon)`,
-            { align: "left" }
-          );
-        }
-
-        this.headers.forEach((header) => {
-          columns.push(header.text);
-        });
-        rows = shared.cupDictToArray(
-          this.results,
-          this.competitions,
-          "cup_total_points"
-        );
-        startY = 45;
-      } else {
-        if (unfinished_competitions === 0) {
-          sub_title = `Cuppiin ilmoittautuneet ${this.cup.year}`;
-        } else {
-          sub_title = `Cupin kilpailijat ${formatted_date} ${last_competition_string}`;
-        }
-        doc.text(13, 30, sub_title, { align: "left" });
-        doc.setFontSize(8);
-
-        columns = ["Kilp. numero", "Kippari", "Varakippari", "Paikkakunta"];
-        this.signees = this.cup.signees.sort(
-          shared.sortBy("boat_number", true)
-        );
-        rows = shared.cupDictToArray(
-          this.signees,
-          this.competitions,
-          "signees"
-        );
-        /* eslint-disable no-unused-vars */
-        // Just add some empty rows for new signees
-        if (rows.length) {
-          let last_number = Number(rows[rows.length - 1][0]) + 1;
-          for (let i of shared.range(last_number, last_number + 10)) {
-            rows.push([i, "", "", ""]);
-          }
-        } else {
-          // If no signees, just add 20 empty rows
-          for (let i of shared.range(1, 20)) {
-            rows.push([i, "", "", ""]);
-            doc.text(13, 35, "Cupissa ei vielä ilmoittautuneita", {
-              align: "left",
-            });
-          }
-        }
-        /* eslint-enable no-unused-vars */
-        startY = 37;
-      }
-
-      doc.autoTable({
-        head: [columns],
-        body: rows,
-        styles: {
-          overflow: "linebreak",
-          halign: "justify",
-          fontSize: "8",
-          lineColor: 100,
-          lineWidth: 0.25,
-        },
-        columnStyles: { text: { cellwidth: "auto" } },
-        headStyles: { text: { cellwidth: "wrap" } },
-        theme: "striped",
-        pageBreak: "auto",
-        tableWidth: "auto",
-        startY: startY,
-        margin: { top: 20 },
-      });
-      const fileName = `${this.cup.year}_${shared.replaceAll(
-        "Cup",
-        " ",
-        ""
-      )}_${shared.replaceAll(
-        shared.capitalize_words(table_title),
-        " ",
-        ""
-      )}.pdf`;
+    pdfWrapper(table_title) {
+      saveCupAsPDF(
+        table_title,
+        this.isLandscape,
+        this.cup,
+        this.competitions,
+        this.showUnfinishedCompetitions,
+        this.showInfoInPdf,
+        this.selectedCompetitions,
+        this.headers,
+        this.results,
+        this.signees
+      );
       this.dialog = false;
-      shared.openPdfOnNewTab(doc, fileName);
     },
-    getMultiplierColor: shared.getMultiplierColor,
   },
 };
 </script>

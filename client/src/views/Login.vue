@@ -98,7 +98,7 @@
 <script>
 "use strict";
 
-import UserService from "../UserService";
+import UserService from "../services/UserService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 
 export default {
@@ -119,18 +119,15 @@ export default {
   mounted() {
     var input = document.getElementById("password");
     input.addEventListener("keyup", function (event) {
-      if (event.keyCode === 13) {
+      if (event.key === "Enter") {
         event.preventDefault();
         document.getElementById("sbtn").click();
       }
     });
-    // Focus on top of the page when changing pages
-    location.href = "#";
-    location.href = "#app";
   },
   methods: {
     // Add error to error array and direct user to it
-    showError: function (error) {
+    showError(error) {
       this.errors.push(error);
       location.href = "#";
       location.href = "#app";

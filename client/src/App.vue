@@ -3,22 +3,22 @@
   <!-- html and js autoinjects to here (on index.html in server) -->
   <v-app id="app" style="background: rgba(0, 0, 0, 0)">
     <!-- Sizes your content based upon application components -->
+    <!-- If using vue-router -->
+    <Header v-if="$store.state.logged_in" />
+    <MainHeader v-else />
+
     <v-main>
-      <!-- If using vue-router -->
-      <Header v-if="$store.state.logged_in" />
-      <MainHeader v-else />
       <router-view></router-view>
-      <v-snackbar v-model="snackbar" :timeout="timeout">
-        {{ text }}
-
-        <template v-slot:action="{ attrs }">
-          <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
-            Close
-          </v-btn>
-        </template>
-      </v-snackbar>
     </v-main>
+    <v-snackbar v-model="snackbar" :timeout="timeout">
+      {{ text }}
 
+      <template v-slot:action="{ attrs }">
+        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
     <Footer />
   </v-app>
 </template>
@@ -26,7 +26,7 @@
 <script>
 "use strict";
 import Footer from "./components/layout/Footer";
-import UserService from "./UserService";
+import UserService from "./services/UserService";
 import Header from "./components/layout/Header.vue";
 import MainHeader from "./components/layout/MainHeader";
 export default {
@@ -57,6 +57,7 @@ export default {
   },
   async mounted() {
     const user = JSON.parse(localStorage.getItem("user"));
+    const isAdmin = JSON.parse(localStorage.getItem("auth"));
     if (user) {
       const token = localStorage.getItem("jwt");
       if (token) {
@@ -73,7 +74,7 @@ export default {
               }
             });
           } else {
-            let res = await UserService.refreshToken(user);
+            let res = await UserService.refreshToken(user, isAdmin);
             if (res.success) {
               this.$store.state.is_admin = res.is_admin;
               this.$store.state.logged_in = true;

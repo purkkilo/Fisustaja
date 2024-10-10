@@ -49,18 +49,19 @@
                   >
                     <template v-slot:[`item.start_date`]="{ item }">
                       <v-chip color="primary darken-2">{{
-                        item.start_date.format("DD.MM.YYYY")
+                        formatDateToLocaleDateString(item.start_date)
                       }}</v-chip>
                     </template>
                     <template v-slot:[`item.cup_name`]="{ item }">
-                      <v-chip
+                      <v-chip v-if="item.cup_id"
                         >{{ item.cup_name }} ({{
-                          item.start_date.format("YYYY")
+                          getYear(item.start_date)
                         }})</v-chip
                       >
                     </template>
                     <template v-slot:[`item.cup_points_multiplier`]="{ item }">
                       <v-chip
+                        v-if="item.cup_id"
                         :color="getColor(item.cup_points_multiplier)"
                         :outlined="$store.getters.getTheme"
                         >{{ item.cup_points_multiplier }}x</v-chip
@@ -176,7 +177,7 @@
                             :color="
                               item.isPublic ? 'green darken-2' : 'red darken-2'
                             "
-                            @click="publishCup(item)"
+                            @click="$emit('publish', item)"
                             :disabled="publishing"
                             >{{
                               item.isPublic ? "Julkinen" : "Salainen"
@@ -231,6 +232,8 @@
 
 <script>
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
+import CupService from "../services/CupService.js";
+import { formatDateToLocaleDateString } from "../shared";
 
 export default {
   name: "ContinueComp",
@@ -268,12 +271,16 @@ export default {
 
   mounted() {},
   methods: {
+    formatDateToLocaleDateString: formatDateToLocaleDateString,
+    getYear(date) {
+      return new Date(date).getFullYear();
+    },
     getColor(multiplier) {
       if (multiplier > 1) return "red";
       if (multiplier === 1) return "green";
       else return "grey";
     },
-    pickCompetition: function (competition) {
+    pickCompetition(competition) {
       // Pick competition for the app to use
       //NOTE Store competition to vuex, redundant?
       this.$store.state.competition = competition;
@@ -281,7 +288,7 @@ export default {
       localStorage.setItem(
         "competition",
         JSON.stringify({
-          id: competition._id,
+          _id: competition._id,
           start_date: competition.start_date,
           end_date: competition.end_date,
         })
@@ -291,10 +298,24 @@ export default {
     },
     pickCup(cup) {
       // Pick cup for the app to use
-      // Set cup.id to localstorage for database queries
+      // Set cup._id to localstorage for database queries
       localStorage.setItem("cup", cup._id);
       // redirect to /cup-overview
       this.$router.push({ path: "/cup-overview" });
+    },
+    async publishCup(cup) {
+      cup.isPublic = !cup.isPublic;
+      try {
+        //TODO update only this one variable (competition.normal_points) to database, not the whole competition
+        this.publishing = true;
+        const newValues = {
+          $set: { isPublic: cup.isPublic },
+        };
+        await CupService.updateValues(cup._id, newValues);
+      } catch (err) {
+        console.error(err.message);
+      }
+      this.publishing = false;
     },
   },
 };

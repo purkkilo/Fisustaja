@@ -104,7 +104,7 @@
 <script>
 "use strict";
 
-import FeedbackService from "../FeedbackService";
+import FeedbackService from "../services/FeedbackService";
 
 export default {
   name: "Feedback",
@@ -127,11 +127,6 @@ export default {
       vm.prevRoute = from;
     });
   },
-  mounted() {
-    // Focus on top of the page when changing pages
-    location.href = "#";
-    location.href = "#app";
-  },
   methods: {
     async sendFeedback() {
       // If type not set
@@ -147,7 +142,9 @@ export default {
           try {
             // Add object to database
             //Add feedback to database (check 'client\src\FeedbackService.js' and 'server\routes\api\feedback.js' to see how this works)
-            await FeedbackService.insertFeedback(feedback);
+            await FeedbackService.insertFeedback([feedback]).catch((e) => {
+              console.log(e);
+            });
             this.text = "Palaute vastaanotettu!";
             this.snackbar = true;
           } catch (err) {

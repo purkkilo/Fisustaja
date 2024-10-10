@@ -19,14 +19,7 @@ class CupService {
 
   // Create cup
   static insertCup(cup) {
-    return axios.post(url, {
-      user_id: cup.user_id,
-      name: cup.name,
-      year: cup.year,
-      signees: [],
-      isPublic: false,
-      meaningful_competitions: cup.meaningful_competitions,
-    });
+    return axios.post(url, cup);
   }
 
   // Update whole cup
@@ -47,7 +40,6 @@ class CupService {
 function dataToCup(data) {
   return data.map((cup) => ({
     ...cup,
-    id: cup._id,
     createdAt: new Date(cup.createdAt),
   }));
 }

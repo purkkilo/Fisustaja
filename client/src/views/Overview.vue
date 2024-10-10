@@ -1,15 +1,8 @@
 <template>
   <!-- /overview -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <div>
-    <v-row>
-      <v-col>
-        <CompetitionNavigation></CompetitionNavigation>
-      </v-col>
-      <v-col>
-        <Timedate />
-      </v-col>
-    </v-row>
+  <div style="padding: 0px">
+    <Timedate />
 
     <v-container
       v-bind:class="{
@@ -44,20 +37,15 @@
         outlined
         :dark="$store.getters.getTheme"
       >
-        <v-row align="center">
-          <v-col>
-            <h1 style="margin: 30px">Yleisnäkymä</h1>
-          </v-col>
-        </v-row>
-
         <v-row>
           <v-col>
             <v-card :dark="$store.getters.getTheme" elevation="20" outlined>
-              <v-card-title class="text-center"
-                ><p class="display-1">
+              <v-card-title
+                ><span class="display-2">
                   {{ competition.name }}
-                </p></v-card-title
+                </span></v-card-title
               >
+              <v-card-subtitle>Yleistietoa</v-card-subtitle>
               <v-list outlined elevation="10">
                 <v-list-item>
                   <v-list-item-icon>
@@ -65,22 +53,13 @@
                   </v-list-item-icon>
                   <v-list-item-title>Päivämäärä</v-list-item-title>
                   <v-list-item-subtitle class="blue--text">
-                    <b>{{ formatted_start_date }} - {{ formatted_end_date }}</b>
-                  </v-list-item-subtitle>
-                </v-list-item>
-                <v-divider></v-divider>
-                <v-list-item>
-                  <v-list-item-icon>
-                    <v-icon>mdi-clock-time-four</v-icon>
-                  </v-list-item-icon>
-                  <v-list-item-title>Kilpailuaika</v-list-item-title>
-                  <v-list-item-subtitle class="blue--text">
                     <b
-                      >{{ competition.start_time }} -
-                      {{ competition.end_time }}</b
+                      >{{ formatDate(competition.start_date) }} -
+                      {{ formatDate(competition.end_date) }}</b
                     >
                   </v-list-item-subtitle>
                 </v-list-item>
+                <v-divider></v-divider>
                 <v-divider></v-divider>
                 <v-list-item>
                   <v-list-item-icon>
@@ -120,16 +99,17 @@
                   <v-list-item-subtitle
                     v-if="competition.signees.length"
                     v-bind:class="{
-                      'green--text':
-                        !competition.signees.length -
-                        $store.getters.getFinishedSignees.length,
-                      'red--text': competition.signees.length,
+                      'green--text': !competition.signees.filter(
+                        (s) => !s.returned
+                      ).length,
+                      'red--text': competition.signees.filter(
+                        (s) => !s.returned
+                      ).length,
                     }"
                   >
                     <b>{{ hasNotReturnedPercentage }}%</b>
                     ({{
-                      competition.signees.length -
-                      $store.getters.getFinishedSignees.length
+                      competition.signees.filter((s) => !s.returned).length
                     }}
                     / {{ competition.signees.length }})
                   </v-list-item-subtitle>
@@ -149,7 +129,7 @@
                     v-if="competition.signees.length"
                   >
                     <b>{{ hasGottenFishPercentage }}%</b> ({{
-                      $store.getters.getPointSignees.length
+                      hasGottenFishCount
                     }}
                     / {{ competition.signees.length }})
                   </v-list-item-subtitle>
@@ -198,17 +178,17 @@
 </template>
 <script>
 "use strict";
-import CompetitionService from "../CompetitionService";
+import CompetitionService from "../services/CompetitionService";
+import ResultService from "../services/ResultService.js";
 import Timedate from "../components/layout/Timedate";
-import CompetitionNavigation from "../components/layout/CompetitionNavigation.vue";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
+import { formatDate } from "../shared";
 
 export default {
   name: "Overview",
   components: {
     Timedate,
     ProgressBarQuery,
-    CompetitionNavigation,
   },
   data() {
     return {
@@ -220,6 +200,7 @@ export default {
       dialog: false,
       hasNotReturnedPercentage: 0,
       hasGottenFishPercentage: 0,
+      hasGottenFishCount: 0,
       selectedItem: 0,
       items: [
         {
@@ -255,27 +236,14 @@ export default {
     if (localStorage.getItem("competition") != null) {
       // update from database
       const competition = JSON.parse(localStorage.getItem("competition"));
-      const competition_id = competition["id"];
-      this.refreshCompetition(competition_id);
-    } else {
-      console.log("No competition in localstorage!");
-    }
-  },
-  mounted() {
-    // Focus on top of the page when changing pages
-    location.href = "#";
-    location.href = "#app";
-    // IF competition on localstorage
-    if (localStorage.getItem("competition") != null) {
-      // update from database
-      const competition = JSON.parse(localStorage.getItem("competition"));
-      const competition_id = competition["id"];
+      const competition_id = competition["_id"];
       this.refreshCompetition(competition_id);
     } else {
       console.log("No competition in localstorage!");
     }
   },
   methods: {
+    formatDate: formatDate,
     // fetch/update competition from database
     async refreshCompetition(competition_id) {
       this.loading = true;
@@ -287,34 +255,50 @@ export default {
         });
         // IF competition found from database
         if (competition) {
-          // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
-          //TODO make a test for this?
           this.competition = competition;
+
+          // Get results === signees
+          await ResultService.getResults({ competition_id: competition._id })
+            .then((r) => {
+              this.competition.total_weights = 0;
+              r.forEach((s) => {
+                s.fishes.forEach((f) => {
+                  this.competition.total_weights += f.weights;
+                });
+              });
+              this.competition.signees = r;
+            })
+            .catch((e) => {
+              console.log(e);
+            });
           // Update to vuex, Assing variables from vuex (see client/store/index.js)
           this.$store.commit("refreshCompetition", this.competition);
           localStorage.setItem("cup", this.competition.cup_id);
-          let start_date = this.$moment(this.competition.start_date);
-          let end_date = this.$moment(this.competition.end_date);
-          this.formatted_start_date = `${start_date.date()}.${
-            start_date.month() + 1
-          }.${start_date.year()}`;
-          this.formatted_end_date = `${end_date.date()}.${
-            end_date.month() + 1
-          }.${end_date.year()}`;
+          let start_date = new Date(this.competition.start_date);
+          let end_date = new Date(this.competition.end_date);
+          this.formatted_start_date = `${start_date.getDate()}.${
+            start_date.getMonth() + 1
+          }.${start_date.getFullYear()}`;
+          this.formatted_end_date = `${end_date.getDate()}.${
+            end_date.getMonth() + 1
+          }.${end_date.getFullYear()}`;
 
-          this.hasGottenFishPercentage =
+          this.hasNotReturnedPercentage =
             Math.round(
-              (this.$store.getters.getPointSignees.length /
+              (this.competition.signees.filter((s) => !s.returned).length /
                 this.competition.signees.length) *
                 100 *
                 100
             ) / 100;
 
-          this.hasNotReturnedPercentage =
+          // Check how many signees have gotten fish
+          this.competition.signees.forEach((signee) => {
+            if (signee.fishes.length) this.hasGottenFishCount++;
+          });
+
+          this.hasGottenFishPercentage =
             Math.round(
-              ((this.competition.signees.length -
-                this.$store.getters.getFinishedSignees.length) /
-                competition.signees.length) *
+              (this.hasGottenFishCount / this.competition.signees.length) *
                 100 *
                 100
             ) / 100;
@@ -322,7 +306,7 @@ export default {
           this.competition = { name: "Kilpailua ei löytynyt tietokannasta..." };
         }
       } catch (err) {
-        console.log(err.message);
+        console.log(err);
       }
       this.loading = false;
     },

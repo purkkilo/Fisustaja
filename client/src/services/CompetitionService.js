@@ -20,15 +20,8 @@ class CompetitionService {
   }
 
   // Create competition
-  static insertCompetition(competition) {
-    return axios.post(url, {
-      ...competition,
-      normal_points: [],
-      normal_weights: [],
-      team_results: [],
-      isPublic: false,
-      isFinished: false,
-    });
+  static insertCompetitions(competitions) {
+    return axios.post(url, competitions);
   }
 
   // Update whole competition

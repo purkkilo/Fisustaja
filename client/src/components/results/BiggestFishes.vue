@@ -4,11 +4,7 @@
       <v-col md="10" offset-md="1" style="margin-bottom: 40px">
         <v-card :dark="$store.getters.getTheme">
           <v-card-title>
-            <p v-if="results_found_fishes" class="flow-text">
-              Suurimmat kalat ({{ selected_biggest_fish }}
-              {{ results_found_fishes }})
-            </p>
-            <p v-else class="flow-text">
+            <p class="flow-text">
               Suurimmat kalat ({{ selected_biggest_fish }})
             </p>
             <v-spacer></v-spacer>
@@ -33,10 +29,10 @@
               >
             </template>
             <template v-slot:[`item.name`]="{ item }">
-              <v-chip>{{ item.name }}</v-chip>
+              {{ item.name }}
             </template>
             <template v-slot:[`item.weight`]="{ item }">
-              <v-chip>{{ item.weight.toLocaleString() }} g</v-chip>
+              {{ item.weight.toLocaleString() }}
             </template>
           </v-data-table>
         </v-card>
@@ -71,18 +67,13 @@ export default {
     "fish_names",
     "selected_biggest_fish",
     "biggest_fishes_results",
-    "results_found_fishes",
     "search_fishes",
     "headers",
   ],
-  data() {
-    return {};
-  },
   created() {
     this.getColorPoints = getColorPoints;
     this.getColor = getColor;
   },
-  methods: {},
 };
 </script>
 <style scoped></style>
