@@ -886,26 +886,28 @@ export default {
                 if (result.fishes.length) {
                   this.hasGottenFishCount++;
                   result.fishes.forEach((f) => {
-                    let fish = this.competition.fishes.find(
-                      (cf) => cf.id === f.id
-                    );
-                    result.total_points += f.weights * fish.multiplier;
-                    this.competition.total_weights += f.weights;
-                    fish.weights += f.weights;
-                    if (this.biggest_amounts[fish.name]) {
-                      this.biggest_amounts[fish.name].push({
-                        boat_number: result.boat_number,
-                        captain_name: result.captain_name,
-                        weight: f.weights,
-                      });
-                    } else {
-                      this.biggest_amounts[fish.name] = [
-                        {
+                    if (f.weights > 0) {
+                      let fish = this.competition.fishes.find(
+                        (cf) => cf.id === f.id
+                      );
+                      result.total_points += f.weights * fish.multiplier;
+                      this.competition.total_weights += f.weights;
+                      fish.weights += f.weights;
+                      if (this.biggest_amounts[fish.name]) {
+                        this.biggest_amounts[fish.name].push({
                           boat_number: result.boat_number,
                           captain_name: result.captain_name,
                           weight: f.weights,
-                        },
-                      ];
+                        });
+                      } else {
+                        this.biggest_amounts[fish.name] = [
+                          {
+                            boat_number: result.boat_number,
+                            captain_name: result.captain_name,
+                            weight: f.weights,
+                          },
+                        ];
+                      }
                     }
                   });
                 } else {

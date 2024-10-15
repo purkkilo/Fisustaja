@@ -71,8 +71,6 @@
   </v-container>
 </template>
 <script>
-import CompetitionService from "../services/CompetitionService";
-
 export default {
   name: "Home",
   components: {},
@@ -115,18 +113,6 @@ export default {
     },
   },
   async mounted() {
-    let competitions = await CompetitionService.getCompetitions();
-    competitions.forEach((c) => {
-      c.fishes.forEach((element, index) => {
-        element.id = index;
-      });
-    });
-
-    await CompetitionService.replaceManyCompetitions(competitions)
-      .then(() => {
-        console.log("Done");
-      })
-      .catch((e) => console.log(e));
     // Set competition in localstorage and vuex to null
     this.$store.commit("refreshCompetition", null);
     localStorage.removeItem("competition");

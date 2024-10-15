@@ -1076,7 +1076,7 @@ export function saveAllAsPDF(
     fish_names.forEach((name) => {
       start_coord = 10;
 
-      if (biggest_amounts[name].length) {
+      if (biggest_amounts[name]) {
         // So it doesn't add unnecessary page on the first loop
         if (counter > 0) {
           doc.addPage();
