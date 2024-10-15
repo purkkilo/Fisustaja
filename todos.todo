@@ -3,4 +3,4 @@ Todos:
   ☐ Add qr code possibility to signing/weighting (rfid)
   ☐ Add possibility to get weights via usb scale
   ☐ write good description
-  ☐ Parse old competitions from fisustaja db to use the new db models
+  ☐ Fix suurimmat kalasaaliit

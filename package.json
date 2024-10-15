@@ -4,9 +4,9 @@
   "description": "web app for fisustaja",
   "main": "main.js",
   "scripts": {
-    "start": "node server/index.js",
-    "server": "nodemon server/index.js",
-    "dev": "concurrently \" cd server && nodemon index.js\" \"cd client && npm run serve\"",
+    "start": "node --env-file=.env server/index.js",
+    "server": "nodemon --env-file=.env server/index.js",
+    "dev": "concurrently \" cd server && nodemon --env-file=../.env index.js\" \"cd client && npm run serve\"",
     "build-app": "cd client && npm run build",
     "postinstall": "cd client && npm install && npm run build"
   },

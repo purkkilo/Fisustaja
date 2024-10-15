@@ -112,6 +112,29 @@ router.put("/:id/replace", async (req, res) => {
   }
 });
 
+// Replace many results
+router.put("/replace-many", async (req, res) => {
+  try {
+    const bulkData = req.body.map((item) => ({
+      replaceOne: {
+        upsert: true,
+        filter: {
+          _id: item._id,
+        },
+        replacement: item,
+      },
+    }));
+
+    await Result.bulkWrite(bulkData).catch((err) => {
+      console.log(err);
+    });
+
+    res.status(204).send();
+  } catch (error) {
+    res.status(400).send(error);
+  }
+});
+
 // Delete results
 router.delete("/:id", async (req, res) => {
   try {

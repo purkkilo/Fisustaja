@@ -3,15 +3,9 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const passport = require("passport");
-let key;
 const User = require("../../models/User");
 
-if (process.env.NODE_ENV === "production") {
-  key = process.env.SECRET;
-} else {
-  const config = require("../../config/config.json");
-  key = config.secret;
-}
+const key = process.env.SECRET;
 
 /**
  * @route POST api/users/register

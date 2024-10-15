@@ -1038,7 +1038,6 @@ export default {
         });
         // IF competition found from database
         if (competition) {
-          // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
           //TODO make a test for this?
           this.competition = competition;
           // Update to vuex, Assing variables from vuex (see client/store/index.js)

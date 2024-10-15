@@ -29,7 +29,6 @@ app.use("/api/users", users);
 app.use("/api/cups", cups);
 app.use("/api/results", results);
 app.use("/api/fishes", fishes);
-
 app.use(
   history({
     verbose: true,
@@ -39,18 +38,9 @@ app.use(
 // Static folder
 app.use(express.static(path.join(__dirname, "public")));
 
-let url = "";
-//TODO Change to fisustaja after modidying old db
-let db = "fisustaja-dev";
-if (process.env.NODE_ENV === "production") {
-  url = process.env.MONGODB_URI;
-} else {
-  const config = require("./config/config.json");
-  url = config.mongodb_url;
-  if (config.use_dev_db) {
-    db = "fisustaja-dev";
-  }
-}
+// TODO local database
+const url = process.env.MONGODB_URI;
+const db = process.env.TESTING === "true" ? process.env.DEV_DB : process.env.DB;
 
 mongoose.set("strictQuery", false);
 mongoose

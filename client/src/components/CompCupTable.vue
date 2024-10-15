@@ -306,7 +306,6 @@ export default {
     async publishCup(cup) {
       cup.isPublic = !cup.isPublic;
       try {
-        //TODO update only this one variable (competition.normal_points) to database, not the whole competition
         this.publishing = true;
         const newValues = {
           $set: { isPublic: cup.isPublic },

@@ -853,6 +853,7 @@ export default {
             { text: "Kippari", value: "captain_name" },
           ];
           this.competition.fishes.forEach((fish) => {
+            fish.weights = 0;
             this.fish_names.push(fish.name);
             this.fish_amount_names.push(fish.name);
             this.table_fish_names.push(fish.name);
@@ -877,32 +878,31 @@ export default {
           await ResultService.getResults({
             competition_id: this.competition._id,
           })
-            .then((r) => {
+            .then((results) => {
               this.competition.total_weights = 0;
               this.hasGottenFishCount = 0;
-              r.forEach((s) => {
-                s.total_points = 0;
-                if (s.fishes.length) {
+              results.forEach((result) => {
+                result.total_points = 0;
+                if (result.fishes.length) {
                   this.hasGottenFishCount++;
-
-                  s.fishes.forEach((f) => {
+                  result.fishes.forEach((f) => {
                     let fish = this.competition.fishes.find(
                       (cf) => cf.id === f.id
                     );
-                    s.total_points += f.weights * fish.multiplier;
+                    result.total_points += f.weights * fish.multiplier;
                     this.competition.total_weights += f.weights;
                     fish.weights += f.weights;
                     if (this.biggest_amounts[fish.name]) {
                       this.biggest_amounts[fish.name].push({
-                        boat_number: s.boat_number,
-                        captain_name: s.captain_name,
+                        boat_number: result.boat_number,
+                        captain_name: result.captain_name,
                         weight: f.weights,
                       });
                     } else {
                       this.biggest_amounts[fish.name] = [
                         {
-                          boat_number: s.boat_number,
-                          captain_name: s.captain_name,
+                          boat_number: result.boat_number,
+                          captain_name: result.captain_name,
                           weight: f.weights,
                         },
                       ];
@@ -911,12 +911,16 @@ export default {
                 } else {
                   // Fix for pdf
                   this.competition.fishes.forEach((cf) => {
-                    s.fishes.push({ id: cf.id, name: cf.name, weights: "-" });
+                    result.fishes.push({
+                      id: cf.id,
+                      name: cf.name,
+                      weights: "-",
+                    });
                   });
                 }
               });
 
-              this.signees = r;
+              this.signees = results;
               this.calculateAll();
 
               this.$store.commit("refreshCompetition", this.competition);

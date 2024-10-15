@@ -34,6 +34,10 @@ class CompetitionService {
     return axios.put(`${url}${id}/update`, newvalues);
   }
 
+  static replaceManyCompetitions(competitions) {
+    return axios.put(`${url}replace-many`, competitions);
+  }
+
   static deleteCompetition(id) {
     return axios.delete(`${url}${id}`);
   }

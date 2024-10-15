@@ -95,6 +95,29 @@ router.put("/:id/replace", async (req, res) => {
   }
 });
 
+// Replace many competitions
+router.put("/replace-many", async (req, res) => {
+  try {
+    const bulkData = req.body.map((item) => ({
+      replaceOne: {
+        upsert: true,
+        filter: {
+          _id: item._id,
+        },
+        replacement: item,
+      },
+    }));
+
+    await Competition.bulkWrite(bulkData).catch((err) => {
+      console.log(err);
+    });
+
+    res.status(204).send();
+  } catch (error) {
+    res.status(400).send(error);
+  }
+});
+
 // Delete Competition
 router.delete("/:id", async (req, res) => {
   try {

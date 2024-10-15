@@ -4,9 +4,11 @@ const Schema = mongoose.Schema;
 // Result Schema
 /*
       boat_number: 4,
-      captain_name: "test4",
+      captain_name: "test4",´
+      temp_captain_name: "temptest4",
+      locality: "testlocality",
       crew: ["t2", "t1"],
-      fishes: [{"name": "Lohi", weight: 1},{"name": "Hauki", weight: 2}],
+      fishes: [{"name": "Lohi", "weight": 1},{"name": "Hauki", "weight": 2}],
       competition_id: "665e652954728ad48eff6aa0",
       cup_id: "665e5f6354728ad48eff6a9b",
       createdAt: new Date(),
@@ -31,7 +33,6 @@ const ResultSchema = new Schema({
   },
   team: {
     type: String,
-    required: true,
   },
   locality: {
     type: String,
