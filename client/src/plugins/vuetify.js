@@ -9,6 +9,6 @@ import en from "vuetify/lib/locale/en";
 export default new Vuetify({
   lang: {
     locales: { en, fi },
-    current: "fi",
+    current: "en",
   },
 });

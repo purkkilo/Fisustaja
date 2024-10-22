@@ -14,10 +14,17 @@
       <v-toolbar-title>Fisustaja</v-toolbar-title>
 
       <v-spacer></v-spacer>
+      <v-btn
+        style="margin-right: 20px"
+        class="locale-switcher"
+        @click="setLocale"
+      >
+        🌐 {{ $i18n.locale }}
+      </v-btn>
 
       <router-link to="/login"
         ><v-btn text outlined rounded color="green"
-          ><v-icon>mdi-login</v-icon>Kirjaudu</v-btn
+          ><v-icon>mdi-login</v-icon>{{ $t("nav.login") }}</v-btn
         ></router-link
       >
     </v-app-bar>
@@ -49,14 +56,14 @@
           </v-list-item-icon>
 
           <v-list-item-content>
-            <v-list-item-title>{{ item.title }}</v-list-item-title>
+            <v-list-item-title>{{ $t(item.title) }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-action>
             <v-switch v-model="updateSwitch" color="indigo darken-3"></v-switch>
           </v-list-item-action>
-          <v-list-item-title>Tumma teema</v-list-item-title>
+          <v-list-item-title>{{ $t("nav.theme") }}</v-list-item-title>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
@@ -81,9 +88,9 @@ export default {
       drawer: null,
       updateSwitch: this.$store.getters.getTheme,
       items: [
-        { title: "Kotisivu", route: "/", icon: "mdi-home", color: "white" },
+        { title: "nav.home", route: "/", icon: "mdi-home", color: "white" },
         {
-          title: "Kirjaudu",
+          title: "nav.login",
           route: "/login",
           icon: "mdi-login",
           color: "green darken-1",
@@ -134,6 +141,13 @@ export default {
         this.text = "Olet jo tällä sivulla!";
         this.snackbar = true;
       }
+    },
+    setLocale() {
+      this.$i18n.locale === "en"
+        ? (this.$i18n.locale = "fi")
+        : (this.$i18n.locale = "en");
+
+      this.$vuetify.lang.current = this.$i18n.locale;
     },
   },
 };

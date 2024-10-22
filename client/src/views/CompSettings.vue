@@ -19,7 +19,7 @@
       >
         <v-row align="center">
           <v-col>
-            <h1 style="margin: 30px">Kilpailun määritykset</h1>
+            <h1 style="margin: 30px">{{ $t("comp.is") }} määritykset</h1>
           </v-col>
           <v-col>
             <v-btn
@@ -28,7 +28,7 @@
               tile
               color="grey"
               @click="basic_info_validated = false"
-              ><v-icon>mdi-cog-transfer</v-icon>Muuta tietoja</v-btn
+              ><v-icon>mdi-cog-transfer</v-icon>{{ $t("modify-info") }}</v-btn
             >
           </v-col>
         </v-row>
@@ -49,21 +49,11 @@
               <v-col md="10" offset-md="1">
                 <v-card :dark="$store.getters.getTheme" elevation="20" outlined>
                   <v-card-title class="text-center">
-                    <p class="display-1">Perustiedot</p>
+                    <p class="display-1">
+                      {{ competition.name }}, {{ competition.locality }}
+                    </p>
                   </v-card-title>
                   <v-list outlined elevation="10">
-                    <v-list-item>
-                      <v-list-item-icon>
-                        <v-icon>mdi-ferry</v-icon>
-                      </v-list-item-icon>
-                      <v-list-item-title>Kilpailu</v-list-item-title>
-                      <v-list-item-subtitle class="blue-text">
-                        <b
-                          >{{ competition.name }}, {{ competition.locality }}</b
-                        >
-                      </v-list-item-subtitle>
-                    </v-list-item>
-                    <v-divider></v-divider>
                     <v-list-item v-if="competition.isCupCompetition">
                       <v-list-item-icon>
                         <v-icon color="yellow darken-4">mdi-trophy</v-icon>
@@ -76,37 +66,13 @@
                     <v-divider></v-divider>
                     <v-list-item>
                       <v-list-item-icon>
-                        <v-icon>mdi-calendar-arrow-right</v-icon>
+                        <v-icon>mdi-calendar-today</v-icon>
                       </v-list-item-icon>
-                      <v-list-item-title>Aloituspäivä</v-list-item-title>
+                      <v-list-item-title>{{ $t("date") }}</v-list-item-title>
                       <v-list-item-subtitle class="blue-text">
-                        <b>{{
-                          formatDateToLocaleDateString(competition.start_date)
-                        }}</b>
-                      </v-list-item-subtitle>
-                    </v-list-item>
-                    <v-divider></v-divider>
-                    <v-list-item>
-                      <v-list-item-icon>
-                        <v-icon>mdi-calendar-multiple-check</v-icon>
-                      </v-list-item-icon>
-                      <v-list-item-title>Lopetuspäivä</v-list-item-title>
-                      <v-list-item-subtitle class="blue-text">
-                        <b>{{
-                          formatDateToLocaleDateString(competition.end_date)
-                        }}</b>
-                      </v-list-item-subtitle>
-                    </v-list-item>
-                    <v-divider></v-divider>
-                    <v-list-item>
-                      <v-list-item-icon>
-                        <v-icon>mdi-calendar-clock</v-icon>
-                      </v-list-item-icon>
-                      <v-list-item-title>Kilpailuaika</v-list-item-title>
-                      <v-list-item-subtitle class="blue-text">
-                        <b>
-                          {{ competition.start_time }} -
-                          {{ competition.end_time }}</b
+                        <b
+                          >{{ formatDate(competition.start_date) }} -
+                          {{ formatDate(competition.end_date) }}</b
                         >
                       </v-list-item-subtitle>
                     </v-list-item>
@@ -117,7 +83,8 @@
                       </v-list-item-icon>
                       <v-list-item-content>
                         <v-list-item-title
-                          >Kilpailun sijoittumispisteet</v-list-item-title
+                          >{{ $t("comp.is") }}
+                          {{ $t("placement-points") }}</v-list-item-title
                         >
                         <v-list
                           :dark="$store.getters.getTheme"
@@ -153,8 +120,8 @@
                         >
                       </v-list-item-icon>
                       <v-list-item-title
-                        >Kilpailijoiden Cup
-                        osallistumispisteet</v-list-item-title
+                        >{{ $t("cup.normal") }}
+                        {{ $t("participation-points") }}</v-list-item-title
                       >
                       <v-list-item-subtitle class="blue-text">
                         <b>{{ competition.cup_participation_points }}</b>
@@ -168,7 +135,8 @@
                         >
                       </v-list-item-icon>
                       <v-list-item-title
-                        >Kilpailun pistekerroin</v-list-item-title
+                        >{{ $t("cup.normal") }}
+                        {{ $t("multiplier") }}</v-list-item-title
                       >
                       <v-list-item-subtitle class="blue-text">
                         <b>x {{ competition.cup_points_multiplier }}</b>
@@ -180,7 +148,7 @@
                         <v-icon>mdi-incognito</v-icon>
                       </v-list-item-icon>
                       <v-list-item-title
-                        >Onko kilpailu julkinen</v-list-item-title
+                        >{{ $t("is") }} {{ $t("public") }}</v-list-item-title
                       >
                       <v-list-item-subtitle class="blue-text">
                         <v-icon
@@ -198,9 +166,9 @@
                           >mdi-trophy-award</v-icon
                         >
                       </v-list-item-icon>
-                      <v-list-item-title
-                        >Onko kilpailu päättynyt</v-list-item-title
-                      >
+                      <v-list-item-title>{{
+                        $t("comp.has-it-ended")
+                      }}</v-list-item-title>
                       <v-list-item-subtitle class="blue-text">
                         <v-icon
                           v-if="competition.isFinished"
@@ -218,7 +186,9 @@
               <v-col md="10" offset-md="1" class="scroll_table">
                 <v-card :dark="$store.getters.getTheme" outlined>
                   <v-card-title class="text-center"
-                    ><p class="display-1">Kalojen määritykset</p></v-card-title
+                    ><p class="display-1">
+                      {{ $t("fish-specs") }}
+                    </p></v-card-title
                   >
                   <v-list outlined elevation="10">
                     <div v-for="(fish, index) in fish_specs" :key="index">
@@ -252,11 +222,11 @@
                   :loading="updating"
                 >
                   <div v-if="competition.isPublic">
-                    <v-icon>mdi-incognito</v-icon> Aseta kilpailu salaiseksi
+                    <v-icon>mdi-incognito</v-icon>{{ $t("button.set-private") }}
                   </div>
                   <div v-else>
-                    <v-icon color="green">mdi-publish</v-icon> Aseta kilpailu
-                    julkiseksi
+                    <v-icon color="green">mdi-publish</v-icon
+                    >{{ $t("button.set-public") }}
                   </div>
                 </v-btn>
               </v-col>
@@ -269,12 +239,12 @@
                   :loading="updating"
                 >
                   <div v-if="competition.isFinished" class="black--text">
-                    <v-icon color="red darken-2">mdi-cancel</v-icon> Aseta
-                    kilpailu keskeneräiseksi
+                    <v-icon color="red darken-2">mdi-cancel</v-icon>
+                    {{ $t("button.set-not-complete") }}
                   </div>
                   <div v-else>
-                    <v-icon color="yellow">mdi-trophy</v-icon> Aseta kilpailu
-                    päättyneeksi
+                    <v-icon color="yellow">mdi-trophy</v-icon>
+                    {{ $t("button.set-complete") }}
                   </div>
                 </v-btn>
               </v-col>
@@ -287,8 +257,8 @@
                   class="white--text"
                   :loading="updating"
                   @click="deleteCompetition(competition._id, false)"
-                  ><v-icon color="white">mdi-delete-forever</v-icon> Poista
-                  Kilpailu</v-btn
+                  ><v-icon color="white">mdi-delete-forever</v-icon
+                  >{{ $t("button.delete-comp") }}</v-btn
                 >
               </v-col>
             </v-row>
@@ -332,25 +302,13 @@
             <h1>Muuta määrityksiä</h1>
           </v-col>
         </v-row>
-        <v-row>
-          <v-col>
-            <p class="white--text">Kilpailun perustiedot</p>
-            <p
-              v-if="basic_info_validated"
-              class="flow-text yellow lighten-1 center-align"
-            >
-              Tiedot lukittuna, paina "Muuta tietoja" jos haluat varmasti
-              muokata tietoja
-            </p>
-          </v-col>
-        </v-row>
         <v-row v-if="!loading">
           <v-col cols="12">
             <v-row v-if="competition" justify="center">
               <v-col cols="6" class="input-fields">
                 <v-text-field
                   :dark="$store.getters.getTheme"
-                  label="Kilpailun nimi"
+                  :label="$t('comp.is') + ' ' + $t('name')"
                   v-model="name"
                   :maxlength="max_input"
                   :disabled="basic_info_validated"
@@ -364,7 +322,7 @@
               <v-col cols="6" class="input-fields">
                 <v-text-field
                   :dark="$store.getters.getTheme"
-                  label="Paikkakunta"
+                  :label="$t('locality')"
                   v-model="locality"
                   :maxlength="max_input"
                   :disabled="basic_info_validated"
@@ -376,13 +334,15 @@
 
             <v-row v-if="loading_cups">
               <v-col>
-                <h2 class="white--text">Haetaan cuppeja...</h2>
+                <h2 class="white--text">
+                  {{ $t("fetching") }} {{ $t("cup.many") }}...
+                </h2>
                 <ProgressBarQuery />
               </v-col>
             </v-row>
             <v-row v-if="competition" justify="center" align="center">
               <v-col cols="6" class="input-fields">
-                <span class="white--text">Kuuluuko kilpailu cuppiin?</span>
+                <span class="white--text">{{ $t("does-it-belong") }}?</span>
                 <v-row justify="center" align="center">
                   <v-spacer></v-spacer>
                   <v-col>
@@ -391,8 +351,8 @@
                       row
                       :disabled="basic_info_validated"
                     >
-                      <v-radio label="Kyllä" value="Kyllä"></v-radio>
-                      <v-radio label="Ei" value="Ei"></v-radio>
+                      <v-radio :label="$t('yes')" value="Kyllä"></v-radio>
+                      <v-radio :label="$t('no')" value="Ei"></v-radio>
                     </v-radio-group>
                   </v-col>
                   <v-spacer></v-spacer>
@@ -427,7 +387,9 @@
               justify="center"
             >
               <v-col cols="6" class="input-fields">
-                <v-subheader class="white--text"> Valitse Cup </v-subheader>
+                <v-subheader class="white--text">
+                  {{ $t("choose") }} {{ $t("cup.normal") }}
+                </v-subheader>
                 <v-select
                   label="Valitse Cup"
                   :dark="$store.getters.getTheme"
@@ -448,7 +410,7 @@
               justify="center"
             >
               <v-col cols="6">
-                <h2 class="white--text">Kilpailun sijoittumispisteet</h2>
+                <h2 class="white--text">{{ $t("placement-points") }}</h2>
                 <v-list
                   :dark="$store.getters.getTheme"
                   elevation="20"
@@ -488,7 +450,7 @@
                 <v-row v-if="editPoints">
                   <v-col>
                     <v-btn color="green" @click="addPlacement"
-                      ><v-icon>mdi-plus</v-icon>Lisää pistesija</v-btn
+                      ><v-icon>mdi-plus</v-icon>{{ $t("add-placement") }}</v-btn
                     >
                   </v-col>
                 </v-row>
@@ -499,7 +461,7 @@
                       color="yellow"
                       class="black--text"
                       @click="cancelPoints"
-                      ><v-icon>mdi-cancel</v-icon>Peruuta</v-btn
+                      ><v-icon>mdi-cancel</v-icon>{{ $t("cancel") }}</v-btn
                     >
                   </v-col>
                   <v-col>
@@ -509,7 +471,7 @@
                       @click="confirmPoints"
                       :disabled="basic_info_validated"
                       ><v-icon>mdi-check</v-icon
-                      >{{ editPoints ? "Valmis" : "Muokkaa" }}</v-btn
+                      >{{ editPoints ? $t("confirm") : $t("modify") }}</v-btn
                     >
                   </v-col>
                 </v-row>
@@ -522,10 +484,12 @@
                       'white--text': $store.getters.getTheme,
                     }"
                   >
-                    Palauta alkuperäiset pisteet:<br />#1 = 30, #2 = 28, #3 =
-                    26...
+                    {{ $t("restore-original-points") }}:<br />#1 = 30, #2 = 28,
+                    #3 = 26...
                   </p>
-                  <v-btn color="red" @click="resetPoints">Palauta</v-btn>
+                  <v-btn color="red" @click="resetPoints">{{
+                    $t("restore")
+                  }}</v-btn>
                 </div>
               </v-col>
             </v-row>
@@ -537,7 +501,7 @@
               <v-col cols="6" class="input-fields">
                 <v-text-field
                   :dark="$store.getters.getTheme"
-                  label="Kilpailun cup osallistumispisteet"
+                  :label="$t('cup.normal') + ' ' + $t('participation-points')"
                   v-model="cup_participation_points"
                   append-outer-icon="add"
                   maxlength="6"
@@ -568,7 +532,7 @@
               <v-col cols="6" class="input-fields">
                 <v-text-field
                   :dark="$store.getters.getTheme"
-                  label="Cup pistekerroin"
+                  :label="$t('cup.normal') + ' ' + $t('multiplier')"
                   v-model="cup_points_multiplier"
                   append-outer-icon="add"
                   maxlength="3"
@@ -594,7 +558,9 @@
 
             <v-row v-if="competition" justify="center" align="center">
               <v-col cols="6" class="input-fields">
-                <span class="white--text">Onko Tiimikilpailua?</span>
+                <span class="white--text"
+                  >{{ $t("is-there") }} {{ $t("comp.is-team") }}?</span
+                >
                 <v-row justify="center" align="center">
                   <v-spacer></v-spacer>
                   <v-col>
@@ -604,8 +570,8 @@
                       row
                       :disabled="basic_info_validated"
                     >
-                      <v-radio label="Kyllä" value="Kyllä"></v-radio>
-                      <v-radio label="Ei" value="Ei"></v-radio>
+                      <v-radio :label="$t('yes')" value="Kyllä"></v-radio>
+                      <v-radio :label="$t('no')" value="Ei"></v-radio>
                     </v-radio-group>
                   </v-col>
                   <v-spacer></v-spacer>
@@ -620,7 +586,7 @@
               align="center"
             >
               <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
-                <span class="white--text">Kilpailun Aloituspäivä</span>
+                <span class="white--text">{{ $t("starting-date") }}</span>
 
                 <v-date-picker
                   :dark="$store.getters.getTheme"
@@ -628,14 +594,13 @@
                   v-model="start_date"
                   full-width
                   elevation="15"
-                  locale="fi"
                   class="mt-4"
                   first-day-of-week="1"
                   :disabled="basic_info_validated"
                 ></v-date-picker>
               </v-col>
               <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
-                <span class="white--text">Kilpailun Lopetuspäivä</span>
+                <span class="white--text">{{ $t("ending-date") }}</span>
 
                 <v-date-picker
                   :dark="$store.getters.getTheme"
@@ -643,7 +608,6 @@
                   v-model="end_date"
                   full-width
                   elevation="15"
-                  locale="fi"
                   class="mt-4"
                   first-day-of-week="1"
                   :disabled="basic_info_validated"
@@ -658,7 +622,7 @@
               align="center"
             >
               <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
-                <span class="white--text">Kilpailun alkamismisaika</span>
+                <span class="white--text">{{ $t("starting-time") }}</span>
 
                 <v-time-picker
                   :dark="$store.getters.getTheme"
@@ -671,7 +635,7 @@
                 ></v-time-picker>
               </v-col>
               <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
-                <span class="white--text">Kilpailun loppumisaika</span>
+                <span class="white--text">{{ $t("ending-time") }}</span>
 
                 <v-time-picker
                   :dark="$store.getters.getTheme"
@@ -702,7 +666,7 @@
                       <th style="border: 1px solid black" scope="row">
                         <v-text-field
                           :dark="$store.getters.getTheme"
-                          label="Nimi"
+                          :label="$t('name')"
                           v-model="input.name"
                           :disabled="basic_info_validated"
                           :rules="rules"
@@ -712,7 +676,7 @@
                       <td style="border: 1px solid black">
                         <v-text-field
                           :dark="$store.getters.getTheme"
-                          label="Kerroin"
+                          :label="$t('multiplier')"
                           v-model="input.multiplier"
                           maxlength="4"
                           append-outer-icon="add"
@@ -737,7 +701,7 @@
                       <td style="border: 1px solid black">
                         <v-text-field
                           :dark="$store.getters.getTheme"
-                          label="Alamitta (cm)"
+                          :label="$t('min-size') + ' (cm)'"
                           v-model="input.minsize"
                           :maxlength="40"
                           :disabled="basic_info_validated"
@@ -767,8 +731,7 @@
               <v-col
                 ><b>
                   <p>
-                    Siirrä taulukon riviä hiirellä muuttaaksesi paikkaa
-                    taulukossa
+                    {{ $t("create-competition.table-row-instruction") }}
                   </p></b
                 ></v-col
               >
@@ -781,7 +744,7 @@
                   class="white--text"
                   @click="addInput"
                   ><v-icon color="green lighten-2">mdi-plus-circle</v-icon>
-                  Lisää kala</v-btn
+                  {{ $t("add") }} {{ $t("fish") }}</v-btn
                 >
               </v-col>
             </v-row>
@@ -793,14 +756,14 @@
                   color="yellow"
                   class="black--text"
                   @click="setOriginalValues"
-                  ><v-icon color="red darken-2">mdi-cancel</v-icon> Peruuta
-                  muutokset</v-btn
+                  ><v-icon color="red darken-2">mdi-cancel</v-icon
+                  >{{ $t("cancel") }}</v-btn
                 >
               </v-col>
               <v-col md="6" v-if="competition">
                 <v-btn large color="green" @click="checkBasicInformation"
                   ><v-icon color="green darken-4">mdi-check-outline</v-icon>
-                  Tallenna muutokset</v-btn
+                  {{ $t("save") }}</v-btn
                 >
               </v-col>
             </v-row>
@@ -828,7 +791,11 @@ import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import Timedate from "../components/layout/Timedate";
 import constants from "../data/constants";
 import draggable from "vuedraggable";
-import { validateTime, formatDateToLocaleDateString } from "../shared";
+import {
+  validateTime,
+  formatDateToLocaleDateString,
+  formatDate,
+} from "../shared";
 
 export default {
   name: "CompSettings",
@@ -924,6 +891,7 @@ export default {
   },
   mounted() {},
   methods: {
+    formatDate: formatDate,
     formatDateToLocaleDateString: formatDateToLocaleDateString,
     addPlacement() {
       const lastItem =

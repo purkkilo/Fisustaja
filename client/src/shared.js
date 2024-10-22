@@ -33,15 +33,30 @@ export function formatDateToLocaleDateString(datestring) {
 // Returns date in format dd/mm/yyyy as string
 export function formatDate(datestring) {
   let d = new Date(datestring);
+  let hours = d.getHours();
+  let minutes = d.getMinutes();
+  if (hours < 10) {
+    hours = `0${hours}`;
+  }
+  if (minutes < 10) {
+    minutes = `0${minutes}`;
+  }
   return `${d.getDate()}.${
     d.getMonth() + 1
-  }.${d.getFullYear()}, ${d.getHours()}:${d.getMinutes()}`;
+  }.${d.getFullYear()}, ${hours}:${minutes}`;
 }
 
 export function getTime(datestring) {
   let d = new Date(datestring);
-  console.log(datestring);
-  return `${d.getHours()}:${d.getMinutes()}`;
+  let hours = d.getHours();
+  let minutes = d.getMinutes();
+  if (hours < 10) {
+    hours = `0${hours}`;
+  }
+  if (minutes < 10) {
+    minutes = `0${minutes}`;
+  }
+  return `${hours}:${minutes}`;
 }
 export function getYear(date) {
   return new Date(date).getFullYear();

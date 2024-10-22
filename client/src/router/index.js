@@ -92,9 +92,9 @@ const routes = [
   },
   {
     path: "/register-comp",
-    name: "RegisterComp",
+    name: "CreateComp",
     component: () =>
-      import(/* webpackChunkName: "login" */ "../views/RegisterComp.vue"),
+      import(/* webpackChunkName: "login" */ "../views/CreateComp.vue"),
     meta: {
       requiresAuth: true,
     },

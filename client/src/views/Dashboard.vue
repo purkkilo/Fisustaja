@@ -15,7 +15,7 @@
       elevation="20"
       v-if="errors.length"
     >
-      <v-alert type="error"> Korjaa seuraavat virheet: </v-alert>
+      <v-alert type="error"> {{ $t("errors.error-box-title") }}: </v-alert>
       <v-list>
         <v-list-item v-for="(error, index) in errors" v-bind:key="index">
           <v-list-item-icon>
@@ -23,7 +23,7 @@
           </v-list-item-icon>
 
           <v-list-item-content>
-            <v-list-item-title>{{ error }}</v-list-item-title>
+            <v-list-item-title>{{ $t(error) }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -46,8 +46,9 @@
               <!-- if user is found on localstorage (this.user is not null/false) -->
               <v-card style="background: transparent" outlined v-if="user" dark>
                 <v-card-title
-                  ><v-icon x-large>mdi-account-circle</v-icon>
-                  &nbsp;Käyttäjätiedot</v-card-title
+                  ><v-icon x-large>mdi-account-circle</v-icon> &nbsp;{{
+                    $t("dashboard.user-details")
+                  }}</v-card-title
                 >
                 <v-list two-line style="background: transparent" outlined>
                   <v-list-item>
@@ -58,7 +59,9 @@
                     <v-list-item-content>
                       <v-list-item-title>{{ user.name }}</v-list-item-title>
 
-                      <v-list-item-subtitle>Nimi</v-list-item-subtitle>
+                      <v-list-item-subtitle>{{
+                        $t("name")
+                      }}</v-list-item-subtitle>
                     </v-list-item-content>
                   </v-list-item>
                   <v-divider></v-divider>
@@ -70,7 +73,9 @@
                     <v-list-item-content>
                       <v-list-item-title>{{ user.email }}</v-list-item-title>
 
-                      <v-list-item-subtitle>Sähköposti</v-list-item-subtitle>
+                      <v-list-item-subtitle>{{
+                        $t("email")
+                      }}</v-list-item-subtitle>
                     </v-list-item-content>
                   </v-list-item>
                   <v-divider></v-divider>
@@ -82,7 +87,9 @@
                     <v-list-item-content>
                       <v-list-item-title>{{ created }}</v-list-item-title>
 
-                      <v-list-item-subtitle>Luotu</v-list-item-subtitle>
+                      <v-list-item-subtitle>{{
+                        $t("created")
+                      }}</v-list-item-subtitle>
                     </v-list-item-content>
                   </v-list-item>
                 </v-list>
@@ -92,13 +99,16 @@
               <!-- if user is found on localstorage (this.user is not null/false) -->
               <v-card style="background: transparent" outlined v-if="user" dark>
                 <v-card-title
-                  ><v-icon x-large>mdi-gauge</v-icon>
-                  &nbsp;Toiminnot</v-card-title
+                  ><v-icon x-large>mdi-gauge</v-icon> &nbsp;{{
+                    $t("dashboard.functions")
+                  }}</v-card-title
                 >
                 <v-list style="background: transparent" outlined>
                   <v-list-item>
                     <v-list-item-content>
-                      <v-list-item-title>Luo uusi kilpailu</v-list-item-title>
+                      <v-list-item-title>{{
+                        $t("comp.create")
+                      }}</v-list-item-title>
                     </v-list-item-content>
                     <v-list-item-action>
                       <router-link to="/register-comp">
@@ -115,7 +125,9 @@
                   <v-divider></v-divider>
                   <v-list-item>
                     <v-list-item-content>
-                      <v-list-item-title>Luo uusi cup</v-list-item-title>
+                      <v-list-item-title>{{
+                        $t("cup.create")
+                      }}</v-list-item-title>
                     </v-list-item-content>
                     <v-list-item-action>
                       <v-dialog
@@ -137,13 +149,15 @@
                         </template>
 
                         <v-card :dark="$store.getters.getTheme">
-                          <v-card-title> Luo Cup </v-card-title>
+                          <v-card-title>
+                            {{ $t("cup.create") }}
+                          </v-card-title>
 
                           <v-row align="center" justify="center">
                             <v-col cols="8" class="input-fields">
                               <v-text-field
                                 :dark="$store.getters.getTheme"
-                                label="Cupin nimi"
+                                :label="$t('cup.normal') + ' ' + $t('name')"
                                 v-model="name"
                                 :maxlength="40"
                                 :loading="loading"
@@ -166,7 +180,7 @@
                                   <v-text-field
                                     :dark="$store.getters.getTheme"
                                     v-model="year"
-                                    label="Vuosi"
+                                    :label="$t('year')"
                                     prepend-icon="event"
                                     readonly
                                     v-bind="attrs"
@@ -188,7 +202,11 @@
                             <v-col cols="6" class="input-fields">
                               <v-checkbox
                                 v-model="isThereCompetitionLimit"
-                                label="Aseta merkitsevien kilpailujen määrä?"
+                                :label="
+                                  $t('dashboard.set') +
+                                  ' ' +
+                                  $t('dashboard.meaningfull-comps')
+                                "
                               ></v-checkbox>
                             </v-col>
                           </v-row>
@@ -201,7 +219,7 @@
                               <v-text-field
                                 v-model="meaningful_competitions"
                                 :dark="$store.getters.getTheme"
-                                label="Merkitsevien kilpailujen määrä"
+                                :label="$t('dashboard.meaningfull-comps')"
                                 maxlength="3"
                                 type="number"
                                 @paste.prevent
@@ -221,7 +239,8 @@
                                 color="primary"
                                 @click="saveCup"
                                 :loading="loading"
-                                ><v-icon>mdi-check</v-icon>Luo Cup</v-btn
+                                ><v-icon>mdi-check</v-icon>
+                                {{ $t("cup.create") }}</v-btn
                               >
                             </v-col>
                           </v-row>
@@ -260,9 +279,9 @@
                             </h2></v-list-item-title
                           >
 
-                          <v-list-item-subtitle
-                            >Kilpailuja</v-list-item-subtitle
-                          >
+                          <v-list-item-subtitle>{{
+                            $t("comp.plural")
+                          }}</v-list-item-subtitle>
                         </v-list-item-content>
                         <v-spacer></v-spacer>
                         <v-list-item-content>
@@ -272,7 +291,9 @@
                             </h2></v-list-item-title
                           >
 
-                          <v-list-item-subtitle>Cuppeja</v-list-item-subtitle>
+                          <v-list-item-subtitle>{{
+                            $t("cup.plural")
+                          }}</v-list-item-subtitle>
                         </v-list-item-content>
                         <v-spacer></v-spacer>
                       </v-list-item>
@@ -414,12 +435,10 @@ export default {
         if (err.response) {
           if (err.response.status === 400) {
             console.log(err);
-            return this.showError("Bad request!");
+            return this.showError("error.bad-request");
           }
           if (err.response.status === 408) {
-            return this.showError(
-              "Yhteyttä tietokantaan ei saatu... Yritä uudelleen päivittämällä sivu (Connection timed out)"
-            );
+            return this.showError("error.timeout");
           } else {
             return console.log(err);
           }
@@ -510,14 +529,14 @@ export default {
       this.loading = true;
 
       if (!this.name) {
-        this.showError("Syötä Cupille nimi!");
+        this.showError("errors.missing-cup-name");
       }
       if (!this.year) {
-        this.showError("Valitse Cupille vuosi!");
+        this.showError("errors.missing-cup-year");
       }
 
       if (this.isThereCompetitionLimit && !this.meaningful_competitions) {
-        this.showError("Syötä merkitsevien kilpailujen määrä!");
+        this.showError("errors.missing-meaningfull-comps");
       }
 
       if (!this.errors.length) {

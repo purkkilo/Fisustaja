@@ -40,7 +40,7 @@
           <v-col cols="12" xs="12" sm="12" md="12">
             <v-row justify="center">
               <v-col>
-                <h1 style="margin: 30px">Ilmoittautuminen</h1>
+                <h1 style="margin: 30px">{{ $t("signing") }}</h1>
               </v-col>
             </v-row>
           </v-col>
@@ -59,8 +59,8 @@
         center-active
       >
         <v-tabs-slider color="blue darken-4"></v-tabs-slider>
-        <v-tab href="#signing">Ilmoittautuminen</v-tab>
-        <v-tab href="#signees">Ilmoittautuneet</v-tab>
+        <v-tab href="#signing">{{ $t("signing") }}</v-tab>
+        <v-tab href="#signees">{{ $t("signees-signed") }}</v-tab>
       </v-tabs>
 
       <v-tabs-items v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
@@ -77,122 +77,29 @@
               <v-row v-if="notification">
                 <v-col md="8" offset-md="2">
                   <v-alert type="info" class="flow-text">
-                    {{ notification }}
+                    {{ $t(notification) }}
                   </v-alert>
                 </v-col>
               </v-row>
-              <!-- If there user is trying to overwrite data to other boat number, which is in use, show differences and ask are you sure -->
-              <v-row v-if="old_info">
-                <v-col md="8" offset-md="2">
-                  <h3 v-bind:class="{ 'white--text': $store.getters.getTheme }">
-                    Numeron ({{ old_info.boat_number }}.) Vanhat tiedot
-                  </h3>
+              <v-row>
+                <v-col offset-md="4" md="4">
                   <p
                     class="flow-text"
                     v-bind:class="{ 'white--text': $store.getters.getTheme }"
                   >
-                    <b>Kippari:</b> {{ old_info.captain_name }}
-                  </p>
-                  <p
-                    class="flow-text"
-                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
-                  >
-                    <b>Varakippari:</b> {{ old_info.temp_captain_name }}
-                  </p>
-                  <p
-                    class="flow-text"
-                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
-                  >
-                    <b>Seura/Paikkakunta:</b> {{ old_info.locality }}
-                  </p>
-                  <p
-                    class="flow-text"
-                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
-                  >
-                    <b>Lähtöpaikka:</b> {{ old_info.starting_place }}
-                  </p>
-                  <p
-                    v-if="isTeamCompetition"
-                    class="flow-text"
-                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
-                  >
-                    <b>Joukkue:</b> {{ old_info.team }}
+                    {{ $t("signees") }} {{ $t("total") }}:
+                    <b>{{ signees.length }}</b>
                   </p>
                 </v-col>
-
-                <v-col md="8" offset-md="2">
-                  <v-divider class="black"></v-divider>
-                </v-col>
-
-                <v-col md="8" offset-md="2">
-                  <h3 v-bind:class="{ 'white--text': $store.getters.getTheme }">
-                    Numeron ({{ boat_number }}.) Uudet tiedot
-                  </h3>
-                  <p
-                    class="flow-text"
-                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
-                  >
-                    <b>Kippari:</b> {{ captain_name }}
-                  </p>
-                  <p
-                    class="flow-text"
-                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
-                  >
-                    <b>Varakippari:</b> {{ temp_captain_name }}
-                  </p>
-                  <p
-                    class="flow-text"
-                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
-                  >
-                    <b>Seura/Paikkakunta:</b> {{ locality }}
-                  </p>
-                  <p
-                    class="flow-text"
-                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
-                  >
-                    <b>Lähtöpaikka:</b> {{ starting_place }}
-                  </p>
-                  <p
-                    v-if="isTeamCompetition"
-                    class="flow-text"
-                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
-                  >
-                    <b>Joukkue:</b> {{ team }}
-                  </p>
-                </v-col>
-
-                <v-col md="8" offset-md="2" style="margin-bottom: 50px">
-                  <v-divider class="black"></v-divider>
-                </v-col>
-                <v-row>
-                  <v-col order="first">
-                    <v-btn
-                      large
-                      tile
-                      color="yellow"
-                      @click="overwriteSignee(old_info, false)"
-                      ><v-icon>mdi-cancel</v-icon>Peruuta</v-btn
-                    >
-                  </v-col>
-                  <v-col order="last">
-                    <v-btn
-                      large
-                      tile
-                      color="green"
-                      @click="overwriteSignee(old_info, true)"
-                      ><v-icon>mdi-check</v-icon>Päällekirjoita</v-btn
-                    >
-                  </v-col>
-                </v-row>
               </v-row>
               <!-- Inputs -->
-              <v-row v-if="!old_info" id="signing-inputs">
+              <v-row id="signing-inputs">
                 <v-col>
                   <v-row>
                     <v-col md="3" offset-md="4" class="input-fields">
                       <v-text-field
                         :dark="$store.getters.getTheme"
-                        label="Venekunnan numero"
+                        :label="$t('boat-number')"
                         v-model="boat_number"
                         append-outer-icon="add"
                         maxlength="6"
@@ -220,7 +127,8 @@
                       v-if="cup"
                     >
                       <v-btn large block color="blue" @click="searchFromCup"
-                        ><v-icon>find_replace</v-icon>Hae cupista</v-btn
+                        ><v-icon>find_replace</v-icon
+                        >{{ $t("button.search-cup") }}</v-btn
                       >
                     </v-col>
 
@@ -230,8 +138,8 @@
                       style="margin-top: 20px"
                     >
                       <v-btn large block color="indigo" @click="searchSelected"
-                        ><v-icon>mdi-magnify</v-icon>Hae
-                        ilmoittautuneista</v-btn
+                        ><v-icon>mdi-magnify</v-icon
+                        >{{ $t("button.search-signees") }}</v-btn
                       >
                     </v-col>
                   </v-row>
@@ -240,7 +148,7 @@
                     <v-col md="5" offset-md="3" class="input-fields">
                       <v-text-field
                         :dark="$store.getters.getTheme"
-                        label="Kippari"
+                        :label="$t('captain-name')"
                         v-model="captain_name"
                         :maxlength="maxlength"
                         :loading="loading"
@@ -253,7 +161,7 @@
                     <v-col md="5" offset-md="3" class="input-fields">
                       <v-text-field
                         :dark="$store.getters.getTheme"
-                        label="Varakippari"
+                        :label="$t('temp-captain-name')"
                         v-model="temp_captain_name"
                         :maxlength="maxlength"
                         :loading="loading"
@@ -266,7 +174,7 @@
                     <v-col md="5" offset-md="3" class="input-fields">
                       <v-text-field
                         :dark="$store.getters.getTheme"
-                        label="Seura/Paikkakunta"
+                        :label="$t('locality-team')"
                         v-model="locality"
                         id="locality"
                         :maxlength="maxlength"
@@ -280,7 +188,7 @@
                     <v-col md="5" offset-md="3" class="input-fields">
                       <v-text-field
                         :dark="$store.getters.getTheme"
-                        label="Lähtöpaikka"
+                        :label="$t('starting-place')"
                         v-model="starting_place"
                         id="starting_place"
                         :maxlength="maxlength"
@@ -295,7 +203,7 @@
                       <v-combobox
                         v-model="team"
                         :items="teams"
-                        label="Valitse, tai kirjoita tiimin nimi"
+                        :label="$t('choose-or-type-team')"
                         chips
                         maxlength="40"
                       >
@@ -319,7 +227,7 @@
                     </v-col>
                   </v-row>
 
-                  <v-row v-if="!old_info">
+                  <v-row>
                     <v-row v-if="loading">
                       <v-col md="12">
                         <p
@@ -328,7 +236,7 @@
                             'white--text': $store.getters.getTheme,
                           }"
                         >
-                          Päivitetään tiedot tietokantaan...
+                          {{ $t("saving") }}...
                         </p>
                         <ProgressBarQuery />
                       </v-col>
@@ -344,7 +252,8 @@
                             @click="deleteSignee(false, selected_id)"
                             :disabled="!found"
                             :loading="refreshing"
-                            ><v-icon>mdi-delete</v-icon>Poista Venekunta</v-btn
+                            ><v-icon>mdi-delete</v-icon
+                            >{{ $t("button.delete-signee") }}</v-btn
                           >
                         </v-col>
                         <v-col md="4" style="margin-top: 20px">
@@ -354,8 +263,8 @@
                             color="yellow"
                             @click="clearInputs"
                             :loading="refreshing"
-                            ><v-icon>backspace-reverse-outline</v-icon>Pyyhi
-                            Kentät</v-btn
+                            ><v-icon>backspace-reverse-outline</v-icon
+                            >{{ $t("button.clear") }}</v-btn
                           >
                         </v-col>
                         <v-col md="4" style="margin-top: 20px">
@@ -372,7 +281,8 @@
                               !temp_captain_name
                             "
                             id="sbtn"
-                            ><v-icon>mdi-content-save</v-icon>Tallenna</v-btn
+                            ><v-icon>mdi-content-save</v-icon
+                            >{{ $t("save") }}</v-btn
                           >
                         </v-col>
                       </v-row>
@@ -387,7 +297,7 @@
                           'white--text': $store.getters.getTheme,
                         }"
                       >
-                        Synkronoidaan tietokannan kanssa...
+                        {{ $t("updating") }}...
                       </p>
                     </v-col>
                   </v-row>
@@ -402,7 +312,7 @@
                         @click="refreshCompetition(competition_id)"
                         class="white--text"
                       >
-                        <v-icon>mdi-update</v-icon>Päivitä kilpailun tiedot
+                        <v-icon>mdi-update</v-icon>{{ $t("button.update") }}
                       </v-btn>
                     </v-col>
                   </v-row>
@@ -414,7 +324,7 @@
             <!-- Show progressbar if loading -->
             <v-col>
               <h2 v-bind:class="{ 'white--text': $store.getters.getTheme }">
-                Haetaan veneitä...
+                {{ $t("fetching") }}...
               </h2>
               <ProgressBarQuery />
             </v-col>
@@ -427,23 +337,13 @@
           }"
           :value="'signees'"
         >
-          <v-row>
+          <v-row style="margin-top: 10px; margin-bottom: 10px">
             <v-col>
-              <v-row style="margin-top: 20px">
-                <v-col offset-md="4" md="4">
-                  <p
-                    class="flow-text"
-                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
-                  >
-                    Ilmoittautuneita yhteensä: <b>{{ signees.length }}</b>
-                  </p>
-                </v-col>
-              </v-row>
               <v-row>
                 <v-col md="10" offset-md="1">
                   <v-card :dark="$store.getters.getTheme">
                     <v-card-title>
-                      <p class="flow-text">Ilmoittautuneet</p>
+                      <p class="flow-text">{{ $t("signees-signed") }}</p>
                       <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
                           <v-icon
@@ -453,16 +353,13 @@
                             >mdi-chat-question-outline</v-icon
                           >
                         </template>
-                        <span
-                          >Voit katsella/muuttaa venekunnan tietoja myös
-                          klikkaamalla haluamaasi riviä taulukosta.</span
-                        >
+                        <span>{{ $t("info-table-click") }}</span>
                       </v-tooltip>
                       <v-spacer></v-spacer>
                       <v-text-field
                         v-model="search"
                         append-icon="mdi-magnify"
-                        label="Hae ilmoittautunutta"
+                        :label="$t('search-signee')"
                         single-line
                         hide-details
                       ></v-text-field>
@@ -473,6 +370,12 @@
                       :items="signees"
                       :search="search"
                     >
+                      <template
+                        v-for="(h, index) in headers"
+                        v-slot:[`header.${h.value}`]="{ header }"
+                      >
+                        <span :key="index"> {{ $t(header.text) }}</span>
+                      </template>
                       <template v-slot:[`item.boat_number`]="{ item }">
                         <v-chip>{{ item.boat_number }}</v-chip>
                       </template>
@@ -503,6 +406,7 @@ import ResultService from "../services/ResultService.js";
 import CupService from "../services/CupService";
 import Timedate from "../components/layout/Timedate";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
+import { capitalize_words } from "../shared";
 
 export default {
   name: "Signing",
@@ -529,13 +433,12 @@ export default {
       refreshing: false,
       loading_site: false,
       competition_id: null,
-      old_info: null,
       signees: [],
       headers: [
-        { text: "Kilp. Numero", value: "boat_number" },
-        { text: "Kippari", value: "captain_name" },
-        { text: "Varakippari", value: "temp_captain_name" },
-        { text: "Seura/Paikkakunta", value: "locality" },
+        { text: "boat-number", value: "boat_number" },
+        { text: "captain-name", value: "captain_name" },
+        { text: "temp-captain-name", value: "temp_captain_name" },
+        { text: "locality-team", value: "locality" },
       ],
       search: "",
       cup: null,
@@ -611,7 +514,7 @@ export default {
           await ResultService.getResults({ competition_id: competition._id })
             .then((r) => {
               competition.signees = r;
-              this.signees = r;
+              this.signees = r.sort((a, b) => a.boat_number - b.boat_number);
             })
             .catch((e) => {
               console.log(e);
@@ -667,15 +570,6 @@ export default {
         }
       }
     },
-    // Capitalize all the words in given string. Takes account all the characters like "-", "'" etc.
-    capitalize_words(str) {
-      return str.replace(
-        /(?:^|\s|['`‘’.-])[^\x60^\x7B-\xDF](?!(\s|$))/g,
-        function (txt) {
-          return txt.toUpperCase();
-        }
-      );
-    },
     // Clear all selections and inputs and errors
     clearInputs() {
       this.boat_number = null;
@@ -685,7 +579,6 @@ export default {
       this.locality = null;
       this.team = null;
       this.errors = [];
-      this.old_info = null;
       this.found = false;
       this.notification = "";
     },
@@ -698,11 +591,9 @@ export default {
         // Replace the old existing signee info with new info, without changing the id
         signee.boat_number = parseInt(this.boat_number);
         signee.starting_place = this.starting_place;
-        signee.captain_name = this.capitalize_words(this.captain_name);
-        signee.temp_captain_name = this.capitalize_words(
-          this.temp_captain_name
-        );
-        signee.locality = this.capitalize_words(this.locality);
+        signee.captain_name = capitalize_words(this.captain_name);
+        signee.temp_captain_name = capitalize_words(this.temp_captain_name);
+        signee.locality = capitalize_words(this.locality);
         signee.team = this.team;
         // Shorten team name if over 40 characters
         if (this.team.length > 40) {
@@ -721,13 +612,12 @@ export default {
           // Save signee to database and clear inputs
           this.saveToDatabase(signee, true);
           this.clearInputs();
-          this.notification = "Tiedot korvattu uusilla!";
+          this.notification = "notification.replaced";
         }
       }
       // Don't overwrite, add to new place
       else {
-        this.notification =
-          "Veneen numero asetettu ensimmäiseen vapaaseen paikkaan!";
+        this.notification = "notification.boat-number-moved";
         this.boat_number =
           Math.max.apply(
             Math,
@@ -735,7 +625,6 @@ export default {
               return o.boat_number;
             })
           ) + 1;
-        this.old_info = null;
       }
     },
     // If user selected from input/table, search from array and assing values to inputs
@@ -749,7 +638,7 @@ export default {
           // If signee found
           if (found_signee) {
             this.found = true;
-            this.notification = `Venekunta löydetty!\n(${found_signee.boat_number}) : ${found_signee.captain_name}, ${found_signee.temp_captain_name}`;
+            this.notification = `(${found_signee.boat_number}) : ${found_signee.captain_name}, ${found_signee.temp_captain_name}`;
             this.selected_id = found_signee._id;
             this.boat_number = found_signee.boat_number;
             this.starting_place = found_signee.starting_place;
@@ -762,12 +651,11 @@ export default {
             let temp_boat_number = this.boat_number;
             this.clearInputs();
             this.boat_number = temp_boat_number;
-            this.notification =
-              "Tällä numerolla ei ole vielä ilmoitettu venekuntaa!";
+            this.notification = "notification.no-signee-found";
             this.selected_id = null;
           }
         } else {
-          this.notification = `Syötä venekunnan numero ennen hakemista!`;
+          this.notification = `notification.empty-boat-number`;
         }
       } else {
         // Searched from Signees tab (this.tab === 'signees'), from table
@@ -777,7 +665,7 @@ export default {
           );
 
           if (found_signee) {
-            this.notification = `Venekunnan tiedot:\n(${found_signee.boat_number}) : ${found_signee.captain_name}, ${found_signee.temp_captain_name}`;
+            this.notification = `(${found_signee.boat_number}) : ${found_signee.captain_name}, ${found_signee.temp_captain_name}`;
             this.boat_number = found_signee.boat_number;
             this.starting_place = found_signee.starting_place;
             this.captain_name = found_signee.captain_name;
@@ -790,8 +678,7 @@ export default {
             let temp_boat_number = this.boat_number;
             this.clearInputs();
             this.boat_number = temp_boat_number;
-            this.notification =
-              "Tällä numerolla ei ole vielä ilmoitettu venekuntaa!";
+            this.notification = "notification.no-signee-found";
             this.selected_id = null;
           }
         }
@@ -805,7 +692,7 @@ export default {
         );
         //If the signee is not found on cup, add it
         if (found_signee) {
-          this.notification = "Cupista löydetty seuraavat tiedot:";
+          this.notification = "notification.found-from-cup";
           this.captain_name = found_signee.captain_name;
           this.temp_captain_name = found_signee.temp_captain_name;
           this.locality = found_signee.locality;
@@ -824,10 +711,10 @@ export default {
           let temp_boat_number = this.boat_number;
           this.clearInputs();
           this.boat_number = temp_boat_number;
-          this.notification = "Tällä numerolla ei löydy cupista venekuntaa!";
+          this.notification = "notification.no-signee-found";
         }
       } else {
-        this.notification = "Syötä venekunnan numero ennen hakemista!";
+        this.notification = "notification.empty-boat-number";
       }
     },
     // Fetch signee from vuex based on boat number
@@ -1020,13 +907,13 @@ export default {
       if (!this.captain_name) {
         this.showError("Kipparin nimi puuttuu!");
       } else {
-        this.captain_name = this.capitalize_words(this.captain_name);
+        this.captain_name = capitalize_words(this.captain_name);
       }
 
       if (!this.temp_captain_name) {
         this.temp_captain_name = "-";
       } else {
-        this.temp_captain_name = this.capitalize_words(this.temp_captain_name);
+        this.temp_captain_name = capitalize_words(this.temp_captain_name);
       }
 
       if (!this.starting_place) {
@@ -1048,7 +935,7 @@ export default {
       if (!this.locality) {
         this.showError("Seura/Paikkakunta puuttuu!");
       } else {
-        this.locality = this.capitalize_words(this.locality);
+        this.locality = capitalize_words(this.locality);
       }
 
       // If no errors, proceed
@@ -1060,70 +947,23 @@ export default {
             (s) => s._id === this.selected_id
           );
           if (found_signee) {
-            let temp_boat = this.searchBoatNumber(this.boat_number);
             // If there already exist a boat with same number, but it isn't the same id
-            if (temp_boat && temp_boat._id != found_signee._id) {
-              // Ask if user wants to overwrite
-              this.old_info = temp_boat;
-            } else {
-              // If there isn't any boats with this boat number
-              found_signee.boat_number = parseInt(this.boat_number);
-              found_signee.starting_place = this.starting_place;
-              found_signee.captain_name = this.captain_name;
-              found_signee.temp_captain_name = this.temp_captain_name;
-              found_signee.locality = this.locality;
-              found_signee.team = this.team;
-              this.new_signee = found_signee;
-              // Save to database and vuex
-              this.saveToDatabase(this.new_signee, true);
-              if (this.teams.indexOf(this.team) == -1) {
-                this.teams.push(this.team);
-                this.$store.commit("setTeams", this.teams);
-              }
-              this.text = `Päivitetty venekunnan (Nro: ${this.new_signee.boat_number}, Kippari: ${this.new_signee.captain_name}) Tiedot!`;
-              this.snackbar = true;
-              this.clearInputs();
-              location.href = "#";
-              location.href = "#signing";
-              // Update values for next signee
-              this.boat_number =
-                Math.max.apply(
-                  Math,
-                  this.signees.map(function (o) {
-                    return o.boat_number;
-                  })
-                ) + 1;
-
-              this.selected_id = null;
-            }
-          }
-        } else {
-          // No selected id, so new input
-          let temp_boat = this.searchBoatNumber(this.boat_number);
-          // IF there is boat with same boat number, and somehow with this id
-          if (temp_boat && temp_boat._id != this._id) {
-            this.notification = `Numerolla on jo olemassa venekunta, päällekirjoitetaanko?`;
-            this.old_info = temp_boat;
-          } else {
-            // Create signee object and save to database/vuex
-            this.new_signee = {
-              boat_number: parseInt(this.boat_number),
-              starting_place: this.starting_place,
-              captain_name: this.captain_name,
-              temp_captain_name: this.temp_captain_name,
-              locality: this.locality,
-              team: this.team,
-              returned: false,
-            };
-            this.saveToDatabase(this.new_signee, false);
-
+            // If there isn't any boats with this boat number
+            found_signee.boat_number = parseInt(this.boat_number);
+            found_signee.starting_place = this.starting_place;
+            found_signee.captain_name = this.captain_name;
+            found_signee.temp_captain_name = this.temp_captain_name;
+            found_signee.locality = this.locality;
+            found_signee.team = this.team;
+            this.new_signee = found_signee;
+            // Save to database and vuex
+            this.saveToDatabase(this.new_signee, true);
             if (this.teams.indexOf(this.team) == -1) {
               this.teams.push(this.team);
               this.$store.commit("setTeams", this.teams);
             }
-            this.text = `Venekunta ilmoitettu kisaan! (Nro: ${this.new_signee.boat_number}, Kippari: ${this.new_signee.captain_name})`;
+            this.text = `Päivitetty venekunnan (Nro: ${this.new_signee.boat_number}, Kippari: ${this.new_signee.captain_name}) Tiedot!`;
             this.snackbar = true;
-
             this.clearInputs();
             location.href = "#";
             location.href = "#signing";
@@ -1135,8 +975,41 @@ export default {
                   return o.boat_number;
                 })
               ) + 1;
+
             this.selected_id = null;
           }
+        } else {
+          // Create signee object and save to database/vuex
+          this.new_signee = {
+            boat_number: parseInt(this.boat_number),
+            starting_place: this.starting_place,
+            captain_name: this.captain_name,
+            temp_captain_name: this.temp_captain_name,
+            locality: this.locality,
+            team: this.team,
+            returned: false,
+          };
+          this.saveToDatabase(this.new_signee, false);
+
+          if (this.teams.indexOf(this.team) == -1) {
+            this.teams.push(this.team);
+            this.$store.commit("setTeams", this.teams);
+          }
+          this.text = `Venekunta ilmoitettu kisaan! (Nro: ${this.new_signee.boat_number}, Kippari: ${this.new_signee.captain_name})`;
+          this.snackbar = true;
+
+          this.clearInputs();
+          location.href = "#";
+          location.href = "#signing";
+          // Update values for next signee
+          this.boat_number =
+            Math.max.apply(
+              Math,
+              this.signees.map(function (o) {
+                return o.boat_number;
+              })
+            ) + 1;
+          this.selected_id = null;
         }
       }
     },

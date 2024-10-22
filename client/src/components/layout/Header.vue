@@ -15,6 +15,13 @@
       <v-toolbar-title>Fisustaja</v-toolbar-title>
 
       <v-spacer></v-spacer>
+      <v-btn
+        style="margin-right: 20px"
+        class="locale-switcher"
+        @click="setLocale"
+      >
+        🌐 {{ $i18n.locale }}
+      </v-btn>
       <router-link to="/"
         ><v-btn text outlined rounded
           ><v-icon>mdi-home</v-icon></v-btn
@@ -53,7 +60,7 @@
         <v-divider></v-divider>
         <v-list-item v-if="isCompetitionSet">
           <v-list-item-content>
-            <p class="text-center">Kilpailu/Cup navigointi</p>
+            <p class="text-center">{{ $t("nav.header") }}</p>
           </v-list-item-content>
         </v-list-item>
         <v-list-item v-if="isCompetitionSet" @click="changePage('/overview')">
@@ -94,7 +101,7 @@
           </v-list-item-icon>
 
           <v-list-item-content>
-            <v-list-item-title>{{ item.title }}</v-list-item-title>
+            <v-list-item-title>{{ $t(item.title) }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
@@ -105,12 +112,12 @@
               color="indigo darken-3"
             ></v-switch>
           </v-list-item-action>
-          <v-list-item-title>Tumma teema</v-list-item-title>
+          <v-list-item-title>{{ $t("nav.theme") }}</v-list-item-title>
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
             <v-btn large rounded color="red" @click="logout"
-              ><v-icon>mdi-logout</v-icon>Kirjaudu ulos</v-btn
+              ><v-icon>mdi-logout</v-icon>{{ $t("nav.logout") }}</v-btn
             >
           </v-list-item-content>
         </v-list-item>
@@ -162,39 +169,39 @@ export default {
       type: "public",
       public_items: [
         {
-          text: "Kilpailujen tuloksia",
+          text: "home.comp",
           icon: "mdi-seal",
           path: "/public-results",
         },
         {
-          text: "Cuppien tuloksia",
+          text: "home.cup",
           icon: "mdi-trophy",
           path: "/public-cups",
         },
       ],
       competition_items: [
         {
-          text: "Yleisnäkymä",
+          text: "overview",
           icon: "mdi-magnify-expand",
           path: "/overview",
         },
         {
-          text: "Määritykset",
+          text: "settings",
           icon: "mdi-tune",
           path: "/comp-settings",
         },
         {
-          text: "Ilmoittautuminen",
+          text: "signing",
           icon: "mdi-draw",
           path: "/signing",
         },
         {
-          text: "Punnitus",
+          text: "weighting",
           icon: "mdi-dumbbell",
           path: "/weighting",
         },
         {
-          text: "Tulokset",
+          text: "results",
           icon: "mdi-seal",
           path: "/results",
         },
@@ -210,37 +217,37 @@ export default {
       if (isAdmin) {
         this.items = [
           {
-            title: "Dashboardiin",
+            title: "nav.dashboard",
             route: "/dashboard",
             icon: "mdi-view-dashboard",
             color: "white",
           },
           {
-            title: "Palaute",
+            title: "nav.feedback",
             route: "/feedback",
             icon: "mdi-message-alert",
             color: "yellow darken-1",
           },
           {
-            title: "Admin",
+            title: "nav.admin",
             route: "/admin",
             icon: "mdi-shield-crown",
             color: "red",
           },
           {
-            title: "Rekisteröi käyttäjä",
+            title: "nav.register",
             route: "/register",
             icon: "mdi-account-plus",
             color: "green darken-1",
           },
           {
-            title: "Julkiset kilpailut",
+            title: "nav.public-comps",
             route: "/public-results",
             icon: "mdi-format-list-numbered",
             color: "green darken-1",
           },
           {
-            title: "Julkiset cupit",
+            title: "nav.public-cups",
             route: "/public-cups",
             icon: "mdi-medal",
             color: "yellow darken-1",
@@ -248,20 +255,20 @@ export default {
         ];
       } else {
         this.items = [
-          { title: "Dashboardiin", route: "/dashboard", icon: "dashboard" },
-          { title: "Palaute", route: "/feedback", icon: "feedback" },
+          { title: "nav.dashboard", route: "/dashboard", icon: "dashboard" },
+          { title: "nav.feedback", route: "/feedback", icon: "feedback" },
           {
-            title: "Rekisteröi käyttäjä",
+            title: "nav.register",
             route: "/register",
             icon: "mdi-account-plus",
           },
           {
-            title: "Julkiset kilpailut",
+            title: "nav.public-comps",
             route: "/public-results",
             icon: "mdi-format-list-numbered",
           },
           {
-            title: "Julkiset cupit",
+            title: "nav.public-cups",
             route: "/public-cups",
             icon: "mdi-medal",
           },
@@ -367,6 +374,13 @@ export default {
         this.snackbar = true;
         localStorage.removeItem("user");
       });
+    },
+    setLocale() {
+      this.$i18n.locale === "en"
+        ? (this.$i18n.locale = "fi")
+        : (this.$i18n.locale = "en");
+
+      this.$vuetify.lang.current = this.$i18n.locale;
     },
   },
 };

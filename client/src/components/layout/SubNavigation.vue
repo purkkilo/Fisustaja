@@ -11,13 +11,13 @@
     <v-tooltip bottom v-for="(item, i) in items" :key="i">
       <template v-slot:activator="{ on, attrs }">
         <v-btn @click="changePage(item.path)" v-bind="attrs" v-on="on">
-          <span>{{ item.text }}</span>
+          <span>{{ $t(item.text) }}</span>
 
           <v-icon>{{ item.icon }}</v-icon>
         </v-btn>
       </template>
-      <span v-if="type == 'public'">{{ item.text }}</span>
-      <span v-else>Kilpailun {{ item.text }}</span>
+      <span v-if="type == 'public'">{{ $t(item.text) }}</span>
+      <span v-else>{{ $t("comp.is") }} {{ $t(item.text) }}</span>
     </v-tooltip>
   </v-bottom-navigation>
 </template>

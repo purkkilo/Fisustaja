@@ -42,7 +42,7 @@
               class="card-link"
             >
               <v-card-title>
-                {{ link.text }}
+                {{ $t(link.text) }}
               </v-card-title>
 
               <v-card-actions>
@@ -78,16 +78,16 @@ export default {
     return {
       items: [
         {
-          text: "Cuppien tuloksia",
-          icon: "mdi-trophy",
-          path: "/public-cups",
-          color: "yellow darken-1",
-        },
-        {
-          text: "Kilpailujen tuloksia ",
+          text: "home.comp",
           icon: "mdi-seal",
           path: "/public-results",
           color: "yellow darken-2",
+        },
+        {
+          text: "home.cup",
+          icon: "mdi-trophy",
+          path: "/public-cups",
+          color: "yellow darken-1",
         },
       ],
       links: [],
@@ -99,13 +99,13 @@ export default {
     "$store.state.logged_in"(newValue) {
       if (newValue) {
         this.links = [
-          ...this.items,
           {
-            text: "Dashboard",
+            text: "nav.dashboard",
             icon: "mdi-view-dashboard",
             path: "/dashboard",
             color: "blue darken-4",
           },
+          ...this.items,
         ];
       } else {
         this.links = this.items;
@@ -122,13 +122,13 @@ export default {
     this.links = this.items;
     if (this.$store.state.logged_in) {
       this.links = [
-        ...this.items,
         {
-          text: "Dashboard",
+          text: "nav.dashboard",
           icon: "mdi-view-dashboard",
           path: "/dashboard",
           color: "blue darken-4",
         },
+        ...this.items,
       ];
     }
   },

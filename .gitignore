@@ -2,4 +2,4 @@ node_modules
 server/config/config.json
 .vscode/settings.json
 server/public
-.env
+server/.env

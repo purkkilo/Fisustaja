@@ -4,6 +4,7 @@ const webpack = require("webpack");
 */
 module.exports = {
   outputDir: "../server/public",
+
   devServer: {
     proxy: {
       "^/api": {
@@ -13,7 +14,9 @@ module.exports = {
       },
     },
   },
+
   transpileDependencies: ["vuetify"],
+
   configureWebpack: {
     optimization: {
       splitChunks: {
@@ -28,4 +31,14 @@ module.exports = {
       }),
     ],
   },
+
+  pluginOptions: {
+    i18n: {
+      locale: 'en',
+      fallbackLocale: 'fi',
+      localeDir: 'locales',
+      enableInSFC: false,
+      enableBridge: false
+    }
+  }
 };

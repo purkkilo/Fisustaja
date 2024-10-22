@@ -45,13 +45,12 @@
                   {{ competition.name }}
                 </span></v-card-title
               >
-              <v-card-subtitle>Yleistietoa</v-card-subtitle>
               <v-list outlined elevation="10">
                 <v-list-item>
                   <v-list-item-icon>
                     <v-icon>mdi-calendar-today</v-icon>
                   </v-list-item-icon>
-                  <v-list-item-title>Päivämäärä</v-list-item-title>
+                  <v-list-item-title>{{ $t("date") }}</v-list-item-title>
                   <v-list-item-subtitle class="blue--text">
                     <b
                       >{{ formatDate(competition.start_date) }} -
@@ -65,7 +64,7 @@
                   <v-list-item-icon>
                     <v-icon color="green darken-4">mdi-state-machine</v-icon>
                   </v-list-item-icon>
-                  <v-list-item-title>Tila</v-list-item-title>
+                  <v-list-item-title>{{ $t("status") }}</v-list-item-title>
                   <v-list-item-subtitle
                     v-bind:class="{
                       'green--text': competition.state === 'Kaikki maalissa',
@@ -80,7 +79,7 @@
                   <v-list-item-icon>
                     <v-icon>mdi-card-account-details-outline</v-icon>
                   </v-list-item-icon>
-                  <v-list-item-title>Ilmoittautuneita</v-list-item-title>
+                  <v-list-item-title>{{ $t("signees") }}</v-list-item-title>
                   <v-list-item-subtitle
                     v-bind:class="{
                       'green--text': competition.signees.length,
@@ -95,7 +94,9 @@
                   <v-list-item-icon>
                     <v-icon color="blue darken-4">mdi-water-alert</v-icon>
                   </v-list-item-icon>
-                  <v-list-item-title>Vielä vesillä</v-list-item-title>
+                  <v-list-item-title>{{
+                    $t("comp-overview.still-on-water")
+                  }}</v-list-item-title>
                   <v-list-item-subtitle
                     v-if="competition.signees.length"
                     v-bind:class="{
@@ -115,7 +116,9 @@
                   </v-list-item-subtitle>
 
                   <v-list-item-subtitle class="green--text" v-else
-                    ><b>Ketään ei vielä vesillä!</b></v-list-item-subtitle
+                    ><b>{{
+                      $t("comp-overview.nobody-on-water")
+                    }}</b></v-list-item-subtitle
                   >
                 </v-list-item>
                 <v-divider></v-divider>
@@ -123,7 +126,9 @@
                   <v-list-item-icon>
                     <v-icon color="blue">mdi-fish</v-icon>
                   </v-list-item-icon>
-                  <v-list-item-title>Saalista saaneita</v-list-item-title>
+                  <v-list-item-title>{{
+                    $t("comp-overview.gotten-fish")
+                  }}</v-list-item-title>
                   <v-list-item-subtitle
                     class="green--text"
                     v-if="competition.signees.length"
@@ -134,7 +139,9 @@
                     / {{ competition.signees.length }})
                   </v-list-item-subtitle>
                   <v-list-item-subtitle class="red--text" v-else
-                    ><b>Ei vielä ilmoittautuneita!</b></v-list-item-subtitle
+                    ><b>{{
+                      $t("comp-overview.no-signees")
+                    }}</b></v-list-item-subtitle
                   >
                 </v-list-item>
                 <v-divider></v-divider>
@@ -142,7 +149,9 @@
                   <v-list-item-icon>
                     <v-icon color="yellow darken-4">mdi-seal</v-icon>
                   </v-list-item-icon>
-                  <v-list-item-title>Kalaa saatu yhteensä</v-list-item-title>
+                  <v-list-item-title>{{
+                    $t("comp-overview.fish-amount-total")
+                  }}</v-list-item-title>
                   <v-list-item-subtitle
                     class="green--text"
                     v-if="competition.signees.length"
@@ -150,7 +159,9 @@
                     <b>{{ competition.total_weights / 1000 }} kg</b>
                   </v-list-item-subtitle>
                   <v-list-item-subtitle class="red--text" v-else
-                    ><b>Ei vielä ilmoittautuneita!</b></v-list-item-subtitle
+                    ><b>{{
+                      $t("comp-overview.no-signees")
+                    }}</b></v-list-item-subtitle
                   >
                 </v-list-item>
               </v-list>
@@ -167,7 +178,7 @@
               outlined
               :dark="$store.getters.getTheme"
             >
-              <h1 class="text-center">Valmistellaan kilpailua...</h1>
+              <h1 class="text-center">{{ $t("comp.preparing") }}...</h1>
               <ProgressBarQuery />
             </v-card>
           </v-col>

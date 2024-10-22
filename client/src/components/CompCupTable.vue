@@ -19,8 +19,8 @@
         center-active
       >
         <v-tabs-slider color="blue darken-4"></v-tabs-slider>
-        <v-tab href="#competitions">Kilpailut</v-tab>
-        <v-tab href="#cups">Cupit</v-tab>
+        <v-tab href="#competitions">{{ $t("comp.plural") }}</v-tab>
+        <v-tab href="#cups">{{ $t("cup.plural") }}</v-tab>
       </v-tabs>
       <v-tabs-items v-model="tab" style="background: transparent">
         <v-tab-item :value="'competitions'">
@@ -29,13 +29,13 @@
               <div v-if="competitions.length">
                 <v-card :dark="$store.getters.getTheme">
                   <v-card-title>
-                    <p class="flow-text">Kilpailut</p>
+                    <p class="flow-text">{{ $t("comp.plural") }}</p>
                     <v-spacer></v-spacer>
                     <v-text-field
                       :dark="$store.getters.getTheme"
                       v-model="search_comp"
                       append-icon="mdi-magnify"
-                      label="Hae kilpailua"
+                      :label="$t('search') + ' ' + $t('comp.for')"
                       single-line
                       hide-details
                     ></v-text-field>
@@ -47,6 +47,13 @@
                     :search="search_comp"
                     show-group-by
                   >
+                    <template
+                      v-for="(h, index) in headers"
+                      v-slot:[`header.${h.value}`]="{ header }"
+                    >
+                      <span :key="index"> {{ $t(header.text) }}</span>
+                    </template>
+
                     <template v-slot:[`item.start_date`]="{ item }">
                       <v-chip color="primary darken-2">{{
                         formatDateToLocaleDateString(item.start_date)
@@ -81,7 +88,7 @@
                             ></v-btn
                           >
                         </template>
-                        <span>Siirry kilpailuun</span>
+                        <span>{{ $t("comp.to") }}</span>
                       </v-tooltip>
                     </template>
                   </v-data-table>
@@ -96,7 +103,7 @@
                           'white--text': $store.getters.getTheme,
                         }"
                       >
-                        Ei kilpailuja!
+                        {{ $t("comp.not-found") }}
                       </h2>
                     </v-col>
                     <v-col v-else>
@@ -105,14 +112,14 @@
                           'white--text': $store.getters.getTheme,
                         }"
                       >
-                        Ei kilpailuja!
+                        {{ $t("comp.not-found") }}
                       </h2>
                       <h2
                         v-bind:class="{
                           'white--text': $store.getters.getTheme,
                         }"
                       >
-                        Ei cuppeja!
+                        {{ $t("cup.not-found") }}
                       </h2>
                     </v-col>
                   </v-row>
@@ -126,7 +133,7 @@
                       'white--text': $store.getters.getTheme,
                     }"
                   >
-                    Ladataan kilpailuja...
+                    {{ $t("loading") }} {{ $t("comp.count") }}...
                   </h2>
                   <ProgressBarQuery />
                 </v-col>
@@ -140,12 +147,12 @@
               <div v-if="cups.length">
                 <v-card :dark="$store.getters.getTheme">
                   <v-card-title>
-                    <p class="flow-text">Cupit</p>
+                    <p class="flow-text">{{ $t("cup.plural") }}</p>
                     <v-spacer></v-spacer>
                     <v-text-field
                       v-model="search_cup"
                       append-icon="mdi-magnify"
-                      label="Hae cuppia"
+                      :label="$t('search') + ' ' + $t('cup.for')"
                       single-line
                       hide-details
                     ></v-text-field>
@@ -157,6 +164,12 @@
                     :search="search_cup"
                     :loading="publishing"
                   >
+                    <template
+                      v-for="(h, index) in headers_cup"
+                      v-slot:[`header.${h.value}`]="{ header }"
+                    >
+                      <span :key="index"> {{ $t(header.text) }}</span>
+                    </template>
                     <template v-slot:[`item.name`]="{ item }">
                       <v-chip color="primary darken-3">{{ item.name }}</v-chip>
                     </template>
@@ -242,21 +255,21 @@ export default {
     return {
       tab: null,
       headers: [
-        { text: "Kilpailun Päivämäärä", value: "start_date", groupable: false },
-        { text: "Nimi", value: "name", groupable: false },
-        { text: "Cup", value: "cup_name" },
+        { text: "date", value: "start_date", groupable: false },
+        { text: "name", value: "name", groupable: false },
+        { text: "cup.normal", value: "cup_name" },
         {
-          text: "Pistekerroin",
+          text: "multiplier",
           value: "cup_points_multiplier",
           groupable: false,
         },
-        { text: "Valitse", value: "choose", sortable: false, groupable: false },
+        { text: "choose", value: "choose", sortable: false, groupable: false },
       ],
       headers_cup: [
-        { text: "Nimi", value: "name" },
-        { text: "Vuosi", value: "year" },
-        { text: "Julkisuus", value: "isPublic" },
-        { text: "Valitse", value: "choose", sortable: false },
+        { text: "name", value: "name" },
+        { text: "year", value: "year" },
+        { text: "publicity", value: "isPublic" },
+        { text: "choose", value: "choose", sortable: false },
       ],
       error: "",
       competition_input: null,

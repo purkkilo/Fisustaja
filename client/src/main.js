@@ -6,6 +6,7 @@ import VueSimpleAlert from "vue-simple-alert";
 import vuetify from "@/plugins/vuetify"; // path to vuetify export
 import vSelect from "vue-select";
 import axios from "axios";
+import i18n from './i18n'
 
 Vue.component("vue-select", vSelect);
 Vue.use(VueSimpleAlert);
@@ -22,5 +23,6 @@ new Vue({
   router,
   store,
   vuetify,
-  render: (h) => h(App),
+  i18n,
+  render: (h) => h(App)
 }).$mount("#app");

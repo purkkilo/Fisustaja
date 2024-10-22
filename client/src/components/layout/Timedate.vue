@@ -10,10 +10,14 @@
       >
         <v-row>
           <v-col>
-            <h2 class="white--text" id="comp-state">Pvm. {{ date }}</h2>
+            <h2 class="white--text" id="comp-state">
+              {{ $t("timer.date") }} {{ date }}
+            </h2>
           </v-col>
           <v-col>
-            <h2 class="white--text" id="clock">Klo. {{ clock }}</h2>
+            <h2 class="white--text" id="clock">
+              {{ $t("timer.at") }} {{ clock }}
+            </h2>
           </v-col>
         </v-row>
         <v-row>
@@ -21,19 +25,19 @@
             <v-col>
               <h3
                 :class="
-                  competition_state === 'Kilpailu päättynyt!'
+                  competition_state === 'comp-ended'
                     ? 'red--text'
                     : 'green--text'
                 "
                 id="date"
               >
-                {{ competition_state }}
+                {{ $t(competition_state) }}
               </h3>
             </v-col>
             <v-col>
               <h2
                 :class="
-                  competition_state === 'Kilpailu päättynyt!'
+                  competition_state === 'comp-ended'
                     ? 'red--text'
                     : 'green--text'
                 "
@@ -147,12 +151,11 @@ export default {
           if (!this.competition_started && !this.competition_ended) {
             duration = this.getDuration(now, start_dateTime);
             formatted = this.durationToString(duration);
+            this.competition_state = "timer.to-start";
             if (duration.days < 1) {
               // under an 24 hours
-              this.competition_state = "Kilpailun alkuun";
               this.timer_string = formatted;
             } else {
-              this.competition_state = "Kilpailu alkaa";
               this.timer_string = `${duration.days}d ` + formatted;
             }
           } else if (this.competition_started && !this.competition_ended) {
@@ -160,11 +163,11 @@ export default {
             let days = duration.days ? `${duration.days}d ` : ` `;
             formatted = days + this.durationToString(duration);
             this.remaining_interval = 300;
-            this.competition_state = "Kilpailua jäljellä";
+            this.competition_state = "timer.comp-left";
             this.timer_string = formatted;
           } else {
             this.timer_string = null;
-            this.competition_state = `Kilpailu päättynyt!`;
+            this.competition_state = "timer.comp-ended";
           }
         }
       } else {
