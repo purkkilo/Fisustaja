@@ -363,6 +363,7 @@
                   :results="results"
                   :normal_points="normal_points"
                   :selected_normal="selected_normal"
+                  :fish_names="table_fish_names"
                 ></normal-comp>
               </v-tab-item>
               <!-- Tiimikilpailu -->
@@ -975,7 +976,8 @@ export default {
               this.competition.fishes,
               this.table_fish_names,
               this.hasGottenFishCount,
-              this.signees.length
+              this.signees.length,
+              this.$i18n.locale
             );
 
             this.fishes_chart_title = charts.fishes_chart.title;

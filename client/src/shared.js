@@ -2,23 +2,23 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 
 const winner_headers = [
-  { text: "Kalalaji", value: "name" },
-  { text: "Kilp. numero", value: "boat_number" },
-  { text: "Kippari", value: "captain_name" },
-  { text: "Paino", value: "weight" },
+  { text: "fish", value: "name" },
+  { text: "boat-number", value: "boat_number" },
+  { text: "captain-name", value: "captain_name" },
+  { text: "weight", value: "weight" },
 ];
 const all_fishes_headers = [
-  { text: "Sijoitus", value: "placement" },
-  { text: "Kilp. numero", value: "boat_number" },
-  { text: "Kippari", value: "captain_name" },
-  { text: "Kala", value: "name" },
-  { text: "Paino", value: "weight" },
+  { text: "placement", value: "placement" },
+  { text: "boat-number", value: "boat_number" },
+  { text: "captain-name", value: "captain_name" },
+  { text: "fish", value: "name" },
+  { text: "weight", value: "weight" },
 ];
 const biggest_headers = [
-  { text: "Sijoitus", value: "placement" },
-  { text: "Kilp. numero", value: "boat_number" },
-  { text: "Kippari", value: "captain_name" },
-  { text: "Paino", value: "weight" },
+  { text: "placement", value: "placement" },
+  { text: "boat-number", value: "boat_number" },
+  { text: "captain-name", value: "captain_name" },
+  { text: "weight", value: "weight" },
 ];
 
 const headers = {
@@ -434,7 +434,7 @@ export function saveAsPDF(
   if (table_id === "#biggest-fishes-table") {
     pdf_competition_type = `SuurimmatKalat${selected_biggest_fish}`;
 
-    if (selected_biggest_fish === "Voittajat") {
+    if (selected_biggest_fish === "winners") {
       columns = ["Kalalaji", "Veneen nro", "Kippari", "Paino (g)"];
       biggest_fishes_results.forEach((f, i) => {
         rows[i] = [
@@ -444,7 +444,7 @@ export function saveAsPDF(
           f.weight.toLocaleString(),
         ];
       });
-    } else if (selected_biggest_fish === "Kaikki") {
+    } else if (selected_biggest_fish === "all") {
       columns = ["Sijoitus", "Veneen nro", "Kippari", "Kala", "Paino (g)"];
       biggest_fishes_results.forEach((f, i) => {
         rows[i] = [
@@ -471,7 +471,7 @@ export function saveAsPDF(
   if (table_id === "#biggest-amounts-table") {
     pdf_competition_type = `SuurimmatSaaliit${selected_biggest_amount}`;
 
-    if (selected_biggest_amount === "Voittajat") {
+    if (selected_biggest_amount === "winners") {
       columns = ["Kalalaji", "Veneen nro", "Kippari", "Paino (g)"];
       biggest_amounts_results.forEach((f, i) => {
         rows[i] = [
@@ -481,7 +481,7 @@ export function saveAsPDF(
           f.weight.toLocaleString(),
         ];
       });
-    } else if (selected_biggest_amount === "Kaikki") {
+    } else if (selected_biggest_amount === "all") {
       columns = ["Sijoitus", "Veneen nro", "Kippari", "Kala", "Paino (g)"];
       biggest_amounts_results.forEach((f, i) => {
         rows[i] = [
@@ -892,7 +892,7 @@ export function saveAllAsPDF(
     }
     // Suurimmat Kalat  (Kaikki)
     // Select these for calculations
-    selected_fish = selected_amount = "Kaikki";
+    selected_fish = selected_amount = "all";
     biggest_fishes_results = calculateBiggestFishes(
       biggest_fishes,
       fish_names,
@@ -1170,7 +1170,7 @@ export function saveAllAsPDF(
     }
     // Suurimmat Kalat  (Voittajat)
     // Select these for calculations
-    selected_fish = selected_amount = "Voittajat";
+    selected_fish = selected_amount = "winners";
     biggest_amounts_results = calculateBiggestAmounts(
       biggest_amounts,
       fish_names,
@@ -1472,10 +1472,13 @@ export function initChartData(
   weights,
   fishNames,
   signeesWithPoints,
-  totalSignees
+  totalSignees,
+  language
 ) {
   let temp_weights = [];
   let colors = [];
+
+  const i18n = changeChartLanguage(language);
 
   // Get fish weights, and color from array for fishesChart
   weights.forEach((fish) => {
@@ -1487,7 +1490,7 @@ export function initChartData(
     labels: fishNames,
     datasets: [
       {
-        label: "Paino",
+        label: i18n.fishes_dataset_label,
         backgroundColor: colors,
         data: temp_weights, // Weights
       },
@@ -1495,10 +1498,10 @@ export function initChartData(
   };
 
   const signee_chart_data = {
-    labels: ["Kyllä", "Ei saalista"],
+    labels: i18n.signee_labels,
     datasets: [
       {
-        label: "Lukumäärä",
+        label: i18n.signee_dataset_label,
         backgroundColor: ["#7fbf7f", "#ff7f7f"],
         data: [signeesWithPoints, totalSignees - signeesWithPoints], // Data
       },
@@ -1506,26 +1509,51 @@ export function initChartData(
   };
 
   return {
-    fishes_chart: { title: "Kaloja saatu yhteensä", data: fishes_chart_data },
-    signee_chart: { title: "Saalista saaneita", data: signee_chart_data },
+    fishes_chart: {
+      title: "comp-overview.fish-amount-total",
+      data: fishes_chart_data,
+    },
+    signee_chart: {
+      title: "comp-overview.gotten-fish",
+      data: signee_chart_data,
+    },
   };
 }
 
+export function changeChartLanguage(language) {
+  let signee_labels, fishes_dataset_label, signee_dataset_label;
+
+  if (language === "en") {
+    signee_labels = ["Yes", "No"];
+    fishes_dataset_label = "Weight";
+    signee_dataset_label = "Amount";
+  } else {
+    signee_labels = ["Kyllä", "Ei"];
+    fishes_dataset_label = "Paino";
+    signee_dataset_label = "Lukumäärä";
+  }
+
+  return {
+    signee_labels,
+    fishes_dataset_label,
+    signee_dataset_label,
+  };
+}
 // Sorts the dictionary based on weights
 export function sortDict(fishes, fish_names) {
   if (fishes) {
     let all_results = [];
     let temp_results = [];
     fish_names.forEach((name) => {
-      // If fish name is not "Voittajat"
-      if (name !== "Voittajat") {
+      // If fish name is not "winners"
+      if (name !== "winners") {
         // For every fish name, sort the array
         if (fishes[name]) {
           temp_results = fishes[name].sort(function compare(a, b) {
             return parseInt(b.weight) - parseInt(a.weight);
           });
           fishes[name] = temp_results.filter((result) => result.weight > 0);
-          // Now it's sorted so first element is fine for "voittajat" table
+          // Now it's sorted so first element is fine for "winners" table
           if (fishes[name].length) {
             all_results.push({
               name: name,
@@ -1835,9 +1863,9 @@ export function calculateBiggestFishes(
 
   // Check v-select value, don't allow it to go null because it shows error
   if (!selected_fish) {
-    selected_fish = "Kaikki";
+    selected_fish = "all";
   }
-  if (selected_fish === "Voittajat") {
+  if (selected_fish === "winners") {
     header = headers.winner;
     fish_names.forEach((n) => {
       let temp_fishes = biggest_fishes.filter((f) => f.name === n);
@@ -1845,7 +1873,7 @@ export function calculateBiggestFishes(
         results.push(temp_fishes.sort((a, b) => b.weight - a.weight)[0]);
       }
     });
-  } else if (selected_fish === "Kaikki") {
+  } else if (selected_fish === "all") {
     header = headers.all;
 
     if (biggest_fishes.length) {
@@ -1867,7 +1895,7 @@ export function calculateBiggestFishes(
     });
   } else {
     header = headers.fish;
-    // If v-select (selected_fish) not "Voittajat", get fish related results and sort them
+    // If v-select (selected_fish) not "winners", get fish related results and sort them
     // based on the v-select fish name
 
     results = biggest_fishes.filter((f) => f.name === selected_fish);
@@ -1903,14 +1931,14 @@ export function calculateBiggestAmounts(
   let header = [];
   let placement = 1;
   if (!selected_amount) {
-    selected_amount = "Kaikki";
+    selected_amount = "all";
   }
-  if (selected_amount === "Voittajat") {
+  if (selected_amount === "winners") {
     header = headers.winner;
     results = sortDict(fishes, fish_names);
-  } else if (selected_amount === "Kaikki") {
+  } else if (selected_amount === "all") {
     header = headers.all;
-    // If v-select (selected_biggest_fish) not "Voittajat", get fish related results and sort them
+    // If v-select (selected_biggest_fish) not "winners", get fish related results and sort them
     // based on the v-select fish name
     let fish_results = [];
     for (const fish of Object.keys(fishes)) {
@@ -2002,6 +2030,7 @@ export default {
   getColorPoints,
   getColor,
   initChartData,
+  changeChartLanguage,
   sortDict,
   HSVtoRGB,
   getRandomColors,

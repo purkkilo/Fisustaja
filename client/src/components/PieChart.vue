@@ -73,6 +73,7 @@ export default {
   },
   data: () => ({
     options: {
+      locale: "en-US",
       plugins: {
         tooltip: {
           callbacks: {
@@ -115,7 +116,21 @@ export default {
       },
     },
   }),
-  mounted() {},
-  watch: {},
+  mounted() {
+    this.$i18n.locale === "en"
+      ? (this.options.locale = "en-US")
+      : (this.options.locale = "fi-FI");
+  },
+  watch: {
+    "$i18n.locale"(newValue) {
+      if (newValue) {
+        newValue === "en"
+          ? (this.options.locale = "en-US")
+          : (this.options.locale = "fi-FI");
+      } else {
+        this.options.locale = "en-US";
+      }
+    },
+  },
 };
 </script>

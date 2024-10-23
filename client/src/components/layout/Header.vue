@@ -381,6 +381,9 @@ export default {
         : (this.$i18n.locale = "en");
 
       this.$vuetify.lang.current = this.$i18n.locale;
+      let preferences = JSON.parse(localStorage.getItem("preferences"));
+      preferences.lang = this.$i18n.locale;
+      localStorage.setItem("preferences", JSON.stringify(preferences));
     },
   },
 };

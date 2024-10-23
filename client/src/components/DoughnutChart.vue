@@ -65,6 +65,7 @@ export default {
   },
   data: () => ({
     options: {
+      locale: "en-US",
       plugins: {
         tooltip: {
           callbacks: {
@@ -89,7 +90,7 @@ export default {
           },
         },
         datalabels: {
-          display (context) {
+          display(context) {
             let sum = context.dataset.data.reduce(function (a, b) {
               return a + b;
             }, 0);
@@ -97,19 +98,14 @@ export default {
               (context.dataset.data[context.dataIndex] / sum) * 100;
             return percentage > 1; // display labels for data that are larger than 1%
           },
-          formatter (value, context) {
+          formatter(value, context) {
             let sum = context.dataset.data.reduce(function (a, b) {
               return a + b;
             }, 0);
 
             let percentage = (value / sum) * 100;
             percentage = Math.round((percentage + Number.EPSILON) * 100) / 100;
-            /*
-            let lbl = `${
-              data.datasets[tooltipItem.datasetIndex].label
-            }: ${value.toLocaleString()} g ( ${percentage}% )`;
 
-*/
             return `${percentage}%`;
           },
           labels: {
@@ -129,7 +125,21 @@ export default {
       responsive: true,
     },
   }),
-  mounted() {},
-  watch: {},
+  mounted() {
+    this.$i18n.locale === "en"
+      ? (this.options.locale = "en-US")
+      : (this.options.locale = "fi-FI");
+  },
+  watch: {
+    "$i18n.locale"(newValue) {
+      if (newValue) {
+        newValue === "en"
+          ? (this.options.locale = "en-US")
+          : (this.options.locale = "fi-FI");
+      } else {
+        this.options.locale = "en-US";
+      }
+    },
+  },
 };
 </script>

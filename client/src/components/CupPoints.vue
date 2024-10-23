@@ -104,7 +104,7 @@
               <v-text-field
                 v-model="search"
                 append-icon="mdi-magnify"
-                label="Hae kilpailijaa"
+                :label="$t('search-boat')"
                 single-line
                 hide-details
               ></v-text-field>

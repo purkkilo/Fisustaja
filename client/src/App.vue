@@ -48,11 +48,11 @@ export default {
     if (!preferences) {
       localStorage.setItem(
         "preferences",
-        JSON.stringify({ isDark: false, lang: "fi" })
+        JSON.stringify({ isDark: false, lang: "en" })
       );
     } else {
       this.$store.state.isDark = preferences.isDark;
-      this.$store.state.lang = preferences.lang;
+      this.$i18n.locale = preferences.lang;
     }
   },
   async mounted() {

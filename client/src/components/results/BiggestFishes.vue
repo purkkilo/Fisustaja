@@ -4,14 +4,23 @@
       <v-col md="10" offset-md="1" style="margin-bottom: 40px">
         <v-card :dark="$store.getters.getTheme">
           <v-card-title>
-            <p class="flow-text">
-              Suurimmat kalat ({{ selected_biggest_fish }})
+            <p
+              class="flow-text"
+              v-if="
+                selected_biggest_fish === 'all' ||
+                selected_biggest_fish === 'winners'
+              "
+            >
+              {{ $t("biggest-fishes") }} ({{ $t(selected_biggest_fish) }})
+            </p>
+            <p class="flow-text" v-else>
+              {{ $t("biggest-fishes") }} ({{ selected_biggest_fish }})
             </p>
             <v-spacer></v-spacer>
             <v-text-field
               v-model="search_fishes"
               append-icon="mdi-magnify"
-              label="Hae kilpailijaa"
+              :label="$t('search-boat')"
               single-line
               hide-details
             ></v-text-field>
@@ -21,6 +30,12 @@
             :items="biggest_fishes_results"
             :search="search_fishes"
           >
+            <template
+              v-for="(h, index) in headers"
+              v-slot:[`header.${h.value}`]="{ header }"
+            >
+              <span :key="index"> {{ $t(header.text) }}</span>
+            </template>
             <template v-slot:[`item.placement`]="{ item }">
               <v-chip
                 :outlined="$store.getters.getTheme"
@@ -46,11 +61,11 @@
             'white--text': $store.getters.getTheme,
           }"
         >
-          Ei tuloksia, vielä...
+          {{ $t("no-results") }}
         </p>
       </v-col>
       <v-col v-else>
-        <h2 class="white--text">Päivitetään tuloksia tietokannasta...</h2>
+        <h2 class="white--text">{{ $t("refreshing") }}...</h2>
         <ProgressBarQuery />
       </v-col>
     </v-row>

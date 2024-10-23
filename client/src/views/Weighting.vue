@@ -21,7 +21,7 @@
           <v-col cols="12" xs="12" sm="12" md="12">
             <v-row justfify="center">
               <v-col>
-                <h1 style="margin: 30px">Punnitus</h1>
+                <h1 style="margin: 30px">{{ $t("weighting") }}</h1>
                 <h2 style="margin: 10px; color: chartreuse">
                   {{ allReturned ? "Kaikki maalissa!" : "" }}
                 </h2>
@@ -43,9 +43,11 @@
         center-active
       >
         <v-tabs-slider color="blue darken-4"></v-tabs-slider>
-        <v-tab href="#weighting">Punnitus</v-tab>
-        <v-tab href="#situation">Tilannekatsaus</v-tab>
-        <v-tab v-if="!allReturned" href="#onwater">Vielä vesillä</v-tab>
+        <v-tab href="#weighting">{{ $t("weighting") }}</v-tab>
+        <v-tab href="#situation">{{ $t("leaderboard") }}</v-tab>
+        <v-tab v-if="!allReturned" href="#onwater">{{
+          $t("comp-overview.still-on-water")
+        }}</v-tab>
       </v-tabs>
       <v-tabs-items v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
         <!-- "Punnitus" tab -->
@@ -84,7 +86,7 @@
                             'white--text': $store.getters.getTheme,
                           }"
                         >
-                          Venekunta
+                          {{ $t("boat") }}
                         </p>
                       </v-col>
                       <v-col class="d-flex">
@@ -95,11 +97,11 @@
                           :dark="$store.getters.getTheme"
                           v-model="boat_number_input"
                           :items="sortedArray"
-                          label="Valitse tai hae venekunta"
+                          :label="$t('choose-boat')"
                           :hint="
                             boat_number_input['boat_number'] !== undefined
-                              ? `Valittu venekunta`
-                              : `Valitse tai hae venekunta`
+                              ? $t('chosen-boat')
+                              : $t('choose-boat')
                           "
                           :disabled="loading_site"
                           outlined
@@ -169,10 +171,10 @@
                     <v-col>
                       <v-alert v-if="loading" type="info"> </v-alert>
                       <v-alert v-if="!searched" type="warning">
-                        Venekuntaa ei valittuna
+                        {{ $t("errors.no-boat-selected") }}
                       </v-alert>
                       <v-alert v-else type="error">
-                        Numerolla ei löytynyt venekuntaa tietokannasta!
+                        {{ $t("errors.no-boat-found") }}
                       </v-alert>
                     </v-col>
                   </v-row>
@@ -182,7 +184,7 @@
                         <v-col offset="4" cols="4">
                           <v-btn large block color="yellow" @click="clearInputs"
                             ><v-icon>mdi-backspace-reverse-outline</v-icon
-                            >Peruuta valinta</v-btn
+                            >{{ $t("cancel") }}</v-btn
                           >
                         </v-col>
                       </v-row>
@@ -210,8 +212,8 @@
                               }}</v-icon
                               >{{
                                 isBiggestFishVisible
-                                  ? "Piilota"
-                                  : "Punnitse yksittäinen kala"
+                                  ? $t("hide")
+                                  : $t("weight-one-fish")
                               }}</v-btn
                             >
                             <v-row v-if="loading_fish" style="margin-top: 20px">
@@ -222,7 +224,7 @@
                                     'white--text': $store.getters.getTheme,
                                   }"
                                 >
-                                  Lisätään kala tietokantaan...
+                                  {{ $t("adding-fish") }}
                                 </p>
                                 <ProgressBarQuery />
                               </v-col>
@@ -230,6 +232,7 @@
                             <v-row
                               v-if="!loading_fish && isBiggestFishVisible"
                               style="margin-top: 20px"
+                              align="center"
                             >
                               <v-col md="3">
                                 <p
@@ -238,14 +241,14 @@
                                     'white--text': $store.getters.getTheme,
                                   }"
                                 >
-                                  Suurin kala?
+                                  {{ $t("biggest-fish") }}?
                                 </p>
                               </v-col>
                               <v-col md="4">
                                 <v-select
                                   outlined
                                   class="flow-text"
-                                  label="Valitse kalalaji painamalla"
+                                  :label="$t('choose-fish')"
                                   v-model="selected_fish"
                                   item-text="name"
                                   :items="competition.fishes"
@@ -265,7 +268,7 @@
                               <v-col class="input-fields" md="3">
                                 <v-text-field
                                   :dark="$store.getters.getTheme"
-                                  label="Paino grammoina"
+                                  :label="$t('weight-grams')"
                                   v-model="biggest_fish"
                                   type="number"
                                   @paste.prevent
@@ -285,7 +288,7 @@
                                   color="green"
                                   @click="saveBiggestFish"
                                   ><v-icon>mdi-content-save</v-icon
-                                  >Tallenna</v-btn
+                                  >{{ $t("save") }}</v-btn
                                 >
                               </v-col>
                             </v-row>
@@ -322,7 +325,7 @@
                               <v-col md="4" class="input-fields">
                                 <v-text-field
                                   :dark="$store.getters.getTheme"
-                                  label="Paino grammoina"
+                                  :label="$t('weight-grams')"
                                   v-model="input.value"
                                   type="number"
                                   @paste.prevent
@@ -348,21 +351,22 @@
                                       v-bind="attrs"
                                       v-on="on"
                                       :disabled="loading || loading_fish"
-                                      ><v-icon>mdi-plus</v-icon>Plussaa</v-btn
+                                      ><v-icon>mdi-plus</v-icon
+                                      >{{ $t("add-calculation") }}</v-btn
                                     >
                                   </template>
                                   <v-card :dark="$store.getters.getTheme">
                                     <v-card-title>
-                                      <span class="headline"
-                                        >Yhteenlaske summat</span
-                                      >
+                                      <span class="headline">{{
+                                        $t("add-together")
+                                      }}</span>
                                     </v-card-title>
                                     <v-card-text>
                                       <v-row>
                                         <v-col md="6" offset-md="3">
                                           <v-text-field
                                             class="title"
-                                            label="Alkuperäinen arvo"
+                                            :label="$t('value-original')"
                                             :value="input.value"
                                             disabled
                                           ></v-text-field>
@@ -372,7 +376,7 @@
                                         <v-col md="6 " offset-md="3">
                                           <v-text-field
                                             v-model="input.addition"
-                                            label="Lisättävä arvo"
+                                            :label="$t('value-to-add')"
                                             type="number"
                                             @paste.prevent
                                             @keypress="isNumber($event)"
@@ -398,7 +402,7 @@
                                                   : 0
                                               )
                                             "
-                                            label="Summa"
+                                            :label="$t('sum')"
                                             disabled
                                           ></v-text-field>
                                         </v-col>
@@ -413,7 +417,7 @@
                                           input.addition = null;
                                           input.dialog = false;
                                         "
-                                        >Peruuta</v-btn
+                                        >{{ $t("cancel") }}</v-btn
                                       >
                                       <v-btn
                                         outlined
@@ -429,7 +433,7 @@
                                           input.dialog = false;
                                           input.addition = 0;
                                         "
-                                        >Tallenna</v-btn
+                                        >{{ $t("save") }}</v-btn
                                       >
                                     </v-card-actions>
                                   </v-card>
@@ -450,7 +454,7 @@
                               outlined
                               tile
                             >
-                              <v-card-title>Yhteenveto</v-card-title>
+                              <v-card-title>{{ $t("overview") }}</v-card-title>
                               <v-list dense>
                                 <v-list-item>
                                   <v-list-item-icon>
@@ -467,7 +471,7 @@
                                       </h3>
                                     </v-list-item-title>
                                     <v-list-item-subtitle>
-                                      Venekunta
+                                      {{ $t("boat") }}
                                     </v-list-item-subtitle>
                                   </v-list-item-content>
                                 </v-list-item>
@@ -485,7 +489,7 @@
                                       </h3>
                                     </v-list-item-title>
                                     <v-list-item-subtitle>
-                                      Yhteispaino
+                                      {{ $t("total-weights") }}
                                     </v-list-item-subtitle>
                                   </v-list-item-content>
                                 </v-list-item>
@@ -503,7 +507,7 @@
                                       </h3>
                                     </v-list-item-title>
                                     <v-list-item-subtitle>
-                                      Yhteispisteet
+                                      {{ $t("total-points") }}
                                     </v-list-item-subtitle>
                                   </v-list-item-content>
                                 </v-list-item>
@@ -516,7 +520,7 @@
                                       <h3>#{{ getBoatPlacing() }}</h3>
                                     </v-list-item-title>
                                     <v-list-item-subtitle>
-                                      Sijoitus
+                                      {{ $t("placement") }}
                                     </v-list-item-subtitle>
                                   </v-list-item-content>
                                 </v-list-item>
@@ -537,7 +541,8 @@
                               color="red"
                               @click="saveToDatabase(true)"
                               :loading="refreshing"
-                              ><v-icon>mdi-delete</v-icon>Nollaa</v-btn
+                              ><v-icon>mdi-delete</v-icon
+                              >{{ $t("button.clear-signee") }}</v-btn
                             >
                           </v-col>
                           <v-col>
@@ -548,7 +553,7 @@
                                 'white--text': $store.getters.getTheme,
                               }"
                             >
-                              Synkronoidaan tietokannan kanssa...
+                              {{ $t("updating") }}...
                             </p>
                           </v-col>
                           <v-col>
@@ -558,7 +563,7 @@
                               color="green"
                               @click="saveToDatabase(false)"
                               :loading="refreshing"
-                              ><v-icon>mdi-check</v-icon>Tallenna</v-btn
+                              ><v-icon>mdi-check</v-icon>{{ $t("save") }}</v-btn
                             >
                           </v-col>
                         </v-row>
@@ -572,8 +577,8 @@
                               @click="refreshCompetition(competition_id)"
                               class="white--text"
                             >
-                              <v-icon>mdi-update</v-icon>Päivitä kilpailun
-                              tiedot
+                              <v-icon>mdi-update</v-icon
+                              >{{ $t("button.update") }}
                             </v-btn>
                           </v-col>
                         </v-row>
@@ -585,7 +590,7 @@
                                 'white--text': $store.getters.getTheme,
                               }"
                             >
-                              Päivitetään tiedot tietokantaan...
+                              {{ $t("updating") }}...
                             </p>
                             <ProgressBarQuery />
                           </v-col>
@@ -631,7 +636,7 @@
                 <v-col md="8" offset-md="2" style="margin-top: 20px">
                   <v-card :dark="$store.getters.getTheme">
                     <v-card-title>
-                      <p class="flow-text">Tilannekatsaus</p>
+                      <p class="flow-text">{{ $t("leaderboard") }}</p>
                       <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
                           <v-icon
@@ -641,16 +646,13 @@
                             >mdi-chat-question-outline</v-icon
                           >
                         </template>
-                        <span>
-                          Voit siirtyä punnitukseen myös klikkaamalla haluamaasi
-                          riviä taulukosta.</span
-                        >
+                        <span> {{ $t("info-table-click") }}</span>
                       </v-tooltip>
                       <v-spacer></v-spacer>
                       <v-text-field
                         v-model="search"
                         append-icon="mdi-magnify"
-                        label="Hae kilpailijaa"
+                        :label="$t('search-boat')"
                         single-line
                         hide-details
                       ></v-text-field>
@@ -661,6 +663,12 @@
                       :items="sortedCompetition"
                       :search="search"
                     >
+                      <template
+                        v-for="(h, index) in headers"
+                        v-slot:[`header.${h.value}`]="{ header }"
+                      >
+                        <span :key="index"> {{ $t(header.text) }}</span>
+                      </template>
                       <template v-slot:[`item.placement`]="{ item }">
                         <v-chip
                           :outlined="$store.getters.getTheme"
@@ -725,7 +733,9 @@
                 <v-col md="8" offset-md="2">
                   <v-card :dark="$store.getters.getTheme">
                     <v-card-title>
-                      <p class="flow-text">Vielä vesillä</p>
+                      <p class="flow-text">
+                        {{ $t("comp-overview.still-on-water") }}
+                      </p>
                       <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
                           <v-icon
@@ -735,16 +745,13 @@
                             >mdi-chat-question-outline</v-icon
                           >
                         </template>
-                        <span>
-                          Voit siirtyä punnitukseen myös klikkaamalla haluamaasi
-                          riviä taulukosta.</span
-                        >
+                        <span> {{ $t("info-table-click") }}</span>
                       </v-tooltip>
                       <v-spacer></v-spacer>
                       <v-text-field
                         v-model="search_on_water"
                         append-icon="mdi-magnify"
-                        label="Hae kilpailijaa"
+                        :label="$t('search-boat')"
                         single-line
                         hide-details
                       ></v-text-field>
@@ -757,6 +764,12 @@
                       :search="search_on_water"
                       :loading="loading"
                     >
+                      <template
+                        v-for="(h, index) in headers_on_water"
+                        v-slot:[`header.${h.value}`]="{ header }"
+                      >
+                        <span :key="index"> {{ $t(header.text) }}</span>
+                      </template>
                       <template v-slot:[`item.boat_number`]="{ item }">
                         <v-chip>{{ item.boat_number }}.</v-chip>
                       </template>
@@ -777,8 +790,8 @@
                     class="white--text"
                     @click="allFinished"
                     :loading="loading"
-                    ><v-icon>mdi-check-outline</v-icon>Merkitse kaikki
-                    saapuneeksi maaliin</v-btn
+                    ><v-icon>mdi-check-outline</v-icon
+                    >{{ $t("button.set-all-finished") }}</v-btn
                   >
                 </v-col>
               </v-row>
@@ -792,7 +805,7 @@
                     class="flow-text"
                     v-bind:class="{ 'white--text': $store.getters.getTheme }"
                   >
-                    Kaikki maalissa!
+                    {{ $t("all-finished") }}
                   </p>
                 </v-col>
               </v-row>
@@ -802,11 +815,11 @@
       </v-tabs-items>
     </v-container>
     <v-snackbar v-model="snackbar" :timeout="timeout">
-      {{ text }}
+      {{ $t(text) }}
 
       <template v-slot:action="{ attrs }">
         <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
-          Close
+          {{ $t("close") }}
         </v-btn>
       </template>
     </v-snackbar>
@@ -849,16 +862,16 @@ export default {
       biggest_amounts: {},
       signees: [],
       headers: [
-        { text: "Sijoitus", value: "placement" },
-        { text: "Kilp. Numero", value: "boat_number" },
-        { text: "Kippari", value: "captain_name" },
-        { text: "Pisteet", value: "total_points" },
+        { text: "placement", value: "placement" },
+        { text: "boat-number", value: "boat_number" },
+        { text: "captain-name", value: "captain_name" },
+        { text: "points", value: "total_points" },
       ],
       headers_on_water: [
-        { text: "Kilp. Numero", value: "boat_number" },
-        { text: "Kippari", value: "captain_name" },
-        { text: "Varakippari", value: "temp_captain_name" },
-        { text: "Lähtöpaikka", value: "starting_place" },
+        { text: "boat-number", value: "boat_number" },
+        { text: "captain-name", value: "captain_name" },
+        { text: "temp-captain-name", value: "temp_captain_name" },
+        { text: "starting-place", value: "starting_place" },
       ],
       search_on_water: "",
       search: "",
@@ -869,34 +882,6 @@ export default {
       timer_refresh: null,
       interval: 60000,
       inputs: [],
-      selectedItem: 3,
-      items: [
-        {
-          text: "Yleisnäkymä",
-          icon: "mdi-desktop-mac-dashboard",
-          path: "/overview",
-        },
-        {
-          text: "Määritykset",
-          icon: "mdi-tune",
-          path: "/comp-settings",
-        },
-        {
-          text: "Ilmoittautuminen",
-          icon: "mdi-draw",
-          path: "/signing",
-        },
-        {
-          text: "Punnitus",
-          icon: "mdi-dumbbell",
-          path: "/weighting",
-        },
-        {
-          text: "Tulokset",
-          icon: "mdi-seal",
-          path: "/results",
-        },
-      ],
       snackbar: false,
       text: "",
       timeout: 5000,
@@ -1037,7 +1022,7 @@ export default {
           console.log(e);
         });
         this.loading = false;
-        this.text = "Kaikki kilpailijat merkattu maaliin saapuneeksi!";
+        this.text = "all-finished";
         this.snackbar = true;
       } catch (err) {
         console.log(err.message);
@@ -1155,14 +1140,14 @@ export default {
             await FishService.insertFishes([fish]).catch((e) => console.log(e));
           }
 
-          this.notification = `Tiedot päivitetty tietokantaan!`;
+          this.notification = `notification.updated`;
           this.loading_fish = false;
           this.selected_fish = null;
           this.biggest_fish = null;
         } catch (err) {
           console.log(err.message);
         }
-        this.text = "Isoin kala tallennettu listaan!";
+        this.text = "biggest-fish-saved";
         this.snackbar = true;
       }
     },
@@ -1234,7 +1219,7 @@ export default {
         }
 
         this.clearInputs();
-        this.notification = `Tiedot päivitetty tietokantaan!`;
+        this.notification = `notification.updated`;
         // Update values for next signee
         this.boat_number_input = {};
         this.competition_boat = null;
@@ -1334,7 +1319,7 @@ export default {
 
     // Clear all inputs and selections
     clearInputs() {
-      this.text = "Pyyhitään inputit ja valinnat...";
+      this.text = "clearing";
       this.snackbar = true;
       this.inputs.forEach((input) => {
         input.value = null;

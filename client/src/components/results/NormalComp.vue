@@ -10,20 +10,20 @@
           class="row"
           v-if="
             normal_points.length ||
-            (results.length && selected_normal === 'Ilmoittautuneet')
+            (results.length && selected_normal === 'signees-signed')
           "
         >
           <v-col md="12">
             <v-card :dark="$store.getters.getTheme">
               <v-card-title>
                 <p class="flow-text">
-                  Normaalikilpailu ({{ selected_normal }})
+                  {{ $t("normal-comp") }} ({{ $t(selected_normal) }})
                 </p>
                 <v-spacer></v-spacer>
                 <v-text-field
                   v-model="search"
                   append-icon="mdi-magnify"
-                  label="Hae kilpailijaa"
+                  :label="$t('search-boat')"
                   single-line
                   hide-details
                 ></v-text-field>
@@ -33,6 +33,15 @@
                 :items="results"
                 :search="search"
               >
+                <template
+                  v-for="(h, index) in headers"
+                  v-slot:[`header.${h.value}`]="{ header }"
+                >
+                  <span :key="index" v-if="fish_names.includes(header.text)">
+                    {{ header.text }}</span
+                  >
+                  <span :key="index" v-else> {{ $t(header.text) }}</span>
+                </template>
                 <template v-slot:[`item.placement`]="{ item }">
                   <v-chip
                     :outlined="$store.getters.getTheme"
@@ -41,7 +50,7 @@
                   >
                 </template>
                 <template
-                  v-if="selected_normal === 'Ilmoittautuneet'"
+                  v-if="selected_normal === 'signees-signed'"
                   v-slot:[`item.boat_number`]="{ item }"
                 >
                   <v-chip>{{ item.boat_number }}</v-chip>
@@ -62,8 +71,9 @@
                     </template>
                     <span>
                       <b
-                        >Sijoittumispisteet + Osallistumispisteet = Cup
-                        pisteet</b
+                        >{{ $t("placement-points") }} +
+                        {{ $t("participation-points") }} =
+                        {{ $t("cup.normal") }} {{ $t("points") }}</b
                       >
                       <br />
                       {{ item.cup_placement_points }} +
@@ -84,11 +94,11 @@
                 'white--text': $store.getters.getTheme,
               }"
             >
-              Ei tuloksia, vielä...
+              {{ $t("no-results") }}...
             </p>
           </v-col>
           <v-col v-else>
-            <h2 class="white--text">Päivitetään tuloksia tietokannasta...</h2>
+            <h2 class="white--text">{{ $t("refreshing") }}...</h2>
             <ProgressBarQuery />
           </v-col>
         </v-row>
@@ -109,6 +119,7 @@ export default {
     "results",
     "selected_normal",
     "normal_points",
+    "fish_names",
   ],
   created() {
     this.getColorPoints = getColorPoints;

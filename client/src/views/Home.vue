@@ -113,12 +113,6 @@ export default {
     },
   },
   async mounted() {
-    // Set competition in localstorage and vuex to null
-    this.$store.commit("refreshCompetition", null);
-    localStorage.removeItem("competition");
-    this.$store.commit("refreshCup", null);
-    localStorage.removeItem("cup");
-
     this.links = this.items;
     if (this.$store.state.logged_in) {
       this.links = [

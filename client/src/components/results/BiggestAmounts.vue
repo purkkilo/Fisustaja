@@ -4,14 +4,23 @@
       <v-col md="10" offset-md="1" style="margin-bottom: 40px">
         <v-card :dark="$store.getters.getTheme">
           <v-card-title>
-            <p class="flow-text">
-              Suurimmat kalasaaliit ({{ selected_biggest_amount }})
+            <p
+              class="flow-text"
+              v-if="
+                selected_biggest_amount === 'all' ||
+                selected_biggest_amount === 'winners'
+              "
+            >
+              {{ $t("biggest-amounts") }} ({{ $t(selected_biggest_amount) }})
+            </p>
+            <p class="flow-text" v-else>
+              {{ $t("biggest-amounts") }} ({{ selected_biggest_amount }})
             </p>
             <v-spacer></v-spacer>
             <v-text-field
               v-model="search_amounts"
               append-icon="mdi-magnify"
-              label="Hae kilpailijaa"
+              :label="$t('search-boat')"
               single-line
               hide-details
             ></v-text-field>
@@ -22,6 +31,12 @@
             :search="search_amounts"
             :loading="loading"
           >
+            <template
+              v-for="(h, index) in headers"
+              v-slot:[`header.${h.value}`]="{ header }"
+            >
+              <span :key="index"> {{ $t(header.text) }}</span>
+            </template>
             <template v-slot:[`item.placement`]="{ item }">
               <v-chip
                 :outlined="$store.getters.getTheme"
@@ -40,18 +55,18 @@
       </v-col>
     </v-row>
     <v-row v-else>
-      <v-col v-if="!loading" md="8" offset-md="2">
+      <v-col v-if="!loading">
         <p
           class="flow-text"
           v-bind:class="{
             'white--text': $store.getters.getTheme,
           }"
         >
-          Ei tuloksia, vielä...
+          {{ $t("no-results") }}
         </p>
       </v-col>
-      <v-col v-else md="8" offset-md="2">
-        <h2 class="white--text">Päivitetään tuloksia tietokannasta...</h2>
+      <v-col v-else>
+        <h2 class="white--text">{{ $t("refreshing") }}...</h2>
         <ProgressBarQuery />
       </v-col>
     </v-row>
