@@ -406,7 +406,7 @@ import ResultService from "../services/ResultService.js";
 import CupService from "../services/CupService";
 import Timedate from "../components/layout/Timedate";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
-import { capitalize_words } from "../shared";
+import { capitalize_words, isNumber } from "../shared";
 
 export default {
   name: "Signing",
@@ -451,34 +451,6 @@ export default {
       ],
       timer_refresh: null,
       interval: 60000,
-      selectedItem: 2,
-      items: [
-        {
-          text: "Yleisnäkymä",
-          icon: "mdi-desktop-mac-dashboard",
-          path: "/overview",
-        },
-        {
-          text: "Määritykset",
-          icon: "mdi-tune",
-          path: "/comp-settings",
-        },
-        {
-          text: "Ilmoittautuminen",
-          icon: "mdi-draw",
-          path: "/signing",
-        },
-        {
-          text: "Punnitus",
-          icon: "mdi-dumbbell",
-          path: "/weighting",
-        },
-        {
-          text: "Tulokset",
-          icon: "mdi-seal",
-          path: "/results",
-        },
-      ],
       snackbar: false,
       text: "",
       timeout: 5000,
@@ -494,6 +466,7 @@ export default {
     }
   },
   methods: {
+    isNumber: isNumber,
     // Select row from table, if selected --> unselect
     // selected_id bound to selected css class (on App.vue)
     rowClick(item, row) {
@@ -551,24 +524,6 @@ export default {
       }
       this.loading_site = false;
       this.refreshing = false;
-    },
-    // Check if input value is number, and only accept numbers to inputs
-    isNumber(evt) {
-      evt = evt ? evt : window.event;
-      var charCode = evt.which ? evt.which : evt.keyCode;
-      if (
-        charCode > 31 &&
-        (charCode < 48 || charCode > 57) &&
-        charCode !== 46
-      ) {
-        evt.preventDefault();
-      } else {
-        if (charCode == 46) {
-          evt.preventDefault();
-        } else {
-          return true;
-        }
-      }
     },
     // Clear all selections and inputs and errors
     clearInputs() {
@@ -738,7 +693,7 @@ export default {
       this.signees = this.results = this.signees;
       // Store to vuex
       comp.signees = this.signees;
-      comp.state = "Ilmoittautuminen";
+      comp.state = "signing";
 
       if (comp.isCupCompetition) {
         let index = this.cup.signees.findIndex(

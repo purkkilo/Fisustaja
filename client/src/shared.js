@@ -1,5 +1,6 @@
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import i18n from "./i18n";
 
 const winner_headers = [
   { text: "fish", value: "name" },
@@ -250,7 +251,12 @@ export function saveCupAsPDF(
     doc.text(13, 30, sub_title, { align: "left" });
     doc.setFontSize(8);
 
-    columns = ["Kilp. numero", "Kippari", "Varakippari", "Paikkakunta"];
+    columns = [
+      i18n.t("boat-number"),
+      i18n.t("captain-name"),
+      i18n.t("temp-captain-name"),
+      i18n.t("locality"),
+    ];
     signees = cup.signees.sort(sortBy("boat_number", true));
     rows = cupDictToArray(signees, competitions, "signees");
     /* eslint-disable no-unused-vars */
@@ -330,22 +336,29 @@ export function saveAsPDF(
     temp_start_date === temp_end_date
       ? String(temp_start_date)
       : `${temp_start_date} - ${temp_end_date}`;
-  const time = `${date}, Klo. ${competition.start_time} - ${competition.end_time}`;
+  const time = `${date}, ${i18n.t("timer.at")} ${competition.start_time} - ${
+    competition.end_time
+  }`;
   addTitle(doc, title, competition.cup_name, time);
   doc.setFontSize(20);
 
   if (table_id === "#normal-table") {
-    pdf_competition_type = `Normaalikilpailu${selected_normal}`;
+    pdf_competition_type = `${replaceAll(
+      i18n.t("normal-comp"),
+      " ",
+      ""
+    )}${selected_normal}`;
     // Other tables are generated in code so no need to wait for rendering to html
-    if (selected_normal === "Pisteet") {
+    if (selected_normal === "points") {
       columns = [
-        "Sijoitus",
-        "Nro.",
-        "Kippari",
-        "Varakippari",
-        "Paikkakunta",
-        "Tulos (p)",
+        i18n.t("placement"),
+        i18n.t("boat-number-short"),
+        i18n.t("captain-name"),
+        i18n.t("temp-captain-name"),
+        i18n.t("locality"),
+        i18n.t("result") + " (p)",
       ];
+
       if (competition.isCupCompetition) {
         columns.push("Cup (p)");
       }
@@ -364,13 +377,17 @@ export function saveAsPDF(
         }
       });
     }
-    if (selected_normal === "Kalat") {
-      columns = ["Sijoitus", "Nro.", "Kippari"];
+    if (selected_normal === "fishes") {
+      columns = [
+        i18n.t("placement"),
+        i18n.t("boat-number-short"),
+        i18n.t("captain-name"),
+      ];
       // Get fish names for columns
       fish_names.forEach((name) => {
         columns.push(name + " (g)");
       });
-      columns.push("Tulos (p)");
+      columns.push(i18n.t("result") + " (p)");
       // Format dictionary/json to format that autotable understands (arrays in arrays);
       normal_weights.forEach((b, i) => {
         let r = [];
@@ -382,16 +399,16 @@ export function saveAsPDF(
         rows[i] = r;
       });
     }
-    if (selected_normal === "Ilmoittautuneet") {
+    if (selected_normal === "signees-signed") {
       columns = [
-        "Kilp. numero",
-        "Kippari",
-        "Varakippari",
-        "Paikkakunta",
-        "Lähtöpaikka",
+        i18n.t("boat-number"),
+        i18n.t("captain-name"),
+        i18n.t("temp-captain-name"),
+        i18n.t("locality"),
+        i18n.t("starting-place"),
       ];
       if (competition.isTeamCompetition) {
-        columns.push("Tiimi");
+        columns.push(i18n.t("team"));
       }
       // Format dictionary/json to format that autotable understands (arrays in arrays);
       signees.forEach((b, i) => {
@@ -407,15 +424,15 @@ export function saveAsPDF(
   }
 
   if (table_id === "#team-table") {
-    pdf_competition_type = `Tiimikilpailu`;
+    pdf_competition_type = i18n.t("team-comp");
     // Other tables are generated in code so no need to wait for rendering to html
     columns = [
-      "Sijoitus",
-      "Tiimi",
-      "Jäsen 1",
-      "Jäsen 2",
-      "Jäsen 3",
-      "Pisteet (p)",
+      i18n.t("placement"),
+      i18n.t("team"),
+      i18n.t("member") + " 1",
+      i18n.t("member") + " 2",
+      i18n.t("member") + " 3",
+      i18n.t("result") + " (p)",
     ];
     // Format dictionary/json to format that autotable understands (arrays in arrays);
     rows = [];
@@ -432,10 +449,19 @@ export function saveAsPDF(
   }
 
   if (table_id === "#biggest-fishes-table") {
-    pdf_competition_type = `SuurimmatKalat${selected_biggest_fish}`;
+    pdf_competition_type = `${replaceAll(i18n.t("biggest-fishes"), " ", "")}${
+      selected_biggest_fish === "all" || selected_biggest_fish === "winners"
+        ? i18n.t(selected_biggest_fish)
+        : selected_biggest_fish
+    }`;
 
     if (selected_biggest_fish === "winners") {
-      columns = ["Kalalaji", "Veneen nro", "Kippari", "Paino (g)"];
+      columns = [
+        i18n.t("fish"),
+        i18n.t("boat-number"),
+        i18n.t("captain-name"),
+        i18n.t("weight") + " (g)",
+      ];
       biggest_fishes_results.forEach((f, i) => {
         rows[i] = [
           f.name,
@@ -445,7 +471,13 @@ export function saveAsPDF(
         ];
       });
     } else if (selected_biggest_fish === "all") {
-      columns = ["Sijoitus", "Veneen nro", "Kippari", "Kala", "Paino (g)"];
+      columns = [
+        i18n.t("placement"),
+        i18n.t("boat-number"),
+        i18n.t("captain-name"),
+        i18n.t("fish"),
+        i18n.t("weight") + " (g)",
+      ];
       biggest_fishes_results.forEach((f, i) => {
         rows[i] = [
           f.placement + ".",
@@ -456,7 +488,12 @@ export function saveAsPDF(
         ];
       });
     } else {
-      columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino (g)"];
+      columns = [
+        i18n.t("placement"),
+        i18n.t("boat-number"),
+        i18n.t("captain-name"),
+        i18n.t("weight") + " (g)",
+      ];
       biggest_fishes_results.forEach((f, i) => {
         rows[i] = [
           f.placement + ".",
@@ -469,10 +506,19 @@ export function saveAsPDF(
   }
 
   if (table_id === "#biggest-amounts-table") {
-    pdf_competition_type = `SuurimmatSaaliit${selected_biggest_amount}`;
+    pdf_competition_type = `${replaceAll(i18n.t("biggest-amounts"), " ", "")}${
+      selected_biggest_amount === "all" || selected_biggest_amount === "winners"
+        ? i18n.t(selected_biggest_amount)
+        : selected_biggest_amount
+    }`;
 
     if (selected_biggest_amount === "winners") {
-      columns = ["Kalalaji", "Veneen nro", "Kippari", "Paino (g)"];
+      columns = [
+        i18n.t("fish"),
+        i18n.t("boat-number"),
+        i18n.t("captain-name"),
+        i18n.t("weight") + " (g)",
+      ];
       biggest_amounts_results.forEach((f, i) => {
         rows[i] = [
           f.name,
@@ -482,7 +528,13 @@ export function saveAsPDF(
         ];
       });
     } else if (selected_biggest_amount === "all") {
-      columns = ["Sijoitus", "Veneen nro", "Kippari", "Kala", "Paino (g)"];
+      columns = [
+        i18n.t("placement"),
+        i18n.t("boat-number"),
+        i18n.t("captain-name"),
+        i18n.t("fish"),
+        i18n.t("weight") + " (g)",
+      ];
       biggest_amounts_results.forEach((f, i) => {
         rows[i] = [
           f.placement + ".",
@@ -493,7 +545,12 @@ export function saveAsPDF(
         ];
       });
     } else {
-      columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino (g)"];
+      columns = [
+        i18n.t("placement"),
+        i18n.t("boat-number"),
+        i18n.t("captain-name"),
+        i18n.t("weight") + " (g)",
+      ];
       biggest_amounts_results.forEach((f, i) => {
         rows[i] = [
           f.placement + ".",
@@ -561,7 +618,9 @@ export function saveStatsAsPDF(
     temp_start_date === temp_end_date
       ? String(temp_start_date)
       : `${temp_start_date} - ${temp_end_date}`;
-  const time = `${date}, Klo. ${competition.start_time} - ${competition.end_time}`;
+  const time = `${date}, ${i18n.t("timer.at")} ${competition.start_time} - ${
+    competition.end_time
+  }`;
   addTitle(doc, title, competition.cup_name, time);
   doc.setFontSize(18);
 
@@ -582,12 +641,9 @@ export function saveStatsAsPDF(
     doc.addImage(signeeImg, "PNG", 110, 40, 90, 90);
   }
 
-  doc.text(
-    "Kalalajien määritykset",
-    doc.internal.pageSize.getWidth() / 2,
-    145,
-    { align: "center" }
-  );
+  doc.text(i18n.t("fish-specs"), doc.internal.pageSize.getWidth() / 2, 145, {
+    align: "center",
+  });
   // Generate table
   let rows = [];
 
@@ -602,8 +658,13 @@ export function saveStatsAsPDF(
   let temp =
     Math.round((competition.total_weights / 1000 + Number.EPSILON) * 100) / 100;
   let total_amount = temp.toLocaleString() + " kg";
-  rows.push(["Yhteensä", "", "", total_amount]);
-  let columns = ["Kalalaji", "Kerroin", "Alamitta", "Saalista saatu"];
+  rows.push([i18n.t("total-big"), "", "", total_amount]);
+  let columns = [
+    i18n.t("fish"),
+    i18n.t("multiplier"),
+    i18n.t("min-size"),
+    i18n.t("comp-overview.gotten-fish"),
+  ];
   doc.autoTable({
     head: [columns],
     body: rows,
@@ -625,7 +686,7 @@ export function saveStatsAsPDF(
   });
 
   doc.text(
-    "Yleisiä tilastoja",
+    i18n.t("general-statistics"),
     doc.internal.pageSize.getWidth() / 2,
     doc.autoTable.previous.finalY + 20,
     {
@@ -635,10 +696,10 @@ export function saveStatsAsPDF(
 
   columns = ["", ""];
   rows = [
-    ["Cup pistekerroin", `x ${competition.cup_points_multiplier}`],
-    ["Ilmoittautuneita yhteensä", `${signees.length} kpl`],
+    [`Cup ${i18n.t("multiplier")} `, `x ${competition.cup_points_multiplier}`],
+    [`${i18n.t("signees")} ${i18n.t("total")}`, `${signees.length} kpl`],
     [
-      "Saalista saaneita",
+      i18n.t("comp-overview.gotten-fish"),
       `${
         Math.round((hasGottenFishCount / signees.length) * 100 * 100) / 100
       } % (${hasGottenFishCount}/${signees.length})`,
@@ -711,7 +772,9 @@ export function saveAllAsPDF(
     temp_start_date === temp_end_date
       ? String(temp_start_date)
       : `${temp_start_date} - ${temp_end_date}`;
-  const time = `${date}, Klo. ${competition.start_time} - ${competition.end_time}`;
+  const time = `${date}, ${i18n.t("timer.at")} ${competition.start_time} - ${
+    competition.end_time
+  }`;
   addTitle(doc, title, competition.cup_name, time);
   doc.setFontSize(18);
   // start_coord needed to keep track of y coordinates for tables (if there are no results -> no table drawn to pdf -> varying coordinates)
@@ -724,12 +787,16 @@ export function saveAllAsPDF(
   //Normaalikilpailu (Pisteet), saved to pdf if it's inclued in selected_print array
   if (selected_print.includes("normal")) {
     //Normaalikilpailu (Kalat)
-    columns = ["Sijoitus", "Nro.", "Kippari"];
+    columns = [
+      i18n.t("placement"),
+      i18n.t("boat-number-short"),
+      i18n.t("captain-name"),
+    ];
     // Get fish names for columns
     fish_names.forEach((name) => {
       columns.push(name + " (g)");
     });
-    columns.push("Tulos (p)");
+    columns.push(i18n.t("result") + " (p)");
 
     normal_weights.forEach((b, i) => {
       let r = [];
@@ -742,7 +809,7 @@ export function saveAllAsPDF(
     });
 
     doc.text(
-      "Normaalikilpailun tulokset (Kalat)",
+      `${i18n.t("normal-results")} (${i18n.t("fishes")})`,
       doc.internal.pageSize.getWidth() / 2,
       50,
       {
@@ -775,12 +842,12 @@ export function saveAllAsPDF(
     addTitle(doc, title, competition.cup_name, time);
     doc.setFontSize(18);
     columns = [
-      "Sijoitus",
-      "Nro.",
-      "Kippari",
-      "Varakippari",
-      "Paikkakunta",
-      "Tulos (p)",
+      i18n.t("placement"),
+      i18n.t("boat-number-short"),
+      i18n.t("captain-name"),
+      i18n.t("temp-captain-name"),
+      i18n.t("locality"),
+      i18n.t("result") + " (p)",
     ];
     if (competition.isCupCompetition) {
       columns.push("Cup (p)");
@@ -801,7 +868,7 @@ export function saveAllAsPDF(
       }
     });
     doc.text(
-      "Normaalikilpailun tulokset (Pisteet)",
+      `${i18n.t("normal-results")} (${i18n.t("points")})`,
       doc.internal.pageSize.getWidth() / 2,
       50,
       {
@@ -838,17 +905,17 @@ export function saveAllAsPDF(
     }
     addTitle(doc, title, competition.cup_name, time);
     doc.setFontSize(18);
-    doc.text(100, 50, "Tiimikilpailun tulokset", { align: "center" });
+    doc.text(100, 50, i18n.t("team-results"), { align: "center" });
     // Add results, if there are any
     if (team_results.length) {
       // Other tables are generated in code so no need to wait for rendering to html
       columns = [
-        "Sijoitus",
-        "Tiimi",
-        "Jäsen 1",
-        "Jäsen 2",
-        "Jäsen 3",
-        "Pisteet (p)",
+        i18n.t("placement"),
+        i18n.t("team"),
+        i18n.t("member") + " 1",
+        i18n.t("member") + " 2",
+        i18n.t("member") + " 3",
+        i18n.t("result") + " (p)",
       ];
       // Format dictionary/json to format that autotable understands (arrays in arrays);
       rows = [];
@@ -898,12 +965,25 @@ export function saveAllAsPDF(
       fish_names,
       selected_fish
     ).results;
+
     biggest_amounts_results = calculateBiggestAmounts(
       biggest_amounts,
-      fish_names,
-      selected_amount
+      selected_amount,
+      fish_names
     ).results;
-    columns = ["Sijoitus", "Veneen nro", "Kippari", "Kala", "Paino (g)"];
+
+    let selected =
+      selected_fish === "all" || selected_fish === "winners"
+        ? i18n.t(selected_fish)
+        : selected_fish;
+
+    columns = [
+      i18n.t("placement"),
+      i18n.t("boat-number"),
+      i18n.t("captain-name"),
+      i18n.t("fish"),
+      i18n.t("weight") + " (g)",
+    ];
 
     // If there are any results, add title
     if (biggest_fishes_results.length || biggest_amounts_results.length) {
@@ -924,7 +1004,7 @@ export function saveAllAsPDF(
         ];
       });
       doc.text(
-        "Suurimmat kalat" + ` (${selected_fish})`,
+        `${i18n.t("biggest-fishes")} (${selected})`,
         doc.internal.pageSize.getWidth() / 2,
         50,
         { align: "center" }
@@ -970,7 +1050,7 @@ export function saveAllAsPDF(
         ];
       });
       doc.text(
-        "Suurimmat kalasaaliit" + ` (${selected_fish})`,
+        `${i18n.t("biggest-amounts")} (${selected})`,
         doc.internal.pageSize.getWidth() / 2,
         start_coord,
         { align: "center" }
@@ -1029,8 +1109,12 @@ export function saveAllAsPDF(
         addTitle(doc, title, competition.cup_name, time);
         doc.setFontSize(18);
         start_coord = 50;
-
-        columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino  (g)"];
+        columns = [
+          i18n.t("placement"),
+          i18n.t("boat-number"),
+          i18n.t("captain-name"),
+          i18n.t("weight") + " (g)",
+        ];
         rows = [];
         biggest_fishes_results.forEach((f, i) => {
           rows[i] = [
@@ -1042,7 +1126,7 @@ export function saveAllAsPDF(
         });
 
         doc.text(
-          "Suurimmat kalat" + ` (${name})`,
+          `${i18n.t("biggest-fishes")} (${name})`,
           doc.internal.pageSize.getWidth() / 2,
           start_coord,
           {
@@ -1086,7 +1170,13 @@ export function saveAllAsPDF(
       doc.addPage();
     }
     let counter = 0;
-    columns = ["Sijoitus", "Veneen nro", "Kippari", "Paino (g)"];
+
+    columns = [
+      i18n.t("placement"),
+      i18n.t("boat-number"),
+      i18n.t("captain-name"),
+      i18n.t("weight") + " (g)",
+    ];
 
     fish_names.forEach((name) => {
       start_coord = 10;
@@ -1125,7 +1215,7 @@ export function saveAllAsPDF(
         });
 
         doc.text(
-          "Suurimmat kalasaaliit" + ` (${name})`,
+          `${i18n.t("biggest-amounts")} (${name})`,
           doc.internal.pageSize.getWidth() / 2,
           start_coord,
           {
@@ -1173,8 +1263,8 @@ export function saveAllAsPDF(
     selected_fish = selected_amount = "winners";
     biggest_amounts_results = calculateBiggestAmounts(
       biggest_amounts,
-      fish_names,
-      selected_amount
+      selected_amount,
+      fish_names
     ).results;
     biggest_fishes_results = [];
     fish_names.forEach((n) => {
@@ -1187,8 +1277,12 @@ export function saveAllAsPDF(
       }
     });
 
-    columns = ["Kalalaji", "Veneen nro", "Kippari", "Paino (g)"];
-
+    columns = [
+      i18n.t("fish"),
+      i18n.t("boat-number"),
+      i18n.t("captain-name"),
+      i18n.t("weight") + " (g)",
+    ];
     // If there are any results, add title
     if (biggest_fishes_results.length || biggest_amounts_results.length) {
       addTitle(doc, title, competition.cup_name, time);
@@ -1207,7 +1301,7 @@ export function saveAllAsPDF(
         ];
       });
       doc.text(
-        "Suurimmat kalat" + ` (${selected_fish})`,
+        `${i18n.t("biggest-fishes")} (${selected_fish})`,
         doc.internal.pageSize.getWidth() / 2,
         50,
         { align: "center" }
@@ -1254,7 +1348,7 @@ export function saveAllAsPDF(
         ];
       });
       doc.text(
-        "Suurimmat kalasaaliit" + ` (${selected_fish})`,
+        `${i18n.t("biggest-amounts")} (${selected_fish})`,
         doc.internal.pageSize.getWidth() / 2,
         start_coord,
         { align: "center" }
@@ -1318,14 +1412,16 @@ export function saveAllAsPDF(
       // Try again after 1 sec
       setTimeout(() => saveAllAsPDF(current_tab), 1000);
     }
-    doc.text(
-      "Kalalajien määritykset",
-      doc.internal.pageSize.getWidth() / 2,
-      165,
-      { align: "center" }
-    );
+    doc.text(i18n.t("fish-specs"), doc.internal.pageSize.getWidth() / 2, 165, {
+      align: "center",
+    });
 
-    columns = ["Kalalaji", "Kerroin", "Alamitta", "Saalista saatu"];
+    columns = [
+      i18n.t("fish"),
+      i18n.t("multiplier"),
+      i18n.t("min-size"),
+      i18n.t("comp-overview.gotten-amount"),
+    ];
     // Table generated straight from html
     rows = [];
     competition.fishes.forEach((f, i) => {
@@ -1340,7 +1436,7 @@ export function saveAllAsPDF(
       Math.round((competition.total_weights / 1000 + Number.EPSILON) * 100) /
       100;
     let total_amount = temp.toLocaleString() + " kg";
-    rows.push(["Yhteensä", "", "", total_amount]);
+    rows.push([i18n.t("total-big"), "", "", total_amount]);
 
     doc.autoTable({
       head: [columns],
@@ -1373,10 +1469,13 @@ export function saveAllAsPDF(
     // Generate table
     columns = ["", ""];
     rows = [
-      ["Cup pistekerroin", `x ${competition.cup_points_multiplier}`],
-      ["Ilmoittautuneita yhteensä", `${signees.length} kpl`],
       [
-        "Saalista saaneita",
+        `Cup ${i18n.t("multiplier")} `,
+        `x ${competition.cup_points_multiplier}`,
+      ],
+      [`${i18n.t("signees")} ${i18n.t("total")}`, `${signees.length} kpl`],
+      [
+        i18n.t("comp-overview.gotten-fish"),
         `${
           Math.round((hasGottenFishCount / signees.length) * 100 * 100) / 100
         } % (${hasGottenFishCount}/${signees.length})`,
@@ -1415,14 +1514,12 @@ export function saveAllAsPDF(
   // Save to pdf
   if (charts_loaded) {
     tab = current_tab;
-    const fileName = `${year}_${replaceAll(
-      competition.name,
-      " ",
-      ""
-    )}Tulokset.pdf`;
+    const fileName = `${year}_${replaceAll(competition.name, " ", "")}${i18n.t(
+      "results"
+    )}.pdf`;
     openPdfOnNewTab(doc, fileName);
   } else {
-    text = "Kaaviot ei ruudulla, yritetään uudelleen...";
+    text = i18n.t("errors.charts-missing");
     snackbar = true;
   }
 
@@ -1433,6 +1530,19 @@ export function resizeChartForPDF() {
   const Chart = require("chart.js");
   for (var id in Chart.instances) {
     Chart.instances[id].resize(400, 800);
+  }
+}
+export function isNumber(evt) {
+  evt = evt ? evt : window.event;
+  var charCode = evt.which ? evt.which : evt.keyCode;
+  if (charCode > 31 && (charCode < 48 || charCode > 57) && charCode !== 46) {
+    evt.preventDefault();
+  } else {
+    if (charCode == 46) {
+      evt.preventDefault();
+    } else {
+      return true;
+    }
   }
 }
 
@@ -1944,19 +2054,7 @@ export function calculateBiggestAmounts(
     for (const fish of Object.keys(fishes)) {
       fishes[fish].forEach((result) => {
         result.name = fish;
-        let previous = fish_results.find(
-          (r) => r.boat_number === result.boat_number
-        );
-        if (previous) {
-          if (previous.weight < result.weight) {
-            previous = {
-              ...result,
-              name: fish,
-            };
-          }
-        } else {
-          fish_results.push(result);
-        }
+        fish_results.push(result);
       });
     }
 
@@ -1965,7 +2063,7 @@ export function calculateBiggestAmounts(
         return parseInt(b.weight) - parseInt(a.weight);
       });
     }
-
+    console.log(fish_results);
     let last_weight = -1;
     let last_placement = -1;
     results = fish_results;
@@ -2042,4 +2140,5 @@ export default {
   calculateNormalResults,
   calculateBiggestFishes,
   calculateBiggestAmounts,
+  isNumber,
 };

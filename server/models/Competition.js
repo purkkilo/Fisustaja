@@ -51,7 +51,7 @@ const CompetitionSchema = new Schema({
   teams: [Schema.Types.Mixed],
   state: {
     type: String,
-    default: "Rekisteröity",
+    default: "signing",
   },
   isTeamCompetition: {
     type: Boolean,

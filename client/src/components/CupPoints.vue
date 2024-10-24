@@ -34,7 +34,7 @@
               });
             "
           >
-            Lataa
+            {{ $t("download") }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -46,18 +46,25 @@
             :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
             dark
             :items="headerOptions"
-            label="Kilpailun otsikko"
+            :label="$t('comp.header')"
             outlined
             v-model="headerSelection"
             @input="$emit('change', headerSelection)"
-          ></v-select>
+          >
+            <template v-slot:item="{ item }">
+              <span>{{ $t(item) }}</span>
+            </template>
+            <template v-slot:selection="{ item }">
+              <span>{{ $t(item) }}</span>
+            </template></v-select
+          >
         </v-col>
         <v-col class="d-flex" md="4">
           <v-select
             :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
             dark
             :items="selectNumbers"
-            label="Cup sijoittumispisteisiin vaikuttavien kilpailujen määrä"
+            :label="$t('cup.header')"
             outlined
             v-model="selectedCompetitions"
             @input="$emit('calculate', selectedCompetitions)"
@@ -72,7 +79,8 @@
             @click="dialog = true"
             :loading="loading"
           >
-            <v-icon color="red">mdi-file-pdf-box</v-icon> Lataa pdf
+            <v-icon color="red">mdi-file-pdf-box</v-icon>
+            {{ $t("download") }} pdf
           </v-btn>
         </v-col>
       </v-row>
@@ -89,7 +97,7 @@
             @change="$emit('sort', showUnfinishedCompetitions)"
             dark
             v-model="showUnfinishedCompetitions"
-            label="Näytä myös keskeneräiset kilpailut"
+            :label="$t('comp.show-unfinished')"
             :disabled="!competitions.length"
             color="green"
           ></v-checkbox>
@@ -99,7 +107,7 @@
         <v-col>
           <v-card :dark="$store.getters.getTheme">
             <v-card-title>
-              <p class="flow-text">Cupin kokonaispisteet</p>
+              <p class="flow-text">{{ $t("cup.normal") }} {{ $t("points") }}</p>
               <v-spacer></v-spacer>
               <v-text-field
                 v-model="search"
@@ -132,7 +140,7 @@
                     >
                       {{ header.text }}
                     </span>
-                    <span v-else :key="h.value">{{ header.text }}</span>
+                    <span v-else :key="h.value">{{ $t(header.text) }}</span>
                   </v-col>
                 </v-row>
               </template>
@@ -215,7 +223,7 @@
             @click="$emit('refresh', cup)"
             class="white--text"
           >
-            <v-icon>mdi-update</v-icon>Päivitä cupin tulokset
+            <v-icon>mdi-update</v-icon>{{ $t("button.update") }}
           </v-btn>
         </v-col>
       </v-row>
@@ -250,8 +258,8 @@ export default {
   ],
   data() {
     return {
-      headerOptions: ["Paikkakunta", "Kilpailun nimi"],
-      headerSelection: "Paikkakunta",
+      headerOptions: ["locality", "name"],
+      headerSelection: "locality",
       selectedCompetitions: this.competitions.length,
       search: "",
       showInfoInPdf: false,

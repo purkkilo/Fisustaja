@@ -23,7 +23,7 @@
               <v-col>
                 <h1 style="margin: 30px">{{ $t("weighting") }}</h1>
                 <h2 style="margin: 10px; color: chartreuse">
-                  {{ allReturned ? "Kaikki maalissa!" : "" }}
+                  {{ allReturned ? $t("all-finished") : "" }}
                 </h2>
               </v-col>
             </v-row>
@@ -832,6 +832,7 @@ import ResultService from "../services/ResultService";
 import FishService from "../services/FishService";
 import Timedate from "../components/layout/Timedate";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
+import { isNumber } from "../shared";
 
 export default {
   name: "Weighting",
@@ -1028,24 +1029,7 @@ export default {
         console.log(err.message);
       }
     },
-    // Check if input value is number, and only accept numbers to inputs
-    isNumber(evt) {
-      evt = evt ? evt : window.event;
-      var charCode = evt.which ? evt.which : evt.keyCode;
-      if (
-        charCode > 31 &&
-        (charCode < 48 || charCode > 57) &&
-        charCode !== 46
-      ) {
-        evt.preventDefault();
-      } else {
-        if (charCode == 46) {
-          evt.preventDefault();
-        } else {
-          return true;
-        }
-      }
-    },
+    isNumber: isNumber,
     getColor(placement) {
       if (placement > 30) return "red";
       if (placement > 20) return "orange";
@@ -1201,9 +1185,9 @@ export default {
 
         // Update competition state
         if (this.signees.filter((s) => !s.returned).length) {
-          this.competition.state = "Punnitus";
+          this.competition.state = "weighting";
         } else {
-          this.competition.state = "Kaikki maalissa";
+          this.competition.state = "all-finished";
           // Refresh to vuex
           this.$store.commit("refreshCompetition", this.competition);
           let newvalues = {

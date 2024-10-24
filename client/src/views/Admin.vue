@@ -20,10 +20,9 @@
       center-active
     >
       <v-tabs-slider color="blue darken-4"></v-tabs-slider>
-      <v-tab href="#overview">Yleisnäkymä</v-tab>
-      <v-tab href="#users">Käyttäjät</v-tab>
-      <v-tab href="#competitions">Kilpailut</v-tab>
-      <v-tab href="#feedback">Saatu palaute</v-tab>
+      <v-tab href="#overview">{{ $t("general") }}</v-tab>
+      <v-tab href="#users">{{ $t("users") }}</v-tab>
+      <v-tab href="#competitions">{{ $t("comp.plural") }}</v-tab>
     </v-tabs>
     <v-tabs-items v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
       <v-tab-item
@@ -43,39 +42,14 @@
                   rounded
                   color="yellow"
                   @click="$router.push({ path: prevRoute.path })"
-                  ><v-icon>mdi-keyboard-return</v-icon>Palaa takaisin</v-btn
+                  ><v-icon>mdi-keyboard-return</v-icon
+                  >{{ $t("button.return-back") }}</v-btn
                 >
               </v-col>
             </v-row>
             <v-row>
               <v-col>
-                <h1>Yleistietoja</h1>
-              </v-col>
-            </v-row>
-            <!-- if this.loading === false, meaning app isn't loading feedback from database, then show this div -->
-            <v-row v-if="!loading">
-              <v-col md="6" offset-md="3">
-                <v-card elevation="20" :dark="$store.getters.getTheme">
-                  <p v-if="feedback.length" class="flow-text">
-                    <v-icon>mdi-message-alert</v-icon> Palautetta annettu:
-                    {{ feedback.length }} kpl
-                  </p>
-                  <p v-else class="flow-text">
-                    <v-icon>mdi-message-alert</v-icon> Ei palautetta!
-                  </p>
-                </v-card>
-              </v-col>
-            </v-row>
-            <v-row v-else>
-              <v-col md="6" offset-md="3">
-                <h3
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  Ladataan palautteita...
-                </h3>
-                <ProgressBarQuery />
+                <h1>{{ $t("general") }}</h1>
               </v-col>
             </v-row>
             <!-- if this.loading_users === false, meaning app isn't loading users, then show this div -->
@@ -83,11 +57,12 @@
               <v-col md="6" offset-md="3">
                 <v-card elevation="20" :dark="$store.getters.getTheme">
                   <p v-if="users.length" class="flow-text">
-                    <v-icon>mdi-account-circle</v-icon> Käyttäjiä yhteensä:
-                    {{ users.length }} kpl
+                    <v-icon>mdi-account-circle</v-icon>
+                    {{ $t("users-plural") }} {{ $t("total") }}:
+                    {{ users.length }}
                   </p>
                   <p v-else class="flow-text">
-                    <v-icon>mdi-account-circle</v-icon> Ei käyttäjiä!
+                    <v-icon>mdi-account-circle</v-icon> {{ $t("no-users") }}!
                   </p>
                 </v-card>
               </v-col>
@@ -99,7 +74,7 @@
                     'white--text': $store.getters.getTheme,
                   }"
                 >
-                  Ladataan käyttäjiä...
+                  {{ $t("loading") }} {{ $t("users-plural") }}...
                 </h3>
                 <ProgressBarQuery />
               </v-col>
@@ -109,13 +84,18 @@
               <v-col md="6" offset-md="3">
                 <v-card elevation="20" :dark="$store.getters.getTheme">
                   <p v-if="all_competitions.length" class="flow-text">
-                    <v-icon>mdi-ferry</v-icon> Kilpailuja yhteensä:
-                    {{ all_competitions.length }} kpl<br />---> Itse luotuja
-                    {{ competitions.length }}/{{ all_competitions.length }}
-                    kpl
+                    <v-icon>mdi-ferry</v-icon> {{ $t("comp.plural") }}
+                    {{ $t("total") }}:
+                    {{ all_competitions.length }} kpl<br /><v-icon
+                      >mdi-arrow-right-bold</v-icon
+                    >
+                    {{ $t("self-created") }} {{ competitions.length }}/{{
+                      all_competitions.length
+                    }}
                   </p>
                   <p v-else class="flow-text">
-                    <v-icon>mdi-ferry</v-icon> Ei kilpailuja!
+                    <v-icon>mdi-ferry</v-icon> {{ $t("no") }}
+                    {{ $t("comp.plural") }}!
                   </p>
                 </v-card>
               </v-col>
@@ -127,7 +107,7 @@
                     'white--text': $store.getters.getTheme,
                   }"
                 >
-                  Ladataan kilpailuja...
+                  {{ $t("loading") }} {{ $t("comp.plural") }}...
                 </h3>
                 <ProgressBarQuery />
               </v-col>
@@ -136,12 +116,19 @@
               <v-col md="6" offset-md="3">
                 <v-card elevation="20" :dark="$store.getters.getTheme">
                   <p v-if="all_cups.length" class="flow-text">
-                    <v-icon color="yellow darken-1">mdi-medal</v-icon> Cuppeja
-                    yhteensä: {{ all_cups.length }} kpl<br />---> Itse luotuja
-                    {{ cups.length }}/{{ all_cups.length }} kpl
+                    <v-icon color="yellow darken-1">mdi-medal</v-icon
+                    >{{ $t("cup.plural") }} {{ $t("total") }}:
+                    {{ all_cups.length }} kpl<br /><v-icon
+                      >mdi-arrow-right-bold</v-icon
+                    >
+                    {{ $t("self-created") }} {{ cups.length }}/{{
+                      all_cups.length
+                    }}
+                    kpl
                   </p>
                   <p v-else class="flow-text">
-                    <v-icon>mdi-ferry</v-icon> Ei cuppeja!
+                    <v-icon>mdi-ferry</v-icon> {{ $t("no") }}
+                    {{ $t("cup.plural") }}!
                   </p>
                 </v-card>
               </v-col>
@@ -153,7 +140,7 @@
                     'white--text': $store.getters.getTheme,
                   }"
                 >
-                  Ladataan Cuppeja...
+                  {{ $t("loading") }} {{ $t("cup.plural") }}...
                 </h3>
                 <ProgressBarQuery />
               </v-col>
@@ -178,13 +165,14 @@
                   rounded
                   color="yellow"
                   @click="$router.push({ path: prevRoute.path })"
-                  ><v-icon>mdi-keyboard-return</v-icon>Palaa takaisin</v-btn
+                  ><v-icon>mdi-keyboard-return</v-icon
+                  >{{ $t("button.return-back") }}</v-btn
                 >
               </v-col>
             </v-row>
             <v-row>
               <v-col>
-                <h1>Käyttäjät</h1>
+                <h1>{{ $t("users") }}</h1>
                 <br />
                 <p
                   class="flow-text"
@@ -192,7 +180,7 @@
                     'white--text': $store.getters.getTheme,
                   }"
                 >
-                  *Klikkaa nimeä saadaksesi lisätietoa
+                  {{ $t("notification.click-name") }}
                 </p>
               </v-col>
             </v-row>
@@ -219,7 +207,7 @@
                         solo-inverted
                         hide-details
                         prepend-inner-icon="search"
-                        label="Etsi"
+                        :label="$t('search')"
                       ></v-text-field>
                     </v-toolbar>
                   </template>
@@ -302,7 +290,7 @@
                                   </v-list-item-content>
                                 </v-list-item>
                               </template>
-                              <span>Kopioi</span>
+                              <span>{{ $t("users") }}</span>
                             </v-tooltip>
                             <v-tooltip right>
                               <template v-slot:activator="{ on, attrs }">
@@ -318,9 +306,9 @@
                                     <v-list-item-title>{{
                                       user.createdAt
                                     }}</v-list-item-title>
-                                    <v-list-item-subtitle
-                                      >Tili luotu</v-list-item-subtitle
-                                    >
+                                    <v-list-item-subtitle>{{
+                                      $t("created")
+                                    }}</v-list-item-subtitle>
                                   </v-list-item-content>
                                 </v-list-item>
                               </template>
@@ -332,9 +320,9 @@
                               </v-list-item-action>
                               <v-list-item-content>
                                 <v-list-item-title>Admin</v-list-item-title>
-                                <v-list-item-subtitle
-                                  >Rooli</v-list-item-subtitle
-                                >
+                                <v-list-item-subtitle>{{
+                                  $t("role")
+                                }}</v-list-item-subtitle>
                               </v-list-item-content>
                             </v-list-item>
                             <v-list-item v-else @click="() => {}">
@@ -342,10 +330,12 @@
                                 <v-icon>mdi-briefcase</v-icon>
                               </v-list-item-action>
                               <v-list-item-content>
-                                <v-list-item-title>Käyttäjä</v-list-item-title>
-                                <v-list-item-subtitle
-                                  >Rooli</v-list-item-subtitle
-                                >
+                                <v-list-item-title>{{
+                                  $t("user")
+                                }}</v-list-item-title>
+                                <v-list-item-subtitle>{{
+                                  $t("role")
+                                }}</v-list-item-subtitle>
                               </v-list-item-content>
                             </v-list-item>
                             <v-list-item @click="() => {}">
@@ -357,7 +347,7 @@
                                   "
                                 >
                                   <v-icon>mdi-copy-content</v-icon>
-                                  Kopio koko objekti
+                                  {{ $t("copy") }}
                                 </v-btn>
                               </v-list-item-content>
                             </v-list-item>
@@ -417,26 +407,23 @@
                   rounded
                   color="yellow"
                   @click="$router.push({ path: prevRoute.path })"
-                  ><v-icon>mdi-keyboard-return</v-icon>Palaa takaisin</v-btn
+                  ><v-icon>mdi-keyboard-return</v-icon
+                  >{{ $t("button.return-back") }}</v-btn
                 >
               </v-col>
             </v-row>
-            <v-row>
-              <v-col>
-                <h1>Kilpailut</h1>
-              </v-col>
-            </v-row>
+
             <!-- if there are competitions in database-->
             <v-row v-if="all_competitions.length">
               <v-col>
                 <v-card :dark="$store.getters.getTheme">
                   <v-card-title>
-                    <p class="flow-text">Kilpailut</p>
+                    <p class="flow-text">{{ $t("comp.plural") }}</p>
                     <v-spacer></v-spacer>
                     <v-text-field
                       v-model="search_comp"
                       append-icon="mdi-magnify"
-                      label="Hae kilpailua"
+                      :label="$t('search')"
                       single-line
                       hide-details
                     ></v-text-field>
@@ -448,6 +435,12 @@
                     :search="search_comp"
                     :loading="loading_competitions"
                   >
+                    <template
+                      v-for="(h, index) in headers"
+                      v-slot:[`header.${h.value}`]="{ header }"
+                    >
+                      <span :key="index"> {{ $t(header.text) }}</span>
+                    </template>
                     <template v-slot:[`item.start_date`]="{ item }">
                       <v-chip color="primary darken-2">{{
                         formatDateToLocaleDateString(item.start_date)
@@ -488,7 +481,7 @@
                             ><v-icon>mdi-delete-outline</v-icon></v-btn
                           >
                         </template>
-                        <span>Poista kilpailu</span>
+                        <span>{{ $t("button.delete-comp") }}</span>
                       </v-tooltip>
                     </template>
                   </v-data-table>
@@ -516,105 +509,7 @@
                     'white--text': $store.getters.getTheme,
                   }"
                 >
-                  Ei Kilpailuja!
-                </h2>
-              </v-col>
-            </v-row>
-          </v-col>
-        </v-row>
-      </v-tab-item>
-      <v-tab-item
-        :value="'feedback'"
-        v-bind:class="{
-          inputarea: !$store.getters.getTheme,
-          'inputarea-dark': $store.getters.getTheme,
-        }"
-      >
-        <v-row>
-          <v-col>
-            <v-row>
-              <v-col v-if="prevRoute">
-                <v-btn
-                  v-if="prevRoute.name"
-                  large
-                  rounded
-                  color="yellow"
-                  @click="$router.push({ path: prevRoute.path })"
-                  ><v-icon>mdi-keyboard-return</v-icon>Palaa takaisin</v-btn
-                >
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col>
-                <h1>Saatu Palaute</h1>
-              </v-col>
-            </v-row>
-
-            <v-row v-if="feedback.length">
-              <v-col>
-                <ul id="fish_weights">
-                  <!-- For every feedback in this.feedback array -->
-                  <li v-for="(feedback, index) in feedback" :key="index">
-                    <v-card
-                      class="mx-auto"
-                      :dark="$store.getters.getTheme"
-                      min-width="200px"
-                      max-width="850px"
-                      style="margin-bottom: 30px; margin-top: 30px"
-                    >
-                      <v-card-title>
-                        <v-col md="10" offset-md="1">
-                          <span class="title font-weight-light"
-                            >#{{ index + 1 }} {{ feedback.type }}</span
-                          >
-                        </v-col>
-                      </v-card-title>
-                      <v-card-text
-                        class="headline font-weight-bold"
-                        style="word-break: break-all"
-                      >
-                        {{ feedback.message }}
-                      </v-card-text>
-                      <v-card-actions>
-                        <v-col>
-                          <v-btn
-                            large
-                            rounded
-                            color="yellow"
-                            :loading="loading"
-                            @click="deleteFeedback(feedback._id)"
-                            class="black--text"
-                            ><v-icon>mdi-check-outline</v-icon>Ratkaise</v-btn
-                          >
-                        </v-col>
-                      </v-card-actions>
-                    </v-card>
-                  </li>
-                </ul>
-              </v-col>
-            </v-row>
-            <!-- this.feedback.length === 0 === false -->
-            <v-row v-else>
-              <v-col v-if="loading" md="10" offset-md="1">
-                <v-sheet
-                  :color="`grey ${
-                    $store.getters.getTheme ? 'darken-2' : 'lighten-4'
-                  }`"
-                  class="px-3 pt-3 pb-3"
-                >
-                  <v-skeleton-loader
-                    class="mx-auto"
-                    type="card"
-                  ></v-skeleton-loader>
-                </v-sheet>
-              </v-col>
-              <v-col v-else>
-                <h2
-                  v-bind:class="{
-                    'white--text': $store.getters.getTheme,
-                  }"
-                >
-                  Palautetta ei vielä annettu!
+                  {{ $t("no") }} {{ $t("comp.plural") }}!
                 </h2>
               </v-col>
             </v-row>
@@ -623,11 +518,11 @@
       </v-tab-item>
     </v-tabs-items>
     <v-snackbar v-model="snackbar" :timeout="timeout">
-      {{ text }}
+      {{ $t(text) }}
 
       <template v-slot:action="{ attrs }">
         <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
-          Close
+          {{ $t("close") }}
         </v-btn>
       </template>
     </v-snackbar>
@@ -636,7 +531,6 @@
 
 <script>
 "use strict";
-import FeedbackService from "../services/FeedbackService";
 import CompetitionService from "../services/CompetitionService";
 import UserService from "../services/UserService";
 import CupService from "../services/CupService";
@@ -647,7 +541,6 @@ export default {
   data() {
     return {
       tab: null,
-      feedback: [],
       users: [],
       all_competitions: [],
       competitions: [],
@@ -659,21 +552,14 @@ export default {
       all_cups: [],
       cups: [],
       cup: {},
-      signees_amount: 30,
-      isTeamCompetition: "Ei",
-      number_rules: [
-        (value) => !!value || "Kenttä ei voi jäädä tyhjäksi!",
-        (value) => !isNaN(value || "") || "Ei ole numero!",
-        (value) => (value || "") >= 0 || "Numeron pitää olla positiivinen!",
-      ],
       headers: [
-        { text: "Kilpailun Päivämäärä", value: "start_date" },
-        { text: "Nimi", value: "name" },
-        { text: "Käyttäjä", value: "username" },
-        { text: "Cup", value: "cup_name" },
-        { text: "Pistekerroin", value: "cup_points_multiplier" },
-        { text: "Valitse", value: "choose", sortable: false },
-        { text: "Poista", value: "delete", sortable: false },
+        { text: "date", value: "start_date" },
+        { text: "name", value: "name" },
+        { text: "user", value: "username" },
+        { text: "cup.normal", value: "cup_name" },
+        { text: "multiplier", value: "cup_points_multiplier" },
+        { text: "choose", value: "choose", sortable: false },
+        { text: "delete", value: "delete", sortable: false },
       ],
       search_comp: "",
       search: "",
@@ -709,7 +595,6 @@ export default {
       // Users first, if token is expired logout user
       await UserService.getUsers()
         .then(async (res) => {
-          this.feedback = await FeedbackService.getFeedback();
           await this.getCups();
           this.loading = false;
           this.users = res;
@@ -740,7 +625,7 @@ export default {
         })
         .catch(async (err) => {
           if (err.response.status === 401) {
-            this.text = "Token expired! Kirjaudu sisään uudelleen";
+            this.text = "notification.login-again";
             this.snackbar = true;
             await UserService.logoutUser()
               .then(() => {
@@ -793,12 +678,12 @@ export default {
       }
       navigator.clipboard.writeText(text).then(
         () => {
-          this.text = `"${text}" kopioitu leikepöydälle`;
+          this.text = `notification.copied-to-clipboard`;
           this.snackbar = true;
         },
         (err) => {
           console.log(err);
-          this.text = `Kopiointi ei onnistunut jostain syystä...`;
+          this.text = `copying-failed`;
           this.snackbar = true;
         }
       );
@@ -829,21 +714,6 @@ export default {
         console.error("No user found in localstorage!");
       }
       this.loading_cups = false;
-    },
-    // Delete received feedback
-    async deleteFeedback(id) {
-      this.loading = true;
-      try {
-        //Delete feedback from database (check 'client\src\FeedbackService.js' and 'server\routes\api\feedback.js' to see how this works)
-        await FeedbackService.deleteFeedback(id);
-        this.text = "Palaute ratkaistu!";
-        this.snackbar = true;
-        // Get updated list from database
-        this.feedback = await FeedbackService.getFeedback();
-        this.loading = false;
-      } catch (err) {
-        console.error(err.message);
-      }
     },
     pickCompetition(competition) {
       // Pick competition for the app to use

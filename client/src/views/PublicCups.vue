@@ -17,7 +17,7 @@
       >
         <v-row>
           <v-col md="6" offset-md="3">
-            <h1>Cuppien tuloksia</h1>
+            <h1>{{ $t("home.cup") }}</h1>
           </v-col>
         </v-row>
         <v-row v-if="cups.length" class="scroll_table">
@@ -30,7 +30,7 @@
               :items="cups"
               item-text="select"
               item-value="_id"
-              label="Valitse näytettävä Cup"
+              :label="$t('choose') + ' ' + $t('cup.normal')"
               outlined
               @input="pickCup"
               return-object
@@ -60,7 +60,7 @@
               "
               :disabled="!selected_cup"
             >
-              <v-icon>mdi-cancel</v-icon>Peruuta valinta
+              <v-icon>mdi-cancel</v-icon>{{ $t("cancel") }}
             </v-btn>
           </v-col>
         </v-row>
@@ -99,17 +99,17 @@
         <v-row v-if="loading" style="margin: 20px">
           <v-row>
             <v-col>
-              <h2 class="white--text">Haetaan cupin kilpailuja...</h2>
+              <h2 class="white--text">{{ $t("loading") }}...</h2>
               <ProgressBarQuery />
             </v-col>
           </v-row>
         </v-row>
         <v-snackbar v-model="snackbar" :timeout="timeout">
-          {{ text }}
+          {{ $t(text) }}
 
           <template v-slot:action="{ attrs }">
             <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
-              Close
+              {{ $t("close") }}
             </v-btn>
           </template>
         </v-snackbar>
@@ -155,21 +155,6 @@ export default {
       tab: null,
       search: "",
       notFinishedCount: 0,
-      selectedItem: 1,
-      items: [
-        {
-          text: "Kilpailujen tuloksia",
-          icon: "mdi-seal",
-          path: "/public-results",
-          disabled: false,
-        },
-        {
-          text: "Cuppien tuloksia",
-          icon: "mdi-trophy",
-          path: "/public-cups",
-          disabled: true,
-        },
-      ],
       snackbar: false,
       text: "",
       timeout: 5000,
@@ -189,15 +174,6 @@ export default {
     }
   },
   methods: {
-    selectTableData() {
-      if (this.selected === "Kilpailut") {
-        this.selected_items = this.allCompetitions;
-        this.selected_headers = this.headers_comp;
-      } else {
-        this.selected_items = this.signees;
-        this.selected_headers = this.headers_signees;
-      }
-    },
     pickCup() {
       this.refreshCup(this.selected_cup);
     },
@@ -286,10 +262,10 @@ export default {
               } else {
                 // TODO: Figure out a better way to notify
                 console.log(
-                  `(${signee.boat_number}) - ${signee.captain_name} ei löytynyt cupin ilmoittautumislistalta`
+                  `(${signee.boat_number}) - ${signee.captain_name} wasn't found on results somehow`
                 );
                 alert(
-                  `(${signee.boat_number}) - ${signee.captain_name} ei löytynyt cupin ilmoittautumislistalta`
+                  `(${signee.boat_number}) - ${signee.captain_name} wasn't found on results somehow`
                 );
               }
               // Initialize variables and add first points
@@ -318,7 +294,7 @@ export default {
               parseInt(a.cup_results["total"])
             );
           });
-          this.changeHeaders("Paikkakunta");
+          this.changeHeaders("locality");
 
           let final_placement = 1;
           let last_points = -1;
@@ -522,9 +498,8 @@ export default {
             })
             .finally(() => {
               this.setCompetitionData(this.cup);
-              this.selectTableData();
               this.loading = false;
-              this.text = "Tiedot ajantasalla!";
+              this.text = "notification.info-up-to-date";
               this.snackbar = true;
             });
         } catch (error) {
@@ -547,31 +522,33 @@ export default {
         .join("");
     },
     changeHeaders(headerSelection) {
-      this.headers = [];
-      this.headers.push({
-        text: "Sijoitus",
-        highlight: false,
-        align: "center",
-        value: "final_placement",
-      });
-      this.headers.push({
-        text: "Kilp. Nro",
-        align: "center",
-        highlight: false,
-        value: "boat_number",
-      });
-      this.headers.push({
-        text: "Kippari",
-        align: "center",
-        highlight: false,
-        value: "captain_name",
-      });
-      this.headers.push({
-        text: "Paikkakunta",
-        align: "center",
-        highlight: false,
-        value: "locality",
-      });
+      this.headers = [
+        {
+          text: "placement",
+          highlight: false,
+          align: "center",
+          value: "final_placement",
+        },
+        {
+          text: "boat-number",
+          align: "center",
+          highlight: false,
+          value: "boat_number",
+        },
+        {
+          text: "captain-name",
+          align: "center",
+          highlight: false,
+          value: "captain_name",
+        },
+        {
+          text: "locality",
+          align: "center",
+          highlight: false,
+          value: "locality",
+        },
+      ];
+
       this.notFinishedCount = 0;
       this.competitions.forEach((competition) => {
         // Keep track if there are unfinished competitions
@@ -579,7 +556,7 @@ export default {
           this.notFinishedCount++;
         }
         // Dynamic headers, because competition names change
-        if (headerSelection === "Paikkakunta") {
+        if (headerSelection === "locality") {
           // Check if there are competitions with same locality, if so, add identifier
           let found_headers = this.headers.filter((header) => {
             return competition.locality === header.text;
@@ -615,40 +592,11 @@ export default {
         }
       });
       this.headers.push({
-        text: "Yhteensä",
+        text: "total-big",
         align: "center",
         highlight: false,
         value: "final_cup_points",
       });
-    },
-    pickCompetition(competition) {
-      // Pick competition for the app to use
-      //NOTE Store competition to vuex, redundant?
-      this.$store.state.competition = competition;
-      // Set competition._id to localstorage for database queries
-      localStorage.setItem(
-        "competition",
-        JSON.stringify({
-          _id: competition._id,
-          start_date: competition.start_date,
-          end_date: competition.end_date,
-        })
-      );
-      // redirect to /overview
-      this.$router.push({ path: "/overview" });
-    },
-    // For naming the pdf, replace certain characters
-    replaceAll(string, search, replace) {
-      return string.split(search).join(replace);
-    },
-    // Capitalize all the words in given string. Takes account all the characters like "-", "'" etc.
-    capitalize_words(str) {
-      return str.replace(
-        /(?:^|\s|['`‘’.-])[^\x60^\x7B-\xDF](?!(\s|$))/g,
-        function (txt) {
-          return txt.toUpperCase();
-        }
-      );
     },
   },
 };

@@ -795,6 +795,7 @@ import {
   validateTime,
   formatDateToLocaleDateString,
   formatDate,
+  isNumber,
 } from "../shared";
 
 export default {
@@ -842,34 +843,6 @@ export default {
       max_input: 40,
       placement_points_array: [],
       temp_placement_points_array: [],
-      selectedItem: 1,
-      items: [
-        {
-          text: "Yleisnäkymä",
-          icon: "mdi-desktop-mac-dashboard",
-          path: "/overview",
-        },
-        {
-          text: "Määritykset",
-          icon: "mdi-tune",
-          path: "/comp-settings",
-        },
-        {
-          text: "Ilmoittautuminen",
-          icon: "mdi-draw",
-          path: "/signing",
-        },
-        {
-          text: "Punnitus",
-          icon: "mdi-dumbbell",
-          path: "/weighting",
-        },
-        {
-          text: "Tulokset",
-          icon: "mdi-seal",
-          path: "/results",
-        },
-      ],
       snackbar: false,
       text: "",
       timeout: 5000,
@@ -943,8 +916,8 @@ export default {
     async endCompetition(isFinished) {
       this.competition.isFinished = !isFinished;
       this.competition.isFinished
-        ? (this.competition.state = "Päättynyt")
-        : (this.competition.state = "Kesken");
+        ? (this.competition.state = "ended")
+        : (this.competition.state = "not-finished");
 
       const newvalues = {
         $set: {
@@ -1024,35 +997,7 @@ export default {
       this.loading = false;
     },
     //filter other characters out for number inputs
-    isNumber(evt, isDate) {
-      var charToCheckCode = 46; // --> .
-      var charToCheck = ".";
-
-      if (!isDate) {
-        charToCheckCode = 58; // --> :
-        charToCheck = ":";
-      }
-
-      evt = evt ? evt : window.event;
-      var charCode = evt.which ? evt.which : evt.keyCode;
-      if (
-        charCode > 31 &&
-        (charCode < 48 || charCode > 57) &&
-        charCode !== charToCheckCode
-      ) {
-        evt.preventDefault();
-      } else {
-        if (charCode == charToCheckCode) {
-          if (evt.target.value.indexOf(charToCheck) >= 0) {
-            evt.preventDefault();
-          } else {
-            return true;
-          }
-        } else {
-          return true;
-        }
-      }
-    },
+    isNumber: isNumber,
     addInput() {
       this.inputs.push({
         id: this.inputs.length,

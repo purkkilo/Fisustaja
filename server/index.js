@@ -17,14 +17,12 @@ app.use(passport.initialize());
 require("./config/passport")(passport);
 
 const competitions = require("./routes/api/competitions");
-const feedback = require("./routes/api/feedback");
 const users = require("./routes/api/users");
 const cups = require("./routes/api/cups");
 const results = require("./routes/api/results");
 const fishes = require("./routes/api/fishes");
 
 app.use("/api/competitions", competitions);
-app.use("/api/feedback", feedback);
 app.use("/api/users", users);
 app.use("/api/cups", cups);
 app.use("/api/results", results);

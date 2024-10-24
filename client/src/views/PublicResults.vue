@@ -21,7 +21,7 @@
               <v-card-title> Pdf Asetukset </v-card-title>
               <v-card-text>
                 <v-checkbox
-                  label="Pfd Vaakatasossa"
+                  :label="$t('pdf-landscape')"
                   v-model="isLandscape"
                 ></v-checkbox>
               </v-card-text>
@@ -30,7 +30,7 @@
 
               <v-card-actions>
                 <v-btn color="yellow" text @click="pdfDialog = false">
-                  Peruuta
+                  {{ $t("cancel") }}
                 </v-btn>
                 <v-spacer></v-spacer>
                 <v-btn
@@ -41,7 +41,7 @@
                     pdfWrapper();
                   "
                 >
-                  Lataa
+                  {{ $t("download") }}
                 </v-btn>
               </v-card-actions>
             </v-card>
@@ -51,7 +51,7 @@
           <v-col>
             <v-row>
               <v-col md="6" offset-md="3">
-                <h1>Kilpailujen tuloksia</h1>
+                <h1>{{ $t("home.comp") }}</h1>
               </v-col>
             </v-row>
             <v-row v-if="competitions.length" class="scroll_table">
@@ -64,7 +64,7 @@
                   :items="competitions"
                   item-text="select"
                   item-value="_id"
-                  label="Valitse näytettävä kilpailu"
+                  :label="$t('choose-comp')"
                   :loading="loading"
                   outlined
                   @input="pickCompetition"
@@ -100,7 +100,7 @@
                         }}</span></v-list-item-subtitle
                       >
                       <v-list-item-subtitle v-if="!data.item.isFinished"
-                        >Kesken!</v-list-item-subtitle
+                        >{{ $t("not-finished") }}!</v-list-item-subtitle
                       >
                     </v-list-item-content>
                   </template>
@@ -109,7 +109,9 @@
             </v-row>
             <v-row v-else>
               <v-col>
-                <h2 class="white--text">Ei kilpailuja saatavilla</h2>
+                <h2 class="white--text">
+                  {{ $t("no") }} {{ $t("comp.plural") }}
+                </h2>
               </v-col></v-row
             >
             <v-row
@@ -127,7 +129,7 @@
                   :disabled="!competition"
                   class="black--text"
                 >
-                  <v-icon>mdi-cancel</v-icon>Peruuta valinta
+                  <v-icon>mdi-cancel</v-icon>{{ $t("cancel") }}
                 </v-btn>
               </v-col>
               <v-col>
@@ -145,15 +147,15 @@
                         !biggest_amounts_results.length || !competition
                       "
                     >
-                      <v-icon color="red">mdi-file-pdf-box</v-icon> Lataa kaikki
-                      tulokset
+                      <v-icon color="red">mdi-file-pdf-box</v-icon
+                      >{{ $t("download-all-results") }}
                     </v-btn>
                   </template>
                   <v-card :dark="$store.getters.getTheme">
                     <v-card-text style="margin-top: 20px">
                       <h1>PDF Asetukset</h1>
                       <v-checkbox
-                        label="Pfd Vaakatasossa"
+                        :label="$t('pdf-landscape')"
                         v-model="isLandscape"
                       ></v-checkbox
                     ></v-card-text>
@@ -162,7 +164,7 @@
                     <v-card-text style="height: 300px; width: 100%">
                       <v-checkbox
                         v-model="selected_print"
-                        label="Tilastoja"
+                        :label="$t('statistics')"
                         :disabled="!biggest_amounts_results.length"
                         color="indigo darken-3"
                         value="stats"
@@ -170,7 +172,7 @@
                       <v-checkbox
                         v-model="selected_print"
                         :disabled="!biggest_amounts_results.length"
-                        label="Normaalikilpailun tulokset"
+                        :label="$t('normal-results')"
                         color="indigo darken-3"
                         value="normal"
                       ></v-checkbox>
@@ -178,38 +180,38 @@
                         v-if="isTeamCompetition"
                         :disabled="!team_results.length"
                         v-model="selected_print"
-                        label="Tiimikilpailun tulokset"
+                        :label="$t('team-results')"
                         color="indigo darken-3"
                         value="team"
                       ></v-checkbox>
                       <v-checkbox
                         v-model="selected_print"
                         :disabled="!biggest_amounts_results.length"
-                        label="Suurimmat kalat ja kalasaaliit (Kaikki kalat samassa taulukossa)"
+                        :label="$t('download-amounts')"
                         color="indigo darken-3"
                         value="all_biggest"
                       ></v-checkbox>
                       <v-checkbox
                         v-model="selected_print"
                         :disabled="!biggest_fishes_results.length"
-                        label="Suurimmat yksittäiset kalat (Kalalajeittain taulukossa)"
+                        :label="$t('download-biggest-fishes')"
                         color="indigo darken-3"
                         value="biggest_fishes"
                       ></v-checkbox>
                       <v-checkbox
                         v-model="selected_print"
                         :disabled="!biggest_amounts_results.length"
-                        label="Suurimmat kalasaaliit (Kalalajeittain taulukossa)"
+                        :label="$t('download-amounts-by-fish')"
                         color="indigo darken-3"
                         value="biggest_amounts"
                       ></v-checkbox>
                       <v-checkbox
                         v-model="selected_print"
                         :disabled="
-                          !biggest_amounts_results.length &&
+                          !biggest_fishes_results.length &&
                           !biggest_amounts_results.length
                         "
-                        label="Suurimmat yksittäiset kalat / kalasaaliit (Voittajat)"
+                        :label="$t('download-fish-winners')"
                         color="indigo darken-3"
                         value="biggest_winners"
                       ></v-checkbox>
@@ -222,7 +224,7 @@
                           color="red darken-4"
                           text
                           @click="dialog = false"
-                          >Sulje</v-btn
+                          >{{ $t("close") }}</v-btn
                         >
                       </v-col>
                       <v-col>
@@ -231,7 +233,7 @@
                           color="green darken-4"
                           text
                           @click="choosePrints"
-                          >Lataa</v-btn
+                          >{{ $t("download") }}</v-btn
                         >
                       </v-col>
                     </v-card-actions>
@@ -256,26 +258,26 @@
               <v-tab
                 href="#normal-competition"
                 :disabled="!selected_competition"
-                >Normaalikilpailu</v-tab
-              >
+                >{{ $t("normal-comp") }}
+              </v-tab>
               <v-tab
                 v-if="isTeamCompetition"
                 href="#team-competition"
                 :disabled="!selected_competition"
-                >Tiimikilpailu</v-tab
+                >{{ $t("team-comp") }}</v-tab
               >
-              <v-tab href="#biggest-fishes" :disabled="!selected_competition"
-                >Suurimmat Kalat</v-tab
-              >
+              <v-tab href="#biggest-fishes" :disabled="!selected_competition">{{
+                $t("biggest-fish")
+              }}</v-tab>
               <v-tab
                 href="#biggest-fish-amounts"
                 :disabled="!selected_competition"
-                >Suurimmat Kalasaaliit</v-tab
+                >{{ $t("biggest-amounts") }}</v-tab
               >
             </v-tabs>
             <v-row v-if="loading" style="margin: 50px">
               <v-col>
-                <h2 class="white--text">Haetaan kilpailuja...</h2>
+                <h2 class="white--text">{{ $t("loading") }}...</h2>
                 <ProgressBarQuery />
               </v-col>
             </v-row>
@@ -326,7 +328,7 @@
                     <v-select
                       dark
                       :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
-                      label="Valitse näytettävät tulokset"
+                      :label="$t('choose-table-view')"
                       outlined
                       :items="normal_options"
                       @input="switchNormalResults"
@@ -352,7 +354,7 @@
                       "
                     >
                       <v-icon color="red">mdi-file-pdf-box</v-icon>
-                      Lataa pdf
+                      {{ $t("download") }} pdf
                     </v-btn>
                   </v-col>
                 </v-row>
@@ -402,7 +404,7 @@
                     <v-select
                       dark
                       :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
-                      label="Valitse näytettävät tulokset"
+                      :label="$t('choose-table-view')"
                       outlined
                       @input="switchBiggestFishes"
                       v-model="selected_biggest_fish"
@@ -425,7 +427,8 @@
                         pdfDialog = true;
                       "
                     >
-                      <v-icon color="red">mdi-file-pdf-box</v-icon> Lataa pdf
+                      <v-icon color="red">mdi-file-pdf-box</v-icon
+                      >{{ $t("download") }} pdf
                     </v-btn>
                   </v-col>
                 </v-row>
@@ -453,7 +456,7 @@
                     <v-select
                       :dark="$store.getters.getTheme"
                       :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
-                      label="Valitse näytettävät tulokset"
+                      :label="$t('choose-table-view')"
                       outlined
                       @input="switchBiggestAmounts"
                       v-model="selected_biggest_amount"
@@ -476,7 +479,8 @@
                       "
                       :disabled="!biggest_amounts_results.length"
                     >
-                      <v-icon color="red">mdi-file-pdf-box</v-icon> Lataa pdf
+                      <v-icon color="red">mdi-file-pdf-box</v-icon
+                      >{{ $t("download") }} pdf
                     </v-btn>
                   </v-col>
                 </v-row>
@@ -503,15 +507,13 @@
                     @click="refreshCompetition(true, competition)"
                     class="white--text"
                   >
-                    <v-icon>mdi-update</v-icon>Päivitä tulokset
+                    <v-icon>mdi-update</v-icon>{{ $t("button.update") }}
                   </v-btn>
                 </v-col>
               </v-row>
               <v-row v-else>
                 <v-col>
-                  <h2 class="white--text">
-                    Päivitetään tuloksia tietokannasta...
-                  </h2>
+                  <h2 class="white--text">{{ $t("refreshing") }}...</h2>
                   <ProgressBarQuery />
                 </v-col>
               </v-row>
@@ -600,39 +602,39 @@ export default {
       selected_normal: null,
       fishes_chart: null,
       signees_chart: null,
-      normal_options: ["Kalat", "Pisteet", "Ilmoittautuneet"],
+      normal_options: ["fishes", "points", "signees-signed"],
       headers: [],
       biggest_fishes_headers: [],
       biggest_amounts_headers: [],
       normal_headers: [
-        { text: "Sijoitus", value: "placement" },
-        { text: "Kilp. numero", value: "boat_number" },
-        { text: "Kippari", value: "captain_name" },
-        { text: "Varakippari", value: "temp_captain_name" },
-        { text: "Paikkakunta", value: "locality" },
-        { text: "Tulos", value: "total_points" },
+        { text: "placement", value: "placement" },
+        { text: "boat-number", value: "boat_number" },
+        { text: "captain-name", value: "captain_name" },
+        { text: "temp-captain-name", value: "temp_captain_name" },
+        { text: "locality", value: "locality" },
+        { text: "points", value: "total_points" },
       ],
       cup_headers: [
-        { text: "Sijoitus", value: "placement" },
-        { text: "Kilp. numero", value: "boat_number" },
-        { text: "Kippari", value: "captain_name" },
-        { text: "Varakippari", value: "temp_captain_name" },
-        { text: "Paikkakunta", value: "locality" },
-        { text: "Tulos", value: "total_points" },
+        { text: "placement", value: "placement" },
+        { text: "boat-number", value: "boat_number" },
+        { text: "captain-name", value: "captain_name" },
+        { text: "temp-captain-name", value: "temp_captain_name" },
+        { text: "locality", value: "locality" },
+        { text: "points", value: "total_points" },
         {
-          text: "Cup (p)",
+          text: "cup.normal",
           value: "cup_points_total",
         },
       ],
       weight_headers: [],
       signee_headers: [],
       team_headers: [
-        { text: "Sijoitus", value: "placement" },
-        { text: "Tiimi", value: "name" },
-        { text: "Jäsen 1", value: "captain_name_1" },
-        { text: "Jäsen 2", value: "captain_name_2" },
-        { text: "Jäsen 3", value: "captain_name_3" },
-        { text: "Pisteet", value: "points" },
+        { text: "placement", value: "placement" },
+        { text: "team", value: "name" },
+        { text: "name", value: "captain_name_1" },
+        { text: "name", value: "captain_name_2" },
+        { text: "name", value: "captain_name_3" },
+        { text: "points", value: "points" },
       ],
       search: "",
       search_team: "",
@@ -644,21 +646,6 @@ export default {
       fishes_chart_data: null,
       fishes_chart_title: null,
       signee_chart_title: null,
-      selectedItem: 0,
-      items: [
-        {
-          text: "Kilpailujen tuloksia",
-          icon: "mdi-seal",
-          path: "/public-results",
-          disabled: true,
-        },
-        {
-          text: "Cuppien tuloksia",
-          icon: "mdi-trophy",
-          path: "/public-cups",
-          disabled: false,
-        },
-      ],
       snackbar: false,
       text: "",
       timeout: 5000,
@@ -703,6 +690,7 @@ export default {
     formatDateToLocaleDateString: formatDateToLocaleDateString,
     pdfWrapper() {
       let comp_type = "";
+      let selected = "";
 
       if (this.pdf === "Tilastoja") {
         resizeChartForPDF();
@@ -715,16 +703,28 @@ export default {
         );
       } else {
         if (this.pdf === "#normal-table") {
-          comp_type = `Normaalikilpailun tulokset (${this.selected_normal})`;
+          comp_type = `${this.$t("normal-results")} (${this.$t(
+            this.selected_normal
+          )})`;
         }
         if (this.pdf === "#team-table") {
-          comp_type = `Tiimikilpailun tulokset`;
+          comp_type = `${this.$t("team-results")}`;
         }
         if (this.pdf === "#biggest-fishes-table") {
-          comp_type = `Suurimmat kalat (${this.selected_biggest_fish})`;
+          selected =
+            this.selected_biggest_fish === "all" ||
+            this.selected_biggest_fish === "winners"
+              ? this.$t(this.selected_biggest_fish)
+              : this.selected_biggest_fish;
+          comp_type = `${this.$t("biggest-fishes")} (${selected})`;
         }
         if (this.pdf === "#biggest-amounts-table") {
-          comp_type = `Suurimmat kalat (${this.selected_biggest_amount})`;
+          selected =
+            this.selected_biggest_amount === "all" ||
+            this.selected_biggest_amount === "winners"
+              ? this.$t(this.selected_biggest_amount)
+              : this.selected_biggest_amount;
+          comp_type = `${this.$t("biggest-amounts")} (${selected})`;
         }
 
         saveAsPDF(
@@ -774,7 +774,6 @@ export default {
     cancelSelection() {
       this.competition = null;
       this.selected_competition = null;
-      localStorage.removeItem("competition");
     },
     // "Wrapper" to calculate all the results at once
     calculateAll() {
@@ -792,8 +791,8 @@ export default {
     // Switch table headers and columns based on this.selected_normal value (v-select)
     switchNormalResults() {
       // If "Pisteet" selected in v-select, update headers and this.results (table data)
-      if (!this.selected_normal) this.selected_normal = "Kalat";
-      if (this.selected_normal === "Pisteet") {
+      if (!this.selected_normal) this.selected_normal = "fishes";
+      if (this.selected_normal === "points") {
         this.results = this.normal_points;
         if (this.competition.isCupCompetition) {
           this.headers = this.cup_headers;
@@ -802,11 +801,11 @@ export default {
         }
       }
       // If "Kalat" selected in v-select, update headers and this.results (table data)
-      if (this.selected_normal === "Kalat") {
+      if (this.selected_normal === "fishes") {
         this.headers = this.weight_headers;
         this.results = this.normal_weights;
       }
-      if (this.selected_normal === "Ilmoittautuneet") {
+      if (this.selected_normal === "signees-signed") {
         this.headers = this.signee_headers;
         this.results = this.signees;
       }
@@ -925,16 +924,6 @@ export default {
 
               this.signees = results;
               this.calculateAll();
-
-              this.$store.commit("refreshCompetition", this.competition);
-              localStorage.setItem(
-                "competition",
-                JSON.stringify({
-                  _id: this.competition._id,
-                  start_date: this.competition.start_date,
-                  end_date: this.competition.end_date,
-                })
-              );
             })
             .catch((e) => {
               console.log(e);
@@ -943,16 +932,16 @@ export default {
 
         this.selected_print = [];
         this.signee_headers = [
-          { text: "Kilp. numero", value: "boat_number" },
-          { text: "Kippari", value: "captain_name" },
-          { text: "Varakippari", value: "temp_captain_name" },
-          { text: "Paikkakunta", value: "locality" },
-          { text: "Lähtöpaikka", value: "starting_place" },
+          { text: "boat-number", value: "boat_number" },
+          { text: "captain-name", value: "captain_name" },
+          { text: "temp-captain-name", value: "temp_captain_name" },
+          { text: "locality", value: "locality" },
+          { text: "starting-place", value: "starting_place" },
         ];
         let placement = 1;
         try {
           if (this.competition.isTeamCompetition) {
-            this.signee_headers.push({ text: "Tiimi", value: "team" });
+            this.signee_headers.push({ text: "team", value: "team" });
             this.team_results = this.competition.team_results;
             let last_points = -1;
             let last_placement = -1;
@@ -987,7 +976,7 @@ export default {
           });
 
           if (reload) {
-            this.text = "Tiedot ajantasalla!";
+            this.text = this.$t("notification.info-up-to-date");
             this.snackbar = true;
           }
         } catch (err) {
@@ -999,16 +988,7 @@ export default {
     },
     pickCompetition() {
       if (this.selected_competition) {
-        this.$store.commit("refreshCompetition", this.selected_competition);
         this.competition = this.selected_competition;
-        localStorage.setItem(
-          "competition",
-          JSON.stringify({
-            _id: this.competition._id,
-            start_date: this.competition.start_date,
-            end_date: this.competition.end_date,
-          })
-        );
         this.refreshCompetition(true, this.competition);
       }
     },

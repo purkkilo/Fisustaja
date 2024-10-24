@@ -241,7 +241,7 @@
         >
           <v-row v-if="loading">
             <v-col>
-              <h2 class="white--text">Ladataan tietoja...</h2>
+              <h2 class="white--text">{{ $t("loading") }}...</h2>
               <ProgressBarQuery />
             </v-col>
           </v-row>
@@ -561,6 +561,7 @@ import NormalComp from "../components/results/NormalComp.vue";
 import BiggestFishes from "../components/results/BiggestFishes.vue";
 import BiggestAmounts from "../components/results/BiggestAmounts.vue";
 import {
+  resizeChartForPDF,
   calculateNormalResults,
   calculateBiggestFishes,
   calculateBiggestAmounts,
@@ -674,11 +675,11 @@ export default {
           () => this.refreshCompetition(competition_id),
           this.interval
         );
-        this.text = "Automaattinen päivitys käytössä!";
+        this.text = this.$t("notification.auto-update-enabled");
         this.snackbar = true;
       } else {
         clearInterval(this.timer_refresh);
-        this.text = "Automaattinen päivitys pois käytöstä!";
+        this.text = this.$t("notification.auto-update-disabled");
         this.snackbar = true;
       }
     },
@@ -713,8 +714,10 @@ export default {
     },
     pdfWrapper() {
       let comp_type = "";
+      let selected = "";
 
       if (this.pdf === "Tilastoja") {
+        resizeChartForPDF();
         saveStatsAsPDF(
           this.pdf,
           this.isLandscape ? "landscape" : "portrait",
@@ -724,20 +727,28 @@ export default {
         );
       } else {
         if (this.pdf === "#normal-table") {
-          comp_type = `${this.$t("normal-results")} (${this.selected_normal})`;
+          comp_type = `${this.$t("normal-results")} (${this.$t(
+            this.selected_normal
+          )})`;
         }
         if (this.pdf === "#team-table") {
           comp_type = `${this.$t("team-results")}`;
         }
         if (this.pdf === "#biggest-fishes-table") {
-          comp_type = `${this.$t("biggest-fishes")} (${
-            this.selected_biggest_fish
-          })`;
+          selected =
+            this.selected_biggest_fish === "all" ||
+            this.selected_biggest_fish === "winners"
+              ? this.$t(this.selected_biggest_fish)
+              : this.selected_biggest_fish;
+          comp_type = `${this.$t("biggest-fishes")} (${selected})`;
         }
         if (this.pdf === "#biggest-amounts-table") {
-          comp_type = `${this.$t("biggest-amounts")} (${
-            this.selected_biggest_amount
-          })`;
+          selected =
+            this.selected_biggest_amount === "all" ||
+            this.selected_biggest_amount === "winners"
+              ? this.$t(this.selected_biggest_amount)
+              : this.selected_biggest_amount;
+          comp_type = `${this.$t("biggest-amounts")} (${selected})`;
         }
 
         saveAsPDF(
@@ -933,7 +944,7 @@ export default {
             this.signee_chart_data = charts.signee_chart.data;
           });
 
-          this.text = "Tiedot ajantasalla!";
+          this.text = this.$t("notification.info-up-to-date");
           this.snackbar = true;
         } else {
           this.signees = [];
@@ -956,8 +967,8 @@ export default {
     async endCompetition(isFinished) {
       this.competition.isFinished = !isFinished;
       this.competition.isFinished
-        ? (this.competition.state = "Päättynyt")
-        : (this.competition.state = "Kesken");
+        ? (this.competition.state = "ended")
+        : (this.competition.state = "not-finished");
 
       const newvalues = {
         $set: {

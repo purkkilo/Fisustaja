@@ -84,6 +84,12 @@
                 :loading="loading"
                 item-key="index"
               >
+                <template
+                  v-for="(h, index) in headers_cup_fishes_total"
+                  v-slot:[`header.${h.value}`]="{ header }"
+                >
+                  <span :key="index"> {{ $t(header.text) }}</span>
+                </template>
                 <template v-slot:[`item.weights`]="{ item }">
                   <v-chip
                     >{{ (item.weights / 100).toLocaleString() }} kg</v-chip
@@ -107,6 +113,12 @@
                 :loading="loading"
                 item-key="index"
               >
+                <template
+                  v-for="(h, index) in headers_cup_fishes_competition"
+                  v-slot:[`header.${h.value}`]="{ header }"
+                >
+                  <span :key="index"> {{ $t(header.text) }}</span>
+                </template>
                 <template v-slot:[`item.weights`]="{ item }">
                   <v-chip
                     >{{ (item.weights / 100).toLocaleString() }} kg</v-chip
@@ -169,6 +181,12 @@
                 :loading="loading"
                 item-key="index"
               >
+                <template
+                  v-for="(h, index) in headers_cup_biggest_fishes"
+                  v-slot:[`header.${h.value}`]="{ header }"
+                >
+                  <span :key="index"> {{ $t(header.text) }}</span>
+                </template>
                 <template v-slot:[`item.weight`]="{ item }">
                   <v-chip>{{ item.weight.toLocaleString() }} g</v-chip>
                 </template>
@@ -190,6 +208,12 @@
                 :loading="loading"
                 item-key="index"
               >
+                <template
+                  v-for="(h, index) in headers_cup_biggest_amounts"
+                  v-slot:[`header.${h.value}`]="{ header }"
+                >
+                  <span :key="index"> {{ $t(header.text) }}</span>
+                </template>
                 <template v-slot:[`item.weight`]="{ item }">
                   <v-chip>{{ item.weight.toLocaleString() }} g</v-chip>
                 </template>
@@ -241,6 +265,12 @@
                 :loading="loading"
                 item-key="index"
               >
+                <template
+                  v-for="(h, index) in headers_cup_signees"
+                  v-slot:[`header.${h.value}`]="{ header }"
+                >
+                  <span :key="index"> {{ $t(header.text) }}</span>
+                </template>
                 <template v-slot:[`item.signees`]="{ item }">
                   <v-chip>{{ item.signees.toLocaleString() }} kpl</v-chip>
                 </template>
@@ -273,31 +303,31 @@ export default {
       showTables: false,
       showCharts: true,
       headers_cup_fishes_total: [
-        { text: "Kalan nimi", value: "name" },
-        { text: "Määrä", value: "weights" },
+        { text: "fish", value: "name" },
+        { text: "amount", value: "weights" },
       ],
       headers_cup_fishes_competition: [
-        { text: "Kalan nimi", value: "name" },
-        { text: "Kilpailu", value: "competition_name" },
-        { text: "Määrä", value: "weights" },
+        { text: "fish", value: "name" },
+        { text: "comp.normal", value: "competition_name" },
+        { text: "amount", value: "weights" },
       ],
       headers_cup_signees: [
-        { text: "Kilpailu", value: "competition_name" },
-        { text: "Määrä", value: "signees" },
+        { text: "comp.normal", value: "competition_name" },
+        { text: "amount", value: "signees" },
       ],
       headers_cup_biggest_fishes: [
-        { text: "Kilp.nro", value: "boat_number" },
-        { text: "Kippari", value: "captain_name" },
-        { text: "Kilpailu", value: "competition_name" },
-        { text: "Kala", value: "fish_name" },
-        { text: "Paino", value: "weight" },
+        { text: "boat-number", value: "boat_number" },
+        { text: "captain-name", value: "captain_name" },
+        { text: "comp.normal", value: "competition_name" },
+        { text: "fish", value: "fish_name" },
+        { text: "weight", value: "weight" },
       ],
       headers_cup_biggest_amounts: [
-        { text: "Kilp.nro", value: "boat_number" },
-        { text: "Kippari", value: "captain_name" },
-        { text: "Kilpailu", value: "competition_name" },
-        { text: "Kala", value: "fish_name" },
-        { text: "Paino", value: "weight" },
+        { text: "boat-number", value: "boat_number" },
+        { text: "captain-name", value: "captain_name" },
+        { text: "comp.normal", value: "competition_name" },
+        { text: "fish", value: "fish_name" },
+        { text: "weight", value: "weight" },
       ],
       stats_tab: null,
       cup_fishes_total: [],
@@ -432,7 +462,7 @@ export default {
         labels: all_labels,
         datasets: [
           {
-            label: "Määrä",
+            label: this.$t("amount"),
             backgroundColor: shared.getRandomColors(all_data.length), // Green and red
             data: all_data, // Data
           },
@@ -451,7 +481,7 @@ export default {
         labels: competition_labels,
         datasets: [
           {
-            label: "Määrä",
+            label: this.$t("amount"),
             backgroundColor: shared.getRandomColors(competition_data.length), // Green and red
             data: competition_data, // Data
           },
@@ -472,7 +502,7 @@ export default {
         labels: all_biggest_fishes_labels,
         datasets: [
           {
-            label: "Paino",
+            label: this.$t("weight"),
             backgroundColor: shared.getRandomColors(
               all_biggest_fishes_data.length
             ), // Green and red
@@ -496,7 +526,7 @@ export default {
         labels: all_biggest_amounts_labels,
         datasets: [
           {
-            label: "Paino",
+            label: this.$t("amount"),
             backgroundColor: shared.getRandomColors(
               all_biggest_amounts_data.length
             ), // Green and red
@@ -518,7 +548,7 @@ export default {
         labels: all_signees_labels,
         datasets: [
           {
-            label: "Kilpailijamäärä",
+            label: this.$t("amount"),
             backgroundColor: shared.getRandomColors(all_signees_data.length), // Green and red
             data: all_signees_data, // Data
           },

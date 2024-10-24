@@ -223,12 +223,6 @@ export default {
             color: "white",
           },
           {
-            title: "nav.feedback",
-            route: "/feedback",
-            icon: "mdi-message-alert",
-            color: "yellow darken-1",
-          },
-          {
             title: "nav.admin",
             route: "/admin",
             icon: "mdi-shield-crown",
@@ -256,7 +250,6 @@ export default {
       } else {
         this.items = [
           { title: "nav.dashboard", route: "/dashboard", icon: "dashboard" },
-          { title: "nav.feedback", route: "/feedback", icon: "feedback" },
           {
             title: "nav.register",
             route: "/register",

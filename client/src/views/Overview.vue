@@ -67,11 +67,11 @@
                   <v-list-item-title>{{ $t("status") }}</v-list-item-title>
                   <v-list-item-subtitle
                     v-bind:class="{
-                      'green--text': competition.state === 'Kaikki maalissa',
-                      'blue--text': competition.state !== 'Kaikki maalissa',
+                      'green--text': competition.state === 'finished',
+                      'blue--text': competition.state !== 'finished',
                     }"
                   >
-                    <b>{{ competition.state }}</b>
+                    <b>{{ $t(competition.state) }}</b>
                   </v-list-item-subtitle>
                 </v-list-item>
                 <v-divider></v-divider>
@@ -212,34 +212,6 @@ export default {
       hasNotReturnedPercentage: 0,
       hasGottenFishPercentage: 0,
       hasGottenFishCount: 0,
-      selectedItem: 0,
-      items: [
-        {
-          text: "Yleisnäkymä",
-          icon: "mdi-desktop-mac-dashboard",
-          path: "/overview",
-        },
-        {
-          text: "Määritykset",
-          icon: "mdi-tune",
-          path: "/comp-settings",
-        },
-        {
-          text: "Ilmoittautuminen",
-          icon: "mdi-draw",
-          path: "/signing",
-        },
-        {
-          text: "Punnitus",
-          icon: "mdi-dumbbell",
-          path: "/weighting",
-        },
-        {
-          text: "Tulokset",
-          icon: "mdi-seal",
-          path: "/results",
-        },
-      ],
     };
   },
   created() {
