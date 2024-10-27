@@ -517,25 +517,17 @@
         </v-row>
       </v-tab-item>
     </v-tabs-items>
-    <v-snackbar v-model="snackbar" :timeout="timeout">
-      {{ $t(text) }}
-
-      <template v-slot:action="{ attrs }">
-        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
-          {{ $t("close") }}
-        </v-btn>
-      </template>
-    </v-snackbar>
+    <notification-bar :snackbar="snackbar" :text="text"></notification-bar>
   </v-container>
 </template>
 
 <script>
-"use strict";
 import CompetitionService from "../services/CompetitionService";
 import UserService from "../services/UserService";
 import CupService from "../services/CupService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import { formatDateToLocaleDateString } from "../shared";
+import NotificationBar from "../components/NotificationBar.vue";
 
 export default {
   data() {
@@ -566,7 +558,6 @@ export default {
       prevRoute: null,
       snackbar: false,
       text: "",
-      timeout: 5000,
     };
   },
   beforeRouteEnter(to, from, next) {
@@ -576,6 +567,7 @@ export default {
   },
   components: {
     ProgressBarQuery,
+    NotificationBar,
   },
   // Called everytime page is opened
   async mounted() {
@@ -735,7 +727,7 @@ export default {
     async deleteCompetition(id, confirmed) {
       // If user clicked "OK" on confirmation box
       if (confirmed) {
-        this.text = "Poistetaan tietokannasta!";
+        this.text = "notification.deleting";
         this.snackbar = true;
         this.loading_competitions = true;
         try {
@@ -753,9 +745,12 @@ export default {
       }
       // Show confirmation box on first function call
       else {
-        this.$confirm("Oletko varma?", "Poista kilpailu", "question")
+        this.$confirm(
+          this.$t("confirm-dialog"),
+          this.$t("button.delete-comp"),
+          "question"
+        )
           .then((r) => {
-            // if user clicked "OK" on confirmation box
             if (r) {
               this.deleteCompetition(id, r);
             }

@@ -814,31 +814,24 @@
         </v-tab-item>
       </v-tabs-items>
     </v-container>
-    <v-snackbar v-model="snackbar" :timeout="timeout">
-      {{ $t(text) }}
-
-      <template v-slot:action="{ attrs }">
-        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
-          {{ $t("close") }}
-        </v-btn>
-      </template>
-    </v-snackbar>
+    <notification-bar :snackbar="snackbar" :text="text"></notification-bar>
   </div>
 </template>
 <script>
-"use strict";
 import CompetitionService from "../services/CompetitionService";
 import ResultService from "../services/ResultService";
 import FishService from "../services/FishService";
 import Timedate from "../components/layout/Timedate";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import { isNumber } from "../shared";
+import NotificationBar from "../components/NotificationBar.vue";
 
 export default {
   name: "Weighting",
   components: {
     Timedate,
     ProgressBarQuery,
+    NotificationBar,
   },
   data() {
     return {
@@ -885,7 +878,6 @@ export default {
       inputs: [],
       snackbar: false,
       text: "",
-      timeout: 5000,
     };
   },
   computed: {

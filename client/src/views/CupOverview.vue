@@ -2,31 +2,6 @@
   <!-- /cup-overview -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <div>
-    <v-row>
-      <v-col v-if="prevRoute">
-        <v-btn
-          v-if="prevRoute.name"
-          large
-          rounded
-          color="yellow"
-          @click="$router.push({ path: prevRoute.path })"
-          ><v-icon>mdi-keyboard-return</v-icon>Palaa takaisin</v-btn
-        >
-      </v-col>
-    </v-row>
-    <v-row style="margin: 20px">
-      <v-col>
-        <v-btn
-          v-if="competition"
-          rounded
-          color="yellow"
-          @click="$router.push({ path: '/overview' })"
-        >
-          <v-icon>mdi-keyboard-return</v-icon>Takaisin kilpailuun
-        </v-btn>
-      </v-col>
-    </v-row>
-
     <v-container
       v-bind:class="{
         mobile: $vuetify.breakpoint.width < 800,
@@ -42,10 +17,10 @@
       >
         <v-dialog v-model="dialog" width="500">
           <v-card :dark="$store.getters.getTheme">
-            <v-card-title> Pdf Asetukset </v-card-title>
+            <v-card-title> Pdf {{ $t("settings") }} </v-card-title>
             <v-card-text>
               <v-checkbox
-                label="Pfd Vaakatasossa"
+                :label="$t('pdf-landscape')"
                 v-model="isLandscape"
               ></v-checkbox>
             </v-card-text>
@@ -62,7 +37,7 @@
                 text
                 @click="pdfWrapper(`Ilmoittautuneet`)"
               >
-                Lataa
+                {{ $t("download") }}
               </v-btn>
             </v-card-actions>
           </v-card>
@@ -72,7 +47,9 @@
           <v-col v-if="!loading && cup">
             <h1>{{ cup.name }}, {{ cup.year }}</h1>
           </v-col>
-          <v-col v-else><h1>Ladataan...</h1></v-col>
+          <v-col v-else
+            ><h1>{{ $t("downloading") }}..</h1></v-col
+          >
         </v-row>
         <v-tabs
           v-model="tab"
@@ -85,13 +62,13 @@
           center-active
         >
           <v-tabs-slider color="blue darken-4"></v-tabs-slider>
-          <v-tab href="#overview">Yleisnäkymä</v-tab>
-          <v-tab href="#points" :disabled="!competitions.length"
-            >Pistetilanne</v-tab
-          >
-          <v-tab href="#stats" :disabled="!competitions.length"
-            >Tilastoja</v-tab
-          >
+          <v-tab href="#overview">{{ $t("overview") }}</v-tab>
+          <v-tab href="#points" :disabled="!competitions.length">{{
+            $t("point-status")
+          }}</v-tab>
+          <v-tab href="#stats" :disabled="!competitions.length">{{
+            $t("general-statistics")
+          }}</v-tab>
         </v-tabs>
         <v-tabs-items v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
           <v-tab-item :value="'overview'">
@@ -133,6 +110,19 @@
                 >
               </v-col>
             </v-row>
+            <v-row justify="center" v-if="selected === 'signees-signed'">
+              <v-btn
+                @click="dialog = true"
+                large
+                outlined
+                dark
+                color="red"
+                :loading="publishing || loading"
+                :disabled="!cup.signees.length"
+                ><v-icon>mdi-file-pdf-box</v-icon>
+                {{ $t("download-signees") }}</v-btn
+              ></v-row
+            >
             <v-row v-if="!loading && cup">
               <v-col md="10" offset-md="1">
                 <v-card :dark="$store.getters.getTheme">
@@ -186,7 +176,9 @@
                             @click="endCompetition(item)"
                             :outlined="$store.getters.getTheme"
                             :disabled="updating"
-                            >{{ item.isFinished ? "Kyllä" : "Ei" }}</v-chip
+                            >{{
+                              item.isFinished ? $t("yes") : $t("no")
+                            }}</v-chip
                           >
                         </template>
                         <span>Muuta tila painamalla</span>
@@ -205,7 +197,7 @@
                             @click="publishCompetition(item)"
                             :disabled="updating"
                             >{{
-                              item.isPublic ? "Julkinen" : "Salainen"
+                              item.isPublic ? $t("public") : $t("private")
                             }}</v-chip
                           >
                         </template>
@@ -233,7 +225,7 @@
                             ></v-btn
                           >
                         </template>
-                        <span>Siirry kilpailuun</span>
+                        <span>{{ $t("comp.to") }}</span>
                       </v-tooltip>
                     </template>
                     <template v-slot:[`item.modify`]="{ item }">
@@ -258,8 +250,11 @@
                         <v-card :dark="$store.getters.getTheme">
                           <v-card-title>
                             <span class="headline"
-                              >Muokkaa käyttäjän (Nro {{ item.boat_number }})
-                              Cup tietoja</span
+                              >{{ $t("modify") }} ({{
+                                $t("boat-number-short")
+                              }}
+                              {{ item.boat_number }}) {{ $t("cup.normal") }}
+                              {{ $t("information") }}</span
                             >
                           </v-card-title>
                           <v-card-text>
@@ -389,7 +384,9 @@
                 >
                 <v-dialog v-model="createSigneeDialog" width="500">
                   <v-card :dark="$store.getters.getTheme">
-                    <v-card-title> Lisää ilmoittautunut </v-card-title>
+                    <v-card-title>
+                      {{ $t("add") }} {{ $t("signee") }}</v-card-title
+                    >
                     <v-card-text>
                       <h3 v-if="signeeError" class="red--text">
                         {{ $t(signeeError) }}
@@ -451,23 +448,12 @@
               <v-col>
                 <v-btn
                   tile
-                  color="blue lighten-1"
+                  color="green lighten-1"
+                  outlined
                   :loading="publishing || loading"
                   @click="changePage('/register-comp')"
                   ><v-icon>mdi-plus-circle</v-icon
                   >{{ $t("create-new-comp") }}</v-btn
-                >
-              </v-col>
-              <v-col>
-                <v-btn
-                  @click="dialog = true"
-                  large
-                  outlined
-                  dark
-                  :loading="publishing || loading"
-                  :disabled="!cup.signees.length"
-                  ><v-icon color="red">>mdi-file-pdf-box</v-icon>
-                  {{ $t("download-signees") }}</v-btn
                 >
               </v-col>
               <v-col>
@@ -540,21 +526,12 @@
             ></cup-stats>
           </v-tab-item>
         </v-tabs-items>
-        <v-snackbar v-model="snackbar" :timeout="timeout">
-          {{ text }}
-
-          <template v-slot:action="{ attrs }">
-            <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
-              Close
-            </v-btn>
-          </template>
-        </v-snackbar>
+        <notification-bar :snackbar="snackbar" :text="text"></notification-bar>
       </v-card>
     </v-container>
   </div>
 </template>
 <script>
-"use strict";
 import CupService from "../services/CupService";
 import CompetitionService from "../services/CompetitionService";
 import ResultService from "../services/ResultService";
@@ -570,6 +547,7 @@ import {
   saveCupAsPDF,
   isNumber,
 } from "../shared";
+import NotificationBar from "../components/NotificationBar.vue";
 
 export default {
   name: "CupOverview",
@@ -577,6 +555,7 @@ export default {
     ProgressBarQuery: () => import("../components/layout/ProgressBarQuery"),
     CupPoints,
     CupStats,
+    NotificationBar,
   },
   data() {
     return {
@@ -648,7 +627,7 @@ export default {
       isSimpleMode: true,
       snackbar: false,
       text: "",
-      timeout: 5000,
+
       isResults: false,
       showInfoInPdf: false,
       showUnfinishedCompetitions: false,
@@ -734,12 +713,30 @@ export default {
         this.selected_headers = this.headers_signees;
       }
     },
-    async deleteSignee(item) {
-      let signeeIndex = this.signees.findIndex(
-        (o) => o.boat_number === item.boat_number
-      );
-      this.signees.splice(signeeIndex, 1);
-      await this.updateSignees(this.signees);
+    async deleteSignee(item, confirmed) {
+      if (confirmed) {
+        let signeeIndex = this.signees.findIndex(
+          (o) => o.boat_number === item.boat_number
+        );
+        this.signees.splice(signeeIndex, 1);
+        await this.updateSignees(this.signees);
+      } else {
+        this.$confirm(
+          this.$t("confirm-dialog"),
+          this.$t("button.delete-signee"),
+          "question"
+        )
+          .then((r) => {
+            if (r) {
+              this.deleteSignee(item, r);
+            }
+          })
+          .catch((error) => {
+            if (error) {
+              console.error(error);
+            }
+          });
+      }
     },
     async addSignee() {
       if (this.signeeNumber < 1 || this.signeeNumber === null) {
@@ -1141,7 +1138,7 @@ export default {
               parseInt(a.cup_results["total"])
             );
           });
-          this.changeHeaders("Paikkakunta");
+          this.changeHeaders("locality");
 
           let final_placement = 1;
           let last_points = -1;
@@ -1168,12 +1165,14 @@ export default {
           text: "placement",
           highlight: false,
           align: "center",
+          translate: true,
           value: "final_placement",
           isFinished: true,
         },
         {
           text: "boat-number",
           align: "center",
+          translate: true,
           highlight: false,
           value: "boat_number",
           isFinished: true,
@@ -1181,6 +1180,7 @@ export default {
         {
           text: "captain-name",
           align: "center",
+          translate: true,
           highlight: false,
           value: "captain_name",
           isFinished: true,
@@ -1188,6 +1188,7 @@ export default {
         {
           text: "locality",
           align: "center",
+          translate: true,
           highlight: false,
           value: "locality",
           isFinished: true,
@@ -1207,19 +1208,21 @@ export default {
             return competition.locality === header.text;
           });
           if (found_headers.length) {
-            let new_header_text = ` ${competition.locality} #${
+            let new_header_text = `${competition.locality} #${
               found_headers.length + 1
             }`;
             this.headers.push({
               text: new_header_text,
               align: "center",
               highlight: true,
+              translate: false,
               isFinished: competition.isFinished,
               value: `cup_results[${competition.key_name}].points`,
             });
           } else {
             this.headers.push({
               text: competition.locality,
+              translate: false,
               align: "center",
               highlight: true,
               isFinished: competition.isFinished,
@@ -1229,6 +1232,7 @@ export default {
         } else {
           this.headers.push({
             text: competition.name,
+            translate: false,
             align: "center",
             highlight: true,
             isFinished: competition.isFinished,
@@ -1239,6 +1243,7 @@ export default {
       this.headers.push({
         text: "total-big",
         align: "center",
+        translate: true,
         highlight: false,
         value: "final_cup_points",
         isFinished: true,

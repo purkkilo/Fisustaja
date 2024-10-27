@@ -14,34 +14,15 @@
       outlined
       :dark="$store.getters.getTheme"
     >
-      <!-- if there are errors, show this div -->
-      <v-card
-        :dark="$store.getters.getTheme"
-        id="errordiv"
-        elevation="20"
-        v-if="errors.length"
-      >
-        <v-alert type="error"> Korjaa seuraavat virheet: </v-alert>
-        <v-list>
-          <v-list-item v-for="(error, index) in errors" v-bind:key="index">
-            <v-list-item-icon>
-              <v-icon color="red">mdi-alert-circle</v-icon>
-            </v-list-item-icon>
-
-            <v-list-item-content>
-              <v-list-item-title>{{ error }}</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-        </v-list>
-      </v-card>
-      <h1 style="margin: 50px">Login</h1>
+      <error-list :errors="errors"></error-list>
+      <h1 style="margin: 50px">{{ $t("nav.login") }}</h1>
       <form>
         <v-row>
           <v-col md="8" offset-md="2" class="input-fields">
             <v-text-field
               :dark="$store.getters.getTheme"
               id="name"
-              label="Käyttäjänimi"
+              :label="$t('username')"
               v-model="name"
               maxlength="40"
               :loading="loading"
@@ -53,13 +34,15 @@
           <v-col md="8" offset-md="2" class="input-fields">
             <v-text-field
               :dark="$store.getters.getTheme"
-              label="Salasana"
+              :label="$t('password')"
               id="password"
               v-model="password"
-              type="password"
+              :type="showPassword ? 'text' : 'password'"
+              @click:append="showPassword = !showPassword"
               maxlength="40"
               :loading="loading"
               :counter="40"
+              :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
             />
           </v-col>
         </v-row>
@@ -77,29 +60,18 @@
               class="white--text"
               @click="handleSubmit"
             >
-              <v-icon>mdi-login</v-icon>Kirjaudu
+              <v-icon>mdi-login</v-icon>{{ $t("nav.login") }}
             </v-btn>
           </v-col>
         </v-row>
       </form>
     </v-card>
-
-    <v-snackbar v-model="snackbar" :timeout="timeout">
-      {{ text }}
-
-      <template v-slot:action="{ attrs }">
-        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
-          Close
-        </v-btn>
-      </template>
-    </v-snackbar>
   </v-container>
 </template>
 <script>
-"use strict";
-
 import UserService from "../services/UserService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
+import ErrorList from "../components/ErrorList.vue";
 
 export default {
   data() {
@@ -108,13 +80,12 @@ export default {
       name: null,
       password: null,
       loading: false,
-      snackbar: false,
-      text: "",
-      timeout: 5000,
+      showPassword: false,
     };
   },
   components: {
     ProgressBarQuery,
+    ErrorList,
   },
   mounted() {
     var input = document.getElementById("password");
@@ -129,18 +100,19 @@ export default {
     // Add error to error array and direct user to it
     showError(error) {
       this.errors.push(error);
-      location.href = "#";
-      location.href = "#app";
+      this.$nextTick(() => {
+        document.getElementById("error-list").scrollIntoView();
+      });
     },
     // Submit login credentials and confirm user login
     async handleSubmit(e) {
       e.preventDefault();
       this.errors = [];
       if (!this.name) {
-        this.showError("Syötä Käyttäjänimi!");
+        this.showError("errors.missing-username");
       }
       if (!this.password) {
-        this.showError("Syötä salasana!");
+        this.showError("errors.missing-password");
       }
       // If no errors in array, proceed to login
       if (!this.errors.length) {
@@ -168,18 +140,17 @@ export default {
           } else {
             if (res.status === 401 || res.status === 404) {
               this.loading = false;
-              this.showError("Käyttäjänimi tai salasana ei täsmää!");
+              this.showError("errors.details-not-match");
               return;
             } else {
               this.loading = false;
-              this.showError("Jokin meni vikaan, yritä uudestaan!");
+              this.showError("errors.something-wrong");
               console.log(res.error, res.status);
             }
           }
         } catch (error) {
-          console.log(error);
-          this.showError("Näillä tiedoilla ei löytynyt käyttäjää!");
-          this.$router.push({ path: "/login" });
+          this.showError("errors.no-user-found");
+          //this.$router.push({ path: "/login" });
         }
       }
     },

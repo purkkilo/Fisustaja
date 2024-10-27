@@ -2,16 +2,16 @@
   <v-row>
     <v-dialog v-model="dialog" width="500">
       <v-card :dark="$store.getters.getTheme">
-        <v-card-title> Pdf Asetukset </v-card-title>
+        <v-card-title> Pdf {{ $t("settings") }}</v-card-title>
         <v-card-text>
           <v-checkbox
-            label="Pfd Vaakatasossa"
+            :label="'PDF ' + $t('pdf-landscape')"
             v-model="isLandscape"
             :disabled="!competitions.length"
           ></v-checkbox>
           <v-checkbox
             v-model="showInfoInPdf"
-            label="Näytä pdf:ssä kuinka monta parasta kilpailua otettu huomioon pisteissä"
+            :label="$t('cup.show-important-amount')"
             :disabled="!competitions.length"
             color="indigo"
           ></v-checkbox>
@@ -20,7 +20,9 @@
         <v-divider></v-divider>
 
         <v-card-actions>
-          <v-btn color="yellow" text @click="dialog = false"> Peruuta </v-btn>
+          <v-btn color="yellow" text @click="dialog = false">
+            {{ $t("cancel") }}
+          </v-btn>
           <v-spacer></v-spacer>
           <v-btn
             color="primary"
@@ -97,7 +99,7 @@
             @change="$emit('sort', showUnfinishedCompetitions)"
             dark
             v-model="showUnfinishedCompetitions"
-            :label="$t('comp.show-unfinished')"
+            :label="$t('comp.show-not-finished')"
             :disabled="!competitions.length"
             color="green"
           ></v-checkbox>

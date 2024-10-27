@@ -222,31 +222,41 @@ export function saveCupAsPDF(
   });
   if (table_title === "Tulokset") {
     if (unfinished_competitions === 0 || !showUnfinishedCompetitions) {
-      sub_title = `Tulokset ${formatted_date}`;
+      sub_title = `${i18n.t("results")} ${formatted_date}`;
     } else {
-      sub_title = `Tilanne ${formatted_date}, ${last_competition_string}  (${unfinished_competitions} kpl kilpailuja kesken)`;
+      sub_title = `${i18n.t(
+        "situation"
+      )} ${formatted_date}, ${last_competition_string}  (${unfinished_competitions} ${i18n.t(
+        "comp.count"
+      )} ${i18n.t("not-finished")} )`;
     }
     doc.text(13, 30, sub_title, { align: "left" });
     if (showInfoInPdf) {
       doc.text(
         13,
         40,
-        table_title +
-          ` (${selectedCompetitions}/${competitions.length} parasta kilpailua otettu huomioon)`,
+        `${i18n.t("results")} (${selectedCompetitions}/${
+          competitions.length
+        } ${i18n.t("comp.count")} ${i18n.t("taken-into-account")})`,
         { align: "left" }
       );
     }
 
     headers.forEach((header) => {
-      columns.push(header.text);
+      let columnText = header.text;
+      if (header.translate) columnText = i18n.t(columnText);
+
+      columns.push(columnText);
     });
     rows = cupDictToArray(results, competitions, "cup_total_points");
     startY = 45;
   } else {
     if (unfinished_competitions === 0) {
-      sub_title = `Cuppiin ilmoittautuneet ${cup.year}`;
+      sub_title = `${i18n.t("cup.to")} ${i18n.t("signees-signed")}`;
     } else {
-      sub_title = `Cupin kilpailijat ${formatted_date} ${last_competition_string}`;
+      sub_title = `${i18n.t("cup.to")} ${i18n.t(
+        "signees-signed"
+      )} ${formatted_date} ${last_competition_string}`;
     }
     doc.text(13, 30, sub_title, { align: "left" });
     doc.setFontSize(8);
@@ -263,16 +273,21 @@ export function saveCupAsPDF(
     // Just add some empty rows for new signees
     if (rows.length) {
       let last_number = Number(rows[rows.length - 1][0]) + 1;
-      for (let i of range(last_number, last_number + 10)) {
+      for (let i of range(last_number, last_number + 30)) {
         rows.push([i, "", "", ""]);
       }
     } else {
       // If no signees, just add 20 empty rows
       for (let i of range(1, 20)) {
         rows.push([i, "", "", ""]);
-        doc.text(13, 35, "Cupissa ei vielä ilmoittautuneita", {
-          align: "left",
-        });
+        doc.text(
+          13,
+          35,
+          i18n.t("cup.in") + " " + i18n.t("comp-overview.no-signees"),
+          {
+            align: "left",
+          }
+        );
       }
     }
     /* eslint-enable no-unused-vars */
@@ -2063,7 +2078,7 @@ export function calculateBiggestAmounts(
         return parseInt(b.weight) - parseInt(a.weight);
       });
     }
-    console.log(fish_results);
+
     let last_weight = -1;
     let last_placement = -1;
     results = fish_results;

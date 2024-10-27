@@ -30,7 +30,6 @@
 </template>
 
 <script>
-"use strict";
 export default {
   name: "Notfound",
   data() {

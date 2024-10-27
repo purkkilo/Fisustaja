@@ -14,7 +14,6 @@
 
 <script>
 import { Bar } from "vue-chartjs/legacy";
-
 import {
   Chart as ChartJS,
   Title,
@@ -24,6 +23,8 @@ import {
   CategoryScale,
   LinearScale,
 } from "chart.js";
+
+import i18n from "../i18n";
 
 ChartJS.register(
   Title,
@@ -91,14 +92,16 @@ export default {
                 Math.round((percentage + Number.EPSILON) * 100) / 100;
 
               let lbl = "";
-              if (context.dataset.label === "Kilpailijamäärä") {
-                lbl = `${
-                  context.dataset.label
-                }: ${context.parsed.y.toLocaleString()} kpl`;
+              if (context.dataset.label === "Amount") {
+                lbl = `${i18n.t(
+                  "total-signees"
+                )}: ${context.parsed.y.toLocaleString()}`;
               } else {
                 lbl = `${context.dataset.label}: ${(
                   context.parsed.y / 1000
-                ).toLocaleString()} kg ( ${percentage}% kaloista )`;
+                ).toLocaleString()} kg ( ${percentage}% ${i18n.t(
+                  "of-fishes"
+                )} )`;
               }
 
               return lbl;

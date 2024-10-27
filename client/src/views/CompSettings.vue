@@ -279,27 +279,10 @@
         :dark="$store.getters.getTheme"
         v-if="!basic_info_validated"
       >
-        <v-card
-          :dark="$store.getters.getTheme"
-          id="errordiv"
-          v-if="errors.length"
-        >
-          <v-alert type="error"> Korjaa seuraavat virheet: </v-alert>
-          <v-list>
-            <v-list-item v-for="(error, index) in errors" v-bind:key="index">
-              <v-list-item-icon>
-                <v-icon color="red">mdi-alert-circle</v-icon>
-              </v-list-item-icon>
-
-              <v-list-item-content>
-                <v-list-item-title>{{ error }}</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </v-list>
-        </v-card>
+        <error-list :errors="errors"></error-list>
         <v-row>
           <v-col>
-            <h1>Muuta määrityksiä</h1>
+            <h1>{{ $t("modify-settings") }}</h1>
           </v-col>
         </v-row>
         <v-row v-if="!loading">
@@ -771,20 +754,11 @@
         </v-row>
       </v-card>
 
-      <v-snackbar v-model="snackbar" :timeout="timeout">
-        {{ text }}
-
-        <template v-slot:action="{ attrs }">
-          <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
-            Close
-          </v-btn>
-        </template>
-      </v-snackbar>
+      <notification-bar :snackbar="snackbar" :text="text"></notification-bar>
     </v-container>
   </div>
 </template>
 <script>
-"use strict";
 import CompetitionService from "../services/CompetitionService";
 import CupService from "../services/CupService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
@@ -797,6 +771,8 @@ import {
   formatDate,
   isNumber,
 } from "../shared";
+import NotificationBar from "../components/NotificationBar.vue";
+import ErrorList from "../components/ErrorList.vue";
 
 export default {
   name: "CompSettings",
@@ -804,6 +780,8 @@ export default {
     ProgressBarQuery,
     Timedate,
     draggable,
+    NotificationBar,
+    ErrorList,
   },
   data() {
     return {
@@ -845,7 +823,6 @@ export default {
       temp_placement_points_array: [],
       snackbar: false,
       text: "",
-      timeout: 5000,
       editPoints: false,
     };
   },
@@ -1093,8 +1070,10 @@ export default {
     },
     // Add error to error array and direct user to it
     showError(error) {
-      location.href = "#app";
       this.errors.push(error);
+      this.$nextTick(() => {
+        document.getElementById("error-list").scrollIntoView();
+      });
     },
     // Check competitions basic information (Perustiedot)
     checkBasicInformation() {
@@ -1111,70 +1090,66 @@ export default {
 
       // Check other variables
       if (!this.name) {
-        this.showError("Kilpailun nimi puuttuu!");
+        this.showError("errors.missing-comp-name");
       }
 
       // Check other variables
       if (!this.locality) {
-        this.showError("Kilpailun paikkakunta puuttuu!");
+        this.showError("errors.missing-comp-locality");
       }
 
       if (this.isCupCompetition === "Kyllä") {
         if (!this.cup._id) {
-          this.showError("Cuppia ei valittuna!");
+          this.showError("errors.cup-not-selected");
         }
         if (!this.placement_points_array.length) {
-          this.showError("Lisää osallistumispisteet kiljailijoille");
+          this.showError("errors.missing-placement-points");
         }
         if (!this.cup_participation_points) {
-          this.showError("Määritä kilpailun Cup osallistumispisteet!");
+          this.showError("errors.missing-participation-points");
         }
         if (!this.cup_points_multiplier) {
-          this.showError("Kilpailun pistekerroin puuttuu!");
+          this.showError("errors.missing-multiplier");
         }
         if (this.cup_points_multiplier < 0.1) {
-          this.showError("Kilpailun pistekerroin pitää olla vähintään 0.1!");
+          this.showError("errors.invalid-multiplier");
         }
       }
 
       if (!this.start_time || !isStartTimeValid) {
         !this.start_time == true
-          ? this.showError("Kilpailun alkamisnaika puuttuu!")
-          : this.showError(
-              'Syötä aika muodossa "hh:mm" (esim: 13:00). Syötetty aika oli: ' +
-                this.start_time
-            );
+          ? this.showError("errors.missing-start-time")
+          : this.showError("errors.invalid-time");
       }
       if (!this.end_time || !isEndTimeValid) {
         !this.end_time == true
-          ? this.showError("Kilpailun loppumisaika puuttuu!")
-          : this.showError(
-              'Syötä aika muodossa "hh:mm" (esim: 13:00). Syötetty aika oli: ' +
-                this.end_time
-            );
+          ? this.showError("errors.missing-end-time")
+          : this.showError("errors.invalid-time");
       }
       if (!this.start_date || !isDateValid) {
-        this.showError("Aloitus päivämäärää ei ole valittu!");
+        this.showError("errors.missing-start-date");
       }
       if (!this.end_date || !isEndDateValid) {
-        this.showError("Lopetus päivämäärää ei ole valittu!");
+        this.showError("errors.missing-end-date");
       }
 
       // Check all the inputs
       this.inputs.forEach((input) => {
         if (!input.name) {
-          this.showError("Kalan nimi on jäänyt tyhjäksi!");
+          this.showError("errors.missing-fish-name");
         }
         if (!input.multiplier) {
           this.showError(
-            `${
-              input.name ? input.name : "Kalan"
-            } kerroin on jäänyt tyhjäksi tai on alle yhden!`
+            `${input.name ? input.name : this.$t("fish-genetive")} ${this.$t(
+              "errors.invalid-fish-multiplier"
+            )}`
           );
         }
         if (!input.minsize) {
           this.showError(
-            `${input.name ? input.name : "Kalan"} alamitta on jäänyt tyhjäksi!`
+            `${input.name ? input.name : this.$t("fish-genetive")} ${this.$t(
+              "errors.invalid-fish-minsize"
+            )}`
           );
         }
       });
@@ -1190,9 +1165,7 @@ export default {
         let end_time = this.end_time.split(":").map(Number);
         end_date.setHours(end_time[0], end_time[1]);
         if (end_date < start_date) {
-          this.showError(
-            "Kilpailun päättymispäivämäärä ja kellonaika ei voi olla ennen alkamispäivämäärää!"
-          );
+          this.showError("errors.invalid-times");
         } else {
           if (this.isCupCompetition === "Kyllä") {
             // Basic info, change all the competition variables with values from inputs
@@ -1264,15 +1237,14 @@ export default {
         console.error(err.message);
       }
       this.loading = false;
-      this.text =
-        "Tiedot päivitetty tietokantaan, sekä tulokset laskettu uusilla arvoilla!";
+      this.text = "notification.updated";
       this.snackbar = true;
     },
     // Delete competition
     async deleteCompetition(id, confirmed) {
       // If user clicked "OK" on confirmation box
       if (confirmed) {
-        this.text = "Poistetaan tietokannasta!";
+        this.text = "notification.deleting";
         this.snackbar = true;
         try {
           //Delete competition from database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
@@ -1286,8 +1258,11 @@ export default {
           this.error = err.message;
         }
       } else {
-        // demos for this -->  https://constkhi.github.io/vue-simple-alert/
-        this.$confirm("Oletko varma?", "Poista kilpailu", "question")
+        this.$confirm(
+          this.$t("confirm-dialog"),
+          this.$t("button.delete-comp"),
+          "question"
+        )
           .then((r) => {
             if (r) {
               this.deleteCompetition(id, r);

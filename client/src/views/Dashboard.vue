@@ -8,26 +8,7 @@
       wide: $vuetify.breakpoint.width >= 1200,
     }"
   >
-    <!-- if there are errors, show this div -->
-    <v-card
-      :dark="$store.getters.getTheme"
-      id="errordiv"
-      elevation="20"
-      v-if="errors.length"
-    >
-      <v-alert type="error"> {{ $t("errors.error-box-title") }}: </v-alert>
-      <v-list>
-        <v-list-item v-for="(error, index) in errors" v-bind:key="index">
-          <v-list-item-icon>
-            <v-icon color="red">mdi-alert-circle</v-icon>
-          </v-list-item-icon>
-
-          <v-list-item-content>
-            <v-list-item-title>{{ $t(error) }}</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
-    </v-card>
+    <error-list :errors="errors"></error-list>
     <v-card
       style="background: transparent; padding: 20px"
       elevation="10"
@@ -317,29 +298,24 @@
         }
       "
     ></comp-cup-table>
-    <v-snackbar v-model="snackbar" :timeout="timeout">
-      {{ text }}
-
-      <template v-slot:action="{ attrs }">
-        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
-          Close
-        </v-btn>
-      </template>
-    </v-snackbar>
+    <notification-bar :snackbar="snackbar" :text="text"></notification-bar>
   </v-container>
 </template>
 
 <script>
-"use strict";
 import CompCupTable from "../components/CompCupTable.vue";
 import CompetitionService from "../services/CompetitionService";
 import CupService from "../services/CupService";
 import gsap from "gsap";
+import NotificationBar from "../components/NotificationBar.vue";
+import ErrorList from "../components/ErrorList.vue";
 
 export default {
   name: "Home",
   components: {
     CompCupTable,
+    NotificationBar,
+    ErrorList,
   },
   data() {
     return {
@@ -362,7 +338,7 @@ export default {
       ],
       snackbar: false,
       text: "",
-      timeout: 5000,
+
       cupsAmount: 0,
       competitionsAmount: 0,
       tweenedCompetitions: 0,
@@ -512,10 +488,12 @@ export default {
       this.publishing = false;
     },
     // Add error to error array and direct user to it
+    // Add error to error array and direct user to it
     showError(error) {
       this.errors.push(error);
-      location.href = "#";
-      location.href = "#app";
+      this.$nextTick(() => {
+        document.getElementById("error-list").scrollIntoView();
+      });
     },
     //TODO dropdown to select current year as highlighted when opened
     saveYear(year) {

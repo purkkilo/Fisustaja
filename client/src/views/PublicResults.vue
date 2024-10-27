@@ -520,22 +520,12 @@
             </div>
           </v-col>
         </v-row>
-        <v-snackbar v-model="snackbar" :timeout="timeout">
-          {{ text }}
-
-          <template v-slot:action="{ attrs }">
-            <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
-              Close
-            </v-btn>
-          </template>
-        </v-snackbar>
+        <notification-bar :snackbar="snackbar" :text="text"></notification-bar>
       </v-card>
     </v-container>
   </div>
 </template>
 <script>
-"use strict";
-
 import CompetitionService from "../services/CompetitionService";
 import ResultService from "../services/ResultService";
 import FishService from "../services/FishService";
@@ -558,6 +548,7 @@ import {
   formatDateToLocaleDateString,
   getYear,
 } from "../shared";
+import NotificationBar from "../components/NotificationBar.vue";
 
 export default {
   name: "PublicResults",
@@ -568,6 +559,7 @@ export default {
     NormalComp,
     BiggestFishes,
     BiggestAmounts,
+    NotificationBar,
   },
   data() {
     return {
@@ -648,7 +640,7 @@ export default {
       signee_chart_title: null,
       snackbar: false,
       text: "",
-      timeout: 5000,
+
       hasGottenFishCount: 0,
     };
   },

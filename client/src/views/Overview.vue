@@ -11,25 +11,7 @@
         wide: $vuetify.breakpoint.width >= 1200,
       }"
     >
-      <v-card
-        :dark="$store.getters.getTheme"
-        id="errordiv"
-        elevation="20"
-        v-if="errors.length"
-      >
-        <v-alert type="error"> Korjaa seuraavat virheet: </v-alert>
-        <v-list>
-          <v-list-item v-for="(error, index) in errors" v-bind:key="index">
-            <v-list-item-icon>
-              <v-icon color="red">mdi-alert-circle</v-icon>
-            </v-list-item-icon>
-
-            <v-list-item-content>
-              <v-list-item-title>{{ error }}</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-        </v-list>
-      </v-card>
+      <error-list :errors="errors"></error-list>
       <v-card
         v-if="!loading"
         style="background: transparent"
@@ -188,18 +170,19 @@
   </div>
 </template>
 <script>
-"use strict";
 import CompetitionService from "../services/CompetitionService";
 import ResultService from "../services/ResultService.js";
 import Timedate from "../components/layout/Timedate";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import { formatDate } from "../shared";
+import ErrorList from "../components/ErrorList.vue";
 
 export default {
   name: "Overview",
   components: {
     Timedate,
     ProgressBarQuery,
+    ErrorList,
   },
   data() {
     return {

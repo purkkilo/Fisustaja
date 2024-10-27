@@ -16,30 +16,12 @@
           rounded
           color="yellow"
           @click="$router.push({ path: prevRoute.path })"
-          ><v-icon>mdi-keyboard-return</v-icon>Palaa takaisin</v-btn
+          ><v-icon>mdi-keyboard-return</v-icon
+          >{{ $t("button.return-back") }}</v-btn
         >
       </v-col>
     </v-row>
-    <!-- if errors, show errors -->
-    <v-card
-      :dark="$store.getters.getTheme"
-      id="errordiv"
-      elevation="20"
-      v-if="errors.length"
-    >
-      <v-alert type="error"> Korjaa seuraavat virheet: </v-alert>
-      <v-list>
-        <v-list-item v-for="(error, index) in errors" v-bind:key="index">
-          <v-list-item-icon>
-            <v-icon color="red">mdi-alert-circle</v-icon>
-          </v-list-item-icon>
-
-          <v-list-item-content>
-            <v-list-item-title>{{ error }}</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
-    </v-card>
+    <error-list :errors="errors"></error-list>
 
     <v-card
       style="background: transparent"
@@ -984,31 +966,25 @@
         </v-tab-item>
       </v-tabs-items>
     </v-card>
-    <v-snackbar v-model="snackbar" :timeout="timeout">
-      {{ text }}
-
-      <template v-slot:action="{ attrs }">
-        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
-          Close
-        </v-btn>
-      </template>
-    </v-snackbar>
+    <notification-bar :snackbar="snackbar" :text="text"></notification-bar>
   </v-container>
 </template>
 
 <script>
-"use strict";
-
 import CompetitionService from "../services/CompetitionService";
 import CupService from "../services/CupService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 import { getRandomColors, validateTime, formatDate } from "../shared";
 import constants from "../data/constants";
+import NotificationBar from "../components/NotificationBar.vue";
+import ErrorList from "../components/ErrorList.vue";
 
 export default {
   name: "CreateComp",
   components: {
     ProgressBarQuery,
+    NotificationBar,
+    ErrorList,
   },
   data() {
     return {
@@ -1039,14 +1015,14 @@ export default {
       max_input: 40,
       tabs: null,
       rules: [
-        (value) => !!value || "Kenttä ei voi jäädä tyhjäksi!",
+        (value) => !!value || this.$t("rules.no-empty"),
         (value) =>
-          (value || "").length <= this.max_input || "Enintään 40 merkkiä",
+          (value || "").length <= this.max_input || this.$t("rules.max-len"),
       ],
       number_rules: [
-        (value) => !!value || "Kenttä ei voi jäädä tyhjäksi!",
-        (value) => !isNaN(value || "") || "Ei ole numero!",
-        (value) => (value || "") >= 0 || "Numeron pitää olla positiivinen!",
+        (value) => !!value || this.$t("rules.no-empty"),
+        (value) => !isNaN(value || "") || this.$t("rules.not-number"),
+        (value) => (value || "") >= 0 || this.$t("rules.must-be-positive"),
       ],
       placement_points_array: [],
       temp_placement_points_array: [],
@@ -1060,7 +1036,8 @@ export default {
         "teal lighten-2",
         "orange lighten-2",
       ],
-      options: [
+      options: [],
+      options_fi: [
         {
           text: "Ahven",
           color: "blue lighten-1",
@@ -1087,6 +1064,33 @@ export default {
           id: 4,
         },
       ],
+      options_en: [
+        {
+          text: "Perch",
+          color: "blue lighten-1",
+          id: 0,
+        },
+        {
+          text: "Pike",
+          color: "red lighten-1",
+          id: 1,
+        },
+        {
+          text: "Zander",
+          color: "green lighten-1",
+          id: 2,
+        },
+        {
+          text: "Salmon",
+          color: "purple lighten-1",
+          id: 3,
+        },
+        {
+          text: "Trout",
+          color: "indigo lighten-1",
+          id: 4,
+        },
+      ],
       editing: null,
       editingIndex: -1,
       nonce: 1,
@@ -1096,7 +1100,7 @@ export default {
       y: 0,
       snackbar: false,
       text: "",
-      timeout: 5000,
+
       editPoints: false,
     };
   },
@@ -1108,12 +1112,29 @@ export default {
   // Runs everytime this page loads
   mounted() {
     this.getCups();
-
     this.placement_points_array = JSON.parse(
       JSON.stringify(constants.placement_points)
     );
+    this.$i18n.locale === "en"
+      ? (this.options = this.options_en)
+      : (this.options = this.options_fi);
   },
   watch: {
+    "$i18n.locale"(newValue) {
+      if (newValue) {
+        let options = this.options_fi;
+        if (newValue === "en") {
+          options = this.options_en;
+        }
+        options.forEach((o) => {
+          let option = this.options.find((op) => o.id === op.id);
+          if (!option) {
+            options.push(option);
+          }
+        });
+        this.options = options;
+      }
+    },
     selected(val, prev) {
       if (val.length === prev.length) return;
 
@@ -1267,8 +1288,9 @@ export default {
     // Add error to error array and direct user to it
     showError(error) {
       this.errors.push(error);
-      location.href = "#";
-      location.href = "#app";
+      this.$nextTick(() => {
+        document.getElementById("error-list").scrollIntoView();
+      });
     },
     // Check competitions basic information (Perustiedot)
     checkBasicInformation() {
@@ -1284,50 +1306,44 @@ export default {
 
       // Check other variables
       if (!this.name) {
-        this.showError("Kilpailun nimi puuttuu!");
+        this.showError("errors.missing-comp-name");
       }
 
       // Check other variables
       if (!this.locality) {
-        this.showError("Kilpailun paikkakunta puuttuu!");
+        this.showError("errors.missing-comp-locality");
       }
 
       if (!this.cup._id) {
-        this.showError("Cuppia ei valittuna!");
+        this.showError("errors.cup-not-selected");
       }
       if (!this.placement_points_array.length) {
-        this.showError("Lisää osallistumispisteet kiljailijoille");
+        this.showError("errors.missing-placement-points");
       }
       if (!this.cup_participation_points) {
-        this.showError("Määritä kilpailun Cup osallistumispisteet!");
+        this.showError("errors.missing-participation-points");
       }
       if (!this.cup_points_multiplier) {
-        this.showError("Kilpailun pistekerroin puuttuu!");
+        this.showError("errors.missing-multiplier");
       }
       if (this.cup_points_multiplier < 0.1) {
-        this.showError("Kilpailun pistekerroin pitää olla vähintään 0.1!");
+        this.showError("errors.invalid-multiplier");
       }
       if (!this.start_time || !isStartTimeValid) {
         !this.start_time == true
-          ? this.showError("Kilpailun alkamisnaika puuttuu!")
-          : this.showError(
-              'Syötä aika muodossa "hh:mm" (esim: 13:00). Syötetty aika oli: ' +
-                this.start_time
-            );
+          ? this.showError("errors.missing-start-time")
+          : this.showError("errors.invalid-time");
       }
       if (!this.end_time || !isEndTimeValid) {
         !this.end_time == true
-          ? this.showError("Kilpailun loppumisaika puuttuu!")
-          : this.showError(
-              'Syötä aika muodossa "hh:mm" (esim: 13:00). Syötetty aika oli: ' +
-                this.end_time
-            );
+          ? this.showError("errors.missing-end-time")
+          : this.showError("errors.invalid-time");
       }
       if (!this.start_date || !isDateValid) {
-        this.showError("Aloitus päivämäärää ei ole valittu!");
+        this.showError("errors.missing-start-date");
       }
       if (!this.end_date || !isEndDateValid) {
-        this.showError("Lopetus päivämäärää ei ole valittu!");
+        this.showError("errors.missing-end-date");
       }
 
       // If all inputs validated
@@ -1341,9 +1357,7 @@ export default {
         let end_time = this.end_time.split(":").map(Number);
         end_date.setHours(end_time[0], end_time[1]);
         if (end_date < start_date) {
-          this.showError(
-            "Kilpailun päättymispäivämäärä ja kellonaika ei voi olla ennen alkamispäivämäärää!"
-          );
+          this.showError("errors.invalid-times");
         } else {
           let temp_placement_points = [];
           if (this.cup_points_multiplier !== 1) {
@@ -1409,7 +1423,7 @@ export default {
         this.tab = "points";
       } else {
         this.fish_species_validated = false;
-        this.showError("Yhtään kalalajia ei ole valittu!");
+        this.showError("errors.missing-fishes");
       }
     },
 
@@ -1442,7 +1456,9 @@ export default {
           parseInt(fish_spec.minsize) < 0
         ) {
           this.showError(
-            `Syötä kalan '${fish_spec.name}' kaikki tiedot oikein! (Pistekerroin > 0, Alamitta >= 0 )`
+            `${this.$t("input-fish-genetive")} '${fish_spec.name} ${this.$t(
+              "all-correct-info"
+            )}! (${this.$t("multiplier")} > 0, ${this.$t("min-size")} >= 0 )`
           );
         } else {
           // If all the inputs are validated, push the validated fish to an array
@@ -1476,20 +1492,16 @@ export default {
           // there is some info that is not validated,
           // notify user what is wrong
           this.validated = false;
-          this.basic_info_validated == false
-            ? this.showError("Tarkista kilpailun perustiedot!")
-            : console.log("Perustiedot kunnossa!");
 
-          this.fish_species_validated == false
-            ? this.showError("Tarkista kalojen tiedot!")
-            : console.log("Kalojen tiedot kunnossa!");
-
-          this.fish_specs_validated == false
-            ? this.showError("Tarkista kalojen pistekertoimet ja alamitat!")
-            : console.log("Kalojen pistekertoimet ja alamitat kunnossa!");
+          if (!this.basic_info_validated)
+            this.showError("errors.check-basic-info");
+          if (!this.fish_species_validated)
+            this.showError("errors.check-fish-info");
+          if (!this.fish_specs_validated)
+            this.showError("errors.check-multiplier");
         }
       } else {
-        this.showError("Joitain tietoja puuttuu vielä!");
+        this.showError("errors.missing-some-info");
       }
     },
     disableInputs(disable) {
@@ -1535,20 +1547,18 @@ export default {
           user_id: user_id,
           ...this.basic_info,
           fishes: this.completed_fish_specs,
-          state: "Rekisteröity",
+          state: "signing",
         };
 
         try {
           //Submit competition to database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
           await CompetitionService.insertCompetitions([competition]);
-          this.text = "Kilpailu lisätty tietokantaan!";
+          this.text = "notification.updated";
           this.snackbar = true;
           this.$router.push({ path: "/dashboard" });
         } catch (err) {
           this.errors.push(err.message);
         }
-      } else {
-        this.errors.push("Not validated somehow?"); // Submit button should only be available when everything is validated
       }
     },
   },

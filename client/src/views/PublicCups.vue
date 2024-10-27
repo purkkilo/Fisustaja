@@ -104,22 +104,12 @@
             </v-col>
           </v-row>
         </v-row>
-        <v-snackbar v-model="snackbar" :timeout="timeout">
-          {{ $t(text) }}
-
-          <template v-slot:action="{ attrs }">
-            <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
-              {{ $t("close") }}
-            </v-btn>
-          </template>
-        </v-snackbar>
+        <notification-bar :snackbar="snackbar" :text="text"></notification-bar>
       </v-card>
     </v-container>
   </div>
 </template>
 <script>
-"use strict";
-
 import CupService from "../services/CupService";
 import CompetitionService from "../services/CompetitionService";
 import ResultService from "../services/ResultService";
@@ -128,12 +118,14 @@ import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 
 import CupPoints from "../components/CupPoints.vue";
 import { sortBy, saveCupAsPDF } from "@/shared";
+import NotificationBar from "../components/NotificationBar.vue";
 
 export default {
   name: "PublicCups",
   components: {
     ProgressBarQuery,
     CupPoints,
+    NotificationBar,
   },
   data() {
     return {
@@ -157,7 +149,7 @@ export default {
       notFinishedCount: 0,
       snackbar: false,
       text: "",
-      timeout: 5000,
+
       isResults: false,
       showInfoInPdf: true,
       showUnfinishedCompetitions: false,

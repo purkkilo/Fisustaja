@@ -1,23 +1,9 @@
 <template>
   <div>
-    <v-row>
-      <v-col><h1>Tilastoja</h1></v-col>
-    </v-row>
-    <v-row>
-      <v-col>
-        <v-card :dark="$store.getters.getTheme">
-          <v-row align="center" justify="center">
-            <v-col cols="3">
-              <v-checkbox
-                v-model="showTables"
-                label="Näytä taulukot"
-                :disabled="!competitions.length"
-                color="indigo darken-3"
-              ></v-checkbox>
-            </v-col>
-          </v-row>
-        </v-card>
-      </v-col>
+    <v-row style="margin-top: 10px">
+      <v-col
+        ><h1>{{ $t("general-statistics") }}</h1></v-col
+      >
     </v-row>
     <v-row>
       <v-col>
@@ -32,9 +18,9 @@
           center-active
         >
           <v-tabs-slider color="green darken-4"></v-tabs-slider>
-          <v-tab href="#cupfishes">Kalat</v-tab>
-          <v-tab href="#cupbiggestfishes">Suurimmat kalat</v-tab>
-          <v-tab href="#cupsignees">Kilpailijat</v-tab>
+          <v-tab href="#cupfishes">{{ $t("fishes") }}</v-tab>
+          <v-tab href="#cupbiggestfishes">{{ $t("fishes") }}</v-tab>
+          <v-tab href="#cupsignees">{{ $t("signees-signed") }}</v-tab>
         </v-tabs>
       </v-col>
     </v-row>
@@ -49,23 +35,13 @@
         <v-row v-if="total_fishes_chart_data">
           <v-col>
             <v-card :dark="$store.getters.getTheme">
-              <v-card-title> Cupin kalasaaliit (Total) </v-card-title>
+              <v-card-title>
+                {{ $t("biggest-amounts") }} ({{ $t("total-big") }})
+              </v-card-title>
               <bar-chart
                 :chart-data="total_fishes_chart_data"
                 chart-id="total_fishes_signee_chart"
-                v-bind:title="'Cupin kalasaaliit (Total)'"
-              />
-            </v-card>
-          </v-col>
-        </v-row>
-        <v-row v-if="competition_fishes_chart_data">
-          <v-col>
-            <v-card :dark="$store.getters.getTheme">
-              <v-card-title> Cupin kalasaaliit (Kilpailuittain) </v-card-title>
-              <bar-chart
-                :chart-data="competition_fishes_chart_data"
-                chart-id="competition_fishes_signee_chart"
-                v-bind:title="'Cupin kalasaaliit (Kilpailuittain)'"
+                :title="$t('biggest-amounts') + ' (' + $t('total-big') + ')'"
               />
             </v-card>
           </v-col>
@@ -74,7 +50,9 @@
           <v-col>
             <v-card :dark="$store.getters.getTheme">
               <v-card-title>
-                <p class="flow-text">Cupin kalasaaliit (Total)</p>
+                <p class="flow-text">
+                  {{ $t("biggest-amounts") }} ({{ $t("total-big") }})
+                </p>
                 <v-spacer></v-spacer>
               </v-card-title>
               <v-data-table
@@ -99,11 +77,27 @@
             </v-card>
           </v-col>
         </v-row>
+        <v-row v-if="competition_fishes_chart_data">
+          <v-col>
+            <v-card :dark="$store.getters.getTheme">
+              <v-card-title>
+                {{ $t("biggest-amounts") }} ({{ $t("comp.by") }})
+              </v-card-title>
+              <bar-chart
+                :chart-data="competition_fishes_chart_data"
+                chart-id="competition_fishes_signee_chart"
+                :title="$t('biggest-amounts') + ' (' + $t('comp.by') + ')'"
+              />
+            </v-card>
+          </v-col>
+        </v-row>
         <v-row v-if="cup_fishes_competition.length && showTables">
           <v-col>
             <v-card :dark="$store.getters.getTheme">
               <v-card-title>
-                <p class="flow-text">Cupin kalasaaliit (Kilpailuittain)</p>
+                <p class="flow-text">
+                  {{ $t("biggest-amounts") }} ({{ $t("comp.by") }})
+                </p>
                 <v-spacer></v-spacer>
               </v-card-title>
               <v-data-table
@@ -145,33 +139,24 @@
         >
           <v-col>
             <v-card :dark="$store.getters.getTheme">
-              <v-card-title> Cupin suurimmat kalat </v-card-title>
+              <v-card-title
+                >{{ $t("cup.is") }} {{ $t("biggest-fishes") }}</v-card-title
+              >
               <bar-chart
                 :chart-data="cup_biggest_fishes_chart_data"
                 chart-id="cup_biggest_fishes_chart"
-                v-bind:title="'Cupin suurimmat kalat'"
+                v-bind:title="$t('cup.is') + ' ' + $t('biggest-fishes')"
               />
             </v-card>
           </v-col>
         </v-row>
-        <v-row v-if="competition_fishes_chart_data && showCharts">
-          <v-col>
-            <v-card :dark="$store.getters.getTheme">
-              <v-card-title> Cupin suurimmat kalasaaliit </v-card-title>
-              <bar-chart
-                :chart-data="cup_biggest_amounts_chart_data"
-                chart-id="cup_biggest_amounts_chart"
-                v-bind:title="'Cupin suurimmat kalat'"
-              />
-            </v-card>
-          </v-col>
-        </v-row>
-
         <v-row v-if="cup_biggest_fishes.length && showTables">
           <v-col>
             <v-card :dark="$store.getters.getTheme">
               <v-card-title>
-                <p class="flow-text">Cupin suurimmat kalat</p>
+                <p class="flow-text">
+                  {{ $t("cup.is") }} {{ $t("biggest-fishes") }}
+                </p>
                 <v-spacer></v-spacer>
               </v-card-title>
               <v-data-table
@@ -194,11 +179,27 @@
             </v-card>
           </v-col>
         </v-row>
+        <v-row v-if="competition_fishes_chart_data && showCharts">
+          <v-col>
+            <v-card :dark="$store.getters.getTheme">
+              <v-card-title
+                >{{ $t("cup.is") }} {{ $t("biggest-amounts") }}</v-card-title
+              >
+              <bar-chart
+                :chart-data="cup_biggest_amounts_chart_data"
+                chart-id="cup_biggest_amounts_chart"
+                v-bind:title="$t('cup.is') + ' ' + $t('biggest-amounts')"
+              />
+            </v-card>
+          </v-col>
+        </v-row>
         <v-row v-if="cup_biggest_amounts.length && showTables">
           <v-col>
             <v-card :dark="$store.getters.getTheme">
               <v-card-title>
-                <p class="flow-text">Cupin suurimmat kalasaaliit</p>
+                <p class="flow-text">
+                  {{ $t("cup.is") }} {{ $t("biggest-amounts") }}
+                </p>
                 <v-spacer></v-spacer>
               </v-card-title>
               <v-data-table
@@ -229,24 +230,24 @@
           'inputarea-dark': $store.getters.getTheme,
         }"
       >
-        <v-row v-if="cup"
-          ><v-col offset-md="4" md="5">
-            <v-card :dark="$store.getters.getTheme">
-              <v-card-title v-if="cup.signees">
-                <v-icon color="blue darken-2">mdi-account-group</v-icon>
-                Yhteensä ilmoittautuneita {{ cup.signees.length }} kpl
-              </v-card-title>
-            </v-card>
-          </v-col></v-row
-        >
+        <v-row v-if="cup" justify="center" style="margin-top: 10px">
+          <v-card :dark="$store.getters.getTheme">
+            <v-card-title v-if="cup.signees">
+              <v-icon color="blue darken-2">mdi-account-group</v-icon>
+              {{ $t("total-signees") }}: {{ cup.signees.length }}
+            </v-card-title>
+          </v-card>
+        </v-row>
         <v-row v-if="cup_signees_chart_data && showCharts">
           <v-col>
             <v-card :dark="$store.getters.getTheme">
-              <v-card-title> Kilpailujen osallistujamäärät </v-card-title>
+              <v-card-title>
+                {{ $t("total-signees") }} ({{ $t("comp.by") }})
+              </v-card-title>
               <bar-chart
                 :chart-data="cup_signees_chart_data"
                 chart-id="cup_signees_chart"
-                v-bind:title="'Kilpailujen osallistujamäärät'"
+                v-bind:title="$t('total-signees') + ' (' + $t('comp.by') + ')'"
               />
             </v-card>
           </v-col>
@@ -255,7 +256,9 @@
           <v-col>
             <v-card :dark="$store.getters.getTheme">
               <v-card-title>
-                <p class="flow-text">Kilpailujen osallistujamäärät</p>
+                <p class="flow-text">
+                  {{ $t("total-signees") }} ({{ $t("comp.by") }})
+                </p>
                 <v-spacer></v-spacer>
               </v-card-title>
               <v-data-table
@@ -272,7 +275,7 @@
                   <span :key="index"> {{ $t(header.text) }}</span>
                 </template>
                 <template v-slot:[`item.signees`]="{ item }">
-                  <v-chip>{{ item.signees.toLocaleString() }} kpl</v-chip>
+                  <v-chip>{{ item.signees.toLocaleString() }}</v-chip>
                 </template>
               </v-data-table>
             </v-card>
@@ -300,7 +303,7 @@ export default {
   ],
   data() {
     return {
-      showTables: false,
+      showTables: true,
       showCharts: true,
       headers_cup_fishes_total: [
         { text: "fish", value: "name" },
@@ -368,6 +371,7 @@ export default {
         );
         comp_signees.forEach((s) => {
           s.fishes.forEach((fish) => {
+            console.log();
             let fish_name = competition.fishes.find(
               (f) => f.id === fish.id
             ).name;
@@ -462,7 +466,7 @@ export default {
         labels: all_labels,
         datasets: [
           {
-            label: this.$t("amount"),
+            label: "Weights",
             backgroundColor: shared.getRandomColors(all_data.length), // Green and red
             data: all_data, // Data
           },
@@ -474,14 +478,16 @@ export default {
       );
 
       this.cup_fishes_competition.forEach((fish) => {
-        competition_labels.push(`${fish.name} (${fish.competition_name})`);
-        competition_data.push(fish.weights);
+        if (fish.weights) {
+          competition_labels.push(`${fish.name} (${fish.competition_name})`);
+          competition_data.push(fish.weights);
+        }
       });
       this.competition_fishes_chart_data = {
         labels: competition_labels,
         datasets: [
           {
-            label: this.$t("amount"),
+            label: "Weights",
             backgroundColor: shared.getRandomColors(competition_data.length), // Green and red
             data: competition_data, // Data
           },
@@ -502,7 +508,7 @@ export default {
         labels: all_biggest_fishes_labels,
         datasets: [
           {
-            label: this.$t("weight"),
+            label: "Weights",
             backgroundColor: shared.getRandomColors(
               all_biggest_fishes_data.length
             ), // Green and red
@@ -526,7 +532,7 @@ export default {
         labels: all_biggest_amounts_labels,
         datasets: [
           {
-            label: this.$t("amount"),
+            label: "Weights",
             backgroundColor: shared.getRandomColors(
               all_biggest_amounts_data.length
             ), // Green and red

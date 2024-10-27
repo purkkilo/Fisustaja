@@ -10,40 +10,32 @@
     <v-main>
       <router-view></router-view>
     </v-main>
-    <v-snackbar v-model="snackbar" :timeout="timeout">
-      {{ text }}
-
-      <template v-slot:action="{ attrs }">
-        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
-          Close
-        </v-btn>
-      </template>
-    </v-snackbar>
+    <notification-bar :snackbar="snackbar" :text="text"></notification-bar>
     <Footer />
   </v-app>
 </template>
 
 <script>
-"use strict";
 import Footer from "./components/layout/Footer";
 import UserService from "./services/UserService";
 import Header from "./components/layout/Header.vue";
 import MainHeader from "./components/layout/MainHeader";
+import NotificationBar from "./components/NotificationBar.vue";
 export default {
   name: "App",
   data() {
     return {
       snackbar: false,
-      text: "Sessio vanhentunut, kirjaudu sisään uudelleen!",
-      timeout: 5000,
+      text: "errors.session-expired",
     };
   },
   components: {
     Footer,
     Header,
     MainHeader,
+    NotificationBar,
   },
-  created() {
+  NotificationBarted() {
     let preferences = JSON.parse(localStorage.getItem("preferences"));
     if (!preferences) {
       localStorage.setItem(

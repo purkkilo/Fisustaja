@@ -67,20 +67,14 @@
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
-    <v-snackbar v-model="snackbar" :timeout="timeout">
-      {{ text }}
-
-      <template v-slot:action="{ attrs }">
-        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
-          Close
-        </v-btn>
-      </template>
-    </v-snackbar>
+    <notification-bar :snackbar="snackbar" :text="text"></notification-bar>
   </v-card>
 </template>
 
 <script>
+import NotificationBar from "../NotificationBar.vue";
 export default {
+  components: { NotificationBar },
   name: "Header",
   data() {
     return {
@@ -98,7 +92,6 @@ export default {
       ],
       snackbar: false,
       text: "",
-      timeout: 5000,
     };
   },
   mounted() {},
@@ -138,7 +131,7 @@ export default {
         this.$router.push(route);
         this.drawer = !this.drawer;
       } else {
-        this.text = "Olet jo tällä sivulla!";
+        this.text = "errors.already-here";
         this.snackbar = true;
       }
     },

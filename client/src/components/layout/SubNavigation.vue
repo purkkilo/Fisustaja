@@ -29,10 +29,8 @@ export default {
   data() {
     return {
       selectedItem: 0,
-
       snackbar: false,
       text: "",
-      timeout: 5000,
     };
   },
   mounted() {
@@ -45,7 +43,7 @@ export default {
       if (this.$router.currentRoute.path !== route) {
         this.$router.push(route);
       } else {
-        this.text = "Olet jo tällä sivulla!";
+        this.text = "errors.already-here";
         this.snackbar = true;
       }
     },

@@ -14,25 +14,7 @@
       outlined
       :dark="$store.getters.getTheme"
     >
-      <v-card
-        :dark="$store.getters.getTheme"
-        id="errordiv"
-        elevation="20"
-        v-if="errors.length"
-      >
-        <v-alert type="error"> Korjaa seuraavat virheet: </v-alert>
-        <v-list>
-          <v-list-item v-for="(error, index) in errors" v-bind:key="index">
-            <v-list-item-icon>
-              <v-icon color="red">mdi-alert-circle</v-icon>
-            </v-list-item-icon>
-
-            <v-list-item-content>
-              <v-list-item-title>{{ error }}</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-        </v-list>
-      </v-card>
+      <error-list :errors="errors"></error-list>
       <v-row>
         <v-col>
           <h1 style="margin: 30px">Register</h1>
@@ -43,7 +25,7 @@
           <v-col md="8" offset-md="2" class="input-fields">
             <v-text-field
               :dark="$store.getters.getTheme"
-              label="Käyttäjänimi"
+              :label="$t('username')"
               id="name"
               @paste.prevent
               v-model="name"
@@ -59,7 +41,7 @@
           <v-col md="8" offset-md="2" class="input-fields">
             <v-text-field
               :dark="$store.getters.getTheme"
-              label="Sähköpostiosoite"
+              :label="$t('email')"
               id="email"
               @paste.prevent
               v-model="email"
@@ -75,12 +57,14 @@
           <v-col md="8" offset-md="2" class="input-fields">
             <v-text-field
               :dark="$store.getters.getTheme"
-              label="Salasana"
+              :label="$t('password')"
               id="password"
               @paste.prevent
               v-model="password"
               name="password"
-              type="password"
+              :type="showPassword ? 'text' : 'password'"
+              @click:append="showPassword = !showPassword"
+              :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
               maxlength="40"
               :loading="loading"
               :counter="40"
@@ -111,7 +95,8 @@
               v-bind:class="{
                 'white--text': $store.getters.getTheme,
               }"
-              >Salasanat täsmäävät! <v-icon>mdi-check-outline</v-icon></span
+              >{{ $t("notification.passwords-matching") }}
+              <v-icon>mdi-check-outline</v-icon></span
             >
           </v-col>
         </v-row>
@@ -120,7 +105,8 @@
           <!-- if both inputs have text, show this-->
           <v-col v-if="password && password_confirmation">
             <span class="flow-text red-text"
-              >Salasanat ei täsmää! <v-icon>mdi-alert-circle</v-icon></span
+              >{{ $t("notification.passwords-not-matching") }}
+              <v-icon>mdi-alert-circle</v-icon></span
             >
           </v-col>
         </v-row>
@@ -131,11 +117,11 @@
               v-bind:class="{
                 'white--text': $store.getters.getTheme,
               }"
-              >Admin?</span
+              >{{ $t("nav.admin") }}?</span
             >
             <v-radio-group v-model="is_admin" row>
-              <v-radio label="Kyllä" value="Yes"></v-radio>
-              <v-radio label="Ei" value="No"></v-radio>
+              <v-radio :label="$t('yes')" value="Yes"></v-radio>
+              <v-radio :label="$t('no')" value="No"></v-radio>
             </v-radio-group>
           </v-col>
         </v-row>
@@ -154,28 +140,21 @@
                 password.length === 0 || password !== password_confirmation
               "
             >
-              <v-icon>mdi-account-plus</v-icon>Rekisteröidy
+              <v-icon>mdi-account-plus</v-icon>{{ $t("register") }}
             </v-btn>
           </v-col>
         </v-row>
       </form>
     </v-card>
 
-    <v-snackbar v-model="snackbar" :timeout="timeout">
-      {{ text }}
-
-      <template v-slot:action="{ attrs }">
-        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
-          Close
-        </v-btn>
-      </template>
-    </v-snackbar>
+    <notification-bar :snackbar="snackbar" :text="text"></notification-bar>
   </v-container>
 </template>
 <script>
-"use strict";
 import UserService from "../services/UserService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
+import NotificationBar from "../components/NotificationBar.vue";
+import ErrorList from "../components/ErrorList.vue";
 
 export default {
   props: ["nextUrl"],
@@ -190,11 +169,13 @@ export default {
       loading: false,
       snackbar: false,
       text: "",
-      timeout: 5000,
+      showPassword: true,
     };
   },
   components: {
     ProgressBarQuery,
+    NotificationBar,
+    ErrorList,
   },
   mounted() {
     // Press button by enter key when focusing password_confirmation input
@@ -210,8 +191,9 @@ export default {
     // Add error to error array and direct user to it
     showError(error) {
       this.errors.push(error);
-      location.href = "#";
-      location.href = "#app";
+      this.$nextTick(() => {
+        document.getElementById("error-list").scrollIntoView();
+      });
     },
     // Submit register credentials and confirm user login
     async handleSubmit(e) {
@@ -220,13 +202,13 @@ export default {
       this.errors = [];
       //TODO check if it's really an email adress
       if (!this.email) {
-        this.showError("Syötä sähköposti!");
+        this.showError("errors.missing-email");
       }
       if (!this.password) {
-        this.showError("Syötä salasana!");
+        this.showError("errors.missing-password");
       }
       if (!this.name) {
-        this.showError("Syötä nimi!");
+        this.showError("errors.missing-name");
       }
       if (
         this.password === this.password_confirmation &&
@@ -246,11 +228,11 @@ export default {
             this.$router.push({ path: "/login" });
           } else {
             if (res.error.msg === "Email is already in use!") {
-              this.showError("Sähköposti on jo käytössä!");
+              this.showError("errors.email-used");
             } else if (res.error.msg === "Username is already taken!") {
-              this.showError("Käyttäjänimi on jo käytössä!");
+              this.showError("errors.name-used");
             } else {
-              this.showError("Jokin meni pieleen... yritä uudelleen!");
+              this.showError("errors.something-wrong");
               console.log(res.error);
             }
           }
@@ -260,7 +242,7 @@ export default {
         }
       } else {
         this.loading = false;
-        this.showError("Salasanat eivät vastaa toisiaan!");
+        this.showError("notification.passwords-not-matching");
       }
     },
   },

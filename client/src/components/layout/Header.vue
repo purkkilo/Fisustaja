@@ -124,25 +124,19 @@
       </v-list>
     </v-navigation-drawer>
 
-    <v-snackbar v-model="snackbar" :timeout="timeout">
-      {{ text }}
-
-      <template v-slot:action="{ attrs }">
-        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
-          Close
-        </v-btn>
-      </template>
-    </v-snackbar>
+    <notification-bar :snackbar="snackbar" :text="text"></notification-bar>
   </v-card>
 </template>
 
 <script>
 import UserService from "../../services/UserService";
+import NotificationBar from "../NotificationBar.vue";
 import SubNavigation from "./SubNavigation.vue";
 export default {
   name: "Header",
   components: {
     SubNavigation,
+    NotificationBar,
   },
   data() {
     return {
@@ -154,7 +148,6 @@ export default {
       uploading: false,
       snackbar: false,
       text: "",
-      timeout: 5000,
       isCompetitionPage: false,
       isPublicPage: false,
       competition_pages: [
@@ -229,7 +222,7 @@ export default {
             color: "red",
           },
           {
-            title: "nav.register",
+            title: "nav.register-user",
             route: "/register",
             icon: "mdi-account-plus",
             color: "green darken-1",
@@ -250,11 +243,6 @@ export default {
       } else {
         this.items = [
           { title: "nav.dashboard", route: "/dashboard", icon: "dashboard" },
-          {
-            title: "nav.register",
-            route: "/register",
-            icon: "mdi-account-plus",
-          },
           {
             title: "nav.public-comps",
             route: "/public-results",
@@ -350,7 +338,7 @@ export default {
         this.$router.push(route);
         this.drawer = !this.drawer;
       } else {
-        this.text = "Olet jo tällä sivulla!";
+        this.text = "errors.already-here";
         this.snackbar = true;
       }
     },
@@ -363,7 +351,7 @@ export default {
           this.$router.push({ path: "/" });
         this.$store.commit("refreshCompetition", null);
         this.user = null;
-        this.text = "Kirjattu ulos onnistuneesti!";
+        this.text = "notification.logout-success";
         this.snackbar = true;
         localStorage.removeItem("user");
       });
