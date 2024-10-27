@@ -1,4 +1,13 @@
 {
+  "name": "fisustaja-client",
+  "private": true,
+  "scripts": {
+    "build": "vue-cli-service build",
+    "i18n:report": "vue-cli-service i18n:report --src \"./src/**/*.?(js|vue)\" --locales \"./src/locales/**/*.json\"",
+    "lint": "vue-cli-service lint",
+    "serve": "vue-cli-service serve"
+  },
+  "version": "0.3.0",
   "browserslist": [
     "> 1%",
     "last 2 versions",
@@ -53,14 +62,5 @@
     },
     "root": true,
     "rules": {}
-  },
-  "name": "fisustaja-client",
-  "private": true,
-  "scripts": {
-    "build": "vue-cli-service build",
-    "i18n:report": "vue-cli-service i18n:report --src \"./src/**/*.?(js|vue)\" --locales \"./src/locales/**/*.json\"",
-    "lint": "vue-cli-service lint",
-    "serve": "vue-cli-service serve"
-  },
-  "version": "0.3.0"
+  }
 }

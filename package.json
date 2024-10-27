@@ -1,5 +1,7 @@
 {
   "name": "fisustaja-server",
+  "author": "purkkilo",
+  "license": "MIT",
   "version": "0.3.0",
   "description": "server for fisustaja",
   "main": "index.js",
@@ -11,8 +13,6 @@
     "build-app": "cd client && npm run build",
     "postinstall": "cd client && npm install && npm run build"
   },
-  "author": "Jori Kosonen",
-  "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "connect-history-api-fallback": "^2.0.0",
