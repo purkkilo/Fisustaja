@@ -70,7 +70,7 @@
                 </template>
                 <template v-slot:[`item.weights`]="{ item }">
                   <v-chip
-                    >{{ (item.weights / 100).toLocaleString() }} kg</v-chip
+                    >{{ (item.weights / 1000).toLocaleString() }} kg</v-chip
                   >
                 </template>
               </v-data-table>
@@ -115,7 +115,7 @@
                 </template>
                 <template v-slot:[`item.weights`]="{ item }">
                   <v-chip
-                    >{{ (item.weights / 100).toLocaleString() }} kg</v-chip
+                    >{{ (item.weights / 1000).toLocaleString() }} kg</v-chip
                   >
                 </template>
               </v-data-table>

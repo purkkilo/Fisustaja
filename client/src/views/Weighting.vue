@@ -448,7 +448,7 @@
                           </v-col>
                         </v-row>
                         <v-row v-if="!loading" align="center" justify="center">
-                          <v-col cols="6">
+                          <v-col cols="8">
                             <v-card
                               :dark="$store.getters.getTheme"
                               outlined

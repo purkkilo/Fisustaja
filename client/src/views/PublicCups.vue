@@ -40,13 +40,85 @@
         </v-row>
         <v-row v-else>
           <v-col v-if="!loading">
-            <h2 class="white--text">Haetaan cuppeja...</h2>
+            <h2 class="white--text">{{ $t("loading") }}...</h2>
             <ProgressBarQuery />
           </v-col>
           <v-col v-else>
-            <h2 class="white--text">Ei cuppeja saatavilla :(</h2>
+            <h2 class="white--text">
+              {{ $t("cup.not-found") }} {{ $t("available") }}
+            </h2>
           </v-col>
         </v-row>
+        <v-row justify="center" align="center" v-if="!loading && selected_cup">
+          <v-col>
+            <h1>{{ cup.name }}, {{ cup.year }}</h1>
+          </v-col>
+        </v-row>
+        <v-tabs
+          v-if="!loading && selected_cup"
+          v-model="tab"
+          background-color="blue lighten-2"
+          color="blue darken-4"
+          grow
+          show-arrows
+          next-icon="mdi-arrow-right-bold-box-outline"
+          prev-icon="mdi-arrow-left-bold-box-outline"
+          center-active
+        >
+          <v-tabs-slider color="blue darken-4"></v-tabs-slider>
+          <v-tab href="#points" :disabled="!competitions.length">{{
+            $t("point-status")
+          }}</v-tab>
+          <v-tab href="#stats" :disabled="!competitions.length">{{
+            $t("general-statistics")
+          }}</v-tab>
+        </v-tabs>
+        <v-tabs-items v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
+          <v-tab-item :value="'points'">
+            <cup-points
+              v-if="selected_cup && !loading"
+              :competitions="competitions"
+              :allCompetitions="allCompetitions"
+              :headers="headers"
+              :cup="selected_cup"
+              :isResults="isResults"
+              :loading="loading"
+              :notFinishedCount="notFinishedCount"
+              :results="results"
+              :selectNumbers="selectNumbers"
+              @change="(selection) => changeHeaders(selection)"
+              @refresh="(cup) => refreshCup(cup)"
+              @calculate="
+                (selectedCompetitions) =>
+                  calculateAll(competitions, selectedCompetitions)
+              "
+              @save="
+                (options) => {
+                  selectedCompetitions = options.selectedCompetitions;
+                  isLandscape = options.isLandscape;
+                  showInfoInPdf = options.showInfoInPdf;
+                  pdfWrapper(`Tulokset`);
+                }
+              "
+              @sort="
+                (show) => {
+                  showUnfinishedCompetitions = show;
+                  setCompetitionData(cup);
+                }
+              "
+            ></cup-points>
+          </v-tab-item>
+          <v-tab-item :value="'stats'">
+            <cup-stats
+              :competitions="competitions"
+              :cup="cup"
+              :all_signees="all_signees"
+              :biggest_fishes="biggest_fishes"
+              :biggest_amounts="biggest_amounts"
+              :loading="loading"
+            ></cup-stats>
+          </v-tab-item>
+        </v-tabs-items>
         <v-row>
           <v-col>
             <v-btn
@@ -64,38 +136,7 @@
             </v-btn>
           </v-col>
         </v-row>
-        <cup-points
-          v-if="selected_cup && !loading"
-          :competitions="competitions"
-          :allCompetitions="allCompetitions"
-          :headers="headers"
-          :cup="selected_cup"
-          :isResults="isResults"
-          :loading="loading"
-          :notFinishedCount="notFinishedCount"
-          :results="results"
-          :selectNumbers="selectNumbers"
-          @change="(selection) => changeHeaders(selection)"
-          @refresh="(cup) => refreshCup(cup)"
-          @calculate="
-            (selectedCompetitions) =>
-              calculateAll(competitions, selectedCompetitions)
-          "
-          @save="
-            (options) => {
-              selectedCompetitions = options.selectedCompetitions;
-              isLandscape = options.isLandscape;
-              showInfoInPdf = options.showInfoInPdf;
-              pdfWrapper(`Tulokset`);
-            }
-          "
-          @sort="
-            (show) => {
-              showUnfinishedCompetitions = show;
-              setCompetitionData(cup);
-            }
-          "
-        ></cup-points>
+
         <v-row v-if="loading" style="margin: 20px">
           <v-row>
             <v-col>
@@ -117,6 +158,7 @@ import FishService from "../services/FishService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery";
 
 import CupPoints from "../components/CupPoints.vue";
+import CupStats from "../components/CupStats.vue";
 import { sortBy, saveCupAsPDF } from "@/shared";
 import NotificationBar from "../components/NotificationBar.vue";
 
@@ -125,6 +167,7 @@ export default {
   components: {
     ProgressBarQuery,
     CupPoints,
+    CupStats,
     NotificationBar,
   },
   data() {

@@ -636,10 +636,10 @@
                 <table class="highlight centered responsive-table table_header">
                   <thead>
                     <tr>
-                      <th>Kalalaji</th>
-                      <th>Pistekerroin</th>
-                      <th>Alamitta</th>
-                      <th v-if="!basic_info_validated">Poista?</th>
+                      <th>{{ $t("fish") }}</th>
+                      <th>{{ $t("multiplier") }}</th>
+                      <th>{{ $t("min-size") }}</th>
+                      <th v-if="!basic_info_validated">{{ $t("delete") }}?</th>
                     </tr>
                   </thead>
 

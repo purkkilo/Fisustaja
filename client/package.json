@@ -1,13 +1,9 @@
 {
-  "name": "client",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint",
-    "i18n:report": "vue-cli-service i18n:report --src \"./src/**/*.?(js|vue)\" --locales \"./src/locales/**/*.json\""
-  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ],
   "dependencies": {
     "axios": "^1.7.7",
     "browserslist": "^4.18.1",
@@ -45,7 +41,6 @@
     "webpack-bundle-analyzer": "^3.9.0"
   },
   "eslintConfig": {
-    "root": true,
     "env": {
       "node": true
     },
@@ -56,11 +51,16 @@
     "parserOptions": {
       "parser": "babel-eslint"
     },
+    "root": true,
     "rules": {}
   },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not dead"
-  ]
+  "name": "fisustaja-client",
+  "private": true,
+  "scripts": {
+    "build": "vue-cli-service build",
+    "i18n:report": "vue-cli-service i18n:report --src \"./src/**/*.?(js|vue)\" --locales \"./src/locales/**/*.json\"",
+    "lint": "vue-cli-service lint",
+    "serve": "vue-cli-service serve"
+  },
+  "version": "0.3.0"
 }

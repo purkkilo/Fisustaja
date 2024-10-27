@@ -968,7 +968,7 @@ export default {
           });
 
           if (reload) {
-            this.text = this.$t("notification.info-up-to-date");
+            this.text = "notification.info-up-to-date";
             this.snackbar = true;
           }
         } catch (err) {

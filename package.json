@@ -1,8 +1,9 @@
 {
-  "name": "fisujs",
-  "version": "0.2.0",
-  "description": "web app for fisustaja",
-  "main": "main.js",
+  "name": "fisustaja-server",
+  "version": "0.3.0",
+  "description": "server for fisustaja",
+  "main": "index.js",
+  "private": true,
   "scripts": {
     "start": "node server/index.js",
     "server": "nodemon --env-file=server/.env server/index.js",

@@ -75,12 +75,14 @@
           <v-col md="8" offset-md="2" class="input-fields">
             <v-text-field
               :dark="$store.getters.getTheme"
-              label="Salasanan vahvistus"
+              :label="$t('password') + ' ' + $t('confirmation')"
               id="password_confirmation"
               @paste.prevent
               v-model="password_confirmation"
               name="password_confirmation"
-              type="password"
+              :type="showPassword ? 'text' : 'password'"
+              @click:append="showPassword = !showPassword"
+              :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
               maxlength="40"
               :loading="loading"
               :counter="40"
