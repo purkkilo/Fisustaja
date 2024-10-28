@@ -371,7 +371,6 @@ export default {
         );
         comp_signees.forEach((s) => {
           s.fishes.forEach((fish) => {
-            console.log();
             let fish_name = competition.fishes.find(
               (f) => f.id === fish.id
             ).name;

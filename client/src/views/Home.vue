@@ -55,7 +55,7 @@
                     dark
                     outlined
                   >
-                    Siirry
+                    {{ $t("go-to") }}
                     <v-icon right>
                       {{ link.icon }}
                     </v-icon>
@@ -103,7 +103,7 @@ export default {
             text: "nav.dashboard",
             icon: "mdi-view-dashboard",
             path: "/dashboard",
-            color: "blue darken-4",
+            color: "yellow darken-2",
           },
           ...this.items,
         ];
@@ -120,7 +120,7 @@ export default {
           text: "nav.dashboard",
           icon: "mdi-view-dashboard",
           path: "/dashboard",
-          color: "blue darken-4",
+          color: "yellow darken-2",
         },
         ...this.items,
       ];

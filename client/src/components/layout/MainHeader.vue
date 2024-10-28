@@ -23,10 +23,20 @@
       </v-btn>
 
       <router-link to="/login"
-        ><v-btn text outlined rounded color="green"
+        ><v-btn
+          outlined
+          rounded
+          color="green darken-3"
+          style="margin-right: 20px"
           ><v-icon>mdi-login</v-icon>{{ $t("nav.login") }}</v-btn
         ></router-link
       >
+      <router-link to="/"
+        ><v-btn outlined rounded><v-icon>mdi-home</v-icon></v-btn></router-link
+      >
+      <template v-slot:extension v-if="isPublicPage">
+        <sub-navigation :items="public_items" :type="type"></sub-navigation>
+      </template>
     </v-app-bar>
     <v-navigation-drawer
       v-model="drawer"
@@ -73,8 +83,13 @@
 
 <script>
 import NotificationBar from "../NotificationBar.vue";
+import SubNavigation from "./SubNavigation.vue";
+
 export default {
-  components: { NotificationBar },
+  components: {
+    SubNavigation,
+    NotificationBar,
+  },
   name: "Header",
   data() {
     return {
@@ -92,10 +107,32 @@ export default {
       ],
       snackbar: false,
       text: "",
+      isPublicPage: false,
+      type: "public",
+      public_pages: ["/public-results", "/public-cups"],
+      public_items: [
+        {
+          text: "home.comp",
+          icon: "mdi-seal",
+          path: "/public-results",
+        },
+        {
+          text: "home.cup",
+          icon: "mdi-trophy",
+          path: "/public-cups",
+        },
+      ],
     };
   },
   mounted() {},
   watch: {
+    $route(to) {
+      if (this.public_pages.includes(to.path)) {
+        this.isPublicPage = true;
+      } else {
+        this.isPublicPage = false;
+      }
+    },
     updateSwitch(newValue) {
       //called whenever isDark switch changes
       this.$store.state.isDark = newValue;

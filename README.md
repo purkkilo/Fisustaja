@@ -1,6 +1,8 @@
 # Fisustaja
 
-Application that is made for hosting fishing competitions (in Cup type setting, or standalone). Application was made for myself in a span of 6 years, and for the purpose of learning Node, MongoDB JavaScript and Vue 2 stack. It's definitely not the most efficient or the most clever design, because I wanted to explore different things and it has been made in the span of 6 years working on and off on it.
+Application that is made for hosting fishing competitions (in Cup type setting, or standalone). Application was made for myself in a span of 6 years, and for the purpose of learning Node, MongoDB, JavaScript and Vue 2 stack. It's definitely not the most efficient or the most clever design, because I wanted to explore different things and it has been made in the span of 6 years working on and off on it.
+
+You can find the app running on [render](https://fisustaja.onrender.com). It's a free plan so it might take a minute to spin up. The competitions you can find there are real, I've hosted some of them myself, and you can find the results also on [savo-karjalacup](https://www.savokarjalacup.com/tulokset/).
 
 ## What it does
 
@@ -17,7 +19,6 @@ Application that is made for hosting fishing competitions (in Cup type setting, 
     <img src="https://github.com/devicons/devicon/blob/master/icons/javascript/javascript-original.svg" title="JavaScript" alt="JavaScript" width="40" height="40"/>&nbsp;
     <img src="https://github.com/devicons/devicon/blob/master/icons/vuejs/vuejs-original-wordmark.svg" title="Vue.js" \*\*alt="Vue.js" width="40" height="40"/>&nbsp;
     <img src="https://github.com/devicons/devicon/blob/master/icons/vuetify/vuetify-original.svg" title="Vuetify" \*\*alt="Vuetify" width="40" height="40"/>&nbsp;
-    
 </div>
 
 ## Backend
