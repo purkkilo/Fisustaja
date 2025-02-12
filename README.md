@@ -58,4 +58,4 @@ If I would start this project from 0 right now, I would probably use Go for the 
 
 - "npm run dev" to run both concurrently in root directory, or separately with:
   - "npm run server" (in root directory)
-  - "npm run server" (in client directory)
+  - "npm run serve" (in client directory)
