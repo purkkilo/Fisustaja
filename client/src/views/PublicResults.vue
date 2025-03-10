@@ -266,12 +266,14 @@
                 :disabled="!selected_competition"
                 >{{ $t("team-comp") }}</v-tab
               >
-              <v-tab href="#biggest-fishes" :disabled="!selected_competition">{{
-                $t("biggest-fish")
-              }}</v-tab>
+              <v-tab
+                href="#biggest-fishes"
+                :disabled="loading || !biggest_fishes.length"
+                >{{ $t("biggest-fish") }}</v-tab
+              >
               <v-tab
                 href="#biggest-fish-amounts"
-                :disabled="!selected_competition"
+                :disabled="loading || !biggest_amounts_results.length"
                 >{{ $t("biggest-amounts") }}</v-tab
               >
             </v-tabs>
@@ -333,7 +335,14 @@
                       :items="normal_options"
                       @input="switchNormalResults"
                       v-model="selected_normal"
-                    />
+                    >
+                      <template v-slot:item="{ item }">
+                        <span>{{ $t(item) }}</span>
+                      </template>
+                      <template v-slot:selection="{ item }">
+                        <span>{{ $t(item) }}</span>
+                      </template>
+                    </v-select>
                   </v-col>
                   <v-col
                     v-if="
@@ -876,7 +885,6 @@ export default {
               results.forEach((result) => {
                 result.total_points = 0;
                 if (result.fishes.length) {
-                  this.hasGottenFishCount++;
                   result.fishes.forEach((f) => {
                     if (f.weights > 0) {
                       let fish = this.competition.fishes.find(
@@ -911,6 +919,10 @@ export default {
                       weights: "-",
                     });
                   });
+                }
+
+                if (result.total_points > 0) {
+                  this.hasGottenFishCount++;
                 }
               });
 
