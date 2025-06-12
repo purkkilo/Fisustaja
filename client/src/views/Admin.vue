@@ -597,11 +597,14 @@ export default {
           // No query, get all competitions
           this.all_competitions = await CompetitionService.getCompetitions();
           this.all_competitions.forEach((competition) => {
-            let cup = this.all_cups.find((c) => c._id === competition.cup_id);
+            if (competition.isCupCompetition) {
+              let cup = this.all_cups.find((c) => c._id === competition.cup_id);
+              competition.cup_name = `${cup.name} (${cup.year})`;
+            }
             competition.username = this.users.find(
               (user) => user._id === competition.user_id
             ).name;
-            competition.cup_name = `${cup.name} (${cup.year})`;
+
             competition.start_date = new Date(competition.start_date);
             competition.end_date = new Date(competition.end_date);
           });
@@ -627,7 +630,7 @@ export default {
                 console.log(err);
               });
           } else {
-            console.log(err.response.data);
+            console.log(err.message);
           }
         });
     } catch (err) {
