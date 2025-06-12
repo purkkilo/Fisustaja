@@ -90,26 +90,64 @@
                 </p>
               </v-col>
             </v-row>
-            <v-row v-if="!loading && cup" style="margin-top: 50px">
-              <v-col md="4" offset-md="4">
-                <v-select
-                  dark
-                  :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
-                  label="Valitse näytettävät tiedot"
-                  outlined
-                  :items="select_table"
-                  @input="selectTableData"
-                  v-model="selected"
-                >
-                  <template v-slot:item="{ item }">
-                    <span>{{ $t(item) }}</span>
-                  </template>
-                  <template v-slot:selection="{ item }">
-                    <span>{{ $t(item) }}</span>
-                  </template></v-select
-                >
-              </v-col>
-            </v-row>
+            <v-col v-if="!loading && cup" style="margin-top: 50px">
+              <!-- Show the cup name and it's year, and ability to change them -->
+              <v-row>
+                <v-col md="4" offset-md="4">
+                  <v-text-field
+                    v-model="newCupName"
+                    :label="$t('name')"
+                    outlined
+                    :dark="$store.getters.getTheme"
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+              <v-row style="margin-top: 0px; margin-bottom: 50px">
+                <v-col md="4" offset-md="4">
+                  <v-text-field
+                    v-model="newCupYear"
+                    :label="$t('year')"
+                    outlined
+                    type="number"
+                    @keypress="isNumber($event, true)"
+                    maxlength="4"
+                    :dark="$store.getters.getTheme"
+                  ></v-text-field>
+                  <v-btn
+                    color="primary"
+                    large
+                    :dark="$store.getters.getTheme"
+                    outlined
+                    :loading="publishing || loading"
+                    @click="updateCupValues"
+                    class="mt-2"
+                  >
+                    <v-icon>mdi-refresh</v-icon>
+                    {{ $t("save") }}
+                  </v-btn>
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col md="4" offset-md="4">
+                  <v-select
+                    dark
+                    :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
+                    label="Valitse näytettävät tiedot"
+                    outlined
+                    :items="select_table"
+                    @input="selectTableData"
+                    v-model="selected"
+                  >
+                    <template v-slot:item="{ item }">
+                      <span>{{ $t(item) }}</span>
+                    </template>
+                    <template v-slot:selection="{ item }">
+                      <span>{{ $t(item) }}</span>
+                    </template></v-select
+                  >
+                </v-col>
+              </v-row>
+            </v-col>
             <v-row justify="center" v-if="selected === 'signees-signed'">
               <v-btn
                 @click="dialog = true"
@@ -653,6 +691,41 @@ export default {
     formatDateToLocaleDateString: formatDateToLocaleDateString,
     getMultiplierColor: getMultiplierColor,
     isNumber: isNumber,
+    async updateCupValues() {
+      this.publishing = true;
+      if (!this.newCupName || !this.newCupYear) {
+        this.text = "errors.missing-cup-name-or-year";
+        this.snackbar = true;
+        this.publishing = false;
+      } else if (
+        this.newCupName === this.cup.name &&
+        this.newCupYear === this.cup.year
+      ) {
+        this.text = "errors.no-changes-made";
+        this.snackbar = true;
+        this.publishing = false;
+      } else {
+        try {
+          // Update cup name and year to database
+          const newValues = {
+            $set: {
+              name: this.newCupName,
+              year: this.newCupYear,
+            },
+          };
+          await CupService.updateValues(this.cup._id, newValues);
+          this.$store.state.cup.name = this.cup.name = this.newCupName;
+          this.$store.state.cup.year = this.cup.year = this.newCupYear;
+          this.text = "notification.updated";
+          this.snackbar = true;
+        } catch (err) {
+          console.error(err.message);
+          this.text = "errors.in-saving";
+          this.snackbar = true;
+        }
+        this.publishing = false;
+      }
+    },
     async publishCup(isPublic) {
       this.cup.isPublic = !isPublic;
 
@@ -960,6 +1033,8 @@ export default {
           // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
           //TODO make a test for this?
           this.cup = cup;
+          this.newCupName = this.cup.name;
+          this.newCupYear = this.cup.year;
           // Update to vuex, Assing variables from vuex (see client/store/index.js)
           this.$store.commit("refreshCup", this.cup);
           try {

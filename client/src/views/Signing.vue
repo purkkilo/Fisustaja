@@ -815,7 +815,7 @@ export default {
                   return o.boat_number;
                 })
               ) + 1;
-            this.text = `Poistettu (Nro: ${found_signee.boat_number}, Kippari: ${found_signee.captain_name}) Tiedot!`;
+            this.text = `boat-removed`;
             this.snackbar = true;
             location.href = "#";
             location.href = "#signing";
@@ -895,7 +895,7 @@ export default {
               this.teams.push(this.team);
               this.$store.commit("setTeams", this.teams);
             }
-            this.text = `Päivitetty venekunnan (Nro: ${this.new_signee.boat_number}, Kippari: ${this.new_signee.captain_name}) Tiedot!`;
+            this.text = `boat-updated`;
             this.snackbar = true;
             this.clearInputs();
             location.href = "#";
@@ -928,7 +928,8 @@ export default {
             this.teams.push(this.team);
             this.$store.commit("setTeams", this.teams);
           }
-          this.text = `Venekunta ilmoitettu kisaan! (Nro: ${this.new_signee.boat_number}, Kippari: ${this.new_signee.captain_name})`;
+
+          this.text = `boat-added`;
           this.snackbar = true;
 
           this.clearInputs();

@@ -849,29 +849,36 @@ export default {
               results.forEach((result) => {
                 result.total_points = 0;
                 if (result.fishes.length) {
-                  result.fishes.forEach((f) => {
-                    if (f.weights > 0) {
-                      let fish = this.competition.fishes.find(
-                        (cf) => cf.id === f.id
-                      );
-                      result.total_points += f.weights * fish.multiplier;
-                      this.competition.total_weights += f.weights;
-                      fish.weights += f.weights;
+                  this.competition.fishes.forEach((fish) => {
+                    let foundFish = result.fishes.find(
+                      (rf) => rf.id === fish.id
+                    );
+                    if (foundFish) {
+                      result.total_points +=
+                        foundFish.weights * fish.multiplier;
+                      this.competition.total_weights += foundFish.weights;
+                      fish.weights += foundFish.weights;
                       if (this.biggest_amounts[fish.name]) {
                         this.biggest_amounts[fish.name].push({
                           boat_number: result.boat_number,
                           captain_name: result.captain_name,
-                          weight: f.weights,
+                          weight: foundFish.weights,
                         });
                       } else {
                         this.biggest_amounts[fish.name] = [
                           {
                             boat_number: result.boat_number,
                             captain_name: result.captain_name,
-                            weight: f.weights,
+                            weight: foundFish.weights,
                           },
                         ];
                       }
+                    } else {
+                      result.fishes.push({
+                        id: fish.id,
+                        name: fish.name,
+                        weights: "-",
+                      });
                     }
                   });
                 } else {

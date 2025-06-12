@@ -65,7 +65,7 @@
                   <v-row v-if="notification" style="margin-top: 20px">
                     <v-col>
                       <v-alert type="success">
-                        {{ notification }}
+                        {{ $t(notification) }}
                       </v-alert>
                     </v-col>
                   </v-row>
@@ -1038,18 +1038,19 @@ export default {
     },
     // Set input weights for each fish for the signee
     setInputWeights() {
+      console.log("inputs", this.inputs);
+      console.log("competition_boat.fishes", this.competition_boat.fishes);
       // Loop trhough all the competition fishes
       this.inputs.forEach((input) => {
+        input.value = null; // Reset input value
         if (this.competition_boat.fishes.length) {
           // find the fish weights based on the fish_name, from signees weights array
-          let fish_weights = this.competition_boat.fishes.find(
+          let fish = this.competition_boat.fishes.find(
             (fish) => fish.id === input.id
-          ).weights;
+          );
           // Assign the value to input
-          if (fish_weights) {
-            input.value = fish_weights;
-          } else {
-            input.value = null;
+          if (fish) {
+            input.value = fish.weights;
           }
         }
       });
@@ -1147,7 +1148,7 @@ export default {
         this.competition_boat.returned = true;
         // For every fish, get values from inputs
         this.inputs.forEach((input) => {
-          fish_weight = parseInt(input.value ? input.value : 0); // If input empty, replace with 0
+          fish_weight = input.value ? parseInt(input.value) : 0; // If input empty, replace with 0
           // Add fish object to array¨
           if (fish_weight) {
             fish_weights.push({

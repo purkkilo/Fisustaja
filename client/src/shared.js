@@ -407,8 +407,13 @@ export function saveAsPDF(
       normal_weights.forEach((b, i) => {
         let r = [];
         r = [b.placement + ".", "(" + b.boat_number + ")", b.captain_name];
-        b.fishes.forEach((f) => {
-          r.push(f.weights.toLocaleString());
+        competition.fishes.forEach((f) => {
+          let fish = b.fishes.find((fish) => fish.id === f.id);
+          if (fish) {
+            r.push(fish.weights.toLocaleString());
+          } else {
+            r.push("-");
+          }
         });
         r.push(b.total_points.toLocaleString());
         rows[i] = r;
@@ -816,8 +821,13 @@ export function saveAllAsPDF(
     normal_weights.forEach((b, i) => {
       let r = [];
       r = [b.placement + ".", "(" + b.boat_number + ")", b.captain_name];
-      b.fishes.forEach((f) => {
-        r.push(f.weights.toLocaleString());
+      competition.fishes.forEach((f) => {
+        let fish = b.fishes.find((fish) => fish.id === f.id);
+        if (fish) {
+          r.push(fish.weights.toLocaleString());
+        } else {
+          r.push("-");
+        }
       });
       r.push(b.total_points.toLocaleString());
       rows[i] = r;

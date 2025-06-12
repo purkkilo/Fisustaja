@@ -70,12 +70,8 @@ export default {
             if (res.success) {
               this.$store.state.is_admin = res.is_admin;
               this.$store.state.logged_in = true;
-            } else {
-              console.log(res.error, res.status, "!!!!");
             }
           }
-        } else {
-          console.log("parseJwt error");
         }
       }
     }
