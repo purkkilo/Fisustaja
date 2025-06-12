@@ -1038,8 +1038,6 @@ export default {
     },
     // Set input weights for each fish for the signee
     setInputWeights() {
-      console.log("inputs", this.inputs);
-      console.log("competition_boat.fishes", this.competition_boat.fishes);
       // Loop trhough all the competition fishes
       this.inputs.forEach((input) => {
         input.value = null; // Reset input value
