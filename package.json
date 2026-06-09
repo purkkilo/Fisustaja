@@ -7,7 +7,7 @@
   "main": "index.js",
   "private": true,
   "scripts": {
-    "start": "node server/index.js",
+    "start": "node --env-file=server/.env server/index.js",
     "server": "nodemon --env-file=server/.env server/index.js",
     "dev": "concurrently \" cd server && nodemon --env-file=.env index.js\" \"cd client && npm run serve\"",
     "build-app": "cd client && npm run build",
