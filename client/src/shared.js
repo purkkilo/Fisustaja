@@ -144,7 +144,7 @@ export function capitalize_words(str) {
     /(?:^|\s|['`‘’.-])[^\x60^\x7B-\xDF](?!(\s|$))/g,
     function (txt) {
       return txt.toUpperCase();
-    }
+    },
   );
 }
 
@@ -175,7 +175,7 @@ export function saveCupAsPDF(
   selectedCompetitions,
   headers,
   results,
-  signees
+  signees,
 ) {
   // Format dates for easier reding
   // PDF creation
@@ -225,9 +225,9 @@ export function saveCupAsPDF(
       sub_title = `${i18n.t("results")} ${formatted_date}`;
     } else {
       sub_title = `${i18n.t(
-        "situation"
+        "situation",
       )} ${formatted_date}, ${last_competition_string}  (${unfinished_competitions} ${i18n.t(
-        "comp.count"
+        "comp.count",
       )} ${i18n.t("not-finished")} )`;
     }
     doc.text(13, 30, sub_title, { align: "left" });
@@ -238,7 +238,7 @@ export function saveCupAsPDF(
         `${i18n.t("results")} (${selectedCompetitions}/${
           competitions.length
         } ${i18n.t("comp.count")} ${i18n.t("taken-into-account")})`,
-        { align: "left" }
+        { align: "left" },
       );
     }
 
@@ -255,7 +255,7 @@ export function saveCupAsPDF(
       sub_title = `${i18n.t("cup.to")} ${i18n.t("signees-signed")}`;
     } else {
       sub_title = `${i18n.t("cup.to")} ${i18n.t(
-        "signees-signed"
+        "signees-signed",
       )} ${formatted_date} ${last_competition_string}`;
     }
     doc.text(13, 30, sub_title, { align: "left" });
@@ -286,7 +286,7 @@ export function saveCupAsPDF(
           i18n.t("cup.in") + " " + i18n.t("comp-overview.no-signees"),
           {
             align: "left",
-          }
+          },
         );
       }
     }
@@ -315,7 +315,7 @@ export function saveCupAsPDF(
   const fileName = `${cup.year}_${replaceAll("Cup", " ", "")}_${replaceAll(
     capitalize_words(table_title),
     " ",
-    ""
+    "",
   )}.pdf`;
   openPdfOnNewTab(doc, fileName);
 }
@@ -335,7 +335,7 @@ export function saveAsPDF(
   biggest_fishes_results,
   biggest_amounts_results,
   team_results,
-  fish_names
+  fish_names,
 ) {
   // Format dates for easier reding
   let temp_start_date = formatDateToLocaleDateString(competition.start_date);
@@ -361,7 +361,7 @@ export function saveAsPDF(
     pdf_competition_type = `${replaceAll(
       i18n.t("normal-comp"),
       " ",
-      ""
+      "",
     )}${selected_normal}`;
     // Other tables are generated in code so no need to wait for rendering to html
     if (selected_normal === "points") {
@@ -608,11 +608,11 @@ export function saveAsPDF(
   });
   // Save the pdf
   const fileName = `${new Date(
-    competition.start_date
+    competition.start_date,
   ).getFullYear()}_${replaceAll(
     competition.name,
     " ",
-    ""
+    "",
   )}_${pdf_competition_type}.pdf`;
   openPdfOnNewTab(doc, fileName);
   // Set charts to be responsive again
@@ -623,7 +623,7 @@ export function saveStatsAsPDF(
   orientation = "portrait",
   competition,
   signees,
-  hasGottenFishCount
+  hasGottenFishCount,
 ) {
   resizeChartForPDF();
   // Format dates for easier reding
@@ -711,7 +711,7 @@ export function saveStatsAsPDF(
     doc.autoTable.previous.finalY + 20,
     {
       align: "center",
-    }
+    },
   );
 
   columns = ["", ""];
@@ -747,11 +747,11 @@ export function saveStatsAsPDF(
 
   // Save the pdf
   const fileName = `${new Date(
-    competition.start_date
+    competition.start_date,
   ).getFullYear()}_${replaceAll(competition.name, " ", "")}_${replaceAll(
     capitalize_words(competition_type),
     " ",
-    ""
+    "",
   )}.pdf`;
   openPdfOnNewTab(doc, fileName);
   // Set charts to be responsive again
@@ -774,7 +774,7 @@ export function saveAllAsPDF(
   normal_points,
   normal_weights,
   team_results,
-  fish_names
+  fish_names,
 ) {
   let current_tab = tab;
   let charts_loaded = true;
@@ -839,7 +839,7 @@ export function saveAllAsPDF(
       50,
       {
         align: "center",
-      }
+      },
     );
     // Table generated in code
     doc.autoTable({
@@ -898,7 +898,7 @@ export function saveAllAsPDF(
       50,
       {
         align: "center",
-      }
+      },
     );
     // Table generated in code
     doc.autoTable({
@@ -988,13 +988,13 @@ export function saveAllAsPDF(
     biggest_fishes_results = calculateBiggestFishes(
       biggest_fishes,
       fish_names,
-      selected_fish
+      selected_fish,
     ).results;
 
     biggest_amounts_results = calculateBiggestAmounts(
       biggest_amounts,
       selected_amount,
-      fish_names
+      fish_names,
     ).results;
 
     let selected =
@@ -1032,7 +1032,7 @@ export function saveAllAsPDF(
         `${i18n.t("biggest-fishes")} (${selected})`,
         doc.internal.pageSize.getWidth() / 2,
         50,
-        { align: "center" }
+        { align: "center" },
       );
       // Table generated in code
       doc.autoTable({
@@ -1065,6 +1065,7 @@ export function saveAllAsPDF(
     // If there are any amounts --> if someone has gotten any fish
     if (biggest_amounts_results.length) {
       rows = [];
+
       biggest_amounts_results.forEach((f, i) => {
         rows[i] = [
           f.placement + ".",
@@ -1078,7 +1079,7 @@ export function saveAllAsPDF(
         `${i18n.t("biggest-amounts")} (${selected})`,
         doc.internal.pageSize.getWidth() / 2,
         start_coord,
-        { align: "center" }
+        { align: "center" },
       );
       // Table generated in code
       doc.autoTable({
@@ -1121,7 +1122,7 @@ export function saveAllAsPDF(
       biggest_fishes_results = calculateBiggestFishes(
         biggest_fishes,
         fish_names,
-        selected_fish
+        selected_fish,
       ).results;
 
       start_coord = 10;
@@ -1156,7 +1157,7 @@ export function saveAllAsPDF(
           start_coord,
           {
             align: "center",
-          }
+          },
         );
 
         doc.autoTable({
@@ -1215,28 +1216,24 @@ export function saveAllAsPDF(
         doc.setFontSize(18);
         start_coord = 50;
         rows = [];
-
-        let last_weight = -1;
-        let last_placement = -1;
+        let last_placement = 1;
+        let last_weight = 0;
         let placement = 1;
         biggest_amounts[name].sort((a, b) => b.weight - a.weight);
         biggest_amounts[name].forEach((f, i) => {
-          // no placements on some amounts??? TODO FIX. Quick fix for now
-          if (!f.placement) {
-            if (f.weight === last_weight) {
-              f.placement = last_placement;
-            } else {
-              f.placement = last_placement = placement;
-              last_weight = f.weight;
-            }
+          if (f.weight === last_weight) {
+            placement = last_placement;
+          } else {
+            placement = i + 1;
           }
           rows[i] = [
-            f.placement + ".",
+            placement + ".",
             "(" + f.boat_number + ")",
             f.captain_name,
             f.weight.toLocaleString(),
           ];
-          placement++;
+          last_placement = placement;
+          last_weight = f.weight;
         });
 
         doc.text(
@@ -1245,7 +1242,7 @@ export function saveAllAsPDF(
           start_coord,
           {
             align: "center",
-          }
+          },
         );
 
         doc.autoTable({
@@ -1289,7 +1286,7 @@ export function saveAllAsPDF(
     biggest_amounts_results = calculateBiggestAmounts(
       biggest_amounts,
       selected_amount,
-      fish_names
+      fish_names,
     ).results;
     biggest_fishes_results = [];
     fish_names.forEach((n) => {
@@ -1297,7 +1294,7 @@ export function saveAllAsPDF(
       let temp_fishes = biggest_fishes.filter((f) => f.fish_id === fish.id);
       if (temp_fishes.length) {
         biggest_fishes_results.push(
-          temp_fishes.sort((a, b) => b.weight - a.weight)[0]
+          temp_fishes.sort((a, b) => b.weight - a.weight)[0],
         );
       }
     });
@@ -1326,10 +1323,10 @@ export function saveAllAsPDF(
         ];
       });
       doc.text(
-        `${i18n.t("biggest-fishes")} (${selected_fish})`,
+        `${i18n.t("biggest-fishes")} (${i18n.t(selected_fish)})`,
         doc.internal.pageSize.getWidth() / 2,
         50,
-        { align: "center" }
+        { align: "center" },
       );
       // Table generated in code
       doc.autoTable({
@@ -1372,11 +1369,12 @@ export function saveAllAsPDF(
           f.weight.toLocaleString(),
         ];
       });
+
       doc.text(
-        `${i18n.t("biggest-amounts")} (${selected_fish})`,
+        `${i18n.t("biggest-amounts")} (${i18n.t(selected_fish)})`,
         doc.internal.pageSize.getWidth() / 2,
         start_coord,
-        { align: "center" }
+        { align: "center" },
       );
       // Table generated in code
       doc.autoTable({
@@ -1489,7 +1487,7 @@ export function saveAllAsPDF(
       doc.autoTable.previous.finalY + 20,
       {
         align: "center",
-      }
+      },
     );
     // Generate table
     columns = ["", ""];
@@ -1533,14 +1531,14 @@ export function saveAllAsPDF(
     competition.fishes,
     fish_names,
     hasGottenFishCount,
-    signees.length
+    signees.length,
   );
 
   // Save to pdf
   if (charts_loaded) {
     tab = current_tab;
     const fileName = `${year}_${replaceAll(competition.name, " ", "")}${i18n.t(
-      "results"
+      "results",
     )}.pdf`;
     openPdfOnNewTab(doc, fileName);
   } else {
@@ -1608,7 +1606,7 @@ export function initChartData(
   fishNames,
   signeesWithPoints,
   totalSignees,
-  language
+  language,
 ) {
   let temp_weights = [];
   let colors = [];
@@ -1812,7 +1810,7 @@ export function openPdfOnNewTab(doc, fileName) {
     window.open(
       URL.createObjectURL(doc.output("blob")),
       "_blank",
-      "height=auto,width=auto,scrollbars=yes,location=yes"
+      "height=auto,width=auto,scrollbars=yes,location=yes",
     );
 
     // For Firefox it is necessary to delay revoking the ObjectURL
@@ -1842,7 +1840,7 @@ export function competitionToResults(competition) {
   const results = [];
   competition.normal_weights.forEach((e) => {
     let b = competition.normal_points.find(
-      (boat) => boat.boat_number === e.boat_number
+      (boat) => boat.boat_number === e.boat_number,
     );
     let result = {
       boat_number: e.boat_number,
@@ -1990,7 +1988,7 @@ export function calculateTeamResults(competition) {
 export function calculateBiggestFishes(
   biggest_fishes,
   fish_names,
-  selected_fish
+  selected_fish,
 ) {
   let placement = 1;
   let header = [];
@@ -2059,7 +2057,7 @@ export function calculateBiggestFishes(
 export function calculateBiggestAmounts(
   biggest_amounts,
   selected_amount,
-  fish_names
+  fish_names,
 ) {
   let fishes = biggest_amounts;
   let results = [];
@@ -2096,8 +2094,9 @@ export function calculateBiggestAmounts(
       if (last_weight === result.weight) {
         result.placement = last_placement;
       } else {
-        result.placement = last_placement = placement;
+        result.placement = placement;
         last_weight = result.weight;
+        last_placement = placement;
       }
       placement++;
     });
@@ -2109,7 +2108,7 @@ export function calculateBiggestAmounts(
         return parseInt(b.weight) - parseInt(a.weight);
       });
       fish_results = fish_results.filter(
-        (result) => parseInt(result.weight) > 0
+        (result) => parseInt(result.weight) > 0,
       );
     }
     let last_weight = -1;

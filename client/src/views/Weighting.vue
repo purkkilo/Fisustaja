@@ -108,6 +108,7 @@
                           return-object
                           single-line
                           @input="searchSelected"
+                          :filter="filterBoat"
                         >
                           <template v-slot:selection="data">
                             <div>
@@ -125,43 +126,32 @@
                             </div>
                           </template>
                           <template v-slot:item="data">
-                            <template v-if="typeof data.item !== 'object'">
-                              <v-list-item-icon>
-                                <v-icon v-if="data.item.returned" color="green"
-                                  >mdi-checkbox-marked-circle</v-icon
-                                >
-                                <v-icon v-else color="yellow"
-                                  >mdi-progress-question</v-icon
-                                >
-                              </v-list-item-icon>
-                              <v-list-item-content
-                                ><span>{{
-                                  data.item
-                                }}</span></v-list-item-content
+                            <v-list-item-icon>
+                              <v-icon v-if="data.item.returned" color="green"
+                                >mdi-checkbox-marked-circle</v-icon
                               >
-                            </template>
-                            <template v-else>
-                              <v-list-item-icon>
-                                <v-icon v-if="data.item.returned" color="green"
-                                  >mdi-checkbox-marked-circle</v-icon
-                                >
-                                <v-icon v-else color="yellow darken-2"
-                                  >mdi-account-question</v-icon
-                                >
-                              </v-list-item-icon>
-                              <v-list-item-content>
-                                <v-list-item-title
-                                  ><span>{{
-                                    data.item.boat_number
-                                  }}</span></v-list-item-title
-                                >
-                                <v-list-item-subtitle
-                                  ><span>{{
-                                    data.item.captain_name
-                                  }}</span></v-list-item-subtitle
-                                >
-                              </v-list-item-content>
-                            </template>
+                              <v-icon v-else color="yellow darken-2"
+                                >mdi-account-question</v-icon
+                              >
+                            </v-list-item-icon>
+                            <v-list-item-content>
+                              <v-list-item-title
+                                ><span>{{
+                                  data.item.boat_number
+                                }}</span></v-list-item-title
+                              >
+                              <v-list-item-subtitle
+                                ><span
+                                  >{{ data.item.captain_name }},
+                                  {{ data.item.temp_captain_name }}</span
+                                ></v-list-item-subtitle
+                              >
+                            </v-list-item-content>
+                            <v-list-item-action>
+                              <v-chip v-if="data.item.returned">{{
+                                data.item.placement
+                              }}</v-chip>
+                            </v-list-item-action>
                           </template>
                         </v-autocomplete>
                       </v-col>
@@ -399,7 +389,7 @@
                                               parseInt(
                                                 input.addition
                                                   ? input.addition
-                                                  : 0
+                                                  : 0,
                                               )
                                             "
                                             :label="$t('sum')"
@@ -428,7 +418,7 @@
                                             parseInt(
                                               input.addition
                                                 ? input.addition
-                                                : 0
+                                                : 0,
                                             );
                                           input.dialog = false;
                                           input.addition = 0;
@@ -878,6 +868,7 @@ export default {
       inputs: [],
       snackbar: false,
       text: "",
+      searchInput: null,
     };
   },
   computed: {
@@ -892,7 +883,7 @@ export default {
     },
     sortedCompetition() {
       let signees = [...this.signees].sort(
-        (a, b) => b.total_points - a.total_points
+        (a, b) => b.total_points - a.total_points,
       );
       let placement = 1;
       let last_points = -1;
@@ -924,6 +915,17 @@ export default {
     }
   },
   methods: {
+    filterBoat(item, queryText) {
+      return (
+        item.captain_name
+          .toLocaleLowerCase()
+          .indexOf(queryText.toLocaleLowerCase()) > -1 ||
+        item.temp_captain_name
+          .toLocaleLowerCase()
+          .indexOf(queryText.toLocaleLowerCase()) > -1 ||
+        String(item.boat_number).includes(queryText)
+      );
+    },
     getBoatTotalPoints() {
       let totalPoints = 0;
       this.inputs.forEach((i) => {
@@ -947,7 +949,7 @@ export default {
       let index = this.bisect(points, this.sortedCompetition);
       let placement = index + 1;
       let samePoints = this.sortedCompetition.find(
-        (b) => b.total_points === points
+        (b) => b.total_points === points,
       );
       if (samePoints) placement = samePoints.placement;
 
@@ -1044,7 +1046,7 @@ export default {
         if (this.competition_boat.fishes.length) {
           // find the fish weights based on the fish_name, from signees weights array
           let fish = this.competition_boat.fishes.find(
-            (fish) => fish.id === input.id
+            (fish) => fish.id === input.id,
           );
           // Assign the value to input
           if (fish) {
@@ -1064,7 +1066,7 @@ export default {
         this.searched = true;
         this.notification = null;
         this.competition_boat = this.signees.find(
-          (s) => s.boat_number === this.boat_number_input.boat_number
+          (s) => s.boat_number === this.boat_number_input.boat_number,
         );
         if (this.competition_boat) {
           //Wait for render to set weights to inputs
@@ -1084,7 +1086,7 @@ export default {
       if (this.selected_fish && this.boat_number_input && this.biggest_fish) {
         try {
           let comp_fish = this.competition.fishes.find(
-            (cf) => cf.name === this.selected_fish
+            (cf) => cf.name === this.selected_fish,
           );
           this.loading_fish = true;
           // TODO Check if there is already a biggest fish,
@@ -1161,7 +1163,7 @@ export default {
       this.competition_boat.total_points = total_points;
       this.competition_boat.fishes = fish_weights;
       const index = this.signees.findIndex(
-        (item) => item._id === this.competition_boat._id
+        (item) => item._id === this.competition_boat._id,
       );
       this.signees.splice(index, 1, this.competition_boat);
 
@@ -1171,7 +1173,7 @@ export default {
 
         await ResultService.updateResult(
           this.competition_boat._id,
-          this.competition_boat
+          this.competition_boat,
         ).catch((e) => console.log(e));
 
         // Update competition state
@@ -1189,7 +1191,7 @@ export default {
           //await CompetitionService.updateCompetition(comp._id, comp);
           await CompetitionService.updateValues(
             this.competition._id,
-            newvalues
+            newvalues,
           );
         }
 
@@ -1220,7 +1222,7 @@ export default {
         if (s.fishes.length) {
           s.fishes.forEach((f) => {
             let competition_fish = competition.fishes.find(
-              (cf) => cf.id === f.id
+              (cf) => cf.id === f.id,
             );
             s.total_points += f.weights * competition_fish.multiplier;
           });
