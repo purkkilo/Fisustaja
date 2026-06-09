@@ -3,3 +3,4 @@ server/config/config.json
 .vscode/settings.json
 server/public
 server/.env
+.vercel
