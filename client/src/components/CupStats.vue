@@ -367,16 +367,16 @@ export default {
       let cup_fishes = [];
       this.competitions.forEach((competition) => {
         let comp_signees = this.all_signees.filter(
-          (s) => s.competition_id === competition._id
+          (s) => s.competition_id === competition._id,
         );
         comp_signees.forEach((s) => {
           s.fishes.forEach((fish) => {
             let fish_name = competition.fishes.find(
-              (f) => f.id === fish.id
+              (f) => f.id === fish.id,
             ).name;
             if (fish.weights > 0) {
               let found_fish = all_fishes.findIndex(
-                (f) => f.name.toUpperCase() === fish_name.toUpperCase()
+                (f) => f.name.toUpperCase() === fish_name.toUpperCase(),
               );
               if (found_fish > -1) {
                 all_fishes[found_fish].weights += fish.weights;
@@ -390,19 +390,27 @@ export default {
             }
 
             let comp_fish = this.cup_fishes_competition.find(
-              (f) => f.comp_id === competition._id && f.id === fish.id
+              (f) => f.comp_id === competition._id && f.id === fish.id,
             );
+            const fish_weight = Number.isInteger(fish.weights)
+              ? fish.weights
+              : 0;
             if (comp_fish) {
-              comp_fish.weights += Number.isInteger(fish.weights)
-                ? fish.weights
-                : 0;
+              comp_fish.weights += fish_weight;
+              console.log(
+                "comp_fish",
+                comp_fish.name,
+                comp_fish.id,
+                comp_fish.weights,
+              );
+              console.log("fish", fish_name, fish.id, fish.weights);
             } else {
               this.cup_fishes_competition.push({
                 id: fish.id,
                 name: fish_name,
                 competition_name: competition.name,
                 comp_id: competition._id,
-                weights: fish.weights,
+                weights: fish_weight,
               });
             }
           });
@@ -411,7 +419,7 @@ export default {
         competition_signees_count.push({
           competition_name: competition.name,
           signees: this.all_signees.filter(
-            (c) => c.competition_id === competition._id
+            (c) => c.competition_id === competition._id,
           ).length,
         });
 
@@ -428,7 +436,7 @@ export default {
         if (fishes.length) {
           if (fishes[0].weight > 0) {
             let competition = this.competitions.find(
-              (c) => c._id === fishes[0].competition_id
+              (c) => c._id === fishes[0].competition_id,
             );
             all_biggest_fishes.push({
               id: fishes[0].id,
@@ -473,7 +481,7 @@ export default {
       };
 
       this.cup_fishes_competition = this.cup_fishes_competition.sort(
-        shared.sortBy("weights", false)
+        shared.sortBy("weights", false),
       );
 
       this.cup_fishes_competition.forEach((fish) => {
@@ -495,11 +503,11 @@ export default {
 
       // Data for Suurimmat kalat tab
       this.cup_biggest_fishes = all_biggest_fishes.sort(
-        shared.sortBy("weight", false)
+        shared.sortBy("weight", false),
       );
       this.cup_biggest_fishes.forEach((item) => {
         all_biggest_fishes_labels.push(
-          `${item.fish_name} (${item.boat_number}), ${item.competition_name}`
+          `${item.fish_name} (${item.boat_number}), ${item.competition_name}`,
         );
         all_biggest_fishes_data.push(item.weight);
       });
@@ -509,7 +517,7 @@ export default {
           {
             label: "Weights",
             backgroundColor: shared.getRandomColors(
-              all_biggest_fishes_data.length
+              all_biggest_fishes_data.length,
             ), // Green and red
             data: all_biggest_fishes_data, // Data
           },
@@ -518,12 +526,12 @@ export default {
 
       // Data for Suurimmat kalat tab
       this.cup_biggest_amounts = all_biggest_amounts.sort(
-        shared.sortBy("weight", false)
+        shared.sortBy("weight", false),
       );
 
       this.cup_biggest_amounts.forEach((item) => {
         all_biggest_amounts_labels.push(
-          `${item.fish_name} (${item.boat_number}), ${item.competition_name}`
+          `${item.fish_name} (${item.boat_number}), ${item.competition_name}`,
         );
         all_biggest_amounts_data.push(item.weight);
       });
@@ -533,7 +541,7 @@ export default {
           {
             label: "Weights",
             backgroundColor: shared.getRandomColors(
-              all_biggest_amounts_data.length
+              all_biggest_amounts_data.length,
             ), // Green and red
             data: all_biggest_amounts_data, // Data
           },
@@ -542,7 +550,7 @@ export default {
 
       // Data for Kilpailijat tab
       this.cup_signees = competition_signees_count.sort(
-        shared.sortBy("signees", false)
+        shared.sortBy("signees", false),
       );
       this.cup_signees.forEach((item) => {
         all_signees_labels.push(item.competition_name);
