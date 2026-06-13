@@ -481,7 +481,7 @@ export default {
                 Math,
                 this.signees.map(function (o) {
                   return o.boat_number;
-                })
+                }),
               ) + 1;
           } else {
             // Otherwise init with 1
@@ -533,7 +533,7 @@ export default {
           temp_team = temp_team.slice(0, 40);
           this.team = temp_team; // Set the name back, shortened
           this.showError(
-            "Valitse tiimin nimeksi alle 40 merkkiä pitkä nimi (nimi lyhennetty 40 merkkiin)!"
+            "Valitse tiimin nimeksi alle 40 merkkiä pitkä nimi (nimi lyhennetty 40 merkkiin)!",
           );
         } else {
           //If the array doensn't have the team name already, add it
@@ -555,7 +555,7 @@ export default {
             Math,
             this.signees.map(function (o) {
               return o.boat_number;
-            })
+            }),
           ) + 1;
       }
     },
@@ -570,7 +570,7 @@ export default {
           // If signee found
           if (found_signee) {
             this.found = true;
-            this.notification = `(${found_signee.boat_number}) : ${found_signee.captain_name}, ${found_signee.temp_captain_name}`;
+            this.notification = `notification.found-from-cup`;
             this.selected_id = found_signee._id;
             this.boat_number = found_signee.boat_number;
             this.starting_place = found_signee.starting_place;
@@ -593,11 +593,11 @@ export default {
         // Searched from Signees tab (this.tab === 'signees'), from table
         if (this.selected_id) {
           var found_signee = this.signees.find(
-            (s) => this.selected_id === s._id
+            (s) => this.selected_id === s._id,
           );
 
           if (found_signee) {
-            this.notification = `(${found_signee.boat_number}) : ${found_signee.captain_name}, ${found_signee.temp_captain_name}`;
+            this.notification = `notification.found-from-cup`;
             this.boat_number = found_signee.boat_number;
             this.starting_place = found_signee.starting_place;
             this.captain_name = found_signee.captain_name;
@@ -612,15 +612,18 @@ export default {
             this.boat_number = temp_boat_number;
             this.notification = "notification.no-signee-found";
             this.selected_id = null;
+            this.notification_info = "";
           }
         }
       }
     },
     async searchFromCup() {
       this.selected_id = null;
-      if (this.boat_number) {
+      // text input so parse to int, never vuetify would have number inputs
+      let boat_number = parseInt(this.boat_number);
+      if (!isNaN(boat_number) && this.cup && this.cup.signees.length) {
         let found_signee = this.cup.signees.find(
-          (signee) => this.boat_number === signee.boat_number
+          (signee) => boat_number === signee.boat_number,
         );
         //If the signee is not found on cup, add it
         if (found_signee) {
@@ -632,7 +635,7 @@ export default {
           this.starting_place = found_signee.starting_place;
 
           let f = this.signees.find(
-            (s) => s.boat_number === found_signee.boat_number
+            (s) => s.boat_number === found_signee.boat_number,
           );
           if (f) {
             this.found = true;
@@ -675,7 +678,7 @@ export default {
 
       if (comp.isCupCompetition) {
         let index = this.cup.signees.findIndex(
-          (signee) => new_signee.boat_number === signee.boat_number
+          (signee) => new_signee.boat_number === signee.boat_number,
         );
         //If the signee is not found on cup, add it
         if (index === -1) {
@@ -735,7 +738,7 @@ export default {
             Math,
             this.signees.map(function (o) {
               return o.boat_number;
-            })
+            }),
           ) + 1;
       } catch (err) {
         console.error(err.message);
@@ -759,7 +762,7 @@ export default {
               this.$confirm(
                 `Oletko varma että haluat poistaa kilpailijan: (${found_signee.boat_number}), ${found_signee.captain_name}?`,
                 "Poista kilpailija",
-                "question"
+                "question",
               )
                 .then((r) => {
                   if (r) {
@@ -780,7 +783,7 @@ export default {
               this.$confirm(
                 `Oletko varma että haluat poistaa kilpailijan: (${temp_boat.boat_number}), ${temp_boat.captain_name}?`,
                 "Poista kilpailija",
-                "question"
+                "question",
               )
                 .then((r) => {
                   if (r) {
@@ -813,7 +816,7 @@ export default {
                 Math,
                 this.signees.map(function (o) {
                   return o.boat_number;
-                })
+                }),
               ) + 1;
             this.text = `boat-removed`;
             this.snackbar = true;
@@ -861,7 +864,7 @@ export default {
         temp_team = temp_team.slice(0, 40);
         this.team = temp_team; // Set the name back, shortened
         this.showError(
-          "Valitse tiimin nimeksi alle 40 merkkiä pitkä nimi (nimi lyhennetty 40 merkkiin, valittavissa pudotusvalikosta)!"
+          "Valitse tiimin nimeksi alle 40 merkkiä pitkä nimi (nimi lyhennetty 40 merkkiin, valittavissa pudotusvalikosta)!",
         );
       }
 
@@ -877,7 +880,7 @@ export default {
         if (this.selected_id) {
           // If id on signees
           let found_signee = this.signees.find(
-            (s) => s._id === this.selected_id
+            (s) => s._id === this.selected_id,
           );
           if (found_signee) {
             // If there already exist a boat with same number, but it isn't the same id
@@ -906,7 +909,7 @@ export default {
                 Math,
                 this.signees.map(function (o) {
                   return o.boat_number;
-                })
+                }),
               ) + 1;
 
             this.selected_id = null;
@@ -941,7 +944,7 @@ export default {
               Math,
               this.signees.map(function (o) {
                 return o.boat_number;
-              })
+              }),
             ) + 1;
           this.selected_id = null;
         }

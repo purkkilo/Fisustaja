@@ -255,7 +255,7 @@
     "copying-failed": "Copying failed for some reason",
     "deleting": "Deleting from the database!",
     "empty-boat-number": "Input boat number before searching!",
-    "found-from-cup": "Found from cup:",
+    "found-from-cup": "Found:",
     "info-up-to-date": "Information up-to-date",
     "login-again": "Session expired! Log in again",
     "logout-success": "Logout succesfull!",
