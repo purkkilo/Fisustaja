@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useMainStore } from "@/store";
+import { bootstrapAuth } from "@/composables/useAuthBootstrap";
 import Home from "../views/Home.vue";
 
 const routes = [
@@ -120,7 +121,6 @@ const routes = [
   {
     name: "404",
     path: "/404",
-    // route level code-splitting
     component: () => import("../views/NotFound.vue"),
     meta: { title: "Not Found" },
   },
@@ -135,28 +135,22 @@ const router = createRouter({
   routes,
 });
 
-// Check auth before loading page
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
+  await bootstrapAuth();
+  const store = useMainStore();
+
   if (!to.matched.some((record) => record.meta.requiresAuth)) {
     return true;
   }
-  if (
-    localStorage.getItem("jwt") == null ||
-    localStorage.getItem("user") == null
-  ) {
-    return { path: "/login", query: { redirect: to.fullPath } };
-  }
 
-  const store = useMainStore();
-  // Hydrate from localStorage until App.vue finishes refreshToken
   if (!store.logged_in) {
-    store.logged_in = true;
-    store.is_admin = !!JSON.parse(localStorage.getItem("auth") || "false");
+    return { path: "/login", query: { redirect: to.fullPath } };
   }
 
   if (to.matched.some((record) => record.meta.is_admin) && !store.isAdmin) {
     return { name: "404" };
   }
+
   return true;
 });
 

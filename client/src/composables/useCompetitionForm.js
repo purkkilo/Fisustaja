@@ -2,6 +2,7 @@ import { computed, nextTick, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import CompetitionService from "@/services/CompetitionService";
 import CupService from "@/services/CupService";
+import { useMainStore } from "@/store";
 import { getRandomColors } from "@/utils/colors";
 import {
   combineDateTime,
@@ -19,6 +20,7 @@ const copy = (value) => JSON.parse(JSON.stringify(value));
  */
 export function useCompetitionForm() {
   const { t } = useI18n();
+  const store = useMainStore();
 
   const tab = ref("basic-info");
   const errors = ref([]);
@@ -59,10 +61,9 @@ export function useCompetitionForm() {
   }
 
   async function loadCups(preferredCupId) {
-    const user = JSON.parse(localStorage.getItem("user"));
     loading.value = true;
     try {
-      const list = await CupService.getCups({ user_id: user._id });
+      const list = await CupService.getCups({ user_id: store.user?._id });
       for (const c of list) c.select = `${c.name} (${c.year})`;
       cups.value = list.sort((a, b) => String(a.name).localeCompare(b.name));
       cup.value =
@@ -176,12 +177,11 @@ export function useCompetitionForm() {
   // ---- submit ----
   async function submit() {
     if (!canSubmit.value) return false;
-    const user = JSON.parse(localStorage.getItem("user"));
     saving.value = true;
     try {
       await CompetitionService.insertCompetitions([
         {
-          user_id: user._id,
+          user_id: store.user?._id,
           ...basicInfo.value,
           fishes: completedFishSpecs.value,
           state: "signing",

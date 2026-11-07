@@ -1,74 +1,74 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const passport = require("passport");
 const User = require("../../models/User");
-
-const key = process.env.SECRET;
+const { requireAuth, requireAdmin } = require("../../middleware/auth");
+const {
+  publicUser,
+  setAuthCookies,
+  clearAuthCookies,
+  verifyRefreshToken,
+  REFRESH_COOKIE,
+} = require("../../utils/authCookies");
 
 /**
  * @route POST api/users/register
- * @desc Register the User
- * @access Public
+ * @desc Register a user (admin only)
  */
-router.post("/register", (req, res) => {
+router.post("/register", requireAdmin, (req, res) => {
   let { name, email, password, is_admin } = req.body;
 
   User.findOne({ email: email }).then((user) => {
     if (user) {
-      console.log(user);
-      console.log("Email is already in use!");
       res.status(409).json({
         msg: "Email is already in use!",
       });
       return;
-    } else {
-      // Check name and email for duplicates
-      User.findOne({ name: name }).then((user) => {
-        if (user) {
-          console.log("Username is already taken!");
-          res.status(409).json({
-            msg: "Username is already taken!",
-          });
-          return;
-        } else {
-          // User is valid
-          let newUser = new User({
-            name,
-            email,
-            password,
-            is_admin,
-          });
+    }
 
-          // Hash the password
-          bcrypt.genSalt(10, (err, salt) => {
-            bcrypt.hash(newUser.password, salt, (err, hash) => {
-              if (err) {
-                console.log(err);
-                res.sendStatus(500);
-                return;
-              }
-              newUser.password = hash;
-              newUser.save().then((user) => {
-                res.status(201).json({
-                  success: true,
-                  msg: "User is now registered.",
-                });
-                return;
-              });
+    User.findOne({ name: name }).then((existing) => {
+      if (existing) {
+        res.status(409).json({
+          msg: "Username is already taken!",
+        });
+        return;
+      }
+
+      let newUser = new User({
+        name,
+        email,
+        password,
+        is_admin,
+      });
+
+      bcrypt.genSalt(10, (err, salt) => {
+        if (err) {
+          console.log(err);
+          res.sendStatus(500);
+          return;
+        }
+        bcrypt.hash(newUser.password, salt, (err, hash) => {
+          if (err) {
+            console.log(err);
+            res.sendStatus(500);
+            return;
+          }
+          newUser.password = hash;
+          newUser.save().then(() => {
+            res.status(201).json({
+              success: true,
+              msg: "User is now registered.",
             });
           });
-        }
+        });
       });
-    }
+    });
   });
 });
 
 /**
  * @route POST api/users/login
- * @desc Login the User
- * @access Public
+ * @desc Login; sets HttpOnly access + refresh cookies
  */
 router.post("/login", (req, res) => {
   User.findOne({ name: req.body.name }).then((user) => {
@@ -78,136 +78,102 @@ router.post("/login", (req, res) => {
         success: false,
       });
       return;
-    } else {
-      // If there is user, compare the password
-      bcrypt.compare(req.body.password, user.password).then((isMatch) => {
-        if (isMatch) {
-          // Password correct! send back JSON Token back
-          const payload = {
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-            is_admin: user.is_admin,
-          };
-          // token expires in a week
-          jwt.sign(payload, key, { expiresIn: 86400 }, (err, token) => {
-            if (err) {
-              res.status(409).json({
-                msg: "Error with creating token",
-                error: err,
-                success: false,
-              });
-            } else {
-              res.status(200).json({
-                success: true,
-                token: `Bearer ${token}`,
-                user: user,
-                is_admin: user.is_admin,
-                msg: "You are now logged in!",
-              });
-            }
-          });
-        } else {
-          res.status(404).json({
-            msg: "Incorrect password",
-            success: false,
-          });
-          return;
-        }
-      });
     }
+
+    bcrypt.compare(req.body.password, user.password).then((isMatch) => {
+      if (!isMatch) {
+        res.status(401).json({
+          msg: "Incorrect password",
+          success: false,
+        });
+        return;
+      }
+
+      setAuthCookies(res, user);
+      res.status(200).json({
+        success: true,
+        user: publicUser(user),
+        msg: "You are now logged in!",
+      });
+    });
   });
 });
 
 /**
- * @route POST api/users/profile
- * @desc Return the User's data
- * @access Private
+ * @route POST api/users/logout
+ * @desc Clear auth cookies
  */
-router.get(
-  "/profile",
-  passport.authenticate("jwt", { session: false, failWithError: true }),
-  (req, res) => {
-    return res.json({
-      user: req.user,
-    });
-  },
-  (err, req, res, next) => {
-    res.status(401).json({
-      error: "Unauthorized access",
-    });
-  }
-);
+router.post("/logout", (req, res) => {
+  clearAuthCookies(res);
+  res.status(200).json({ success: true, msg: "Logged out" });
+});
 
 /**
- * @route POST api/users/profile
- * @desc Return the User's data
- * @access Private
+ * @route GET api/users/me
+ * @desc Current user from access cookie
  */
-router.post(
-  "/refresh-token",
-  passport.authenticate("jwt", { session: false, failWithError: true }),
-  (req, res) => {
-    // Refresh access token
-    const user = req.body.user;
-    const payload = {
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      is_admin: req.body.is_admin,
-    };
-    jwt.sign(payload, key, { expiresIn: 86400 }, (err, token) => {
-      if (err) {
-        res.status(409).json({
-          msg: "Error with creating token",
-          error: err,
-          success: false,
-        });
-      } else {
-        res.status(200).json({
-          success: true,
-          token: `Bearer ${token}`,
-          user: user,
-          is_admin: req.body.is_admin,
-          msg: "Token refreshed!",
-        });
-      }
-    });
-  },
-  (err, req, res, next) => {
-    res.status(401).json({
-      error: "Unauthorized access",
-    });
-  }
-);
+router.get("/me", requireAuth, (req, res) => {
+  res.json({
+    success: true,
+    user: publicUser(req.user),
+  });
+});
 
 /**
- * @route POST api/users/
- * @desc Return users
- * @access Private
+ * @route POST api/users/refresh
+ * @desc Rotate access cookie using refresh cookie; is_admin always from DB
  */
-router.get(
-  "/",
-  passport.authenticate("jwt", { session: false, failWithError: true }),
-  (req, res, next) => {
-    if (req.user.is_admin) {
-      User.find({}).then((users) => {
-        return res.json({
-          users: users,
-        });
-      });
-    } else {
-      res.status(401).json({
+router.post("/refresh", async (req, res) => {
+  const token = req.cookies?.[REFRESH_COOKIE];
+  if (!token) {
+    clearAuthCookies(res);
+    return res.status(401).json({
+      error: "Unauthorized access",
+      success: false,
+    });
+  }
+
+  try {
+    const payload = verifyRefreshToken(token);
+    const user = await User.findById(payload._id);
+    if (!user) {
+      clearAuthCookies(res);
+      return res.status(401).json({
         error: "Unauthorized access",
         success: false,
       });
     }
-  },
-  (err, req, res, next) => {
-    res.status(401).json({
+
+    setAuthCookies(res, user);
+    return res.status(200).json({
+      success: true,
+      user: publicUser(user),
+      msg: "Token refreshed!",
+    });
+  } catch (err) {
+    clearAuthCookies(res);
+    return res.status(401).json({
       error: "Unauthorized access",
+      success: false,
     });
   }
-);
+});
+
+/**
+ * @route GET api/users/
+ * @desc List users (admin only)
+ */
+router.get("/", requireAdmin, (req, res) => {
+  User.find({})
+    .then((users) => {
+      res.json({
+        users: users.map(publicUser),
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.sendStatus(500);
+    });
+});
 
 module.exports = router;

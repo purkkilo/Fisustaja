@@ -42,8 +42,8 @@
             </v-avatar></template
           >
 
-          <v-list-item-title>{{ isUser.name }}</v-list-item-title>
-          <v-list-item-subtitle>{{ isUser.email }}</v-list-item-subtitle>
+          <v-list-item-title>{{ store.user?.name }}</v-list-item-title>
+          <v-list-item-subtitle>{{ store.user?.email }}</v-list-item-subtitle>
         </v-list-item>
 
         <v-divider></v-divider>
@@ -120,10 +120,9 @@ const { locale } = useI18n();
 const router = useRouter();
 const route = useRoute();
 
-const user = ref(null);
 const items = ref([]);
 const preferences = ref(JSON.parse(localStorage.getItem("preferences")));
-const isDark = ref(true);
+const isDark = ref(preferences.value?.isDark ?? false);
 const drawer = ref(null);
 const uploading = ref(false);
 const snackbar = ref(false);
@@ -192,29 +191,7 @@ const isCupPage = computed(() => {
   };
 });
 
-const isUser = computed(() => {
-  if (localStorage.getItem("user") != null) {
-    return JSON.parse(localStorage.getItem("user"));
-  } else {
-    return { name: "", email: "" };
-  }
-});
-
-const isUserLoggedIn = computed(() => {
-  return store.isLoggedIn;
-});
-
-const isAdmin = computed(() => {
-  return store.isAdmin;
-});
-
-const isCompetitionSet = computed(() => {
-  if (store.competition) {
-    return true;
-  } else {
-    return false;
-  }
-});
+const isCompetitionSet = computed(() => !!store.competition);
 
 const isCupCompetition = computed(
   () => !!store.competition?.isCupCompetition,
@@ -269,17 +246,11 @@ function changePage(path) {
 }
 
 async function logout() {
-  await UserService.logoutUser().then(() => {
-    // Do something with the module.
-    store.logged_in = false;
-    store.is_admin = false;
-    if (route.path !== "/") router.push({ path: "/" });
-    store.refreshCompetition(null);
-    user.value = null;
-    text.value = "notification.logout-success";
-    snackbar.value = true;
-    localStorage.removeItem("user");
-  });
+  await UserService.logoutUser();
+  store.clearSession();
+  if (route.path !== "/") router.push({ path: "/" });
+  text.value = "notification.logout-success";
+  snackbar.value = true;
 }
 
 function setLocale() {
@@ -290,14 +261,17 @@ function setLocale() {
   localStorage.setItem("preferences", JSON.stringify(preferences));
 }
 
-// Runs when the component is created
-{
-  const user = JSON.parse(localStorage.getItem("user"));
-  if (user) {
-    const isAdmin = JSON.parse(localStorage.getItem("auth"));
-    store.isDark = preferences.value.isDark;
-    isDark.value = preferences.value.isDark;
-    if (isAdmin) {
+store.isDark = preferences.value?.isDark ?? false;
+isDark.value = preferences.value?.isDark ?? false;
+
+watch(
+  () => [store.logged_in, store.isAdmin],
+  () => {
+    if (!store.logged_in) {
+      items.value = [];
+      return;
+    }
+    if (store.isAdmin) {
       items.value = [
         {
           title: "nav.dashboard",
@@ -345,10 +319,11 @@ function setLocale() {
         },
       ];
     }
-  }
+  },
+  { immediate: true },
+);
 
-  setSubNavigation(route);
-}
+setSubNavigation(route);
 </script>
 
 <style scoped></style>

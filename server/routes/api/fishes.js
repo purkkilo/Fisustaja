@@ -2,6 +2,7 @@ const express = require("express");
 const mongodb = require("mongodb");
 const router = express.Router();
 const Fish = require("../../models/Fish");
+const { requireAuth } = require("../../middleware/auth");
 
 // Get fishes with given query
 router.get("/", async (req, res) => {
@@ -34,7 +35,7 @@ router.get("/", async (req, res) => {
 });
 
 // Add fishes
-router.post("/", async (req, res) => {
+router.post("/", requireAuth, async (req, res) => {
   try {
     if (!req.body.length) {
       res.status(400).send("No fishes in request");
@@ -62,7 +63,7 @@ router.post("/", async (req, res) => {
 });
 
 // Update one fish
-router.put("/:id/update", async (req, res) => {
+router.put("/:id/update", requireAuth, async (req, res) => {
   try {
     await Fish.updateOne(
       { _id: mongodb.ObjectId.createFromHexString(req.params.id) },
@@ -77,7 +78,7 @@ router.put("/:id/update", async (req, res) => {
 });
 
 // Replace one fish
-router.put("/:id/replace", async (req, res) => {
+router.put("/:id/replace", requireAuth, async (req, res) => {
   try {
     await Fish.replaceOne(
       { _id: mongodb.ObjectId.createFromHexString(req.params.id) },
@@ -92,7 +93,7 @@ router.put("/:id/replace", async (req, res) => {
 });
 
 // Delete fishes
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireAuth, async (req, res) => {
   try {
     await Fish.deleteOne({
       _id: mongodb.ObjectId.createFromHexString(req.params.id),

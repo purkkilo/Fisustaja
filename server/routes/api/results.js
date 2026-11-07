@@ -2,6 +2,7 @@ const express = require("express");
 const mongodb = require("mongodb");
 const router = express.Router();
 const Result = require("../../models/Result");
+const { requireAuth } = require("../../middleware/auth");
 
 // Get results with given query
 router.get("/", async (req, res) => {
@@ -34,7 +35,7 @@ router.get("/", async (req, res) => {
 });
 
 // Add results
-router.post("/", async (req, res) => {
+router.post("/", requireAuth, async (req, res) => {
   try {
     let newResult = {};
     if (!req.body.length) {
@@ -64,7 +65,7 @@ router.post("/", async (req, res) => {
 });
 
 // Update one result
-router.put("/:id/update", async (req, res) => {
+router.put("/:id/update", requireAuth, async (req, res) => {
   try {
     await Result.updateOne(
       { _id: mongodb.ObjectId.createFromHexString(req.params.id) },
@@ -79,7 +80,7 @@ router.put("/:id/update", async (req, res) => {
 });
 
 // Update many results
-router.put("/update-many", async (req, res) => {
+router.put("/update-many", requireAuth, async (req, res) => {
   try {
     await Result.updateMany(
       {
@@ -98,7 +99,7 @@ router.put("/update-many", async (req, res) => {
 });
 
 // Replace one result
-router.put("/:id/replace", async (req, res) => {
+router.put("/:id/replace", requireAuth, async (req, res) => {
   try {
     await Result.replaceOne(
       { _id: mongodb.ObjectId.createFromHexString(req.params.id) },
@@ -113,7 +114,7 @@ router.put("/:id/replace", async (req, res) => {
 });
 
 // Replace many results
-router.put("/replace-many", async (req, res) => {
+router.put("/replace-many", requireAuth, async (req, res) => {
   try {
     const bulkData = req.body.map((item) => ({
       replaceOne: {
@@ -136,7 +137,7 @@ router.put("/replace-many", async (req, res) => {
 });
 
 // Delete results
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireAuth, async (req, res) => {
   try {
     await Result.deleteOne({
       _id: mongodb.ObjectId.createFromHexString(req.params.id),

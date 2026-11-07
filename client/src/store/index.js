@@ -33,8 +33,10 @@ export const useMainStore = defineStore("main", {
     competitions: null,
     cup: null,
     results: null,
+    user: null,
     logged_in: false,
     is_admin: false,
+    authChecked: false,
     isDark: false,
     lang: "fi",
   }),
@@ -62,6 +64,26 @@ export const useMainStore = defineStore("main", {
   },
 
   actions: {
+    setSession(user) {
+      this.user = user
+        ? {
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            is_admin: !!user.is_admin,
+            createdAt: user.createdAt,
+          }
+        : null;
+      this.logged_in = !!user;
+      this.is_admin = !!user?.is_admin;
+    },
+    clearSession() {
+      this.user = null;
+      this.logged_in = false;
+      this.is_admin = false;
+      this.refreshCompetition(null);
+      this.refreshCup(null);
+    },
     refreshSignees(signees) {
       if (!this.competition) return;
       this.competition.signees = [...signees];

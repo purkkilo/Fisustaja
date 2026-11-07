@@ -42,11 +42,12 @@ export function useAdmin() {
     } catch (err) {
       console.error(err);
     }
+    store.clearSession();
     router.push({ path: "/login" });
   }
 
   async function load() {
-    userId.value = JSON.parse(localStorage.getItem("user") || "null")?._id;
+    userId.value = store.user?._id;
     loadingUsers.value = loadingCups.value = loadingCompetitions.value = true;
     try {
       // Users first: an expired token logs the user out

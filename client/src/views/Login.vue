@@ -107,8 +107,7 @@ async function handleSubmit(e) {
     try {
       let res = await UserService.loginUser(user);
       if (res.success) {
-        store.is_admin = !!JSON.parse(res.is_admin);
-        store.logged_in = true;
+        store.setSession(res.user);
         const redirect = route.query.redirect;
         if (
           typeof redirect === "string" &&

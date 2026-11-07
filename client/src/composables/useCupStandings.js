@@ -47,7 +47,10 @@ export function useCupStandings({ publicOnly = false } = {}) {
     try {
       const found =
         typeof cupOrId === "string"
-          ? await CupService.getCups({ _id: cupOrId })
+          ? await CupService.getCups({
+              _id: cupOrId,
+              ...(publicOnly ? { isPublic: true } : {}),
+            })
           : cupOrId;
       if (!found) return;
       cup.value = found;

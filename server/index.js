@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const history = require("connect-history-api-fallback");
 const mongoose = require("mongoose");
 const path = require("path");
@@ -9,7 +10,13 @@ const app = express();
 // Middleware
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-app.use(cors());
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  }),
+);
 
 // Configure passport
 app.use(passport.initialize());

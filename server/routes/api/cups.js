@@ -2,35 +2,39 @@ const express = require("express");
 const mongodb = require("mongodb");
 const router = express.Router();
 const Cup = require("../../models/Cup");
+const {
+  requireAuth,
+  requireAuthUnlessPublic,
+} = require("../../middleware/auth");
 
-// Get all cups
-router.get("/", async (req, res) => {
+router.get("/", requireAuthUnlessPublic, async (req, res) => {
   let query = req.query;
   try {
     if (req.query.isPublic) {
-      // Transform string into boolean
-      let boolean = req.query.isPublic === "true" ? true : false;
+      let boolean = req.query.isPublic === "true";
       query = { ...query, isPublic: boolean };
     }
-    // Fetch by _id
     if (req.query._id) {
       query = { _id: mongodb.ObjectId.createFromHexString(req.query._id) };
+      if (req.query.isPublic === "true") {
+        query.isPublic = true;
+      }
       await Cup.findOne(query)
         .then((cups) => {
           res.status(200).send(cups);
         })
         .catch((err) => {
           console.log(err);
+          res.status(500).send(err);
         });
-    }
-    // Otherwise return an array of all the competitions that match query
-    else {
+    } else {
       await Cup.find(query)
         .then((cups) => {
           res.status(200).send(cups);
         })
         .catch((err) => {
           console.log(err);
+          res.status(500).send(err);
         });
     }
   } catch (error) {
@@ -38,8 +42,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Add Cup
-router.post("/", async (req, res) => {
+router.post("/", requireAuth, async (req, res) => {
   try {
     if (!req.body.length) {
       res.status(400).send("No results in request");
@@ -65,12 +68,11 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Update one competition
-router.put("/:id/update", async (req, res) => {
+router.put("/:id/update", requireAuth, async (req, res) => {
   try {
     await Cup.updateOne(
       { _id: mongodb.ObjectId.createFromHexString(req.params.id) },
-      req.body
+      req.body,
     ).catch((err) => {
       console.log(err);
     });
@@ -80,13 +82,12 @@ router.put("/:id/update", async (req, res) => {
   }
 });
 
-// Replace one competition
-router.put("/:id/replace", async (req, res) => {
+router.put("/:id/replace", requireAuth, async (req, res) => {
   try {
     delete req.body._id;
     await Cup.replaceOne(
       { _id: mongodb.ObjectId.createFromHexString(req.params.id) },
-      req.body
+      req.body,
     ).catch((err) => {
       console.log(err);
     });
@@ -96,8 +97,7 @@ router.put("/:id/replace", async (req, res) => {
   }
 });
 
-// Delete Cup
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireAuth, async (req, res) => {
   try {
     await Cup.deleteOne({
       _id: mongodb.ObjectId.createFromHexString(req.params.id),

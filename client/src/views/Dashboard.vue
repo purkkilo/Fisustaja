@@ -287,7 +287,7 @@ import ErrorList from "../components/ErrorList.vue";
 defineOptions({ name: "Home" });
 const store = useMainStore();
 
-const user = ref(null);
+const user = computed(() => store.user);
 const created = ref(null);
 const createCupDialog = ref(false);
 const loading = ref(false);
@@ -412,10 +412,8 @@ async function saveCup() {
   }
 
   if (!errors.value.length) {
-    const user = JSON.parse(localStorage.getItem("user"));
-    const user_id = user["_id"];
     const cup = {
-      user_id: user_id,
+      user_id: store.user?._id,
       name: name.value,
       year: year.value,
       meaningful_competitions: isThereCompetitionLimit.value
@@ -449,10 +447,7 @@ async function saveCup() {
 // Runs when the component is created
 (async () => {
   loading.value = true;
-  const user = JSON.parse(localStorage.getItem("user"));
-  const user_id = user["_id"];
-  // Get competitions
-  const query = { user_id: user_id };
+  const query = { user_id: store.user?._id };
 
   await CompetitionService.getCompetitions(query)
     .then((response) => {
@@ -482,9 +477,8 @@ async function saveCup() {
       }
     });
 
-  // Get Cups
   await CupService.getCups({
-    user_id: user_id,
+    user_id: store.user?._id,
   })
     .then((response) => {
       cups.value = response;
@@ -513,15 +507,12 @@ async function saveCup() {
 })();
 
 onMounted(() => {
-  // Set competition in localstorage and vuex to null
   store.refreshCompetition(null);
   localStorage.removeItem("competition");
   store.refreshCup(null);
   localStorage.removeItem("cup");
-  // Get user info form localstorage
-  if (localStorage.getItem("user") != null) {
-    user.value = JSON.parse(localStorage.getItem("user"));
-    let createdAt = new Date(user.value.createdAt);
+  if (store.user?.createdAt) {
+    const createdAt = new Date(store.user.createdAt);
     created.value = `${createdAt.getDate()}.${
       createdAt.getMonth() + 1
     }.${createdAt.getFullYear()}`;
