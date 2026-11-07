@@ -4,7 +4,7 @@
   <v-app id="app" style="background: rgba(0, 0, 0, 0)">
     <!-- Sizes your content based upon application components -->
     <!-- If using vue-router -->
-    <Header v-if="$store.state.logged_in" />
+    <Header v-if="$store.logged_in" />
     <MainHeader v-else />
 
     <v-main>
@@ -16,10 +16,10 @@
 </template>
 
 <script>
-import Footer from "./components/layout/Footer";
+import Footer from "./components/layout/Footer.vue";
 import UserService from "./services/UserService";
 import Header from "./components/layout/Header.vue";
-import MainHeader from "./components/layout/MainHeader";
+import MainHeader from "./components/layout/MainHeader.vue";
 import NotificationBar from "./components/NotificationBar.vue";
 export default {
   name: "App",
@@ -35,7 +35,7 @@ export default {
     MainHeader,
     NotificationBar,
   },
-  NotificationBarted() {
+  created() {
     let preferences = JSON.parse(localStorage.getItem("preferences"));
     if (!preferences) {
       localStorage.setItem(
@@ -43,11 +43,22 @@ export default {
         JSON.stringify({ isDark: false, lang: "en" })
       );
     } else {
-      this.$store.state.isDark = preferences.isDark;
+      this.$store.isDark = preferences.isDark;
       this.$i18n.locale = preferences.lang;
     }
   },
+  watch: {
+    // Vuetify 3+ switches the theme for the whole app
+    "$store.isDark": {
+      handler(isDark) {
+        this.$vuetify.theme.change(isDark ? "dark" : "light");
+      },
+      immediate: true,
+    },
+  },
   async mounted() {
+    // Vue Router 4+: the first navigation is async, wait for it before reading $route
+    await this.$router.isReady();
     const user = JSON.parse(localStorage.getItem("user"));
     const isAdmin = JSON.parse(localStorage.getItem("auth"));
     if (user) {
@@ -59,17 +70,17 @@ export default {
             // token expired
             await UserService.logoutUser().then(() => {
               this.snackbar = true;
-              this.$store.state.logged_in = false;
-              this.$store.state.is_admin = false;
-              if (this.$router.currentRoute.meta.requiresAuth) {
+              this.$store.logged_in = false;
+              this.$store.is_admin = false;
+              if (this.$route.meta.requiresAuth) {
                 this.$router.push({ path: "/login" });
               }
             });
           } else {
             let res = await UserService.refreshToken(user, isAdmin);
             if (res.success) {
-              this.$store.state.is_admin = res.is_admin;
-              this.$store.state.logged_in = true;
+              this.$store.is_admin = res.is_admin;
+              this.$store.logged_in = true;
             }
           }
         }
@@ -82,8 +93,8 @@ export default {
         var base64Url = token.split(".")[1];
         var base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
         var jsonPayload = decodeURIComponent(
-          Buffer.from(base64, "base64")
-            .toString("ascii")
+          window
+            .atob(base64)
             .split("")
             .map(function (c) {
               return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
@@ -229,43 +240,43 @@ table.highlight > tr:hover {
   max-height: 500px;
   overflow: auto;
 }
-.v-tab--disabled {
+.v-tab.v-btn--disabled {
   background: grey;
 }
-.v-tab--active {
+.v-tab--selected {
   background: rgb(65, 141, 255);
 }
 
-.theme--light.v-divider {
+.v-theme--light.v-divider {
   border-color: rgba(0, 0, 0, 0.699) !important;
 }
 
-.theme--dark.v-divider {
+.v-theme--dark.v-divider {
   border-color: rgba(219, 219, 219, 0.705) !important;
 }
 
-.theme--light.v-data-table tbody tr:nth-of-type(even) {
+.v-theme--light.v-data-table tbody tr:nth-of-type(even) {
   background-color: rgb(236, 244, 255);
 }
-.theme--light.v-data-table tbody tr:nth-of-type(odd) {
+.v-theme--light.v-data-table tbody tr:nth-of-type(odd) {
   background-color: rgb(186, 210, 255);
 }
-.theme--dark.v-data-table tbody tr:nth-of-type(even) {
+.v-theme--dark.v-data-table tbody tr:nth-of-type(even) {
   background-color: rgb(5, 6, 19);
 }
-.theme--dark.v-data-table tbody tr:nth-of-type(odd) {
+.v-theme--dark.v-data-table tbody tr:nth-of-type(odd) {
   background-color: rgb(21, 25, 34);
 }
 
-.theme--dark.v-data-table thead tr {
+.v-theme--dark.v-data-table thead tr {
   background-color: rgb(30, 30, 30);
 }
 
-.theme--light.v-data-table thead tr {
+.v-theme--light.v-data-table thead tr {
   background-color: rgb(255, 255, 255);
 }
 
-.theme--light.v-data-table tbody tr:hover {
+.v-theme--light.v-data-table tbody tr:hover {
   background-color: rgb(184, 193, 211) !important;
 }
 

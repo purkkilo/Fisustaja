@@ -1,19 +1,19 @@
 <template>
-  <Bar
-    :chart-options="options"
-    :chart-data="chartData"
-    :chart-id="chartId"
-    :dataset-id-key="datasetIdKey"
-    :plugins="plugins"
-    :css-classes="cssClasses"
-    :styles="styles"
-    :width="width"
-    :height="height"
-  />
+  <!-- vue-chartjs 5: the wrapper div sets the size, the canvas fills it -->
+  <div :class="cssClasses" :style="containerStyles">
+    <Bar
+      :id="chartId"
+      :options="options"
+      :data="chartData"
+      :dataset-id-key="datasetIdKey"
+      :plugins="plugins"
+      :aria-label="title"
+    />
+  </div>
 </template>
 
 <script>
-import { Bar } from "vue-chartjs/legacy";
+import { Bar } from "vue-chartjs";
 import {
   Chart as ChartJS,
   Title,
@@ -24,7 +24,7 @@ import {
   LinearScale,
 } from "chart.js";
 
-import i18n from "../i18n";
+import { t } from "../i18n";
 
 ChartJS.register(
   Title,
@@ -41,9 +41,13 @@ export default {
     Bar,
   },
   props: {
+    title: {
+      type: String,
+      default: "",
+    },
     chartData: {
       type: Object,
-      default: () => {},
+      default: () => ({ labels: [], datasets: [] }),
     },
     chartId: {
       type: String,
@@ -67,11 +71,11 @@ export default {
     },
     styles: {
       type: Object,
-      default: () => {},
+      default: () => ({}),
     },
     plugins: {
       type: Array,
-      default: () => {},
+      default: () => [],
     },
   },
   data: () => ({
@@ -93,13 +97,13 @@ export default {
 
               let lbl = "";
               if (context.dataset.label === "Amount") {
-                lbl = `${i18n.t(
+                lbl = `${t(
                   "total-signees"
                 )}: ${context.parsed.y.toLocaleString()}`;
               } else {
                 lbl = `${context.dataset.label}: ${(
                   context.parsed.y / 1000
-                ).toLocaleString()} kg ( ${percentage}% ${i18n.t(
+                ).toLocaleString()} kg ( ${percentage}% ${t(
                   "of-fishes"
                 )} )`;
               }
@@ -141,6 +145,11 @@ export default {
       },
     },
   }),
+  computed: {
+    containerStyles() {
+      return { position: "relative", height: `${this.height}px`, ...this.styles };
+    },
+  },
   mounted() {
     this.$i18n.locale === "en"
       ? (this.options.locale = "en-US")

@@ -1,7 +1,15 @@
 {
+  "compilerOptions": {
+    "baseUrl": ".",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "target": "ES2022",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
   "include": ["./src/**/*"],
   "vueCompilerOptions": {
-    "extensions": [".vue"],
-    "target": 2.7
+    "target": 3.5
   }
 }

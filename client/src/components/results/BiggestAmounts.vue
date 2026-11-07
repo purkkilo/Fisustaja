@@ -2,8 +2,8 @@
   <div>
     <v-row v-if="biggest_amounts_results.length">
       <v-col md="10" offset-md="1" style="margin-bottom: 40px">
-        <v-card :dark="$store.getters.getTheme">
-          <v-card-title>
+        <v-card>
+          <v-card-title class="d-flex flex-wrap align-center">
             <p
               class="flow-text"
               v-if="
@@ -18,29 +18,29 @@
             </p>
             <v-spacer></v-spacer>
             <v-text-field
-              v-model="search_amounts"
-              append-icon="mdi-magnify"
+              v-model="searchText"
+              append-inner-icon="mdi-magnify"
               :label="$t('search-boat')"
               single-line
               hide-details
             ></v-text-field>
           </v-card-title>
           <v-data-table
-            :headers="headers"
+            :headers="$tableHeaders(headers)"
             :items="biggest_amounts_results"
-            :search="search_amounts"
+            :search="searchText"
             :loading="loading"
           >
             <template
               v-for="(h, index) in headers"
-              v-slot:[`header.${h.value}`]="{ header }"
+              v-slot:[`header.${h.value}`]="{ column: header }"
             >
-              <span :key="index"> {{ $t(header.text) }}</span>
+              <span> {{ $t(header.text) }}</span>
             </template>
             <template v-slot:[`item.placement`]="{ item }">
               <v-chip
-                :outlined="$store.getters.getTheme"
                 :color="getColor(item.placement)"
+                :variant="$store.getTheme ? 'outlined' : 'flat'"
                 >{{ item.placement }}.</v-chip
               >
             </template>
@@ -59,14 +59,14 @@
         <p
           class="flow-text"
           v-bind:class="{
-            'white--text': $store.getters.getTheme,
+            'text-white': $store.getTheme,
           }"
         >
           {{ $t("no-results") }}
         </p>
       </v-col>
       <v-col v-else>
-        <h2 class="white--text">{{ $t("refreshing") }}...</h2>
+        <h2 class="text-white">{{ $t("refreshing") }}...</h2>
         <ProgressBarQuery />
       </v-col>
     </v-row>
@@ -86,6 +86,10 @@ export default {
     "search_amounts",
     "headers",
   ],
+  data() {
+    // Vue 3 can't v-model a prop: the search box edits a local copy (as it did in Vue 2)
+    return { searchText: this.search_amounts || "" };
+  },
   created() {
     this.getColorPoints = getColorPoints;
     this.getColor = getColor;

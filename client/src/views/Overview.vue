@@ -6,34 +6,32 @@
 
     <v-container
       v-bind:class="{
-        mobile: $vuetify.breakpoint.width < 800,
-        browser: $vuetify.breakpoint.width >= 800,
-        wide: $vuetify.breakpoint.width >= 1200,
+        mobile: $vuetify.display.width < 800,
+        browser: $vuetify.display.width >= 800,
+        wide: $vuetify.display.width >= 1200,
       }"
     >
       <error-list :errors="errors"></error-list>
       <v-card
         v-if="!loading"
         style="background: transparent"
-        elevation="10"
-        outlined
-        :dark="$store.getters.getTheme"
+        elevation="3"
+        variant="outlined"
       >
         <v-row>
           <v-col>
-            <v-card :dark="$store.getters.getTheme" elevation="20" outlined>
-              <v-card-title
-                ><span class="display-2">
+            <v-card elevation="5" variant="outlined">
+              <v-card-title><span class="text-display-medium">
                   {{ competition.name }}
                 </span></v-card-title
               >
-              <v-list outlined elevation="10">
+              <v-list elevation="3" border>
                 <v-list-item>
-                  <v-list-item-icon>
+                  <template v-slot:prepend>
                     <v-icon>mdi-calendar-today</v-icon>
-                  </v-list-item-icon>
+                  </template>
                   <v-list-item-title>{{ $t("date") }}</v-list-item-title>
-                  <v-list-item-subtitle class="blue--text">
+                  <v-list-item-subtitle class="text-blue">
                     <b
                       >{{ formatDate(competition.start_date) }} -
                       {{ formatDate(competition.end_date) }}</b
@@ -43,14 +41,14 @@
                 <v-divider></v-divider>
                 <v-divider></v-divider>
                 <v-list-item>
-                  <v-list-item-icon>
-                    <v-icon color="green darken-4">mdi-state-machine</v-icon>
-                  </v-list-item-icon>
+                  <template v-slot:prepend>
+                    <v-icon color="green-darken-4">mdi-state-machine</v-icon>
+                  </template>
                   <v-list-item-title>{{ $t("status") }}</v-list-item-title>
                   <v-list-item-subtitle
                     v-bind:class="{
-                      'green--text': competition.state === 'finished',
-                      'blue--text': competition.state !== 'finished',
+                      'text-green': competition.state === 'finished',
+                      'text-blue': competition.state !== 'finished',
                     }"
                   >
                     <b>{{ $t(competition.state) }}</b>
@@ -58,14 +56,14 @@
                 </v-list-item>
                 <v-divider></v-divider>
                 <v-list-item>
-                  <v-list-item-icon>
+                  <template v-slot:prepend>
                     <v-icon>mdi-card-account-details-outline</v-icon>
-                  </v-list-item-icon>
+                  </template>
                   <v-list-item-title>{{ $t("signees") }}</v-list-item-title>
                   <v-list-item-subtitle
                     v-bind:class="{
-                      'green--text': competition.signees.length,
-                      'red--text': !competition.signees.length,
+                      'text-green': competition.signees.length,
+                      'text-red': !competition.signees.length,
                     }"
                   >
                     <b>{{ competition.signees.length }}</b>
@@ -73,19 +71,19 @@
                 </v-list-item>
                 <v-divider></v-divider>
                 <v-list-item>
-                  <v-list-item-icon>
-                    <v-icon color="blue darken-4">mdi-water-alert</v-icon>
-                  </v-list-item-icon>
+                  <template v-slot:prepend>
+                    <v-icon color="blue-darken-4">mdi-water-alert</v-icon>
+                  </template>
                   <v-list-item-title>{{
                     $t("comp-overview.still-on-water")
                   }}</v-list-item-title>
                   <v-list-item-subtitle
                     v-if="competition.signees.length"
                     v-bind:class="{
-                      'green--text': !competition.signees.filter(
+                      'text-green': !competition.signees.filter(
                         (s) => !s.returned
                       ).length,
-                      'red--text': competition.signees.filter(
+                      'text-red': competition.signees.filter(
                         (s) => !s.returned
                       ).length,
                     }"
@@ -97,22 +95,21 @@
                     / {{ competition.signees.length }})
                   </v-list-item-subtitle>
 
-                  <v-list-item-subtitle class="green--text" v-else
-                    ><b>{{
+                  <v-list-item-subtitle class="text-green" v-else><b>{{
                       $t("comp-overview.nobody-on-water")
                     }}</b></v-list-item-subtitle
                   >
                 </v-list-item>
                 <v-divider></v-divider>
                 <v-list-item>
-                  <v-list-item-icon>
+                  <template v-slot:prepend>
                     <v-icon color="blue">mdi-fish</v-icon>
-                  </v-list-item-icon>
+                  </template>
                   <v-list-item-title>{{
                     $t("comp-overview.gotten-fish")
                   }}</v-list-item-title>
                   <v-list-item-subtitle
-                    class="green--text"
+                    class="text-green"
                     v-if="competition.signees.length"
                   >
                     <b>{{ hasGottenFishPercentage }}%</b> ({{
@@ -120,28 +117,26 @@
                     }}
                     / {{ competition.signees.length }})
                   </v-list-item-subtitle>
-                  <v-list-item-subtitle class="red--text" v-else
-                    ><b>{{
+                  <v-list-item-subtitle class="text-red" v-else><b>{{
                       $t("comp-overview.no-signees")
                     }}</b></v-list-item-subtitle
                   >
                 </v-list-item>
                 <v-divider></v-divider>
                 <v-list-item>
-                  <v-list-item-icon>
-                    <v-icon color="yellow darken-4">mdi-seal</v-icon>
-                  </v-list-item-icon>
+                  <template v-slot:prepend>
+                    <v-icon color="yellow-darken-4">mdi-seal</v-icon>
+                  </template>
                   <v-list-item-title>{{
                     $t("comp-overview.fish-amount-total")
                   }}</v-list-item-title>
                   <v-list-item-subtitle
-                    class="green--text"
+                    class="text-green"
                     v-if="competition.signees.length"
                   >
                     <b>{{ competition.total_weights / 1000 }} kg</b>
                   </v-list-item-subtitle>
-                  <v-list-item-subtitle class="red--text" v-else
-                    ><b>{{
+                  <v-list-item-subtitle class="text-red" v-else><b>{{
                       $t("comp-overview.no-signees")
                     }}</b></v-list-item-subtitle
                   >
@@ -156,9 +151,8 @@
           <v-col>
             <v-card
               style="background: transparent; text-align: center"
-              elevation="2"
-              outlined
-              :dark="$store.getters.getTheme"
+              elevation="1"
+              variant="outlined"
             >
               <h1 class="text-center">{{ $t("comp.preparing") }}...</h1>
               <ProgressBarQuery />
@@ -172,8 +166,8 @@
 <script>
 import CompetitionService from "../services/CompetitionService";
 import ResultService from "../services/ResultService.js";
-import Timedate from "../components/layout/Timedate";
-import ProgressBarQuery from "../components/layout/ProgressBarQuery";
+import Timedate from "../components/layout/Timedate.vue";
+import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
 import { formatDate } from "../shared";
 import ErrorList from "../components/ErrorList.vue";
 
@@ -238,7 +232,7 @@ export default {
               console.log(e);
             });
           // Update to vuex, Assing variables from vuex (see client/store/index.js)
-          this.$store.commit("refreshCompetition", this.competition);
+          this.$store.refreshCompetition(this.competition);
           localStorage.setItem("cup", this.competition.cup_id);
           let start_date = new Date(this.competition.start_date);
           let end_date = new Date(this.competition.end_date);

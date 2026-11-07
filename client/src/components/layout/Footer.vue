@@ -1,30 +1,26 @@
 <template>
+  <!-- Normal-flow footer below the page content -->
   <v-footer
-    app
-    paddless
-    absolute
-    v-bind:class="{
-      'grey darken-4': $store.getters.getTheme,
-      'primary lighten-1': !$store.getters.getTheme,
-    }"
+    class="flex-grow-0"
+    :color="$store.getTheme ? 'grey-darken-4' : 'primary-lighten-1'"
   >
-    <v-row justify="center">
+    <v-row class="justify-center">
       <v-btn
         v-for="link in links"
         :key="link"
         color="white"
-        text
         rounded
         class="my-2"
+        variant="text"
       >
         {{ link }}
       </v-btn>
       <v-col
-        class="py-4 text-center white--text"
+        class="py-4 text-center text-white"
         cols="12"
         v-bind:class="{
-          'grey darken-1': $store.getters.getTheme,
-          'primary lighten-2': !$store.getters.getTheme,
+          'bg-grey-darken-1': $store.getTheme,
+          'bg-primary-lighten-2': !$store.getTheme,
         }"
       >
         2018 - {{ new Date().getFullYear() }} —

@@ -1,20 +1,19 @@
 <template>
-  <Pie
-    :chart-options="options"
-    :chart-data="chartData"
-    :chart-id="chartId"
-    :dataset-id-key="datasetIdKey"
-    :plugins="plugins"
-    :css-classes="cssClasses"
-    :styles="styles"
-    :width="width"
-    :height="height"
-    :title="title"
-  />
+  <!-- vue-chartjs 5: the wrapper div sets the size, the canvas fills it -->
+  <div :class="cssClasses" :style="containerStyles">
+    <Pie
+      :id="chartId"
+      :options="options"
+      :data="chartData"
+      :dataset-id-key="datasetIdKey"
+      :plugins="plugins"
+      :aria-label="title"
+    />
+  </div>
 </template>
 
 <script>
-import { Pie } from "vue-chartjs/legacy";
+import { Pie } from "vue-chartjs";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 
 import {
@@ -40,7 +39,7 @@ export default {
     },
     chartData: {
       type: Object,
-      default: () => {},
+      default: () => ({ labels: [], datasets: [] }),
     },
     chartId: {
       type: String,
@@ -64,11 +63,11 @@ export default {
     },
     styles: {
       type: Object,
-      default: () => {},
+      default: () => ({}),
     },
     plugins: {
       type: Array,
-      default: () => {},
+      default: () => [],
     },
   },
   data: () => ({
@@ -116,6 +115,11 @@ export default {
       },
     },
   }),
+  computed: {
+    containerStyles() {
+      return { position: "relative", height: `${this.height}px`, ...this.styles };
+    },
+  },
   mounted() {
     this.$i18n.locale === "en"
       ? (this.options.locale = "en-US")

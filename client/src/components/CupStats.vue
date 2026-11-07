@@ -1,40 +1,38 @@
 <template>
   <div>
     <v-row style="margin-top: 10px">
-      <v-col
-        ><h1>{{ $t("general-statistics") }}</h1></v-col
+      <v-col><h1>{{ $t("general-statistics") }}</h1></v-col
       >
     </v-row>
     <v-row>
       <v-col>
-        <v-tabs
+        <v-tabs slider-color="green-darken-4"
           v-model="stats_tab"
-          background-color="blue lighten-3"
-          color="blue darken-4"
+          bg-color="blue-lighten-3"
+          color="blue-darken-4"
           grow
           show-arrows
           next-icon="mdi-arrow-right-bold-box-outline"
           prev-icon="mdi-arrow-left-bold-box-outline"
           center-active
         >
-          <v-tabs-slider color="green darken-4"></v-tabs-slider>
-          <v-tab href="#cupfishes">{{ $t("fishes") }}</v-tab>
-          <v-tab href="#cupbiggestfishes">{{ $t("fishes") }}</v-tab>
-          <v-tab href="#cupsignees">{{ $t("signees-signed") }}</v-tab>
+          <v-tab value="cupfishes">{{ $t("fishes") }}</v-tab>
+          <v-tab value="cupbiggestfishes">{{ $t("fishes") }}</v-tab>
+          <v-tab value="cupsignees">{{ $t("signees-signed") }}</v-tab>
         </v-tabs>
       </v-col>
     </v-row>
-    <v-tabs-items v-model="stats_tab" style="background: rgba(0, 0, 0, 0.4)">
-      <v-tab-item
+    <v-window v-model="stats_tab" style="background: rgba(0, 0, 0, 0.4)">
+      <v-window-item
         :value="'cupfishes'"
         v-bind:class="{
-          inputarea: !$store.getters.getTheme,
-          'inputarea-dark': $store.getters.getTheme,
+          inputarea: !$store.getTheme,
+          'inputarea-dark': $store.getTheme,
         }"
       >
         <v-row v-if="total_fishes_chart_data">
           <v-col>
-            <v-card :dark="$store.getters.getTheme">
+            <v-card>
               <v-card-title>
                 {{ $t("biggest-amounts") }} ({{ $t("total-big") }})
               </v-card-title>
@@ -48,8 +46,8 @@
         </v-row>
         <v-row v-if="cup_fishes_total.length && showTables">
           <v-col>
-            <v-card :dark="$store.getters.getTheme">
-              <v-card-title>
+            <v-card>
+              <v-card-title class="d-flex flex-wrap align-center">
                 <p class="flow-text">
                   {{ $t("biggest-amounts") }} ({{ $t("total-big") }})
                 </p>
@@ -57,20 +55,19 @@
               </v-card-title>
               <v-data-table
                 id="total-amounts-table"
-                :headers="headers_cup_fishes_total"
+                :headers="$tableHeaders(headers_cup_fishes_total)"
                 :items="cup_fishes_total"
                 :loading="loading"
-                item-key="index"
+                item-value="index"
               >
                 <template
                   v-for="(h, index) in headers_cup_fishes_total"
-                  v-slot:[`header.${h.value}`]="{ header }"
+                  v-slot:[`header.${h.value}`]="{ column: header }"
                 >
-                  <span :key="index"> {{ $t(header.text) }}</span>
+                  <span> {{ $t(header.text) }}</span>
                 </template>
                 <template v-slot:[`item.weights`]="{ item }">
-                  <v-chip
-                    >{{ (item.weights / 1000).toLocaleString() }} kg</v-chip
+                  <v-chip>{{ (item.weights / 1000).toLocaleString() }} kg</v-chip
                   >
                 </template>
               </v-data-table>
@@ -79,7 +76,7 @@
         </v-row>
         <v-row v-if="competition_fishes_chart_data">
           <v-col>
-            <v-card :dark="$store.getters.getTheme">
+            <v-card>
               <v-card-title>
                 {{ $t("biggest-amounts") }} ({{ $t("comp.by") }})
               </v-card-title>
@@ -93,8 +90,8 @@
         </v-row>
         <v-row v-if="cup_fishes_competition.length && showTables">
           <v-col>
-            <v-card :dark="$store.getters.getTheme">
-              <v-card-title>
+            <v-card>
+              <v-card-title class="d-flex flex-wrap align-center">
                 <p class="flow-text">
                   {{ $t("biggest-amounts") }} ({{ $t("comp.by") }})
                 </p>
@@ -102,32 +99,31 @@
               </v-card-title>
               <v-data-table
                 id="comp-amounts-table"
-                :headers="headers_cup_fishes_competition"
+                :headers="$tableHeaders(headers_cup_fishes_competition)"
                 :items="cup_fishes_competition"
                 :loading="loading"
-                item-key="index"
+                item-value="index"
               >
                 <template
                   v-for="(h, index) in headers_cup_fishes_competition"
-                  v-slot:[`header.${h.value}`]="{ header }"
+                  v-slot:[`header.${h.value}`]="{ column: header }"
                 >
-                  <span :key="index"> {{ $t(header.text) }}</span>
+                  <span> {{ $t(header.text) }}</span>
                 </template>
                 <template v-slot:[`item.weights`]="{ item }">
-                  <v-chip
-                    >{{ (item.weights / 1000).toLocaleString() }} kg</v-chip
+                  <v-chip>{{ (item.weights / 1000).toLocaleString() }} kg</v-chip
                   >
                 </template>
               </v-data-table>
             </v-card>
           </v-col>
         </v-row>
-      </v-tab-item>
-      <v-tab-item
+      </v-window-item>
+      <v-window-item
         :value="'cupbiggestfishes'"
         v-bind:class="{
-          inputarea: !$store.getters.getTheme,
-          'inputarea-dark': $store.getters.getTheme,
+          inputarea: !$store.getTheme,
+          'inputarea-dark': $store.getTheme,
         }"
       >
         <v-row
@@ -138,9 +134,8 @@
           "
         >
           <v-col>
-            <v-card :dark="$store.getters.getTheme">
-              <v-card-title
-                >{{ $t("cup.is") }} {{ $t("biggest-fishes") }}</v-card-title
+            <v-card>
+              <v-card-title class="d-flex flex-wrap align-center">{{ $t("cup.is") }} {{ $t("biggest-fishes") }}</v-card-title
               >
               <bar-chart
                 :chart-data="cup_biggest_fishes_chart_data"
@@ -152,7 +147,7 @@
         </v-row>
         <v-row v-if="cup_biggest_fishes.length && showTables">
           <v-col>
-            <v-card :dark="$store.getters.getTheme">
+            <v-card>
               <v-card-title>
                 <p class="flow-text">
                   {{ $t("cup.is") }} {{ $t("biggest-fishes") }}
@@ -161,16 +156,16 @@
               </v-card-title>
               <v-data-table
                 id="normal-table"
-                :headers="headers_cup_biggest_fishes"
+                :headers="$tableHeaders(headers_cup_biggest_fishes)"
                 :items="cup_biggest_fishes"
                 :loading="loading"
-                item-key="index"
+                item-value="index"
               >
                 <template
                   v-for="(h, index) in headers_cup_biggest_fishes"
-                  v-slot:[`header.${h.value}`]="{ header }"
+                  v-slot:[`header.${h.value}`]="{ column: header }"
                 >
-                  <span :key="index"> {{ $t(header.text) }}</span>
+                  <span> {{ $t(header.text) }}</span>
                 </template>
                 <template v-slot:[`item.weight`]="{ item }">
                   <v-chip>{{ item.weight.toLocaleString() }} g</v-chip>
@@ -181,9 +176,8 @@
         </v-row>
         <v-row v-if="competition_fishes_chart_data && showCharts">
           <v-col>
-            <v-card :dark="$store.getters.getTheme">
-              <v-card-title
-                >{{ $t("cup.is") }} {{ $t("biggest-amounts") }}</v-card-title
+            <v-card>
+              <v-card-title class="d-flex flex-wrap align-center">{{ $t("cup.is") }} {{ $t("biggest-amounts") }}</v-card-title
               >
               <bar-chart
                 :chart-data="cup_biggest_amounts_chart_data"
@@ -195,7 +189,7 @@
         </v-row>
         <v-row v-if="cup_biggest_amounts.length && showTables">
           <v-col>
-            <v-card :dark="$store.getters.getTheme">
+            <v-card>
               <v-card-title>
                 <p class="flow-text">
                   {{ $t("cup.is") }} {{ $t("biggest-amounts") }}
@@ -204,16 +198,16 @@
               </v-card-title>
               <v-data-table
                 id="cup-biggest-amounts"
-                :headers="headers_cup_biggest_amounts"
+                :headers="$tableHeaders(headers_cup_biggest_amounts)"
                 :items="cup_biggest_amounts"
                 :loading="loading"
-                item-key="index"
+                item-value="index"
               >
                 <template
                   v-for="(h, index) in headers_cup_biggest_amounts"
-                  v-slot:[`header.${h.value}`]="{ header }"
+                  v-slot:[`header.${h.value}`]="{ column: header }"
                 >
-                  <span :key="index"> {{ $t(header.text) }}</span>
+                  <span> {{ $t(header.text) }}</span>
                 </template>
                 <template v-slot:[`item.weight`]="{ item }">
                   <v-chip>{{ item.weight.toLocaleString() }} g</v-chip>
@@ -222,25 +216,25 @@
             </v-card>
           </v-col>
         </v-row>
-      </v-tab-item>
-      <v-tab-item
+      </v-window-item>
+      <v-window-item
         :value="'cupsignees'"
         v-bind:class="{
-          inputarea: !$store.getters.getTheme,
-          'inputarea-dark': $store.getters.getTheme,
+          inputarea: !$store.getTheme,
+          'inputarea-dark': $store.getTheme,
         }"
       >
-        <v-row v-if="cup" justify="center" style="margin-top: 10px">
-          <v-card :dark="$store.getters.getTheme">
+        <v-row class="justify-center" v-if="cup" style="margin-top: 10px">
+          <v-card>
             <v-card-title v-if="cup.signees">
-              <v-icon color="blue darken-2">mdi-account-group</v-icon>
+              <v-icon color="blue-darken-2">mdi-account-group</v-icon>
               {{ $t("total-signees") }}: {{ cup.signees.length }}
             </v-card-title>
           </v-card>
         </v-row>
         <v-row v-if="cup_signees_chart_data && showCharts">
           <v-col>
-            <v-card :dark="$store.getters.getTheme">
+            <v-card>
               <v-card-title>
                 {{ $t("total-signees") }} ({{ $t("comp.by") }})
               </v-card-title>
@@ -254,8 +248,8 @@
         </v-row>
         <v-row v-if="cup_signees.length && showTables">
           <v-col>
-            <v-card :dark="$store.getters.getTheme">
-              <v-card-title>
+            <v-card>
+              <v-card-title class="d-flex flex-wrap align-center">
                 <p class="flow-text">
                   {{ $t("total-signees") }} ({{ $t("comp.by") }})
                 </p>
@@ -263,16 +257,16 @@
               </v-card-title>
               <v-data-table
                 id="competition-signee-amount-table"
-                :headers="headers_cup_signees"
+                :headers="$tableHeaders(headers_cup_signees)"
                 :items="cup_signees"
                 :loading="loading"
-                item-key="index"
+                item-value="index"
               >
                 <template
                   v-for="(h, index) in headers_cup_signees"
-                  v-slot:[`header.${h.value}`]="{ header }"
+                  v-slot:[`header.${h.value}`]="{ column: header }"
                 >
-                  <span :key="index"> {{ $t(header.text) }}</span>
+                  <span> {{ $t(header.text) }}</span>
                 </template>
                 <template v-slot:[`item.signees`]="{ item }">
                   <v-chip>{{ item.signees.toLocaleString() }}</v-chip>
@@ -281,12 +275,12 @@
             </v-card>
           </v-col>
         </v-row>
-      </v-tab-item>
-    </v-tabs-items>
+      </v-window-item>
+    </v-window>
   </div>
 </template>
 <script>
-import BarChart from "../components/BarChart";
+import BarChart from "../components/BarChart.vue";
 import shared from "@/shared";
 export default {
   name: "CupStats",

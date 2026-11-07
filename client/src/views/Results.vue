@@ -3,7 +3,7 @@
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <div>
     <v-dialog v-model="pdfDialog" width="500">
-      <v-card :dark="$store.getters.getTheme">
+      <v-card>
         <v-card-title>{{ $t("settings") }} </v-card-title>
         <v-card-text>
           <v-checkbox
@@ -15,17 +15,17 @@
         <v-divider></v-divider>
 
         <v-card-actions>
-          <v-btn color="yellow" text @click="pdfDialog = false">
+          <v-btn color="yellow" @click="pdfDialog = false" variant="text">
             {{ $t("cancel") }}
           </v-btn>
           <v-spacer></v-spacer>
           <v-btn
             color="primary"
-            text
             @click="
               pdfDialog = false;
               pdfWrapper();
             "
+            variant="text"
           >
             {{ $t("download") }}
           </v-btn>
@@ -37,40 +37,37 @@
 
     <v-container
       v-bind:class="{
-        mobile: $vuetify.breakpoint.width < 800,
-        browser: $vuetify.breakpoint.width >= 800,
-        wide: $vuetify.breakpoint.width >= 1200,
+        mobile: $vuetify.display.width < 800,
+        browser: $vuetify.display.width >= 800,
+        wide: $vuetify.display.width >= 1200,
       }"
     >
       <v-row>
         <v-col>
           <v-card
             style="background: transparent"
-            elevation="10"
-            outlined
-            :dark="$store.getters.getTheme"
+            elevation="3"
+            variant="outlined"
           >
             <v-row>
-              <v-col cols="12" xs="12" sm="12" md="12">
-                <v-row justify="center">
+              <v-col cols="12" sm="12" md="12">
+                <v-row class="justify-center">
                   <v-col>
                     <h1 style="margin: 30px">{{ $t("results") }}</h1>
                   </v-col>
                 </v-row>
-                <v-row align="center" justify="center">
+                <v-row class="justify-center align-center">
                   <v-col cols="4">
                     <v-switch
-                      dark
                       :loading="loading"
                       v-model="intervalSwitch"
-                      color="orange darken-3"
+                      color="orange-darken-3"
                       :label="$t('button.auto-download')"
                     ></v-switch>
                   </v-col>
                 </v-row>
                 <v-row
-                  align="center"
-                  justify="center"
+                  class="justify-center align-center"
                   style="padding-bottom: 20px"
                   v-if="
                     normal_points.length ||
@@ -85,24 +82,22 @@
                       scrollable
                       max-width="300px"
                     >
-                      <template v-slot:activator="{ on, attrs }">
+                      <template v-slot:activator="{ props }">
                         <v-btn
-                          v-bind="attrs"
-                          v-on="on"
-                          :dark="$store.getters.getTheme"
-                          large
-                          outlined
-                          color="red lighten-2"
+                          v-bind="props"
+                          color="red-lighten-2"
                           :loading="loading"
                           :disabled="
                             !biggest_amounts_results.length || !competition
                           "
+                          size="large"
+                          variant="outlined"
                         >
                           <v-icon color="red">mdi-file-pdf-box</v-icon
                           >{{ $t("download-all-results") }}
                         </v-btn>
                       </template>
-                      <v-card :dark="$store.getters.getTheme">
+                      <v-card>
                         <v-card-text style="margin-top: 20px">
                           <h1>PDF Asetukset</h1>
                           <v-checkbox
@@ -117,14 +112,14 @@
                             v-model="selected_print"
                             :label="$t('statistics')"
                             :disabled="!biggest_amounts_results.length"
-                            color="indigo darken-3"
+                            color="indigo-darken-3"
                             value="stats"
                           ></v-checkbox>
                           <v-checkbox
                             v-model="selected_print"
                             :disabled="!biggest_amounts_results.length"
                             :label="$t('normal-results')"
-                            color="indigo darken-3"
+                            color="indigo-darken-3"
                             value="normal"
                           ></v-checkbox>
                           <v-checkbox
@@ -132,28 +127,28 @@
                             :disabled="!team_results.length"
                             v-model="selected_print"
                             :label="$t('team-results')"
-                            color="indigo darken-3"
+                            color="indigo-darken-3"
                             value="team"
                           ></v-checkbox>
                           <v-checkbox
                             v-model="selected_print"
                             :disabled="!biggest_amounts_results.length"
                             :label="$t('download-amounts')"
-                            color="indigo darken-3"
+                            color="indigo-darken-3"
                             value="all_biggest"
                           ></v-checkbox>
                           <v-checkbox
                             v-model="selected_print"
                             :disabled="!biggest_fishes_results.length"
                             :label="$t('download-biggest-fishes')"
-                            color="indigo darken-3"
+                            color="indigo-darken-3"
                             value="biggest_fishes"
                           ></v-checkbox>
                           <v-checkbox
                             v-model="selected_print"
                             :disabled="!biggest_amounts_results.length"
                             :label="$t('download-amounts-by-fish')"
-                            color="indigo darken-3"
+                            color="indigo-darken-3"
                             value="biggest_amounts"
                           ></v-checkbox>
                           <v-checkbox
@@ -163,7 +158,7 @@
                               !biggest_amounts_results.length
                             "
                             :label="$t('download-fish-winners')"
-                            color="indigo darken-3"
+                            color="indigo-darken-3"
                             value="biggest_winners"
                           ></v-checkbox>
                         </v-card-text>
@@ -171,17 +166,17 @@
                         <v-card-actions>
                           <v-col>
                             <v-btn
-                              outlined
-                              color="yellow darken-3"
+                              color="yellow-darken-3"
                               @click="dialog_print = false"
+                              variant="outlined"
                               >{{ $t("close") }}</v-btn
                             >
                           </v-col>
                           <v-col>
                             <v-btn
-                              outlined
-                              color="green lighten-1"
+                              color="green-lighten-1"
                               @click="choosePrints"
+                              variant="outlined"
                               >{{ $t("download") }}</v-btn
                             >
                           </v-col>
@@ -197,51 +192,50 @@
       </v-row>
 
       <!-- Tabs -->
-      <v-tabs
+      <v-tabs slider-color="blue-darken-4"
         v-model="tab"
-        background-color="blue lighten-2"
-        color="blue darken-4"
+        bg-color="blue-lighten-2"
+        color="blue-darken-4"
         grow
         show-arrows
         next-icon="mdi-arrow-right-bold-box-outline"
         prev-icon="mdi-arrow-left-bold-box-outline"
         center-active
       >
-        <v-tabs-slider color="blue darken-4"></v-tabs-slider>
-        <v-tab href="#stats" :disabled="loading">{{ $t("statistics") }}</v-tab>
-        <v-tab href="#normal-competition" :disabled="loading">{{
+        <v-tab :disabled="loading" value="stats">{{ $t("statistics") }}</v-tab>
+        <v-tab :disabled="loading" value="normal-competition">{{
           $t("normal-comp")
         }}</v-tab>
         <v-tab
           v-if="isTeamCompetition"
-          href="#team-competition"
           :disabled="loading"
+          value="team-competition"
           >{{ $t("team-comp") }}</v-tab
         >
         <v-tab
-          href="#biggest-fishes"
           :disabled="loading || !biggest_fishes.length"
+          value="biggest-fishes"
           >{{ $t("biggest-fish") }}</v-tab
         >
         <v-tab
-          href="#biggest-fish-amounts"
           :disabled="loading || !biggest_amounts_results.length"
+          value="biggest-fish-amounts"
           >{{ $t("biggest-amounts") }}</v-tab
         >
       </v-tabs>
 
-      <v-tabs-items v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
+      <v-window v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
         <!-- Tilastoja -->
-        <v-tab-item
+        <v-window-item
           v-bind:class="{
-            inputarea: !$store.getters.getTheme,
-            'inputarea-dark': $store.getters.getTheme,
+            inputarea: !$store.getTheme,
+            'inputarea-dark': $store.getTheme,
           }"
           :value="'stats'"
         >
           <v-row v-if="loading">
             <v-col>
-              <h2 class="white--text">{{ $t("loading") }}...</h2>
+              <h2 class="text-white">{{ $t("loading") }}...</h2>
               <ProgressBarQuery />
             </v-col>
           </v-row>
@@ -264,29 +258,27 @@
               }
             "
           ></stats>
-        </v-tab-item>
+        </v-window-item>
         <!-- Normaalikilpailu -->
-        <v-tab-item
+        <v-window-item
           v-bind:class="{
-            inputarea: !$store.getters.getTheme,
-            'inputarea-dark': $store.getters.getTheme,
+            inputarea: !$store.getTheme,
+            'inputarea-dark': $store.getTheme,
           }"
           :value="'normal-competition'"
         >
           <v-row style="margin-top: 40px">
             <v-col md="4" offset-md="4">
               <v-select
-                dark
-                :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
                 :label="$t('choose-table-view')"
-                outlined
                 :items="normal_options"
-                @input="switchNormalResults"
                 v-model="selected_normal"
+                @update:model-value="switchNormalResults"
+                variant="outlined"
               >
-                <template v-slot:item="{ item }">
-                  <span>{{ $t(item) }}</span>
-                </template>
+                <template v-slot:item="{ item, props }">
+                <v-list-item v-bind="props" :title="$t(item)" />
+              </template>
                 <template v-slot:selection="{ item }">
                   <span>{{ $t(item) }}</span>
                 </template>
@@ -300,15 +292,14 @@
               md="3"
             >
               <v-btn
-                large
-                outlined
-                color="red lighten-2"
-                :dark="$store.getters.getTheme"
+                color="red-lighten-2"
                 :loading="loading"
                 @click="
                   pdf = '#normal-table';
                   pdfDialog = true;
                 "
+                size="large"
+                variant="outlined"
               >
                 <v-icon color="red">mdi-file-pdf-box</v-icon>
                 {{ $t("download") }} pdf
@@ -324,13 +315,13 @@
             :selected_normal="selected_normal"
             :fish_names="table_fish_names"
           ></normal-comp>
-        </v-tab-item>
+        </v-window-item>
 
         <!-- Tiimikilpailu -->
-        <v-tab-item
+        <v-window-item
           v-bind:class="{
-            inputarea: !$store.getters.getTheme,
-            'inputarea-dark': $store.getters.getTheme,
+            inputarea: !$store.getTheme,
+            'inputarea-dark': $store.getTheme,
           }"
           :value="'team-competition'"
           v-if="isTeamCompetition"
@@ -347,32 +338,30 @@
               }
             "
           ></team-comp>
-        </v-tab-item>
+        </v-window-item>
 
         <!-- Suurimmat kalat -->
-        <v-tab-item
+        <v-window-item
           v-bind:class="{
-            inputarea: !$store.getters.getTheme,
-            'inputarea-dark': $store.getters.getTheme,
+            inputarea: !$store.getTheme,
+            'inputarea-dark': $store.getTheme,
           }"
           :value="'biggest-fishes'"
         >
           <v-row style="padding-top: 50px">
             <v-col md="3" offset-md="4">
               <v-select
-                dark
-                :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
                 :label="$t('choose-table-view')"
-                outlined
-                @input="switchBiggestFishes"
                 v-model="selected_biggest_fish"
+                @update:model-value="switchBiggestFishes"
                 :items="fish_names"
+                variant="outlined"
               >
-                <template v-slot:item="{ item }">
-                  <span v-if="item === 'all' || item === 'winners'">{{
-                    $t(item)
-                  }}</span>
-                  <span v-else>{{ item }}</span>
+                <template v-slot:item="{ item, props }">
+                  <v-list-item
+                    v-bind="props"
+                    :title="['all', 'winners'].includes(item) ? $t(item) : item"
+                  />
                 </template>
                 <template v-slot:selection="{ item }">
                   <span v-if="item === 'all' || item === 'winners'">{{
@@ -384,15 +373,14 @@
             </v-col>
             <v-col md="3" offset-md="1" v-if="biggest_fishes_results.length">
               <v-btn
-                large
-                outlined
-                color="red lighten-2"
-                dark
+                color="red-lighten-2"
                 :loading="loading"
                 @click="
                   pdf = '#biggest-fishes-table';
                   pdfDialog = true;
                 "
+                size="large"
+                variant="outlined"
               >
                 <v-icon color="red">mdi-file-pdf-box</v-icon>
                 {{ $t("download") }} pdf
@@ -407,32 +395,30 @@
             :search_fishes="search_fishes"
             :selected_biggest_fish="selected_biggest_fish"
           ></biggest-fishes>
-        </v-tab-item>
+        </v-window-item>
 
         <!-- Suurimmat kalasaaliit -->
-        <v-tab-item
+        <v-window-item
           v-bind:class="{
-            inputarea: !$store.getters.getTheme,
-            'inputarea-dark': $store.getters.getTheme,
+            inputarea: !$store.getTheme,
+            'inputarea-dark': $store.getTheme,
           }"
           :value="'biggest-fish-amounts'"
         >
           <v-row style="padding-top: 50px">
             <v-col md="3" offset-md="4">
               <v-select
-                :dark="$store.getters.getTheme"
-                :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
                 :label="$t('choose-table-view')"
-                outlined
-                @input="switchBiggestAmounts"
                 v-model="selected_biggest_amount"
+                @update:model-value="switchBiggestAmounts"
                 :items="fish_amount_names"
+                variant="outlined"
               >
-                <template v-slot:item="{ item }">
-                  <span v-if="item === 'all' || item === 'winners'">{{
-                    $t(item)
-                  }}</span>
-                  <span v-else>{{ item }}</span>
+                <template v-slot:item="{ item, props }">
+                  <v-list-item
+                    v-bind="props"
+                    :title="['all', 'winners'].includes(item) ? $t(item) : item"
+                  />
                 </template>
                 <template v-slot:selection="{ item }">
                   <span v-if="item === 'all' || item === 'winners'">{{
@@ -444,15 +430,15 @@
             </v-col>
             <v-col md="3" offset-md="1" v-if="biggest_amounts_results.length">
               <v-btn
-                large
-                outlined
-                color="red lighten-2"
+                color="red-lighten-2"
                 :loading="loading"
                 @click="
                   pdf = '#biggest-amounts-table';
                   pdfDialog = true;
                 "
                 :disabled="!biggest_amounts_results.length"
+                size="large"
+                variant="outlined"
               >
                 <v-icon color="red">mdi-file-pdf-box</v-icon>
                 {{ $t("download") }} pdf
@@ -467,26 +453,25 @@
             :search_amounts="search_amounts"
             :selected_biggest_amount="selected_biggest_amount"
           ></biggest-amounts>
-        </v-tab-item>
-      </v-tabs-items>
+        </v-window-item>
+      </v-window>
       <div v-if="competition">
         <v-card
           style="background: transparent"
-          elevation="10"
-          outlined
-          :dark="$store.getters.getTheme"
+          elevation="3"
+          variant="outlined"
         >
           <v-row v-if="!loading" style="margin-top: 20px; margin-bottom: 10px">
             <v-col>
               <v-btn
-                large
                 rounded
                 :color="
-                  competition.isPublic ? 'grey darken-4' : 'green darken-4'
+                  competition.isPublic ? 'grey-darken-4' : 'green-darken-4'
                 "
                 @click="publishCompetition(competition.isPublic)"
-                class="white--text"
+                class="text-white"
                 :loading="updating"
+                size="large"
               >
                 <div v-if="competition.isPublic">
                   <v-icon>mdi-incognito</v-icon>{{ $t("button.set-private") }}
@@ -499,14 +484,14 @@
             </v-col>
             <v-col>
               <v-btn
-                large
                 rounded
-                :color="competition.isFinished ? 'yellow' : 'green darken-3'"
+                :color="competition.isFinished ? 'yellow' : 'green-darken-3'"
                 @click="endCompetition(competition.isFinished)"
                 :loading="updating"
+                size="large"
               >
-                <span v-if="competition.isFinished" class="black--text">
-                  <v-icon color="red darken-2">mdi-cancel</v-icon
+                <span v-if="competition.isFinished" class="text-black">
+                  <v-icon color="red-darken-2">mdi-cancel</v-icon
                   >{{ $t("button.set-not-complete") }}
                 </span>
                 <span v-else>
@@ -518,12 +503,12 @@
             <v-col>
               <v-btn
                 id="updatebtn"
-                large
                 rounded
-                color="blue darken-4"
+                color="blue-darken-4"
                 @click="refreshCompetition(competition._id)"
-                class="white--text"
+                class="text-white"
                 :loading="updating"
+                size="large"
               >
                 <v-icon>mdi-update</v-icon>{{ $t("button.update") }}
               </v-btn>
@@ -531,7 +516,7 @@
           </v-row>
           <v-row v-else>
             <v-col>
-              <h2 class="white--text">{{ $t("refreshing") }}</h2>
+              <h2 class="text-white">{{ $t("refreshing") }}</h2>
             </v-col>
             <ProgressBarQuery />
           </v-row>
@@ -542,10 +527,11 @@
   </div>
 </template>
 <script>
+import { defineAsyncComponent } from "vue";
 import CompetitionService from "../services/CompetitionService";
 import ResultService from "../services/ResultService";
 import FishService from "../services/FishService";
-import Timedate from "../components/layout/Timedate";
+import Timedate from "../components/layout/Timedate.vue";
 import Stats from "../components/results/Stats.vue";
 import TeamComp from "../components/results/TeamComp.vue";
 import NormalComp from "../components/results/NormalComp.vue";
@@ -568,7 +554,9 @@ export default {
   name: "Results",
   components: {
     Timedate,
-    ProgressBarQuery: () => require("../components/layout/ProgressBarQuery"),
+    ProgressBarQuery: defineAsyncComponent(
+      () => import("../components/layout/ProgressBarQuery.vue")
+    ),
     Stats,
     TeamComp,
     NormalComp,
@@ -700,7 +688,7 @@ export default {
     }
   },
   mounted() {},
-  beforeDestroy() {
+  beforeUnmount() {
     // Clear timer
     clearInterval(this.timer_refresh);
   },
@@ -913,7 +901,7 @@ export default {
           this.calculateAll();
 
           // Update to vuex, Assing variables and arrays from vuex (see client/store/index.js)
-          this.$store.commit("refreshCompetition", this.competition);
+          this.$store.refreshCompetition(this.competition);
 
           if (this.competition.isTeamCompetition) {
             this.signee_headers.push({ text: "Tiimi", value: "team" });
@@ -988,7 +976,7 @@ export default {
 
     async updateToDatabase(competition, newvalues) {
       try {
-        this.$store.commit("refreshCompetition", competition);
+        this.$store.refreshCompetition(competition);
         this.updating = true;
         await CompetitionService.updateValues(competition._id, newvalues);
       } catch (err) {

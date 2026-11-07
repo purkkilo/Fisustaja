@@ -6,21 +6,20 @@
 
     <v-container
       v-bind:class="{
-        mobile: $vuetify.breakpoint.width < 800,
-        browser: $vuetify.breakpoint.width >= 800,
-        wide: $vuetify.breakpoint.width >= 1200,
+        mobile: $vuetify.display.width < 800,
+        browser: $vuetify.display.width >= 800,
+        wide: $vuetify.display.width >= 1200,
       }"
     >
       <error-list :errors="errors"></error-list>
       <v-card
         style="background: transparent"
-        elevation="10"
-        outlined
-        :dark="$store.getters.getTheme"
+        elevation="3"
+        variant="outlined"
       >
         <v-row>
-          <v-col cols="12" xs="12" sm="12" md="12">
-            <v-row justify="center">
+          <v-col cols="12" sm="12" md="12">
+            <v-row class="justify-center">
               <v-col>
                 <h1 style="margin: 30px">{{ $t("signing") }}</h1>
               </v-col>
@@ -30,27 +29,26 @@
       </v-card>
 
       <!-- Tabs -->
-      <v-tabs
+      <v-tabs slider-color="blue-darken-4"
         v-model="tab"
-        background-color="blue lighten-2"
-        color="blue darken-4"
+        bg-color="blue-lighten-2"
+        color="blue-darken-4"
         grow
         show-arrows
         next-icon="mdi-arrow-right-bold-box-outline"
         prev-icon="mdi-arrow-left-bold-box-outline"
         center-active
       >
-        <v-tabs-slider color="blue darken-4"></v-tabs-slider>
-        <v-tab href="#signing">{{ $t("signing") }}</v-tab>
-        <v-tab href="#signees">{{ $t("signees-signed") }}</v-tab>
+        <v-tab value="signing">{{ $t("signing") }}</v-tab>
+        <v-tab value="signees">{{ $t("signees-signed") }}</v-tab>
       </v-tabs>
 
-      <v-tabs-items v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
+      <v-window v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
         <!-- Signing tab -->
-        <v-tab-item
+        <v-window-item
           v-bind:class="{
-            inputarea: !$store.getters.getTheme,
-            'inputarea-dark': $store.getters.getTheme,
+            inputarea: !$store.getTheme,
+            'inputarea-dark': $store.getTheme,
           }"
           :value="'signing'"
         >
@@ -67,7 +65,7 @@
                 <v-col offset-md="4" md="4">
                   <p
                     class="flow-text"
-                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
+                    v-bind:class="{ 'text-white': $store.getTheme }"
                   >
                     {{ $t("signees") }} {{ $t("total") }}:
                     <b>{{ signees.length }}</b>
@@ -80,15 +78,14 @@
                   <v-row>
                     <v-col md="3" offset-md="4" class="input-fields">
                       <v-text-field
-                        :dark="$store.getters.getTheme"
                         :label="$t('boat-number')"
                         v-model="boat_number"
-                        append-outer-icon="add"
+                        append-icon="mdi-plus"
                         maxlength="6"
-                        @click:append-outer="
+                        @click:append="
                           boat_number > 0 ? boat_number++ : (boat_number = 1)
                         "
-                        prepend-icon="remove"
+                        prepend-icon="mdi-minus"
                         @click:prepend="
                           boat_number > 1 ? boat_number-- : (boat_number = 1)
                         "
@@ -108,8 +105,7 @@
                       style="margin-top: 20px"
                       v-if="cup"
                     >
-                      <v-btn large block color="blue" @click="searchFromCup"
-                        ><v-icon>find_replace</v-icon
+                      <v-btn block color="blue" @click="searchFromCup" size="large"><v-icon>find_replace</v-icon
                         >{{ $t("button.search-cup") }}</v-btn
                       >
                     </v-col>
@@ -119,8 +115,7 @@
                       :offset-md="cup ? 2 : 4"
                       style="margin-top: 20px"
                     >
-                      <v-btn large block color="indigo" @click="searchSelected"
-                        ><v-icon>mdi-magnify</v-icon
+                      <v-btn block color="indigo" @click="searchSelected" size="large"><v-icon>mdi-magnify</v-icon
                         >{{ $t("button.search-signees") }}</v-btn
                       >
                     </v-col>
@@ -129,7 +124,6 @@
                   <v-row>
                     <v-col md="5" offset-md="3" class="input-fields">
                       <v-text-field
-                        :dark="$store.getters.getTheme"
                         :label="$t('captain-name')"
                         v-model="captain_name"
                         :maxlength="maxlength"
@@ -142,7 +136,6 @@
                   <v-row>
                     <v-col md="5" offset-md="3" class="input-fields">
                       <v-text-field
-                        :dark="$store.getters.getTheme"
                         :label="$t('temp-captain-name')"
                         v-model="temp_captain_name"
                         :maxlength="maxlength"
@@ -155,7 +148,6 @@
                   <v-row>
                     <v-col md="5" offset-md="3" class="input-fields">
                       <v-text-field
-                        :dark="$store.getters.getTheme"
                         :label="$t('locality-team')"
                         v-model="locality"
                         id="locality"
@@ -169,7 +161,6 @@
                   <v-row>
                     <v-col md="5" offset-md="3" class="input-fields">
                       <v-text-field
-                        :dark="$store.getters.getTheme"
                         :label="$t('starting-place')"
                         v-model="starting_place"
                         id="starting_place"
@@ -189,20 +180,12 @@
                         chips
                         maxlength="40"
                       >
-                        <template v-slot:selection="data">
-                          <v-chip
-                            :key="JSON.stringify(data.item)"
-                            v-bind="data.attrs"
-                            :input-value="data.selected"
-                            :disabled="data.disabled"
-                            @click:close="data.parent.selectItem(data.item)"
-                          >
-                            <v-avatar class="accent white--text" left
-                              ><span>{{
-                                data.item.slice(0, 1).toUpperCase()
-                              }}</span></v-avatar
-                            >
-                            {{ data.item }}
+                        <template v-slot:chip="{ item, props }">
+                          <v-chip v-bind="props">
+                            <v-avatar class="bg-accent text-white" start>{{
+                              String(item).slice(0, 1).toUpperCase()
+                            }}</v-avatar>
+                            {{ item }}
                           </v-chip>
                         </template>
                       </v-combobox>
@@ -215,7 +198,7 @@
                         <p
                           class="flow-text"
                           v-bind:class="{
-                            'white--text': $store.getters.getTheme,
+                            'text-white': $store.getTheme,
                           }"
                         >
                           {{ $t("saving") }}...
@@ -228,30 +211,29 @@
                       <v-row>
                         <v-col md="4" style="margin-top: 20px">
                           <v-btn
-                            large
                             tile
                             color="red"
                             @click="deleteSignee(false, selected_id)"
                             :disabled="!found"
                             :loading="refreshing"
+                            size="large"
                             ><v-icon>mdi-delete</v-icon
                             >{{ $t("button.delete-signee") }}</v-btn
                           >
                         </v-col>
                         <v-col md="4" style="margin-top: 20px">
                           <v-btn
-                            large
                             tile
                             color="yellow"
                             @click="clearInputs"
                             :loading="refreshing"
+                            size="large"
                             ><v-icon>backspace-reverse-outline</v-icon
                             >{{ $t("button.clear") }}</v-btn
                           >
                         </v-col>
                         <v-col md="4" style="margin-top: 20px">
                           <v-btn
-                            large
                             tile
                             color="green"
                             @click="validateInfo"
@@ -263,6 +245,7 @@
                               !temp_captain_name
                             "
                             id="sbtn"
+                            size="large"
                             ><v-icon>mdi-content-save</v-icon
                             >{{ $t("save") }}</v-btn
                           >
@@ -276,7 +259,7 @@
                         class="flow-text"
                         v-if="refreshing"
                         v-bind:class="{
-                          'white--text': $store.getters.getTheme,
+                          'text-white': $store.getTheme,
                         }"
                       >
                         {{ $t("updating") }}...
@@ -288,11 +271,11 @@
                       <v-btn
                         v-if="competition_id"
                         id="updatebtn"
-                        large
                         block
-                        color="blue darken-4"
+                        color="blue-darken-4"
                         @click="refreshCompetition(competition_id)"
-                        class="white--text"
+                        class="text-white"
+                        size="large"
                       >
                         <v-icon>mdi-update</v-icon>{{ $t("button.update") }}
                       </v-btn>
@@ -305,17 +288,17 @@
           <v-row v-else>
             <!-- Show progressbar if loading -->
             <v-col>
-              <h2 v-bind:class="{ 'white--text': $store.getters.getTheme }">
+              <h2 v-bind:class="{ 'text-white': $store.getTheme }">
                 {{ $t("fetching") }}...
               </h2>
               <ProgressBarQuery />
             </v-col>
           </v-row>
-        </v-tab-item>
-        <v-tab-item
+        </v-window-item>
+        <v-window-item
           v-bind:class="{
-            inputarea: !$store.getters.getTheme,
-            'inputarea-dark': $store.getters.getTheme,
+            inputarea: !$store.getTheme,
+            'inputarea-dark': $store.getTheme,
           }"
           :value="'signees'"
         >
@@ -323,14 +306,13 @@
             <v-col>
               <v-row>
                 <v-col md="10" offset-md="1">
-                  <v-card :dark="$store.getters.getTheme">
-                    <v-card-title>
+                  <v-card>
+                    <v-card-title class="d-flex flex-wrap align-center">
                       <p class="flow-text">{{ $t("signees-signed") }}</p>
-                      <v-tooltip bottom>
-                        <template v-slot:activator="{ on, attrs }">
+                      <v-tooltip location="bottom">
+                        <template v-slot:activator="{ props }">
                           <v-icon
-                            v-bind="attrs"
-                            v-on="on"
+                            v-bind="props"
                             style="margin: 0px 0px 20px 5px"
                             >mdi-chat-question-outline</v-icon
                           >
@@ -340,7 +322,7 @@
                       <v-spacer></v-spacer>
                       <v-text-field
                         v-model="search"
-                        append-icon="mdi-magnify"
+                        append-inner-icon="mdi-magnify"
                         :label="$t('search-signee')"
                         single-line
                         hide-details
@@ -348,15 +330,15 @@
                     </v-card-title>
                     <v-data-table
                       @click:row="rowClick"
-                      :headers="headers"
+                      :headers="$tableHeaders(headers)"
                       :items="signees"
                       :search="search"
                     >
                       <template
                         v-for="(h, index) in headers"
-                        v-slot:[`header.${h.value}`]="{ header }"
+                        v-slot:[`header.${h.value}`]="{ column: header }"
                       >
-                        <span :key="index"> {{ $t(header.text) }}</span>
+                        <span> {{ $t(header.text) }}</span>
                       </template>
                       <template v-slot:[`item.boat_number`]="{ item }">
                         <v-chip>{{ item.boat_number }}</v-chip>
@@ -367,8 +349,8 @@
               </v-row>
             </v-col>
           </v-row>
-        </v-tab-item>
-      </v-tabs-items>
+        </v-window-item>
+      </v-window>
     </v-container>
     <notification-bar :snackbar="snackbar" :text="text"></notification-bar>
   </div>
@@ -377,8 +359,8 @@
 import CompetitionService from "../services/CompetitionService";
 import ResultService from "../services/ResultService.js";
 import CupService from "../services/CupService";
-import Timedate from "../components/layout/Timedate";
-import ProgressBarQuery from "../components/layout/ProgressBarQuery";
+import Timedate from "../components/layout/Timedate.vue";
+import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
 import { capitalize_words, isNumber } from "../shared";
 import NotificationBar from "../components/NotificationBar.vue";
 import ErrorList from "../components/ErrorList.vue";
@@ -446,7 +428,9 @@ export default {
     isNumber: isNumber,
     // Select row from table, if selected --> unselect
     // selected_id bound to selected css class (on App.vue)
-    rowClick(item, row) {
+    // Vuetify 3+: (event, { item, internalItem, index })
+    rowClick(event, row) {
+      const item = row.item;
       this.selected_id = item._id;
       this.selected_row = row;
       this.searchSelected();
@@ -470,10 +454,10 @@ export default {
               console.log(e);
             });
           // Update to vuex, Assing variables and arrays from vuex (see client/store/index.js)
-          this.$store.commit("refreshCompetition", competition);
-          this.isTeamCompetition = this.$store.getters.isTeamCompetition;
+          this.$store.refreshCompetition(competition);
+          this.isTeamCompetition = this.$store.isTeamCompetition;
 
-          this.teams = this.$store.getters.getTeams;
+          this.teams = this.$store.getTeams;
           // Get max values and assign them
           if (this.signees.length) {
             this.boat_number =
@@ -519,7 +503,7 @@ export default {
       // User chose to overwrite data
       if (overwrite) {
         // Remove old data
-        this.$store.commit("removeSignee", signee);
+        this.$store.removeSignee(signee);
         // Replace the old existing signee info with new info, without changing the id
         signee.boat_number = parseInt(this.boat_number);
         signee.starting_place = this.starting_place;
@@ -539,7 +523,7 @@ export default {
           //If the array doensn't have the team name already, add it
           if (this.teams.indexOf(this.team) == -1) {
             this.teams.push(this.team);
-            this.$store.commit("setTeams", this.teams);
+            this.$store.setTeams(this.teams);
           }
           // Save signee to database and clear inputs
           this.saveToDatabase(signee, true);
@@ -655,7 +639,7 @@ export default {
     // Fetch signee from vuex based on boat number
     // Check client\src\store\index.js for implementation
     searchBoatNumber(boat_number) {
-      return this.$store.getters.getSigneeByBoatNumber(parseInt(boat_number));
+      return this.$store.getSigneeByBoatNumber(parseInt(boat_number));
     },
     // Add error to error array and direct user to it
     showError(error) {
@@ -667,10 +651,10 @@ export default {
     // Save signee to database
     async saveToDatabase(new_signee, replace) {
       // if replace == true, replace existing info, otherwise add new signee
-      if (replace) this.$store.commit("replaceSignee", new_signee);
+      if (replace) this.$store.replaceSignee(new_signee);
 
       // Create competition object
-      let comp = this.$store.getters.getCompetition;
+      let comp = this.$store.getCompetition;
       this.signees = this.results = this.signees;
       // Store to vuex
       comp.signees = this.signees;
@@ -711,7 +695,7 @@ export default {
         }
       }
 
-      this.$store.commit("refreshCompetition", comp);
+      this.$store.refreshCompetition(comp);
       try {
         this.loading = true;
         // Add result
@@ -726,7 +710,7 @@ export default {
         } else {
           let res = await ResultService.insertResults([new_signee]);
           new_signee._id = res.data.id;
-          this.$store.commit("addSignee", new_signee);
+          this.$store.addSignee(new_signee);
         }
 
         //await CompetitionService.updateCompetition(comp._id, comp);
@@ -804,7 +788,7 @@ export default {
       else {
         if (found_signee) {
           // Remove from vuex
-          this.$store.commit("removeSignee", found_signee);
+          this.$store.removeSignee(found_signee);
           try {
             this.loading = true;
             await ResultService.deleteResult(id).catch((e) => console.log(e));
@@ -896,7 +880,7 @@ export default {
             this.saveToDatabase(this.new_signee, true);
             if (this.teams.indexOf(this.team) == -1) {
               this.teams.push(this.team);
-              this.$store.commit("setTeams", this.teams);
+              this.$store.setTeams(this.teams);
             }
             this.text = `boat-updated`;
             this.snackbar = true;
@@ -929,7 +913,7 @@ export default {
 
           if (this.teams.indexOf(this.team) == -1) {
             this.teams.push(this.team);
-            this.$store.commit("setTeams", this.teams);
+            this.$store.setTeams(this.teams);
           }
 
           this.text = `boat-added`;

@@ -1,13 +1,7 @@
 <template>
-  <v-card class="overflow-hidden">
+  <div>
     <v-app-bar
-      app
-      color="white"
-      :dark="updateSwitch"
-      v-bind:class="{
-        'grey darken-4': $store.getters.getTheme,
-        'blue lighten-2': !$store.getters.getTheme,
-      }"
+      :color="$store.getTheme ? 'grey-darken-4' : 'blue-lighten-2'"
     >
       <v-app-bar-nav-icon @click="drawer = true"></v-app-bar-nav-icon>
 
@@ -24,15 +18,15 @@
 
       <router-link to="/login"
         ><v-btn
-          outlined
           rounded
-          color="green darken-3"
+          color="green-darken-3"
           style="margin-right: 20px"
+          variant="outlined"
           ><v-icon>mdi-login</v-icon>{{ $t("nav.login") }}</v-btn
         ></router-link
       >
       <router-link to="/"
-        ><v-btn outlined rounded><v-icon>mdi-home</v-icon></v-btn></router-link
+        ><v-btn rounded variant="outlined"><v-icon>mdi-home</v-icon></v-btn></router-link
       >
       <template v-slot:extension v-if="isPublicPage">
         <sub-navigation :items="public_items" :type="type"></sub-navigation>
@@ -40,20 +34,13 @@
     </v-app-bar>
     <v-navigation-drawer
       v-model="drawer"
-      app
       temporary
-      :dark="$store.getters.getTheme"
-      v-bind:class="{
-        'grey darken-4': $store.getters.getTheme,
-        'blue lighten-2': !$store.getters.getTheme,
-      }"
+      :color="$store.getTheme ? 'grey-darken-4' : 'blue-lighten-2'"
     >
-      <v-list dense nav class="py-0">
-        <v-list-item two-line>
-          <v-list-item-content>
+      <v-list nav class="py-0" density="compact">
+        <v-list-item lines="two">
             <v-list-item-title></v-list-item-title>
             <v-list-item-subtitle></v-list-item-subtitle>
-          </v-list-item-content>
         </v-list-item>
         <v-list-item
           v-for="item in items"
@@ -61,24 +48,22 @@
           link
           @click="changePage(item.route)"
         >
-          <v-list-item-icon>
+          <template v-slot:prepend>
             <v-icon :color="item.color">{{ item.icon }}</v-icon>
-          </v-list-item-icon>
+          </template>
 
-          <v-list-item-content>
             <v-list-item-title>{{ $t(item.title) }}</v-list-item-title>
-          </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-action>
-            <v-switch v-model="updateSwitch" color="indigo darken-3"></v-switch>
+            <v-switch v-model="updateSwitch" color="indigo-darken-3"></v-switch>
           </v-list-item-action>
           <v-list-item-title>{{ $t("nav.theme") }}</v-list-item-title>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
     <notification-bar :snackbar="snackbar" :text="text"></notification-bar>
-  </v-card>
+  </div>
 </template>
 
 <script>
@@ -95,14 +80,14 @@ export default {
     return {
       user: null,
       drawer: null,
-      updateSwitch: this.$store.getters.getTheme,
+      updateSwitch: this.$store.getTheme,
       items: [
         { title: "nav.home", route: "/", icon: "mdi-home", color: "white" },
         {
           title: "nav.login",
           route: "/login",
           icon: "mdi-login",
-          color: "green darken-1",
+          color: "green-darken-1",
         },
       ],
       snackbar: false,
@@ -135,7 +120,7 @@ export default {
     },
     updateSwitch(newValue) {
       //called whenever isDark switch changes
-      this.$store.state.isDark = newValue;
+      this.$store.isDark = newValue;
       localStorage.setItem(
         "preferences",
         JSON.stringify({ isDark: newValue, lang: "fi" })
@@ -164,7 +149,7 @@ export default {
       this.drawer = !this.drawer;
     },
     changePage(route) {
-      if (this.$router.currentRoute.path !== route) {
+      if (this.$route.path !== route) {
         this.$router.push(route);
         this.drawer = !this.drawer;
       } else {
@@ -177,7 +162,6 @@ export default {
         ? (this.$i18n.locale = "fi")
         : (this.$i18n.locale = "en");
 
-      this.$vuetify.lang.current = this.$i18n.locale;
       let preferences = JSON.parse(localStorage.getItem("preferences"));
       preferences.lang = this.$i18n.locale;
       localStorage.setItem("preferences", JSON.stringify(preferences));

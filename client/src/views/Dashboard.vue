@@ -3,17 +3,16 @@
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container
     v-bind:class="{
-      mobile: $vuetify.breakpoint.width < 800,
-      browser: $vuetify.breakpoint.width >= 800,
-      wide: $vuetify.breakpoint.width >= 1200,
+      mobile: $vuetify.display.width < 800,
+      browser: $vuetify.display.width >= 800,
+      wide: $vuetify.display.width >= 1200,
     }"
   >
     <error-list :errors="errors"></error-list>
     <v-card
       style="background: transparent; padding: 20px"
-      elevation="10"
-      outlined
-      :dark="$store.getters.getTheme"
+      elevation="3"
+      variant="outlined"
     >
       <v-row>
         <v-col>
@@ -25,79 +24,69 @@
           <v-row>
             <v-col>
               <!-- if user is found on localstorage (this.user is not null/false) -->
-              <v-card style="background: transparent" outlined v-if="user" dark>
-                <v-card-title
-                  ><v-icon x-large>mdi-account-circle</v-icon> &nbsp;{{
+              <v-card style="background: transparent" v-if="user" variant="outlined">
+                <v-card-title><v-icon size="x-large">mdi-account-circle</v-icon> &nbsp;{{
                     $t("dashboard.user-details")
                   }}</v-card-title
                 >
-                <v-list two-line style="background: transparent" outlined>
+                <v-list style="background: transparent" lines="two" border>
                   <v-list-item>
-                    <v-list-item-avatar>
+                    <template v-slot:prepend><v-avatar>
                       <v-icon> mdi-account-box </v-icon>
-                    </v-list-item-avatar>
+                    </v-avatar></template>
 
-                    <v-list-item-content>
                       <v-list-item-title>{{ user.name }}</v-list-item-title>
 
                       <v-list-item-subtitle>{{
                         $t("name")
                       }}</v-list-item-subtitle>
-                    </v-list-item-content>
                   </v-list-item>
                   <v-divider></v-divider>
                   <v-list-item>
-                    <v-list-item-avatar>
+                    <template v-slot:prepend><v-avatar>
                       <v-icon> mdi-email </v-icon>
-                    </v-list-item-avatar>
+                    </v-avatar></template>
 
-                    <v-list-item-content>
                       <v-list-item-title>{{ user.email }}</v-list-item-title>
 
                       <v-list-item-subtitle>{{
                         $t("email")
                       }}</v-list-item-subtitle>
-                    </v-list-item-content>
                   </v-list-item>
                   <v-divider></v-divider>
                   <v-list-item>
-                    <v-list-item-avatar>
+                    <template v-slot:prepend><v-avatar>
                       <v-icon> mdi-calendar </v-icon>
-                    </v-list-item-avatar>
+                    </v-avatar></template>
 
-                    <v-list-item-content>
                       <v-list-item-title>{{ created }}</v-list-item-title>
 
                       <v-list-item-subtitle>{{
                         $t("created")
                       }}</v-list-item-subtitle>
-                    </v-list-item-content>
                   </v-list-item>
                 </v-list>
               </v-card>
             </v-col>
             <v-col>
               <!-- if user is found on localstorage (this.user is not null/false) -->
-              <v-card style="background: transparent" outlined v-if="user" dark>
-                <v-card-title
-                  ><v-icon x-large>mdi-gauge</v-icon> &nbsp;{{
+              <v-card style="background: transparent" v-if="user" variant="outlined">
+                <v-card-title><v-icon size="x-large">mdi-gauge</v-icon> &nbsp;{{
                     $t("dashboard.functions")
                   }}</v-card-title
                 >
-                <v-list style="background: transparent" outlined>
+                <v-list style="background: transparent" border>
                   <v-list-item>
-                    <v-list-item-content>
                       <v-list-item-title>{{
                         $t("comp.create")
                       }}</v-list-item-title>
-                    </v-list-item-content>
                     <v-list-item-action>
                       <router-link to="/register-comp">
                         <v-btn
                           icon
-                          outlined
                           :loading="loading || publishing"
                           :disabled="loading || publishing"
+                          variant="outlined"
                           ><v-icon>mdi-plus</v-icon></v-btn
                         >
                       </router-link>
@@ -105,39 +94,35 @@
                   </v-list-item>
                   <v-divider></v-divider>
                   <v-list-item>
-                    <v-list-item-content>
                       <v-list-item-title>{{
                         $t("cup.create")
                       }}</v-list-item-title>
-                    </v-list-item-content>
                     <v-list-item-action>
                       <v-dialog
                         v-model="createCupDialog"
                         width="700"
                         persistent
                       >
-                        <template v-slot:activator="{ on, attrs }">
+                        <template v-slot:activator="{ props }">
                           <v-btn
                             icon
-                            outlined
-                            v-bind="attrs"
-                            v-on="on"
+                            v-bind="props"
                             :loading="loading || publishing"
                             :disabled="loading || publishing"
+                            variant="outlined"
                           >
                             <v-icon>mdi-plus</v-icon>
                           </v-btn>
                         </template>
 
-                        <v-card :dark="$store.getters.getTheme">
+                        <v-card>
                           <v-card-title>
                             {{ $t("cup.create") }}
                           </v-card-title>
 
-                          <v-row align="center" justify="center">
+                          <v-row class="justify-center align-center">
                             <v-col cols="8" class="input-fields">
                               <v-text-field
-                                :dark="$store.getters.getTheme"
                                 :label="$t('cup.normal') + ' ' + $t('name')"
                                 v-model="name"
                                 :maxlength="40"
@@ -146,40 +131,18 @@
                               />
                             </v-col>
                           </v-row>
-                          <v-row align="center" justify="center">
+                          <v-row class="justify-center align-center">
                             <v-col cols="6" class="input-fields">
-                              <v-menu
-                                ref="menu"
-                                :close-on-content-click="false"
-                                v-model="menu"
-                                :nudge-right="40"
-                                transition="scale-transition"
-                                offset-y
-                                min-width="290px"
-                              >
-                                <template v-slot:activator="{ on, attrs }">
-                                  <v-text-field
-                                    :dark="$store.getters.getTheme"
-                                    v-model="year"
-                                    :label="$t('year')"
-                                    prepend-icon="event"
-                                    readonly
-                                    v-bind="attrs"
-                                    v-on="on"
-                                  ></v-text-field>
-                                </template>
-                                <v-date-picker
-                                  ref="picker"
-                                  v-model="year"
-                                  @input="saveYear"
-                                  min="2000-01-01"
-                                  reactive
-                                  no-title
-                                ></v-date-picker>
-                              </v-menu>
+                              <!-- Vuetify 2 used a year-mode date picker here -->
+                              <v-select
+                                v-model="year"
+                                :items="yearOptions"
+                                :label="$t('year')"
+                                prepend-icon="mdi-calendar"
+                              ></v-select>
                             </v-col>
                           </v-row>
-                          <v-row align="center" justify="center">
+                          <v-row class="justify-center align-center">
                             <v-col cols="6" class="input-fields">
                               <v-checkbox
                                 v-model="isThereCompetitionLimit"
@@ -192,14 +155,12 @@
                             </v-col>
                           </v-row>
                           <v-row
-                            align="center"
-                            justify="center"
+                            class="justify-center align-center"
                             v-if="isThereCompetitionLimit"
                           >
                             <v-col cols="6" class="input-fields">
                               <v-text-field
                                 v-model="meaningful_competitions"
-                                :dark="$store.getters.getTheme"
                                 :label="$t('dashboard.meaningfull-comps')"
                                 maxlength="3"
                                 type="number"
@@ -213,7 +174,7 @@
                               />
                             </v-col>
                           </v-row>
-                          <v-row align="center" justify="center">
+                          <v-row class="justify-center align-center">
                             <v-col>
                               <v-btn
                                 tile
@@ -229,8 +190,8 @@
                             <v-spacer></v-spacer>
                             <v-btn
                               color="primary"
-                              text
                               @click="createCupDialog = false"
+                              variant="text"
                             >
                               Peruuta
                             </v-btn>
@@ -246,16 +207,13 @@
                   <!-- if user is found on localstorage (this.user is not null/false) -->
                   <v-card
                     style="background: transparent; margin-top: 6px"
-                    outlined
                     v-if="user"
-                    dark
+                    variant="outlined"
                   >
-                    <v-list style="background: transparent" outlined>
+                    <v-list style="background: transparent" border>
                       <v-list-item>
                         <v-spacer></v-spacer>
-                        <v-list-item-content>
-                          <v-list-item-title
-                            ><h2>
+                          <v-list-item-title><h2>
                               {{ tweenedCompetitions.toFixed(0) }}
                             </h2></v-list-item-title
                           >
@@ -263,11 +221,8 @@
                           <v-list-item-subtitle>{{
                             $t("comp.plural")
                           }}</v-list-item-subtitle>
-                        </v-list-item-content>
                         <v-spacer></v-spacer>
-                        <v-list-item-content>
-                          <v-list-item-title
-                            ><h2>
+                          <v-list-item-title><h2>
                               {{ tweenedCups.toFixed(0) }}
                             </h2></v-list-item-title
                           >
@@ -275,7 +230,6 @@
                           <v-list-item-subtitle>{{
                             $t("cup.plural")
                           }}</v-list-item-subtitle>
-                        </v-list-item-content>
                         <v-spacer></v-spacer>
                       </v-list-item>
                     </v-list>
@@ -322,7 +276,6 @@ export default {
       user: null,
       created: null,
       createCupDialog: false,
-      menu: false,
       loading: false,
       publishing: false,
       name: null,
@@ -346,10 +299,16 @@ export default {
       animationLength: 1.5,
     };
   },
-  watch: {
-    menu(val) {
-      val && this.$nextTick(() => (this.$refs.picker.activePicker = "YEAR"));
+  computed: {
+    yearOptions() {
+      const years = [];
+      for (let y = new Date().getFullYear() + 1; y >= 2000; y--) {
+        years.push(String(y));
+      }
+      return years;
     },
+  },
+  watch: {
     cupsAmount(n) {
       gsap.to(this, {
         duration: this.animationLength,
@@ -428,9 +387,9 @@ export default {
 
   mounted() {
     // Set competition in localstorage and vuex to null
-    this.$store.commit("refreshCompetition", null);
+    this.$store.refreshCompetition(null);
     localStorage.removeItem("competition");
-    this.$store.commit("refreshCup", null);
+    this.$store.refreshCup(null);
     localStorage.removeItem("cup");
     // Get user info form localstorage
     if (localStorage.getItem("user") != null) {
@@ -496,12 +455,6 @@ export default {
       });
     },
     //TODO dropdown to select current year as highlighted when opened
-    saveYear(year) {
-      year = year.split("-")[0];
-      this.year = year;
-      this.$refs.picker.activePicker = "YEAR";
-      this.menu = false;
-    },
     async saveCup() {
       this.errors = [];
       this.loading = true;

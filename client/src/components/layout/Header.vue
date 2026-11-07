@@ -1,14 +1,8 @@
 <template>
-  <v-card class="overflow-hidden">
+  <div>
     <v-app-bar
-      app
-      color="white"
-      :dark="isDark"
-      elevate-on-scroll
-      v-bind:class="{
-        'grey darken-4': $store.getters.getTheme,
-        'primary lighten-1': !$store.getters.getTheme,
-      }"
+      :color="$store.getTheme ? 'grey-darken-4' : 'primary-lighten-1'"
+      scroll-behavior="elevate"
     >
       <v-app-bar-nav-icon @click="drawer = true"></v-app-bar-nav-icon>
 
@@ -23,8 +17,7 @@
         🌐 {{ $i18n.locale }}
       </v-btn>
       <router-link to="/"
-        ><v-btn text outlined rounded
-          ><v-icon>mdi-home</v-icon></v-btn
+        ><v-btn rounded variant="outlined"><v-icon>mdi-home</v-icon></v-btn
         ></router-link
       >
       <template v-slot:extension v-if="isPublicPage || isCompetitionPage">
@@ -37,57 +30,44 @@
 
     <v-navigation-drawer
       v-model="drawer"
-      app
       temporary
-      :dark="$store.getters.getTheme"
-      v-bind:class="{
-        'grey darken-4': $store.getters.getTheme,
-        'primary lighten-1': !$store.getters.getTheme,
-      }"
+      :color="$store.getTheme ? 'grey-darken-4' : 'primary-lighten-1'"
     >
-      <v-list dense nav class="py-0">
-        <v-list-item two-line>
-          <v-list-item-avatar>
-            <v-icon color="blue darken-4">mdi-account-circle</v-icon>
-          </v-list-item-avatar>
+      <v-list nav class="py-0" density="compact">
+        <v-list-item lines="two">
+          <template v-slot:prepend><v-avatar>
+            <v-icon color="blue-darken-4">mdi-account-circle</v-icon>
+          </v-avatar></template>
 
-          <v-list-item-content>
             <v-list-item-title>{{ isUser.name }}</v-list-item-title>
             <v-list-item-subtitle>{{ isUser.email }}</v-list-item-subtitle>
-          </v-list-item-content>
         </v-list-item>
 
         <v-divider></v-divider>
         <v-list-item v-if="isCompetitionSet">
-          <v-list-item-content>
             <p class="text-center">{{ $t("nav.header") }}</p>
-          </v-list-item-content>
         </v-list-item>
         <v-list-item v-if="isCompetitionSet" @click="changePage('/overview')">
-          <v-list-item-icon>
-            <v-icon>directions_boat</v-icon>
-          </v-list-item-icon>
+          <template v-slot:prepend>
+            <v-icon>mdi-ferry</v-icon>
+          </template>
 
-          <v-list-item-content>
             <v-list-item-title>{{
-              $store.getters.getCompetition.name
+              $store.getCompetition.name
             }}</v-list-item-title>
-          </v-list-item-content>
         </v-list-item>
 
         <v-list-item
           v-if="isCompetitionSet && isCupCompetition"
           @click="changePage('/cup-overview')"
         >
-          <v-list-item-icon>
-            <v-icon>tune</v-icon>
-          </v-list-item-icon>
+          <template v-slot:prepend>
+            <v-icon>mdi-tune</v-icon>
+          </template>
 
-          <v-list-item-content>
             <v-list-item-title>{{
-              $store.getters.getCompetition.cup_name
+              $store.getCompetition.cup_name
             }}</v-list-item-title>
-          </v-list-item-content>
         </v-list-item>
         <v-divider></v-divider>
         <v-list-item
@@ -96,36 +76,31 @@
           link
           @click="changePage(item.route)"
         >
-          <v-list-item-icon>
+          <template v-slot:prepend>
             <v-icon :color="item.color">{{ item.icon }}</v-icon>
-          </v-list-item-icon>
+          </template>
 
-          <v-list-item-content>
             <v-list-item-title>{{ $t(item.title) }}</v-list-item-title>
-          </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-action>
             <v-switch
               v-model="isDark"
               :loading="uploading"
-              color="indigo darken-3"
+              color="indigo-darken-3"
             ></v-switch>
           </v-list-item-action>
           <v-list-item-title>{{ $t("nav.theme") }}</v-list-item-title>
         </v-list-item>
         <v-list-item>
-          <v-list-item-content>
-            <v-btn large rounded color="red" @click="logout"
-              ><v-icon>mdi-logout</v-icon>{{ $t("nav.logout") }}</v-btn
+            <v-btn rounded color="red" @click="logout" size="large"><v-icon>mdi-logout</v-icon>{{ $t("nav.logout") }}</v-btn
             >
-          </v-list-item-content>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
 
     <notification-bar :snackbar="snackbar" :text="text"></notification-bar>
-  </v-card>
+  </div>
 </template>
 
 <script>
@@ -205,7 +180,7 @@ export default {
     const user = JSON.parse(localStorage.getItem("user"));
     if (user) {
       const isAdmin = JSON.parse(localStorage.getItem("auth"));
-      this.$store.state.isDark = this.preferences.isDark;
+      this.$store.isDark = this.preferences.isDark;
       this.isDark = this.preferences.isDark;
       if (isAdmin) {
         this.items = [
@@ -225,19 +200,19 @@ export default {
             title: "nav.register-user",
             route: "/register",
             icon: "mdi-account-plus",
-            color: "green darken-1",
+            color: "green-darken-1",
           },
           {
             title: "nav.public-comps",
             route: "/public-results",
             icon: "mdi-format-list-numbered",
-            color: "green darken-1",
+            color: "green-darken-1",
           },
           {
             title: "nav.public-cups",
             route: "/public-cups",
             icon: "mdi-medal",
-            color: "yellow darken-1",
+            color: "yellow-darken-1",
           },
         ];
       } else {
@@ -257,7 +232,7 @@ export default {
       }
     }
 
-    this.setSubNavigation(this.$router.currentRoute);
+    this.setSubNavigation(this.$route);
   },
   computed: {
     isOverviewPage() {
@@ -278,20 +253,20 @@ export default {
       }
     },
     isUserLoggedIn() {
-      return this.$store.getters.isLoggedIn;
+      return this.$store.isLoggedIn;
     },
     isAdmin() {
-      return this.$store.getters.isAdmin;
+      return this.$store.isAdmin;
     },
     isCompetitionSet() {
-      if (this.$store.getters.getCompetition) {
+      if (this.$store.getCompetition) {
         return true;
       } else {
         return false;
       }
     },
     isCupCompetition() {
-      if (this.$store.getters.getCompetition.isCupCompetition) {
+      if (this.$store.getCompetition.isCupCompetition) {
         return true;
       } else {
         return false;
@@ -305,7 +280,7 @@ export default {
 
     isDark(newValue) {
       //called whenever isDark switch changes
-      this.$store.state.isDark = newValue;
+      this.$store.isDark = newValue;
       localStorage.setItem(
         "preferences",
         JSON.stringify({ isDark: newValue, lang: "fi" })
@@ -334,7 +309,7 @@ export default {
       }
     },
     changePage(route) {
-      if (this.$router.currentRoute.path !== route) {
+      if (this.$route.path !== route) {
         this.$router.push(route);
         this.drawer = !this.drawer;
       } else {
@@ -345,11 +320,11 @@ export default {
     async logout() {
       await UserService.logoutUser().then(() => {
         // Do something with the module.
-        this.$store.state.logged_in = false;
-        this.$store.state.is_admin = false;
-        if (this.$router.currentRoute.path !== "/")
+        this.$store.logged_in = false;
+        this.$store.is_admin = false;
+        if (this.$route.path !== "/")
           this.$router.push({ path: "/" });
-        this.$store.commit("refreshCompetition", null);
+        this.$store.refreshCompetition(null);
         this.user = null;
         this.text = "notification.logout-success";
         this.snackbar = true;
@@ -361,7 +336,6 @@ export default {
         ? (this.$i18n.locale = "fi")
         : (this.$i18n.locale = "en");
 
-      this.$vuetify.lang.current = this.$i18n.locale;
       let preferences = JSON.parse(localStorage.getItem("preferences"));
       preferences.lang = this.$i18n.locale;
       localStorage.setItem("preferences", JSON.stringify(preferences));

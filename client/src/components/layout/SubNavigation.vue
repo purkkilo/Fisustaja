@@ -1,25 +1,30 @@
 <template>
-  <v-bottom-navigation
-    dark
-    shift
-    grow
-    :value="selectedItem"
+  <!-- v-bottom-navigation is a fixed layout bar in Vuetify 3+, so a button group is used instead -->
+  <v-btn-toggle
+    :model-value="selectedItem"
+    mandatory
     color="primary"
-    horizontal
-    style="background: transparent; box-shadow: none; margin-bottom: 10px"
+    variant="text"
+    class="d-flex w-100"
+    style="background: transparent; margin-bottom: 10px; height: auto"
   >
-    <v-tooltip bottom v-for="(item, i) in items" :key="i">
-      <template v-slot:activator="{ on, attrs }">
-        <v-btn @click="changePage(item.path)" v-bind="attrs" v-on="on">
-          <span>{{ $t(item.text) }}</span>
-
+    <v-tooltip v-for="(item, i) in items" :key="i" location="bottom">
+      <template v-slot:activator="{ props }">
+        <v-btn
+          class="flex-grow-1"
+          :value="i"
+          stacked
+          @click="changePage(item.path)"
+          v-bind="props"
+        >
           <v-icon>{{ item.icon }}</v-icon>
+          <span>{{ $t(item.text) }}</span>
         </v-btn>
       </template>
       <span v-if="type == 'public'">{{ $t(item.text) }}</span>
       <span v-else>{{ $t("comp.is") }} {{ $t(item.text) }}</span>
     </v-tooltip>
-  </v-bottom-navigation>
+  </v-btn-toggle>
 </template>
 
 <script>
@@ -35,12 +40,17 @@ export default {
   },
   mounted() {
     this.selectedItem = this.items.findIndex(
-      (i) => i.path === this.$router.currentRoute.path
+      (i) => i.path === this.$route.path
     );
+  },
+  watch: {
+    $route(to) {
+      this.selectedItem = this.items.findIndex((i) => i.path === to.path);
+    },
   },
   methods: {
     changePage(route) {
-      if (this.$router.currentRoute.path !== route) {
+      if (this.$route.path !== route) {
         this.$router.push(route);
       } else {
         this.text = "errors.already-here";

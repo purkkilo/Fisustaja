@@ -3,10 +3,7 @@
     <v-row v-if="team_results.length">
       <v-col style="padding-top: 50px" md="3" offset-md="8">
         <v-btn
-          large
-          outlined
-          color="red lighten-2"
-          :dark="$store.getters.getTheme"
+          color="red-lighten-2"
           :loading="loading"
           @click="
             $emit('dialog', {
@@ -14,6 +11,8 @@
               pdfDialog: true,
             })
           "
+          size="large"
+          variant="outlined"
         >
           <v-icon color="red">mdi-file-pdf-box</v-icon> Lataa pdf
         </v-btn>
@@ -26,34 +25,34 @@
         style="padding-bottom: 20px"
         v-if="team_results.length"
       >
-        <v-card :dark="$store.getters.getTheme">
-          <v-card-title>
+        <v-card>
+          <v-card-title class="d-flex flex-wrap align-center">
             <p
               class="flow-text"
               v-bind:class="{
-                'white--text': $store.getters.getTheme,
+                'text-white': $store.getTheme,
               }"
             >
               Tiimikilpailu
             </p>
             <v-spacer></v-spacer>
             <v-text-field
-              v-model="search_team"
-              append-icon="mdi-magnify"
+              v-model="searchText"
+              append-inner-icon="mdi-magnify"
               :label="$t('search-boat')"
               single-line
               hide-details
             ></v-text-field>
           </v-card-title>
           <v-data-table
-            :headers="headers"
+            :headers="$tableHeaders(headers)"
             :items="team_results"
-            :search="search_team"
+            :search="searchText"
           >
             <template v-slot:[`item.placement`]="{ item }">
               <v-chip
-                :outlined="$store.getters.getTheme"
                 :color="getColor(item.placement)"
+                :variant="$store.getTheme ? 'outlined' : 'flat'"
                 >{{ item.placement }}.</v-chip
               >
             </template>
@@ -69,13 +68,13 @@
           v-if="!loading"
           class="flow-text"
           v-bind:class="{
-            'white--text': $store.getters.getTheme,
+            'text-white': $store.getTheme,
           }"
         >
           Ei tuloksia, vielä...
         </p>
         <v-col v-else>
-          <h2 class="white--text">Päivitetään tuloksia tietokannasta...</h2>
+          <h2 class="text-white">Päivitetään tuloksia tietokannasta...</h2>
           <ProgressBarQuery />
         </v-col>
       </v-col>
@@ -88,7 +87,12 @@ import { getColorPoints, getColor } from "@/shared";
 export default {
   name: "TeamComp",
   components: {},
+  emits: ["dialog"],
   props: ["team_results", "search_team", "loading", "headers"],
+  data() {
+    // Vue 3 can't v-model a prop: the search box edits a local copy (as it did in Vue 2)
+    return { searchText: this.search_team || "" };
+  },
   created() {
     this.getColorPoints = getColorPoints;
     this.getColor = getColor;

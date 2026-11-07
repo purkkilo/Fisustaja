@@ -6,28 +6,27 @@
 
     <v-container
       v-bind:class="{
-        mobile: $vuetify.breakpoint.width < 800,
-        browser: $vuetify.breakpoint.width >= 800,
-        wide: $vuetify.breakpoint.width >= 1200,
+        mobile: $vuetify.display.width < 800,
+        browser: $vuetify.display.width >= 800,
+        wide: $vuetify.display.width >= 1200,
       }"
     >
       <v-card
         style="background: transparent"
-        elevation="10"
-        outlined
-        :dark="$store.getters.getTheme"
+        elevation="3"
+        variant="outlined"
       >
-        <v-row align="center">
+        <v-row class="align-center">
           <v-col>
             <h1 style="margin: 30px">{{ $t("comp.is") }} määritykset</h1>
           </v-col>
           <v-col>
             <v-btn
               :disabled="!basic_info_validated"
-              large
               tile
               color="grey"
               @click="basic_info_validated = false"
+              size="large"
               ><v-icon>mdi-cog-transfer</v-icon>{{ $t("modify-info") }}</v-btn
             >
           </v-col>
@@ -38,26 +37,25 @@
 
       <v-card
         style="background: transparent"
-        elevation="10"
-        outlined
-        :dark="$store.getters.getTheme"
+        elevation="3"
         v-if="basic_info_validated"
+        variant="outlined"
       >
         <v-row v-if="!loading && competition" id="settings-info">
           <v-col>
             <v-row style="margin-top: 20px">
               <v-col md="10" offset-md="1">
-                <v-card :dark="$store.getters.getTheme" elevation="20" outlined>
+                <v-card elevation="5" variant="outlined">
                   <v-card-title class="text-center">
-                    <p class="display-1">
+                    <p class="text-headline-large">
                       {{ competition.name }}, {{ competition.locality }}
                     </p>
                   </v-card-title>
-                  <v-list outlined elevation="10">
+                  <v-list elevation="3" border>
                     <v-list-item v-if="competition.isCupCompetition">
-                      <v-list-item-icon>
-                        <v-icon color="yellow darken-4">mdi-trophy</v-icon>
-                      </v-list-item-icon>
+                      <template v-slot:prepend>
+                        <v-icon color="yellow-darken-4">mdi-trophy</v-icon>
+                      </template>
                       <v-list-item-title>Cup</v-list-item-title>
                       <v-list-item-subtitle class="blue-text">
                         <b>{{ competition.cup_name }}</b>
@@ -65,9 +63,9 @@
                     </v-list-item>
                     <v-divider></v-divider>
                     <v-list-item>
-                      <v-list-item-icon>
+                      <template v-slot:prepend>
                         <v-icon>mdi-calendar-today</v-icon>
-                      </v-list-item-icon>
+                      </template>
                       <v-list-item-title>{{ $t("date") }}</v-list-item-title>
                       <v-list-item-subtitle class="blue-text">
                         <b
@@ -78,19 +76,16 @@
                     </v-list-item>
                     <v-divider></v-divider>
                     <v-list-item v-if="competition.isCupCompetition">
-                      <v-list-item-icon>
+                      <template v-slot:prepend>
                         <v-icon color="green">mdi-clipboard-check</v-icon>
-                      </v-list-item-icon>
-                      <v-list-item-content>
-                        <v-list-item-title
-                          >{{ $t("comp.is") }}
+                      </template>
+                        <v-list-item-title>{{ $t("comp.is") }}
                           {{ $t("placement-points") }}</v-list-item-title
                         >
                         <v-list
-                          :dark="$store.getters.getTheme"
-                          elevation="20"
-                          outlined
+                          elevation="5"
                           style="max-height: 400px; overflow-y: auto"
+                          border
                         >
                           <div
                             v-for="(p, index) in placement_points_array"
@@ -98,7 +93,7 @@
                             style="margin-top: 20px"
                           >
                             <v-list-item>
-                              <v-row align="center">
+                              <v-row class="align-center">
                                 <v-col>
                                   <h3>#{{ p.placement }}</h3>
                                 </v-col>
@@ -110,17 +105,14 @@
                             <v-divider></v-divider>
                           </div>
                         </v-list>
-                      </v-list-item-content>
                     </v-list-item>
                     <v-divider></v-divider>
                     <v-list-item v-if="competition.isCupCompetition">
-                      <v-list-item-icon>
-                        <v-icon color="green darken-2"
-                          >mdi-clipboard-check</v-icon
+                      <template v-slot:prepend>
+                        <v-icon color="green-darken-2">mdi-clipboard-check</v-icon
                         >
-                      </v-list-item-icon>
-                      <v-list-item-title
-                        >{{ $t("cup.normal") }}
+                      </template>
+                      <v-list-item-title>{{ $t("cup.normal") }}
                         {{ $t("participation-points") }}</v-list-item-title
                       >
                       <v-list-item-subtitle class="blue-text">
@@ -129,13 +121,11 @@
                     </v-list-item>
                     <v-divider></v-divider>
                     <v-list-item v-if="competition.isCupCompetition">
-                      <v-list-item-icon>
-                        <v-icon color="green darken-1"
-                          >mdi-calculator-variant-outline</v-icon
+                      <template v-slot:prepend>
+                        <v-icon color="green-darken-1">mdi-calculator-variant-outline</v-icon
                         >
-                      </v-list-item-icon>
-                      <v-list-item-title
-                        >{{ $t("cup.normal") }}
+                      </template>
+                      <v-list-item-title>{{ $t("cup.normal") }}
                         {{ $t("multiplier") }}</v-list-item-title
                       >
                       <v-list-item-subtitle class="blue-text">
@@ -144,16 +134,15 @@
                     </v-list-item>
                     <v-divider></v-divider>
                     <v-list-item>
-                      <v-list-item-icon>
+                      <template v-slot:prepend>
                         <v-icon>mdi-incognito</v-icon>
-                      </v-list-item-icon>
-                      <v-list-item-title
-                        >{{ $t("is") }} {{ $t("public") }}</v-list-item-title
+                      </template>
+                      <v-list-item-title>{{ $t("is") }} {{ $t("public") }}</v-list-item-title
                       >
                       <v-list-item-subtitle class="blue-text">
                         <v-icon
                           v-if="competition.isPublic"
-                          color="green darken-2"
+                          color="green-darken-2"
                           >mdi-check-bold</v-icon
                         >
                         <v-icon v-else color="red">mdi-close</v-icon>
@@ -161,18 +150,17 @@
                     </v-list-item>
                     <v-divider></v-divider>
                     <v-list-item>
-                      <v-list-item-icon>
-                        <v-icon color="yellow darken-4"
-                          >mdi-trophy-award</v-icon
+                      <template v-slot:prepend>
+                        <v-icon color="yellow-darken-4">mdi-trophy-award</v-icon
                         >
-                      </v-list-item-icon>
+                      </template>
                       <v-list-item-title>{{
                         $t("comp.has-it-ended")
                       }}</v-list-item-title>
                       <v-list-item-subtitle class="blue-text">
                         <v-icon
                           v-if="competition.isFinished"
-                          color="green darken-2"
+                          color="green-darken-2"
                           >mdi-check-bold</v-icon
                         >
                         <v-icon v-else color="red">mdi-close</v-icon>
@@ -184,13 +172,12 @@
             </v-row>
             <v-row class="fishes_summary">
               <v-col md="10" offset-md="1" class="scroll_table">
-                <v-card :dark="$store.getters.getTheme" outlined>
-                  <v-card-title class="text-center"
-                    ><p class="display-1">
+                <v-card variant="outlined">
+                  <v-card-title class="text-center"><p class="text-headline-large">
                       {{ $t("fish-specs") }}
                     </p></v-card-title
                   >
-                  <v-list outlined elevation="10">
+                  <v-list elevation="3" border>
                     <div v-for="(fish, index) in fish_specs" :key="index">
                       <v-list-item>
                         <v-list-item-title>{{ fish.name }}</v-list-item-title>
@@ -212,14 +199,14 @@
             <v-row v-if="!loading">
               <v-col style="margin-top: 20px">
                 <v-btn
-                  large
                   rounded
                   :color="
-                    competition.isPublic ? 'grey darken-4' : 'green darken-4'
+                    competition.isPublic ? 'grey-darken-4' : 'green-darken-4'
                   "
                   @click="publishCompetition(competition.isPublic)"
-                  class="white--text"
+                  class="text-white"
                   :loading="updating"
+                  size="large"
                 >
                   <div v-if="competition.isPublic">
                     <v-icon>mdi-incognito</v-icon>{{ $t("button.set-private") }}
@@ -232,14 +219,14 @@
               </v-col>
               <v-col style="margin-top: 20px">
                 <v-btn
-                  large
                   rounded
-                  :color="competition.isFinished ? 'yellow' : 'green darken-3'"
+                  :color="competition.isFinished ? 'yellow' : 'green-darken-3'"
                   @click="endCompetition(competition.isFinished)"
                   :loading="updating"
+                  size="large"
                 >
-                  <div v-if="competition.isFinished" class="black--text">
-                    <v-icon color="red darken-2">mdi-cancel</v-icon>
+                  <div v-if="competition.isFinished" class="text-black">
+                    <v-icon color="red-darken-2">mdi-cancel</v-icon>
                     {{ $t("button.set-not-complete") }}
                   </div>
                   <div v-else>
@@ -253,8 +240,8 @@
               <v-col md="3" offset-md="4" style="margin-top: 20px">
                 <v-btn
                   block
-                  color="red darken-4"
-                  class="white--text"
+                  color="red-darken-4"
+                  class="text-white"
                   :loading="updating"
                   @click="deleteCompetition(competition._id, false)"
                   ><v-icon color="white">mdi-delete-forever</v-icon
@@ -265,19 +252,18 @@
           </v-col>
         </v-row>
 
-        <v-row v-if="loading" align="center" justify="center">
+        <v-row class="justify-center align-center" v-if="loading">
           <v-col>
-            <h2 class="white--text">{{ loadingMessage }}</h2>
+            <h2 class="text-white">{{ loadingMessage }}</h2>
             <ProgressBarQuery />
           </v-col>
         </v-row>
       </v-card>
       <v-card
         style="background: transparent"
-        elevation="10"
-        outlined
-        :dark="$store.getters.getTheme"
+        elevation="3"
         v-if="!basic_info_validated"
+        variant="outlined"
       >
         <error-list :errors="errors"></error-list>
         <v-row>
@@ -287,10 +273,9 @@
         </v-row>
         <v-row v-if="!loading">
           <v-col cols="12">
-            <v-row v-if="competition" justify="center">
+            <v-row class="justify-center" v-if="competition">
               <v-col cols="6" class="input-fields">
                 <v-text-field
-                  :dark="$store.getters.getTheme"
                   :label="$t('comp.is') + ' ' + $t('name')"
                   v-model="name"
                   :maxlength="max_input"
@@ -301,10 +286,9 @@
               </v-col>
             </v-row>
 
-            <v-row v-if="competition" justify="center">
+            <v-row class="justify-center" v-if="competition">
               <v-col cols="6" class="input-fields">
                 <v-text-field
-                  :dark="$store.getters.getTheme"
                   :label="$t('locality')"
                   v-model="locality"
                   :maxlength="max_input"
@@ -317,22 +301,22 @@
 
             <v-row v-if="loading_cups">
               <v-col>
-                <h2 class="white--text">
+                <h2 class="text-white">
                   {{ $t("fetching") }} {{ $t("cup.many") }}...
                 </h2>
                 <ProgressBarQuery />
               </v-col>
             </v-row>
-            <v-row v-if="competition" justify="center" align="center">
+            <v-row class="justify-center align-center" v-if="competition">
               <v-col cols="6" class="input-fields">
-                <span class="white--text">{{ $t("does-it-belong") }}?</span>
-                <v-row justify="center" align="center">
+                <span class="text-white">{{ $t("does-it-belong") }}?</span>
+                <v-row class="justify-center align-center">
                   <v-spacer></v-spacer>
                   <v-col>
                     <v-radio-group
                       v-model="isCupCompetition"
-                      row
                       :disabled="basic_info_validated"
+                      inline
                     >
                       <v-radio :label="$t('yes')" value="Kyllä"></v-radio>
                       <v-radio :label="$t('no')" value="Ei"></v-radio>
@@ -346,7 +330,7 @@
               <v-col>
                 <h2
                   v-bind:class="{
-                    'white--text': $store.getters.getTheme,
+                    'text-white': $store.getTheme,
                   }"
                 >
                   Cuppeja ei löytynyt...
@@ -357,7 +341,7 @@
               <v-col>
                 <h2
                   v-bind:class="{
-                    'white--text': $store.getters.getTheme,
+                    'text-white': $store.getTheme,
                   }"
                 >
                   Kilpailusta ei löytynyt cuppia...
@@ -365,40 +349,37 @@
               </v-col>
             </v-row>
             <v-row
+              class="justify-center align-center"
               v-if="competition && isCupCompetition === 'Kyllä'"
-              align="center"
-              justify="center"
             >
               <v-col cols="6" class="input-fields">
-                <v-subheader class="white--text">
+                <v-list-subheader class="text-white">
                   {{ $t("choose") }} {{ $t("cup.normal") }}
-                </v-subheader>
+                </v-list-subheader>
                 <v-select
                   label="Valitse Cup"
-                  :dark="$store.getters.getTheme"
                   v-model="cup"
                   :items="cups"
-                  item-text="select"
+                  item-title="select"
                   item-value="_id"
                   :hint="`${cup.name} (${cup.year})`"
                   :disabled="basic_info_validated"
-                  outlined
                   return-object
                   single-line
+                  variant="outlined"
                 ></v-select>
               </v-col>
             </v-row>
             <v-row
+              class="justify-center"
               v-if="competition && isCupCompetition === 'Kyllä'"
-              justify="center"
             >
               <v-col cols="6">
-                <h2 class="white--text">{{ $t("placement-points") }}</h2>
+                <h2 class="text-white">{{ $t("placement-points") }}</h2>
                 <v-list
-                  :dark="$store.getters.getTheme"
-                  elevation="20"
-                  outlined
+                  elevation="5"
                   style="max-height: 400px; overflow-y: auto"
+                  border
                 >
                   <div
                     v-for="(p, index) in placement_points_array"
@@ -406,13 +387,12 @@
                     style="margin-top: 20px"
                   >
                     <v-list-item>
-                      <v-row align="center">
+                      <v-row class="align-center">
                         <v-col>
                           <h3>#{{ p.placement }}</h3>
                         </v-col>
                         <v-col>
                           <v-text-field
-                            :dark="$store.getters.getTheme"
                             label="Pisteet"
                             v-model="p.points"
                             :rules="number_rules"
@@ -420,8 +400,7 @@
                             @blur="sortPlacements"
                           />
                         </v-col>
-                        <v-col v-if="editPoints"
-                          ><v-btn @click="removePlacement(index)" color="red">
+                        <v-col v-if="editPoints"><v-btn @click="removePlacement(index)" color="red">
                             <v-icon>mdi-delete</v-icon>
                           </v-btn>
                         </v-col>
@@ -432,8 +411,7 @@
                 </v-list>
                 <v-row v-if="editPoints">
                   <v-col>
-                    <v-btn color="green" @click="addPlacement"
-                      ><v-icon>mdi-plus</v-icon>{{ $t("add-placement") }}</v-btn
+                    <v-btn color="green" @click="addPlacement"><v-icon>mdi-plus</v-icon>{{ $t("add-placement") }}</v-btn
                     >
                   </v-col>
                 </v-row>
@@ -442,7 +420,7 @@
                     <v-btn
                       block
                       color="yellow"
-                      class="black--text"
+                      class="text-black"
                       @click="cancelPoints"
                       ><v-icon>mdi-cancel</v-icon>{{ $t("cancel") }}</v-btn
                     >
@@ -450,7 +428,7 @@
                   <v-col>
                     <v-btn
                       block
-                      :color="editPoints ? 'green darken-2' : 'grey'"
+                      :color="editPoints ? 'green-darken-2' : 'grey'"
                       @click="confirmPoints"
                       :disabled="basic_info_validated"
                       ><v-icon>mdi-check</v-icon
@@ -464,7 +442,7 @@
                   <p
                     class="center-align flow-text"
                     v-bind:class="{
-                      'white--text': $store.getters.getTheme,
+                      'text-white': $store.getTheme,
                     }"
                   >
                     {{ $t("restore-original-points") }}:<br />#1 = 30, #2 = 28,
@@ -478,22 +456,21 @@
             </v-row>
 
             <v-row
+              class="justify-center"
               v-if="competition && isCupCompetition === 'Kyllä'"
-              justify="center"
             >
               <v-col cols="6" class="input-fields">
                 <v-text-field
-                  :dark="$store.getters.getTheme"
                   :label="$t('cup.normal') + ' ' + $t('participation-points')"
                   v-model="cup_participation_points"
-                  append-outer-icon="add"
+                  append-icon="mdi-plus"
                   maxlength="6"
-                  @click:append-outer="
+                  @click:append="
                     cup_participation_points >= 0
                       ? cup_participation_points++
                       : (cup_participation_points = 1)
                   "
-                  prepend-icon="remove"
+                  prepend-icon="mdi-minus"
                   @click:prepend="
                     cup_participation_points >= 1
                       ? cup_participation_points--
@@ -509,22 +486,21 @@
             </v-row>
 
             <v-row
+              class="justify-center"
               v-if="competition && isCupCompetition === 'Kyllä'"
-              justify="center"
             >
               <v-col cols="6" class="input-fields">
                 <v-text-field
-                  :dark="$store.getters.getTheme"
                   :label="$t('cup.normal') + ' ' + $t('multiplier')"
                   v-model="cup_points_multiplier"
-                  append-outer-icon="add"
+                  append-icon="mdi-plus"
                   maxlength="3"
-                  @click:append-outer="
+                  @click:append="
                     cup_points_multiplier >= 1
                       ? (cup_points_multiplier += 0.5)
                       : (cup_points_multiplier = 1)
                   "
-                  prepend-icon="remove"
+                  prepend-icon="mdi-minus"
                   @click:prepend="
                     cup_points_multiplier >= 1.5
                       ? (cup_points_multiplier -= 0.5)
@@ -539,19 +515,18 @@
               </v-col>
             </v-row>
 
-            <v-row v-if="competition" justify="center" align="center">
+            <v-row class="justify-center align-center" v-if="competition">
               <v-col cols="6" class="input-fields">
-                <span class="white--text"
+                <span class="text-white"
                   >{{ $t("is-there") }} {{ $t("comp.is-team") }}?</span
                 >
-                <v-row justify="center" align="center">
+                <v-row class="justify-center align-center">
                   <v-spacer></v-spacer>
                   <v-col>
                     <v-radio-group
-                      :dark="$store.getters.getTheme"
                       v-model="isTeamCompetition"
-                      row
                       :disabled="basic_info_validated"
+                      inline
                     >
                       <v-radio :label="$t('yes')" value="Kyllä"></v-radio>
                       <v-radio :label="$t('no')" value="Ei"></v-radio>
@@ -563,76 +538,70 @@
             </v-row>
 
             <v-row
+              class="justify-center align-center"
               v-if="competition"
               style="padding: 20px; margin-bottom: 50px"
-              justify="center"
-              align="center"
             >
-              <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
-                <span class="white--text">{{ $t("starting-date") }}</span>
+              <v-col cols="12" xl="6" md="6">
+                <span class="text-white">{{ $t("starting-date") }}</span>
 
                 <v-date-picker
-                  :dark="$store.getters.getTheme"
                   style="height: 480px"
                   v-model="start_date"
-                  full-width
-                  elevation="15"
+                  elevation="4"
                   class="mt-4"
                   first-day-of-week="1"
                   :disabled="basic_info_validated"
+                  width="100%"
                 ></v-date-picker>
               </v-col>
-              <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
-                <span class="white--text">{{ $t("ending-date") }}</span>
+              <v-col cols="12" xl="6" md="6">
+                <span class="text-white">{{ $t("ending-date") }}</span>
 
                 <v-date-picker
-                  :dark="$store.getters.getTheme"
                   style="height: 480px"
                   v-model="end_date"
-                  full-width
-                  elevation="15"
+                  elevation="4"
                   class="mt-4"
                   first-day-of-week="1"
                   :disabled="basic_info_validated"
+                  width="100%"
                 ></v-date-picker>
               </v-col>
             </v-row>
 
             <v-row
+              class="justify-center align-center"
               v-if="competition"
               style="padding: 20px; margin-bottom: 50px"
-              justify="center"
-              align="center"
             >
-              <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
-                <span class="white--text">{{ $t("starting-time") }}</span>
+              <v-col cols="12" xl="6" md="6">
+                <span class="text-white">{{ $t("starting-time") }}</span>
 
                 <v-time-picker
-                  :dark="$store.getters.getTheme"
                   v-model="start_time"
                   format="24hr"
-                  full-width
                   scrollable
-                  elevation="15"
+                  elevation="4"
                   :disabled="basic_info_validated"
+                  width="100%"
                 ></v-time-picker>
               </v-col>
-              <v-col cols="12" xl="6" l="6" md="6" s="10" xs="12">
-                <span class="white--text">{{ $t("ending-time") }}</span>
+              <v-col cols="12" xl="6" md="6">
+                <span class="text-white">{{ $t("ending-time") }}</span>
 
                 <v-time-picker
-                  :dark="$store.getters.getTheme"
                   v-model="end_time"
                   format="24hr"
-                  full-width
                   scrollable
-                  elevation="15"
+                  elevation="4"
                   :disabled="basic_info_validated"
+                  width="100%"
                 ></v-time-picker>
               </v-col>
             </v-row>
-            <v-row class="fishes_summary" justify="center" align="center">
-              <v-col cols="12" xl="8" l="8" md="10" s="10" xs="12">
+            <v-row class="fishes_summary justify-center align-center">
+              <v-col cols="12" xl="8" md="10">
                 <table class="highlight centered responsive-table table_header">
                   <thead>
                     <tr>
@@ -644,11 +613,12 @@
                   </thead>
 
                   <!-- for every fish in this.fish_specs, show info for that fish -->
-                  <draggable v-model="inputs" tag="tbody">
-                    <tr v-for="(input, index) in inputs" :key="index">
+                  <!-- vuedraggable 4: rows come from the #item slot -->
+                  <draggable v-model="inputs" tag="tbody" item-key="id">
+                    <template #item="{ element: input, index }">
+                    <tr>
                       <th style="border: 1px solid black" scope="row">
                         <v-text-field
-                          :dark="$store.getters.getTheme"
                           :label="$t('name')"
                           v-model="input.name"
                           :disabled="basic_info_validated"
@@ -658,17 +628,16 @@
                       </th>
                       <td style="border: 1px solid black">
                         <v-text-field
-                          :dark="$store.getters.getTheme"
                           :label="$t('multiplier')"
                           v-model="input.multiplier"
                           maxlength="4"
-                          append-outer-icon="add"
-                          @click:append-outer="
+                          append-icon="mdi-plus"
+                          @click:append="
                             parseInt(input.multiplier) >= 1
                               ? (input.multiplier += 0.5)
                               : (input.multiplier = 1)
                           "
-                          prepend-icon="remove"
+                          prepend-icon="mdi-minus"
                           @click:prepend="
                             input.multiplier >= 1.5
                               ? (input.multiplier -= 0.5)
@@ -683,7 +652,6 @@
                       </td>
                       <td style="border: 1px solid black">
                         <v-text-field
-                          :dark="$store.getters.getTheme"
                           :label="$t('min-size') + ' (cm)'"
                           v-model="input.minsize"
                           :maxlength="40"
@@ -698,21 +666,22 @@
                       >
                         <v-btn
                           icon
-                          color="red darken-4"
-                          class="white--text"
+                          color="red-darken-4"
+                          class="text-white"
                           :disabled="basic_info_validated"
                           @click="deleteFish(index, input.original_name, false)"
+                          variant="text"
                           ><v-icon>mdi-delete</v-icon></v-btn
                         >
                       </td>
                     </tr>
+                    </template>
                   </draggable>
                 </table>
               </v-col>
             </v-row>
             <v-row v-if="!basic_info_validated">
-              <v-col
-                ><b>
+              <v-col><b>
                   <p>
                     {{ $t("create-competition.table-row-instruction") }}
                   </p></b
@@ -722,11 +691,11 @@
             <v-row v-if="!basic_info_validated">
               <v-col>
                 <v-btn
-                  large
-                  color="green darken-4"
-                  class="white--text"
+                  color="green-darken-4"
+                  class="text-white"
                   @click="addInput"
-                  ><v-icon color="green lighten-2">mdi-plus-circle</v-icon>
+                  size="large"
+                  ><v-icon color="green-lighten-2">mdi-plus-circle</v-icon>
                   {{ $t("add") }} {{ $t("fish") }}</v-btn
                 >
               </v-col>
@@ -735,17 +704,16 @@
             <v-row v-if="!basic_info_validated" style="margin-bottom: 20px">
               <v-col md="6" v-if="competition">
                 <v-btn
-                  large
                   color="yellow"
-                  class="black--text"
+                  class="text-black"
                   @click="setOriginalValues"
-                  ><v-icon color="red darken-2">mdi-cancel</v-icon
+                  size="large"
+                  ><v-icon color="red-darken-2">mdi-cancel</v-icon
                   >{{ $t("cancel") }}</v-btn
                 >
               </v-col>
               <v-col md="6" v-if="competition">
-                <v-btn large color="green" @click="checkBasicInformation"
-                  ><v-icon color="green darken-4">mdi-check-outline</v-icon>
+                <v-btn color="green" @click="checkBasicInformation" size="large"><v-icon color="green-darken-4">mdi-check-outline</v-icon>
                   {{ $t("save") }}</v-btn
                 >
               </v-col>
@@ -761,8 +729,8 @@
 <script>
 import CompetitionService from "../services/CompetitionService";
 import CupService from "../services/CupService";
-import ProgressBarQuery from "../components/layout/ProgressBarQuery";
-import Timedate from "../components/layout/Timedate";
+import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
+import Timedate from "../components/layout/Timedate.vue";
 import constants from "../data/constants";
 import draggable from "vuedraggable";
 import {
@@ -906,7 +874,7 @@ export default {
     },
     async updateToDatabase(competition, newvalues) {
       try {
-        this.$store.commit("refreshCompetition", competition);
+        this.$store.refreshCompetition(competition);
         this.updating = true;
         await CompetitionService.updateValues(this.competition._id, newvalues);
       } catch (err) {
@@ -959,8 +927,8 @@ export default {
           //TODO make a test for this?
           this.competition = competition;
           // Update to vuex, Assing variables from vuex (see client/store/index.js)
-          this.$store.commit("refreshCompetition", competition);
-          this.fish_specs = this.$store.getters.getCompetitionFishes;
+          this.$store.refreshCompetition(competition);
+          this.fish_specs = this.$store.getCompetitionFishes;
           this.setOriginalValues();
           if (!this.cups.length) {
             this.getCups();
@@ -977,7 +945,8 @@ export default {
     isNumber: isNumber,
     addInput() {
       this.inputs.push({
-        id: this.inputs.length,
+        // unique even after deleting a row (draggable uses it as the row key)
+        id: Math.max(this.inputs.length - 1, ...this.inputs.map((i) => i.id)) + 1,
         name: "",
         multiplier: 1,
         minsize: "0",
@@ -1226,7 +1195,7 @@ export default {
     // Update competition to database
     async updateCompetition(competition) {
       try {
-        this.$store.commit("refreshCompetition", competition);
+        this.$store.refreshCompetition(competition);
         this.loading = true;
         await CompetitionService.updateCompetition(
           competition._id,
@@ -1250,7 +1219,7 @@ export default {
           //Delete competition from database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
           await CompetitionService.deleteCompetition(id);
           // Competition deleted, remove it from localstorage and vuex
-          this.$store.state.competition = null;
+          this.$store.competition = null;
           localStorage.removeItem("competition");
           // Redirect to dashboard
           this.$router.push({ path: "/dashboard" });

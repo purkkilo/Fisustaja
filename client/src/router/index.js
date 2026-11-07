@@ -1,8 +1,5 @@
-import Vue from "vue";
-import VueRouter from "vue-router";
+import { createRouter, createWebHistory } from "vue-router";
 import Home from "../views/Home.vue";
-
-Vue.use(VueRouter);
 
 const routes = [
   {
@@ -17,7 +14,7 @@ const routes = [
     path: "/login",
     name: "login",
     component: () =>
-      import(/* webpackChunkName: "non-login" */ "../views/Login.vue"),
+      import("../views/Login.vue"),
     meta: {
       requiresAuth: false,
     },
@@ -26,7 +23,7 @@ const routes = [
     path: "/register",
     name: "register",
     component: () =>
-      import(/* webpackChunkName: "admin" */ "../views/Register.vue"),
+      import("../views/Register.vue"),
     meta: {
       requiresAuth: true,
       is_admin: true,
@@ -36,7 +33,7 @@ const routes = [
     path: "/public-results",
     name: "PublicResults",
     component: () =>
-      import(/* webpackChunkName: "non-login" */ "../views/PublicResults.vue"),
+      import("../views/PublicResults.vue"),
     meta: {
       requiresAuth: false,
     },
@@ -45,7 +42,7 @@ const routes = [
     path: "/public-cups",
     name: "PublicCups",
     component: () =>
-      import(/* webpackChunkName: "non-login" */ "../views/PublicCups.vue"),
+      import("../views/PublicCups.vue"),
     meta: {
       requiresAuth: false,
     },
@@ -54,7 +51,7 @@ const routes = [
     path: "/dashboard",
     name: "dashboard",
     component: () =>
-      import(/* webpackChunkName: "login" */ "../views/Dashboard.vue"),
+      import("../views/Dashboard.vue"),
     meta: {
       requiresAuth: true,
     },
@@ -63,7 +60,7 @@ const routes = [
     path: "/admin",
     name: "admin",
     component: () =>
-      import(/* webpackChunkName: "admin" */ "../views/Admin.vue"),
+      import("../views/Admin.vue"),
     meta: {
       requiresAuth: true,
       is_admin: true,
@@ -73,7 +70,7 @@ const routes = [
     path: "/cup-overview",
     name: "CupOverview",
     component: () =>
-      import(/* webpackChunkName: "login" */ "../views/CupOverview.vue"),
+      import("../views/CupOverview.vue"),
     meta: {
       requiresAuth: true,
     },
@@ -82,7 +79,7 @@ const routes = [
     path: "/register-comp",
     name: "CreateComp",
     component: () =>
-      import(/* webpackChunkName: "login" */ "../views/CreateComp.vue"),
+      import("../views/CreateComp.vue"),
     meta: {
       requiresAuth: true,
     },
@@ -91,7 +88,7 @@ const routes = [
     path: "/weighting",
     name: "Weighting",
     component: () =>
-      import(/* webpackChunkName: "competition" */ "../views/Weighting.vue"),
+      import("../views/Weighting.vue"),
     meta: {
       requiresAuth: true,
     },
@@ -100,7 +97,7 @@ const routes = [
     path: "/overview",
     name: "Overview",
     component: () =>
-      import(/* webpackChunkName: "competition" */ "../views/Overview.vue"),
+      import("../views/Overview.vue"),
     meta: {
       requiresAuth: true,
     },
@@ -109,7 +106,7 @@ const routes = [
     path: "/comp-settings",
     name: "CompSettings",
     component: () =>
-      import(/* webpackChunkName: "competition" */ "../views/CompSettings.vue"),
+      import("../views/CompSettings.vue"),
     meta: {
       requiresAuth: true,
     },
@@ -118,7 +115,7 @@ const routes = [
     path: "/results",
     name: "Results",
     component: () =>
-      import(/* webpackChunkName: "competition" */ "../views/Results.vue"),
+      import("../views/Results.vue"),
     meta: {
       requiresAuth: true,
     },
@@ -127,7 +124,7 @@ const routes = [
     path: "/signing",
     name: "Signing",
     component: () =>
-      import(/* webpackChunkName: "competition" */ "../views/Signing.vue"),
+      import("../views/Signing.vue"),
     meta: {
       requiresAuth: true,
     },
@@ -137,45 +134,36 @@ const routes = [
     path: "/404",
     // route level code-splitting
     component: () =>
-      import(/* webpackChunkName: "non-login" */ "../views/NotFound.vue"),
+      import("../views/NotFound.vue"),
     meta: { title: "Not Found" },
   },
   {
-    path: "*",
-    redirect: "404",
+    path: "/:pathMatch(.*)*",
+    redirect: { name: "404" },
   },
 ];
 
-let router = new VueRouter({
-  mode: "history",
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes,
 });
 
 // Check auth before loading page
-router.beforeEach((to, from, next) => {
-  if (to.matched.some((record) => record.meta.requiresAuth)) {
-    if (
-      localStorage.getItem("jwt") == null ||
-      localStorage.getItem("user") == null
-    ) {
-      next({
-        path: "/login",
-      });
-    } else {
-      let isAdmin = JSON.parse(localStorage.getItem("auth"));
-      if (to.matched.some((record) => record.meta.is_admin)) {
-        if (isAdmin) {
-          next();
-        } else {
-          router.push({ name: "404" });
-        }
-      } else {
-        next();
-      }
-    }
-  } else {
-    next();
+router.beforeEach((to) => {
+  if (!to.matched.some((record) => record.meta.requiresAuth)) {
+    return true;
   }
+  if (
+    localStorage.getItem("jwt") == null ||
+    localStorage.getItem("user") == null
+  ) {
+    return { path: "/login" };
+  }
+  const isAdmin = JSON.parse(localStorage.getItem("auth"));
+  if (to.matched.some((record) => record.meta.is_admin) && !isAdmin) {
+    return { name: "404" };
+  }
+  return true;
 });
 
 export default router;

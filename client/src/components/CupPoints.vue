@@ -1,7 +1,7 @@
 <template>
   <v-row>
     <v-dialog v-model="dialog" width="500">
-      <v-card :dark="$store.getters.getTheme">
+      <v-card>
         <v-card-title> Pdf {{ $t("settings") }}</v-card-title>
         <v-card-text>
           <v-checkbox
@@ -20,13 +20,12 @@
         <v-divider></v-divider>
 
         <v-card-actions>
-          <v-btn color="yellow" text @click="dialog = false">
+          <v-btn color="yellow" @click="dialog = false" variant="text">
             {{ $t("cancel") }}
           </v-btn>
           <v-spacer></v-spacer>
           <v-btn
             color="primary"
-            text
             @click="
               dialog = false;
               $emit('save', {
@@ -35,6 +34,7 @@
                 showInfoInPdf: showInfoInPdf,
               });
             "
+            variant="text"
           >
             {{ $t("download") }}
           </v-btn>
@@ -45,17 +45,15 @@
       <v-row v-if="results.length" style="margin-top: 50px; padding-left: 50px">
         <v-col class="d-flex" md="4">
           <v-select
-            :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
-            dark
             :items="headerOptions"
             :label="$t('comp.header')"
-            outlined
             v-model="headerSelection"
-            @input="$emit('change', headerSelection)"
+            @update:model-value="$emit('change', headerSelection)"
+            variant="outlined"
           >
-            <template v-slot:item="{ item }">
-              <span>{{ $t(item) }}</span>
-            </template>
+            <template v-slot:item="{ item, props }">
+                <v-list-item v-bind="props" :title="$t(item)" />
+              </template>
             <template v-slot:selection="{ item }">
               <span>{{ $t(item) }}</span>
             </template></v-select
@@ -63,23 +61,20 @@
         </v-col>
         <v-col class="d-flex" md="4">
           <v-select
-            :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
-            dark
             :items="selectNumbers"
             :label="$t('cup.header')"
-            outlined
             v-model="selectedCompetitions"
-            @input="$emit('calculate', selectedCompetitions)"
+            @update:model-value="$emit('calculate', selectedCompetitions)"
+            variant="outlined"
           ></v-select>
         </v-col>
         <v-col md="4">
           <v-btn
-            large
-            outlined
-            color="red lighten-2"
-            :dark="$store.getters.getTheme"
+            color="red-lighten-2"
             @click="dialog = true"
             :loading="loading"
+            size="large"
+            variant="outlined"
           >
             <v-icon color="red">mdi-file-pdf-box</v-icon>
             {{ $t("download") }} pdf
@@ -87,8 +82,7 @@
         </v-col>
       </v-row>
       <v-row
-        align="center"
-        justify="center"
+        class="justify-center align-center"
         v-if="
           results.length &&
           allCompetitions.filter((c) => !c.isFinished).length > 0
@@ -96,9 +90,8 @@
       >
         <v-col cols="4">
           <v-checkbox
-            @change="$emit('sort', showUnfinishedCompetitions)"
-            dark
             v-model="showUnfinishedCompetitions"
+            @update:model-value="$emit('sort', showUnfinishedCompetitions)"
             :label="$t('comp.show-not-finished')"
             :disabled="!competitions.length"
             color="green"
@@ -107,13 +100,13 @@
       </v-row>
       <v-row v-if="isResults">
         <v-col>
-          <v-card :dark="$store.getters.getTheme">
-            <v-card-title>
+          <v-card>
+            <v-card-title class="d-flex flex-wrap align-center">
               <p class="flow-text">{{ $t("cup.normal") }} {{ $t("points") }}</p>
               <v-spacer></v-spacer>
               <v-text-field
                 v-model="search"
-                append-icon="mdi-magnify"
+                append-inner-icon="mdi-magnify"
                 :label="$t('search-boat')"
                 single-line
                 hide-details
@@ -121,23 +114,23 @@
             </v-card-title>
             <v-data-table
               id="normal-table"
-              :headers="headers"
+              :headers="$tableHeaders(headers)"
               :items="results"
               :search="search"
               :loading="loading"
             >
               <template
                 v-for="(h, index) in headers"
-                v-slot:[`header.${h.value}`]="{ header }"
+                v-slot:[`header.${h.value}`]="{ column: header }"
               >
-                <v-row align="center" justify="center" :key="index">
+                <v-row class="justify-center align-center" :key="index">
                   <v-col>
                     <span
                       v-if="header.highlight"
                       class="strokeme"
                       v-bind:class="{
-                        'red--text': !header.isFinished,
-                        'green--text': header.isFinished,
+                        'text-red': !header.isFinished,
+                        'text-green': header.isFinished,
                       }"
                     >
                       {{ header.text }}
@@ -148,14 +141,14 @@
               </template>
               <template v-slot:[`item.final_placement`]="{ item }">
                 <v-chip
-                  :outlined="$store.getters.getTheme"
                   :color="getColor(item.final_placement)"
+                  :variant="$store.getTheme ? 'outlined' : 'flat'"
                   >{{ item.final_placement }}.</v-chip
                 >
               </template>
               <template
                 v-for="(c, index) in competitions.length"
-                v-slot:[`item.cup_results[${c}].points`]="{ item }"
+                v-slot:[resultSlot(c)]="{ item }"
               >
                 <div v-if="item.cup_results[c]" v-bind:key="c">
                   <span
@@ -184,7 +177,7 @@
                 <span v-else v-bind:key="index"> - </span>
               </template>
               <template v-slot:[`item.final_cup_points`]="{ item }">
-                <v-chip color="primary">{{ item.final_cup_points }}p</v-chip>
+                <v-chip color="primary" variant="flat">{{ item.final_cup_points }}p</v-chip>
               </template>
             </v-data-table>
           </v-card>
@@ -194,7 +187,7 @@
         <v-col>
           <h2
             v-bind:class="{
-              'white--text': $store.getters.getTheme,
+              'text-white': $store.getTheme,
             }"
           >
             Kilpailuissa ei vielä tuloksia!
@@ -206,7 +199,7 @@
           <p
             class="flow-text"
             v-bind:class="{
-              'white--text': $store.getters.getTheme,
+              'text-white': $store.getTheme,
             }"
           >
             Päivitetään tuloksia...
@@ -217,13 +210,13 @@
         <v-col>
           <v-btn
             id="updatebtn"
-            large
             tile
             :loading="loading"
             :disabled="!isResults"
-            color="blue darken-4"
+            color="blue-darken-4"
             @click="$emit('refresh', cup)"
-            class="white--text"
+            class="text-white"
+            size="large"
           >
             <v-icon>mdi-update</v-icon>{{ $t("button.update") }}
           </v-btn>
@@ -233,7 +226,7 @@
         <v-col>
           <h2
             v-bind:class="{
-              'white--text': $store.getters.getTheme,
+              'text-white': $store.getTheme,
             }"
           >
             Ei kilpailuja rekisteröitynä!
@@ -247,6 +240,7 @@
 import { getColor } from "@/shared";
 export default {
   name: "CupPoints",
+  emits: ["calculate", "change", "refresh", "save", "sort"],
   props: [
     "competitions",
     "allCompetitions",
@@ -276,6 +270,10 @@ export default {
     else this.selectedCompetitions = this.competitions.length;
   },
   methods: {
+    // Vue 3 can't parse "[" "]" inside a dynamic slot name in the template
+    resultSlot(c) {
+      return `item.cup_results[${c}].points`;
+    },
     getColor: getColor,
   },
 };

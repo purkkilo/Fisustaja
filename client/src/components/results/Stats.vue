@@ -4,10 +4,7 @@
     <v-row style="padding-top: 50px">
       <v-col md="3" offset-md="8">
         <v-btn
-          large
-          outlined
-          color="red lighten-2"
-          :dark="$store.getters.getTheme"
+          color="red-lighten-2"
           :loading="loading"
           @click="
             $emit('dialog', {
@@ -17,6 +14,8 @@
           "
           :disabled="!biggest_amounts.length"
           style="margin-bottom: 20px"
+          size="large"
+          variant="outlined"
         >
           <v-icon color="red">mdi-file-pdf-box</v-icon>
           {{ $t("download") }} pdf</v-btn
@@ -28,15 +27,13 @@
         <v-row style="min-height: 400px" v-if="normal_points.length">
           <v-col sm="12" md="5" offset-md="1" style="margin-bottom: 50px">
             <div v-if="fishes_chart_data">
-              <v-hover v-slot="{ hover }">
-                <v-card
-                  :dark="$store.getters.getTheme"
-                  :elevation="hover ? 20 : 5"
-                  :class="{ 'on-hover': hover }"
+              <v-hover v-slot="{ isHovering, props }">
+                <v-card v-bind="props"
+                  :elevation="isHovering ? 5 : 2"
+                  :class="{ 'on-hover': isHovering }"
                   style="padding: 20px"
                 >
-                  <v-card-title
-                    ><h4 class="headline mb-1">
+                  <v-card-title><h4 class="text-headline-small mb-1">
                       {{ $t(fishes_chart_title) }}
                     </h4></v-card-title
                   >
@@ -51,15 +48,13 @@
           </v-col>
           <v-col sm="12" md="5">
             <div v-if="signee_chart_data">
-              <v-hover v-slot="{ hover }">
-                <v-card
-                  :dark="$store.getters.getTheme"
-                  :elevation="hover ? 20 : 5"
-                  :class="{ 'on-hover': hover }"
+              <v-hover v-slot="{ isHovering, props }">
+                <v-card v-bind="props"
+                  :elevation="isHovering ? 5 : 2"
+                  :class="{ 'on-hover': isHovering }"
                   style="padding: 20px"
                 >
-                  <v-card-title
-                    ><h4 class="headline mb-1">
+                  <v-card-title><h4 class="text-headline-small mb-1">
                       {{ $t(signee_chart_title) }}
                     </h4></v-card-title
                   >
@@ -78,7 +73,7 @@
             <p
               class="flow-text"
               v-bind:class="{
-                'white--text': $store.getters.getTheme,
+                'text-white': $store.getTheme,
               }"
             >
               Ei tuloksia, vielä...
@@ -91,17 +86,15 @@
       <v-col md="8" offset-md="2">
         <v-row>
           <v-col>
-            <v-hover v-slot="{ hover }">
-              <v-card
-                :dark="$store.getters.getTheme"
-                :elevation="hover ? 20 : 5"
-                :class="{ 'on-hover': hover }"
+            <v-hover v-slot="{ isHovering, props }">
+              <v-card v-bind="props"
+                :elevation="isHovering ? 5 : 2"
+                :class="{ 'on-hover': isHovering }"
                 style="padding: 20px"
               >
-                <v-card-title class="text-center"
-                  ><p class="display-1">{{ $t("fish-specs") }}</p></v-card-title
+                <v-card-title class="text-center"><p class="text-headline-large">{{ $t("fish-specs") }}</p></v-card-title
                 >
-                <v-list outlined>
+                <v-list border>
                   <div v-for="(fish, index) in competition.fishes" :key="index">
                     <v-list-item>
                       <v-list-item-title>{{ fish.name }}</v-list-item-title>
@@ -114,13 +107,13 @@
                         <b> x {{ fish.multiplier }}</b>
                       </v-list-item-subtitle>
                       <v-divider vertical></v-divider>
-                      <v-list-item-subtitle class="blue--text">
+                      <v-list-item-subtitle class="text-blue">
                         <span
                           ><b>{{ fish.minsize }} cm</b></span
                         >
                       </v-list-item-subtitle>
                       <v-divider vertical></v-divider>
-                      <v-list-item-subtitle class="green--text">
+                      <v-list-item-subtitle class="text-green">
                         <b>
                           {{
                             fish.weights
@@ -140,7 +133,7 @@
                       $t("total-amount")
                     }}</v-list-item-title>
                     <v-list-item-subtitle>
-                      <h4 class="green--text">
+                      <h4 class="text-green">
                         <b
                           >{{
                             Math.round(
@@ -161,22 +154,19 @@
         </v-row>
         <v-row>
           <v-col>
-            <v-hover v-slot="{ hover }">
-              <v-card
-                :dark="$store.getters.getTheme"
-                :elevation="hover ? 20 : 5"
-                :class="{ 'on-hover': hover }"
+            <v-hover v-slot="{ isHovering, props }">
+              <v-card v-bind="props"
+                :elevation="isHovering ? 5 : 2"
+                :class="{ 'on-hover': isHovering }"
                 style="padding: 20px; margin-bottom: 20px"
               >
-                <v-card-title class="text-center"
-                  ><p class="display-1">
+                <v-card-title class="text-center"><p class="text-headline-large">
                     {{ $t("general-statistics") }}
                   </p></v-card-title
                 >
-                <v-list outlined>
+                <v-list border>
                   <v-list-item>
-                    <v-list-item-title
-                      ><b
+                    <v-list-item-title><b
                         >{{ $t("cup.normal") }} {{ $t("multiplier") }}</b
                       ></v-list-item-title
                     >
@@ -197,7 +187,7 @@
                       <b>{{ $t("total-signees") }}</b>
                     </v-list-item-title>
                     <v-divider vertical></v-divider>
-                    <v-list-item-subtitle class="green--text">
+                    <v-list-item-subtitle class="text-green">
                       <b>{{ signees.length }} </b>
                     </v-list-item-subtitle>
                   </v-list-item>
@@ -209,7 +199,7 @@
                     <v-divider vertical></v-divider>
                     <v-list-item-subtitle
                       v-if="hasGottenFishCount"
-                      class="green--text"
+                      class="text-green"
                     >
                       <b
                         >{{
@@ -219,8 +209,7 @@
                         }}% ({{ hasGottenFishCount }} / {{ signees.length }})</b
                       >
                     </v-list-item-subtitle>
-                    <v-list-item-subtitle class="red-text" v-else
-                      ><b>0% (0/0)</b></v-list-item-subtitle
+                    <v-list-item-subtitle class="red-text" v-else><b>0% (0/0)</b></v-list-item-subtitle
                     >
                   </v-list-item>
                 </v-list>
@@ -233,8 +222,8 @@
   </div>
 </template>
 <script>
-import PieChart from "../PieChart";
-import DoughnutChart from "../DoughnutChart";
+import PieChart from "../PieChart.vue";
+import DoughnutChart from "../DoughnutChart.vue";
 import { getMultiplierTextColor } from "@/shared";
 
 export default {
@@ -243,6 +232,7 @@ export default {
     PieChart,
     DoughnutChart,
   },
+  emits: ["dialog"],
   props: [
     "competition",
     "normal_points",

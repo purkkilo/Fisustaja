@@ -3,16 +3,15 @@
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container
     v-bind:class="{
-      mobile: $vuetify.breakpoint.width < 800,
-      browser: $vuetify.breakpoint.width >= 800,
-      wide: $vuetify.breakpoint.width >= 1200,
+      mobile: $vuetify.display.width < 800,
+      browser: $vuetify.display.width >= 800,
+      wide: $vuetify.display.width >= 1200,
     }"
   >
     <v-card
       style="background: transparent; padding: 20px"
-      elevation="10"
-      outlined
-      :dark="$store.getters.getTheme"
+      elevation="3"
+      variant="outlined"
     >
       <error-list :errors="errors"></error-list>
       <v-row>
@@ -24,7 +23,6 @@
         <v-row>
           <v-col md="8" offset-md="2" class="input-fields">
             <v-text-field
-              :dark="$store.getters.getTheme"
               :label="$t('username')"
               id="name"
               @paste.prevent
@@ -40,7 +38,6 @@
         <v-row>
           <v-col md="8" offset-md="2" class="input-fields">
             <v-text-field
-              :dark="$store.getters.getTheme"
               :label="$t('email')"
               id="email"
               @paste.prevent
@@ -56,15 +53,14 @@
         <v-row>
           <v-col md="8" offset-md="2" class="input-fields">
             <v-text-field
-              :dark="$store.getters.getTheme"
               :label="$t('password')"
               id="password"
               @paste.prevent
               v-model="password"
               name="password"
               :type="showPassword ? 'text' : 'password'"
-              @click:append="showPassword = !showPassword"
-              :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+              @click:append-inner="showPassword = !showPassword"
+              :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
               maxlength="40"
               :loading="loading"
               :counter="40"
@@ -74,15 +70,14 @@
         <v-row>
           <v-col md="8" offset-md="2" class="input-fields">
             <v-text-field
-              :dark="$store.getters.getTheme"
               :label="$t('password') + ' ' + $t('confirmation')"
               id="password_confirmation"
               @paste.prevent
               v-model="password_confirmation"
               name="password_confirmation"
               :type="showPassword ? 'text' : 'password'"
-              @click:append="showPassword = !showPassword"
-              :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+              @click:append-inner="showPassword = !showPassword"
+              :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
               maxlength="40"
               :loading="loading"
               :counter="40"
@@ -95,7 +90,7 @@
             <span
               class="flow-text"
               v-bind:class="{
-                'white--text': $store.getters.getTheme,
+                'text-white': $store.getTheme,
               }"
               >{{ $t("notification.passwords-matching") }}
               <v-icon>mdi-check-outline</v-icon></span
@@ -117,11 +112,11 @@
             <span
               class="col s6 flow-text"
               v-bind:class="{
-                'white--text': $store.getters.getTheme,
+                'text-white': $store.getTheme,
               }"
               >{{ $t("nav.admin") }}?</span
             >
-            <v-radio-group v-model="is_admin" row>
+            <v-radio-group v-model="is_admin" inline>
               <v-radio :label="$t('yes')" value="Yes"></v-radio>
               <v-radio :label="$t('no')" value="No"></v-radio>
             </v-radio-group>
@@ -133,14 +128,14 @@
           <v-col>
             <v-btn
               id="sbtn"
-              large
               tile
-              color="blue darken-4"
-              class="white--text"
+              color="blue-darken-4"
+              class="text-white"
               @click="handleSubmit"
               :disabled="
                 password.length === 0 || password !== password_confirmation
               "
+              size="large"
             >
               <v-icon>mdi-account-plus</v-icon>{{ $t("register") }}
             </v-btn>
@@ -154,7 +149,7 @@
 </template>
 <script>
 import UserService from "../services/UserService";
-import ProgressBarQuery from "../components/layout/ProgressBarQuery";
+import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
 import NotificationBar from "../components/NotificationBar.vue";
 import ErrorList from "../components/ErrorList.vue";
 

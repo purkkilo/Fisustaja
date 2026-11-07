@@ -1,0 +1,32 @@
+/*
+  Vuetify 4 dropped its global CSS reset. These rules put back the spacing
+  the Vuetify 2 version of the app was built on (from the official v4 upgrade guide).
+*/
+@layer vuetify-core.reset {
+  ul,
+  ol,
+  figure,
+  details,
+  summary {
+    padding: 0;
+    margin: 0;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p {
+    margin: 0;
+  }
+}
+
+/* Vuetify 3+ card titles are single-line with ellipsis; Vuetify 2 wrapped them */
+@layer vuetify-overrides {
+  .v-card-title {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}

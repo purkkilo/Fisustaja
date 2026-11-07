@@ -1,33 +1,32 @@
 <template>
-  <v-row align="center" style="margin: 0">
+  <v-row class="align-center" style="margin: 0">
     <v-col>
       <v-card
         style="background: transparent"
-        elevation="5"
-        outlined
+        elevation="2"
         height="100"
-        :dark="$store.getters.getTheme"
+        variant="outlined"
       >
         <v-row>
           <v-col>
-            <h2 class="white--text" id="comp-state">
+            <h2 class="text-white" id="comp-state">
               {{ $t("timer.date") }} {{ date }}
             </h2>
           </v-col>
           <v-col>
-            <h2 class="white--text" id="clock">
+            <h2 class="text-white" id="clock">
               {{ $t("timer.at") }} {{ clock }}
             </h2>
           </v-col>
         </v-row>
         <v-row>
-          <v-row align="center">
+          <v-row class="align-center">
             <v-col>
               <h3
                 :class="
                   competition_state === 'comp-ended'
-                    ? 'red--text'
-                    : 'green--text'
+                    ? 'text-red'
+                    : 'text-green'
                 "
                 id="date"
               >
@@ -38,8 +37,8 @@
               <h2
                 :class="
                   competition_state === 'comp-ended'
-                    ? 'red--text'
-                    : 'green--text'
+                    ? 'text-red'
+                    : 'text-green'
                 "
                 id="comp-left"
                 v-if="competitionChosen"
@@ -101,7 +100,7 @@ export default {
       clearInterval(this.timer);
     }
   },
-  beforeDestroy() {
+  beforeUnmount() {
     clearInterval(this.timer);
     clearInterval(this.timer_clock);
     clearInterval(this.timer_date);

@@ -3,33 +3,32 @@
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container
     v-bind:class="{
-      mobile: $vuetify.breakpoint.width < 800,
-      browser: $vuetify.breakpoint.width >= 800,
-      wide: $vuetify.breakpoint.width >= 1200,
+      mobile: $vuetify.display.width < 800,
+      browser: $vuetify.display.width >= 800,
+      wide: $vuetify.display.width >= 1200,
     }"
   >
     <!-- Tabs -->
-    <v-tabs
+    <v-tabs slider-color="blue-darken-4"
       v-model="tab"
-      background-color="blue lighten-2"
-      color="blue darken-4"
+      bg-color="blue-lighten-2"
+      color="blue-darken-4"
       grow
       show-arrows
       next-icon="mdi-arrow-right-bold-box-outline"
       prev-icon="mdi-arrow-left-bold-box-outline"
       center-active
     >
-      <v-tabs-slider color="blue darken-4"></v-tabs-slider>
-      <v-tab href="#overview">{{ $t("general") }}</v-tab>
-      <v-tab href="#users">{{ $t("users") }}</v-tab>
-      <v-tab href="#competitions">{{ $t("comp.plural") }}</v-tab>
+      <v-tab value="overview">{{ $t("general") }}</v-tab>
+      <v-tab value="users">{{ $t("users") }}</v-tab>
+      <v-tab value="competitions">{{ $t("comp.plural") }}</v-tab>
     </v-tabs>
-    <v-tabs-items v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
-      <v-tab-item
+    <v-window v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
+      <v-window-item
         :value="'overview'"
         v-bind:class="{
-          inputarea: !$store.getters.getTheme,
-          'inputarea-dark': $store.getters.getTheme,
+          inputarea: !$store.getTheme,
+          'inputarea-dark': $store.getTheme,
         }"
       >
         <v-row>
@@ -38,10 +37,10 @@
               <v-col v-if="prevRoute">
                 <v-btn
                   v-if="prevRoute.name"
-                  large
                   rounded
                   color="yellow"
                   @click="$router.push({ path: prevRoute.path })"
+                  size="large"
                   ><v-icon>mdi-keyboard-return</v-icon
                   >{{ $t("button.return-back") }}</v-btn
                 >
@@ -55,7 +54,7 @@
             <!-- if this.loading_users === false, meaning app isn't loading users, then show this div -->
             <v-row v-if="!loading_users">
               <v-col md="6" offset-md="3">
-                <v-card elevation="20" :dark="$store.getters.getTheme">
+                <v-card elevation="5">
                   <p v-if="users.length" class="flow-text">
                     <v-icon>mdi-account-circle</v-icon>
                     {{ $t("users-plural") }} {{ $t("total") }}:
@@ -71,7 +70,7 @@
               <v-col md="6" offset-md="3">
                 <h3
                   v-bind:class="{
-                    'white--text': $store.getters.getTheme,
+                    'text-white': $store.getTheme,
                   }"
                 >
                   {{ $t("loading") }} {{ $t("users-plural") }}...
@@ -82,12 +81,11 @@
             <!-- if this.loading_competitions === false, meaning app isn't loading competitions, then show this div -->
             <v-row v-if="!loading_competitions">
               <v-col md="6" offset-md="3">
-                <v-card elevation="20" :dark="$store.getters.getTheme">
+                <v-card elevation="5">
                   <p v-if="all_competitions.length" class="flow-text">
                     <v-icon>mdi-ferry</v-icon> {{ $t("comp.plural") }}
                     {{ $t("total") }}:
-                    {{ all_competitions.length }} kpl<br /><v-icon
-                      >mdi-arrow-right-bold</v-icon
+                    {{ all_competitions.length }} kpl<br /><v-icon>mdi-arrow-right-bold</v-icon
                     >
                     {{ $t("self-created") }} {{ competitions.length }}/{{
                       all_competitions.length
@@ -104,7 +102,7 @@
               <v-col md="6" offset-md="3">
                 <h3
                   v-bind:class="{
-                    'white--text': $store.getters.getTheme,
+                    'text-white': $store.getTheme,
                   }"
                 >
                   {{ $t("loading") }} {{ $t("comp.plural") }}...
@@ -114,12 +112,11 @@
             </v-row>
             <v-row v-if="!loading_cups">
               <v-col md="6" offset-md="3">
-                <v-card elevation="20" :dark="$store.getters.getTheme">
+                <v-card elevation="5">
                   <p v-if="all_cups.length" class="flow-text">
-                    <v-icon color="yellow darken-1">mdi-medal</v-icon
+                    <v-icon color="yellow-darken-1">mdi-medal</v-icon
                     >{{ $t("cup.plural") }} {{ $t("total") }}:
-                    {{ all_cups.length }} kpl<br /><v-icon
-                      >mdi-arrow-right-bold</v-icon
+                    {{ all_cups.length }} kpl<br /><v-icon>mdi-arrow-right-bold</v-icon
                     >
                     {{ $t("self-created") }} {{ cups.length }}/{{
                       all_cups.length
@@ -137,7 +134,7 @@
               <v-col md="6" offset-md="3">
                 <h3
                   v-bind:class="{
-                    'white--text': $store.getters.getTheme,
+                    'text-white': $store.getTheme,
                   }"
                 >
                   {{ $t("loading") }} {{ $t("cup.plural") }}...
@@ -147,12 +144,12 @@
             </v-row>
           </v-col>
         </v-row>
-      </v-tab-item>
-      <v-tab-item
+      </v-window-item>
+      <v-window-item
         :value="'users'"
         v-bind:class="{
-          inputarea: !$store.getters.getTheme,
-          'inputarea-dark': $store.getters.getTheme,
+          inputarea: !$store.getTheme,
+          'inputarea-dark': $store.getTheme,
         }"
       >
         <v-row>
@@ -161,10 +158,10 @@
               <v-col v-if="prevRoute">
                 <v-btn
                   v-if="prevRoute.name"
-                  large
                   rounded
                   color="yellow"
                   @click="$router.push({ path: prevRoute.path })"
+                  size="large"
                   ><v-icon>mdi-keyboard-return</v-icon
                   >{{ $t("button.return-back") }}</v-btn
                 >
@@ -177,7 +174,7 @@
                 <p
                   class="flow-text"
                   v-bind:class="{
-                    'white--text': $store.getters.getTheme,
+                    'text-white': $store.getTheme,
                   }"
                 >
                   {{ $t("notification.click-name") }}
@@ -189,54 +186,51 @@
                 md="6"
                 offset-md="3"
                 v-bind:class="{
-                  'grey darken-4': $store.getters.getTheme,
+                  'bg-grey-darken-4': $store.getTheme,
                 }"
               >
                 <v-data-iterator
                   :items="users"
                   :search="search"
-                  hide-default-footer
+                  :items-per-page="-1"
                   class="scroll_table"
                 >
                   <template v-slot:header>
-                    <v-toolbar class="mb-1" :dark="$store.getters.getTheme">
+                    <v-toolbar class="mb-1">
                       <v-text-field
                         v-model="search"
                         clearable
                         flat
-                        solo-inverted
                         hide-details
-                        prepend-inner-icon="search"
+                        prepend-inner-icon="mdi-magnify"
                         :label="$t('search')"
+                        variant="solo-inverted"
                       ></v-text-field>
                     </v-toolbar>
                   </template>
-                  <template v-slot:default="props">
+                  <template v-slot:default="{ items }">
                     <v-col
-                      v-for="(user, index) in props.items"
+                      v-for="({ raw: user }, index) in items"
                       :key="index"
                       style="margin-top: 20px"
                     >
                       <!-- For every user in this.users array -->
                       <v-menu
                         v-model="user.menu"
-                        bottom
-                        right
                         transition="scale-transition"
                         origin="top left"
-                        :close-on-click="false"
+                        location="bottom end"
+                        persistent
                       >
-                        <template v-slot:activator="{ on }">
+                        <template v-slot:activator="{ props }">
                           <v-chip
-                            :dark="$store.getters.getTheme"
-                            :outlined="$store.getters.getTheme"
-                            large
-                            v-on="on"
-                            :color="user.is_admin ? 'yellow darken-2' : 'green'"
+                            v-bind="props"
+                            :color="user.is_admin ? 'yellow-darken-2' : 'green'"
+                            size="large"
+                            :variant="$store.getTheme ? 'outlined' : 'flat'"
                           >
-                            <v-avatar left>
-                              <v-icon v-if="user.is_admin"
-                                >mdi-shield-crown</v-icon
+                            <v-avatar start>
+                              <v-icon v-if="user.is_admin">mdi-shield-crown</v-icon
                               >
                               <v-icon v-else>mdi-account</v-icon>
                             </v-avatar>
@@ -244,72 +238,61 @@
                           </v-chip>
                         </template>
                         <v-card width="300">
-                          <v-list dark>
+                          <v-list>
                             <v-list-item>
-                              <v-list-item-avatar>
-                                <v-icon v-if="user.is_admin"
-                                  >mdi-shield-crown</v-icon
+                              <template v-slot:prepend><v-avatar>
+                                <v-icon v-if="user.is_admin">mdi-shield-crown</v-icon
                                 >
                                 <v-icon v-else>mdi-account</v-icon>
-                              </v-list-item-avatar>
-                              <v-list-item-content>
+                              </v-avatar></template>
                                 <v-list-item-title>{{
                                   user.name
                                 }}</v-list-item-title>
                                 <v-list-item-subtitle>{{
                                   user.email
                                 }}</v-list-item-subtitle>
-                              </v-list-item-content>
                               <v-list-item-action>
-                                <v-btn icon @click="user.menu = false">
+                                <v-btn icon @click="user.menu = false" variant="text">
                                   <v-icon>mdi-close-circle</v-icon>
                                 </v-btn>
                               </v-list-item-action>
                             </v-list-item>
                           </v-list>
                           <v-list>
-                            <v-tooltip right>
-                              <template v-slot:activator="{ on, attrs }">
+                            <v-tooltip location="end">
+                              <template v-slot:activator="{ props }">
                                 <v-list-item
-                                  v-bind="attrs"
-                                  v-on="on"
+                                  v-bind="props"
                                   @click="copyToClipboard(user._id, user)"
                                 >
                                   <v-list-item-action>
-                                    <v-icon
-                                      >mdi-badge-account-horizontal</v-icon
+                                    <v-icon>mdi-badge-account-horizontal</v-icon
                                     >
                                   </v-list-item-action>
-                                  <v-list-item-content>
                                     <v-list-item-title>{{
                                       user._id
                                     }}</v-list-item-title>
-                                    <v-list-item-subtitle
-                                      >Id</v-list-item-subtitle
+                                    <v-list-item-subtitle>Id</v-list-item-subtitle
                                     >
-                                  </v-list-item-content>
                                 </v-list-item>
                               </template>
                               <span>{{ $t("users") }}</span>
                             </v-tooltip>
-                            <v-tooltip right>
-                              <template v-slot:activator="{ on, attrs }">
+                            <v-tooltip location="end">
+                              <template v-slot:activator="{ props }">
                                 <v-list-item
-                                  v-bind="attrs"
-                                  v-on="on"
+                                  v-bind="props"
                                   @click="copyToClipboard(user.createdAt, user)"
                                 >
                                   <v-list-item-action>
                                     <v-icon>mdi-calendar-check</v-icon>
                                   </v-list-item-action>
-                                  <v-list-item-content>
                                     <v-list-item-title>{{
                                       user.createdAt
                                     }}</v-list-item-title>
                                     <v-list-item-subtitle>{{
                                       $t("created")
                                     }}</v-list-item-subtitle>
-                                  </v-list-item-content>
                                 </v-list-item>
                               </template>
                               <span>Kopioi</span>
@@ -318,28 +301,23 @@
                               <v-list-item-action>
                                 <v-icon>mdi-briefcase</v-icon>
                               </v-list-item-action>
-                              <v-list-item-content>
                                 <v-list-item-title>Admin</v-list-item-title>
                                 <v-list-item-subtitle>{{
                                   $t("role")
                                 }}</v-list-item-subtitle>
-                              </v-list-item-content>
                             </v-list-item>
                             <v-list-item v-else @click="() => {}">
                               <v-list-item-action>
                                 <v-icon>mdi-briefcase</v-icon>
                               </v-list-item-action>
-                              <v-list-item-content>
                                 <v-list-item-title>{{
                                   $t("user")
                                 }}</v-list-item-title>
                                 <v-list-item-subtitle>{{
                                   $t("role")
                                 }}</v-list-item-subtitle>
-                              </v-list-item-content>
                             </v-list-item>
                             <v-list-item @click="() => {}">
-                              <v-list-item-content>
                                 <v-btn
                                   color="blue"
                                   @click="
@@ -349,7 +327,6 @@
                                   <v-icon>mdi-copy-content</v-icon>
                                   {{ $t("copy") }}
                                 </v-btn>
-                              </v-list-item-content>
                             </v-list-item>
                           </v-list>
                         </v-card>
@@ -365,7 +342,7 @@
               <v-col md="10" offset-md="1">
                 <v-sheet
                   :color="`grey ${
-                    $store.getters.getTheme ? 'darken-2' : 'lighten-4'
+                    $store.getTheme ? 'darken-2' : 'lighten-4'
                   }`"
                   class="px-3 pt-3 pb-3"
                 >
@@ -380,7 +357,7 @@
               <v-col>
                 <h2
                   v-bind:class="{
-                    'white--text': $store.getters.getTheme,
+                    'text-white': $store.getTheme,
                   }"
                 >
                   Ei käyttäjiä!
@@ -389,12 +366,12 @@
             </v-row>
           </v-col>
         </v-row>
-      </v-tab-item>
-      <v-tab-item
+      </v-window-item>
+      <v-window-item
         :value="'competitions'"
         v-bind:class="{
-          inputarea: !$store.getters.getTheme,
-          'inputarea-dark': $store.getters.getTheme,
+          inputarea: !$store.getTheme,
+          'inputarea-dark': $store.getTheme,
         }"
       >
         <v-row>
@@ -403,10 +380,10 @@
               <v-col v-if="prevRoute">
                 <v-btn
                   v-if="prevRoute.name"
-                  large
                   rounded
                   color="yellow"
                   @click="$router.push({ path: prevRoute.path })"
+                  size="large"
                   ><v-icon>mdi-keyboard-return</v-icon
                   >{{ $t("button.return-back") }}</v-btn
                 >
@@ -416,13 +393,13 @@
             <!-- if there are competitions in database-->
             <v-row v-if="all_competitions.length">
               <v-col>
-                <v-card :dark="$store.getters.getTheme">
-                  <v-card-title>
+                <v-card>
+                  <v-card-title class="d-flex flex-wrap align-center">
                     <p class="flow-text">{{ $t("comp.plural") }}</p>
                     <v-spacer></v-spacer>
                     <v-text-field
                       v-model="search_comp"
-                      append-icon="mdi-magnify"
+                      append-inner-icon="mdi-magnify"
                       :label="$t('search')"
                       single-line
                       hide-details
@@ -430,39 +407,37 @@
                   </v-card-title>
                   <v-data-table
                     id="normal-table"
-                    :headers="headers"
+                    :headers="$tableHeaders(headers)"
                     :items="all_competitions"
                     :search="search_comp"
                     :loading="loading_competitions"
                   >
                     <template
                       v-for="(h, index) in headers"
-                      v-slot:[`header.${h.value}`]="{ header }"
+                      v-slot:[`header.${h.value}`]="{ column: header }"
                     >
-                      <span :key="index"> {{ $t(header.text) }}</span>
+                      <span> {{ $t(header.text) }}</span>
                     </template>
                     <template v-slot:[`item.start_date`]="{ item }">
-                      <v-chip color="primary darken-2">{{
+                      <v-chip color="primary-darken-2" variant="flat">{{
                         formatDateToLocaleDateString(item.start_date)
                       }}</v-chip>
                     </template>
                     <template v-slot:[`item.cup_points_multiplier`]="{ item }">
                       <v-chip
                         :color="getColor(item.cup_points_multiplier)"
-                        :outlined="$store.getters.getTheme"
+                        :variant="$store.getTheme ? 'outlined' : 'flat'"
                         >{{ item.cup_points_multiplier }}x</v-chip
                       >
                     </template>
                     <template v-slot:[`item.choose`]="{ item }">
-                      <v-tooltip right>
-                        <template v-slot:activator="{ on, attrs }">
+                      <v-tooltip location="end">
+                        <template v-slot:activator="{ props }">
                           <v-btn
                             color="primary"
-                            v-bind="attrs"
-                            v-on="on"
+                            v-bind="props"
                             @click="pickCompetition(item)"
-                            ><v-icon color="black"
-                              >mdi-arrow-right-bold-box-outline</v-icon
+                            ><v-icon color="black">mdi-arrow-right-bold-box-outline</v-icon
                             ></v-btn
                           >
                         </template>
@@ -470,11 +445,10 @@
                       </v-tooltip>
                     </template>
                     <template v-slot:[`item.delete`]="{ item }">
-                      <v-tooltip right>
-                        <template v-slot:activator="{ on, attrs }">
+                      <v-tooltip location="end">
+                        <template v-slot:activator="{ props }">
                           <v-btn
-                            v-bind="attrs"
-                            v-on="on"
+                            v-bind="props"
                             color="red"
                             @click="deleteCompetition(item._id, false)"
                             :loading="loading_competitions"
@@ -493,7 +467,7 @@
               <v-col v-if="loading_competitions" md="10" offset-md="1">
                 <v-sheet
                   :color="`grey ${
-                    $store.getters.getTheme ? 'darken-2' : 'lighten-4'
+                    $store.getTheme ? 'darken-2' : 'lighten-4'
                   }`"
                   class="px-3 pt-3 pb-3"
                 >
@@ -506,7 +480,7 @@
               <v-col v-else>
                 <h2
                   v-bind:class="{
-                    'white--text': $store.getters.getTheme,
+                    'text-white': $store.getTheme,
                   }"
                 >
                   {{ $t("no") }} {{ $t("comp.plural") }}!
@@ -515,8 +489,8 @@
             </v-row>
           </v-col>
         </v-row>
-      </v-tab-item>
-    </v-tabs-items>
+      </v-window-item>
+    </v-window>
     <notification-bar :snackbar="snackbar" :text="text"></notification-bar>
   </v-container>
 </template>
@@ -525,7 +499,7 @@
 import CompetitionService from "../services/CompetitionService";
 import UserService from "../services/UserService";
 import CupService from "../services/CupService";
-import ProgressBarQuery from "../components/layout/ProgressBarQuery";
+import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
 import { formatDateToLocaleDateString } from "../shared";
 import NotificationBar from "../components/NotificationBar.vue";
 
@@ -713,7 +687,7 @@ export default {
     pickCompetition(competition) {
       // Pick competition for the app to use
       //NOTE Store competition to vuex, redundant?
-      this.$store.state.competition = competition;
+      this.$store.competition = competition;
       // Set competition._id to localstorage for database queries
       localStorage.setItem(
         "competition",

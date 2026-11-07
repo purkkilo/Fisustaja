@@ -3,43 +3,42 @@
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container
     v-bind:class="{
-      mobile: $vuetify.breakpoint.width < 800,
-      browser: $vuetify.breakpoint.width >= 800,
-      wide: $vuetify.breakpoint.width >= 1200,
+      mobile: $vuetify.display.width < 800,
+      browser: $vuetify.display.width >= 800,
+      wide: $vuetify.display.width >= 1200,
     }"
   >
     <v-row>
       <v-col
-        align-self="center"
-        :cols="$vuetify.breakpoint.width < 800 ? 12 : 6"
+        class="align-self-center"
+        :cols="$vuetify.display.width < 800 ? 12 : 6"
       >
-        <v-row align="center" class="slideRight">
+        <v-row class="slideRight align-center">
           <v-col>
             <v-avatar
-              :size="$vuetify.breakpoint.width < 800 ? 150 : 200"
+              :size="$vuetify.display.width < 800 ? 150 : 200"
               class="logo"
             >
-              <img alt="user" src="https://i.imgur.com/2WcI49A.png" />
+              <v-img alt="user" src="https://i.imgur.com/2WcI49A.png" />
             </v-avatar>
           </v-col>
         </v-row>
-        <v-row align="center" class="slideRight">
+        <v-row class="slideRight align-center">
           <v-col>
             <h1 class="ml-3 logo-text">Fisustaja</h1>
           </v-col>
         </v-row>
       </v-col>
 
-      <v-col :cols="$vuetify.breakpoint.width < 800 ? 12 : 6">
+      <v-col :cols="$vuetify.display.width < 800 ? 12 : 6">
         <div v-for="(link, i) in links" :key="i">
-          <v-hover v-slot="{ hover }">
-            <v-card
+          <v-hover v-slot="{ isHovering, props }">
+            <v-card v-bind="props"
               :key="i"
-              :dark="$store.getters.getTheme"
               tile
-              outlined
-              :elevation="hover ? 10 : 6"
+              :elevation="isHovering ? 3 : 2"
               class="card-link"
+              variant="outlined"
             >
               <v-card-title>
                 {{ $t(link.text) }}
@@ -51,12 +50,10 @@
                   <v-chip
                     class="ma-2"
                     :color="link.color"
-                    :text-color="link.color"
-                    dark
-                    outlined
+                    variant="outlined"
                   >
                     {{ $t("go-to") }}
-                    <v-icon right>
+                    <v-icon end>
                       {{ link.icon }}
                     </v-icon>
                   </v-chip>
@@ -81,13 +78,13 @@ export default {
           text: "home.comp",
           icon: "mdi-seal",
           path: "/public-results",
-          color: "yellow darken-2",
+          color: "yellow-darken-2",
         },
         {
           text: "home.cup",
           icon: "mdi-trophy",
           path: "/public-cups",
-          color: "yellow darken-1",
+          color: "yellow-darken-1",
         },
       ],
       links: [],
@@ -96,14 +93,14 @@ export default {
     };
   },
   watch: {
-    "$store.state.logged_in"(newValue) {
+    "$store.logged_in"(newValue) {
       if (newValue) {
         this.links = [
           {
             text: "nav.dashboard",
             icon: "mdi-view-dashboard",
             path: "/dashboard",
-            color: "yellow darken-2",
+            color: "yellow-darken-2",
           },
           ...this.items,
         ];
@@ -114,13 +111,13 @@ export default {
   },
   async mounted() {
     this.links = this.items;
-    if (this.$store.state.logged_in) {
+    if (this.$store.logged_in) {
       this.links = [
         {
           text: "nav.dashboard",
           icon: "mdi-view-dashboard",
           path: "/dashboard",
-          color: "yellow darken-2",
+          color: "yellow-darken-2",
         },
         ...this.items,
       ];

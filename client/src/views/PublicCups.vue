@@ -4,16 +4,15 @@
   <div>
     <v-container
       v-bind:class="{
-        mobile: $vuetify.breakpoint.width < 800,
-        browser: $vuetify.breakpoint.width >= 800,
-        wide: $vuetify.breakpoint.width >= 1200,
+        mobile: $vuetify.display.width < 800,
+        browser: $vuetify.display.width >= 800,
+        wide: $vuetify.display.width >= 1200,
       }"
     >
       <v-card
         style="background: transparent"
-        elevation="10"
-        outlined
-        :dark="$store.getters.getTheme"
+        elevation="3"
+        variant="outlined"
       >
         <v-row>
           <v-col md="6" offset-md="3">
@@ -24,57 +23,54 @@
           <v-col md="4" offset-md="4">
             <!-- TODO add v-autocompelete, but so that it popsup the keyboad on mobile only when pressing search button? -->
             <v-autocomplete
-              :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
-              dark
               v-model="selected_cup"
               :items="cups"
-              item-text="select"
+              item-title="select"
               item-value="_id"
               :label="$t('choose') + ' ' + $t('cup.normal')"
-              outlined
-              @input="pickCup"
+              @update:model-value="pickCup"
               return-object
               single-line
+              variant="outlined"
             ></v-autocomplete>
           </v-col>
         </v-row>
         <v-row v-else>
           <v-col v-if="!loading">
-            <h2 class="white--text">{{ $t("loading") }}...</h2>
+            <h2 class="text-white">{{ $t("loading") }}...</h2>
             <ProgressBarQuery />
           </v-col>
           <v-col v-else>
-            <h2 class="white--text">
+            <h2 class="text-white">
               {{ $t("cup.not-found") }} {{ $t("available") }}
             </h2>
           </v-col>
         </v-row>
-        <v-row justify="center" align="center" v-if="!loading && selected_cup">
+        <v-row class="justify-center align-center" v-if="!loading && selected_cup">
           <v-col>
             <h1>{{ cup.name }}, {{ cup.year }}</h1>
           </v-col>
         </v-row>
-        <v-tabs
+        <v-tabs slider-color="blue-darken-4"
           v-if="!loading && selected_cup"
           v-model="tab"
-          background-color="blue lighten-2"
-          color="blue darken-4"
+          bg-color="blue-lighten-2"
+          color="blue-darken-4"
           grow
           show-arrows
           next-icon="mdi-arrow-right-bold-box-outline"
           prev-icon="mdi-arrow-left-bold-box-outline"
           center-active
         >
-          <v-tabs-slider color="blue darken-4"></v-tabs-slider>
-          <v-tab href="#points" :disabled="!competitions.length">{{
+          <v-tab :disabled="!competitions.length" value="points">{{
             $t("point-status")
           }}</v-tab>
-          <v-tab href="#stats" :disabled="!competitions.length">{{
+          <v-tab :disabled="!competitions.length" value="stats">{{
             $t("general-statistics")
           }}</v-tab>
         </v-tabs>
-        <v-tabs-items v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
-          <v-tab-item :value="'points'">
+        <v-window v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
+          <v-window-item :value="'points'">
             <cup-points
               v-if="selected_cup && !loading"
               :competitions="competitions"
@@ -107,8 +103,8 @@
                 }
               "
             ></cup-points>
-          </v-tab-item>
-          <v-tab-item :value="'stats'">
+          </v-window-item>
+          <v-window-item :value="'stats'">
             <cup-stats
               :competitions="competitions"
               :cup="cup"
@@ -117,13 +113,11 @@
               :biggest_amounts="biggest_amounts"
               :loading="loading"
             ></cup-stats>
-          </v-tab-item>
-        </v-tabs-items>
+          </v-window-item>
+        </v-window>
         <v-row>
           <v-col>
             <v-btn
-              large
-              outlined
               color="yellow"
               @click="
                 selected_cup = null;
@@ -131,6 +125,8 @@
                 results = [];
               "
               :disabled="!selected_cup"
+              size="large"
+              variant="outlined"
             >
               <v-icon>mdi-cancel</v-icon>{{ $t("cancel") }}
             </v-btn>
@@ -140,7 +136,7 @@
         <v-row v-if="loading" style="margin: 20px">
           <v-row>
             <v-col>
-              <h2 class="white--text">{{ $t("loading") }}...</h2>
+              <h2 class="text-white">{{ $t("loading") }}...</h2>
               <ProgressBarQuery />
             </v-col>
           </v-row>
@@ -155,7 +151,7 @@ import CupService from "../services/CupService";
 import CompetitionService from "../services/CompetitionService";
 import ResultService from "../services/ResultService";
 import FishService from "../services/FishService";
-import ProgressBarQuery from "../components/layout/ProgressBarQuery";
+import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
 
 import CupPoints from "../components/CupPoints.vue";
 import CupStats from "../components/CupStats.vue";
@@ -486,7 +482,7 @@ export default {
         // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
         //TODO make a test for this?
         // Update to vuex, Assing variables from vuex (see client/store/index.js)
-        this.$store.commit("refreshCup", this.cup);
+        this.$store.refreshCup(this.cup);
         try {
           this.allCompetitions = await CompetitionService.getCompetitions({
             cup_id: cup._id,

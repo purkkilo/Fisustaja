@@ -1,28 +1,33 @@
-import Vue from "vue";
+import { createApp } from "vue";
+import { createPinia } from "pinia";
+import axios from "axios";
+
 import App from "./App.vue";
 import router from "./router";
-import store from "./store";
-import VueSimpleAlert from "vue-simple-alert";
-import vuetify from "@/plugins/vuetify"; // path to vuetify export
-import vSelect from "vue-select";
-import axios from "axios";
-import i18n from './i18n'
-
-Vue.component("vue-select", vSelect);
-Vue.use(VueSimpleAlert);
-Vue.config.productionTip = false;
+import i18n from "./i18n";
+import vuetify from "./plugins/vuetify";
+import alerts from "./plugins/alerts";
+import { useMainStore } from "./store";
+import { tableHeaders } from "./utils/tableHeaders";
 
 // Set up axios for api calls
-Vue.prototype.$http = axios;
 const token = localStorage.getItem("jwt");
 if (token) {
-  Vue.prototype.$http.defaults.headers.common["Authorization"] = token;
+  axios.defaults.headers.common["Authorization"] = token;
 }
 
-new Vue({
-  router,
-  store,
-  vuetify,
-  i18n,
-  render: (h) => h(App)
-}).$mount("#app");
+const app = createApp(App);
+const pinia = createPinia();
+
+app.use(pinia);
+app.use(router);
+app.use(i18n);
+app.use(vuetify);
+app.use(alerts);
+
+app.config.globalProperties.$http = axios;
+app.config.globalProperties.$tableHeaders = tableHeaders;
+// Components keep using this.$store / $store in templates, now backed by Pinia
+app.config.globalProperties.$store = useMainStore(pinia);
+
+app.mount("#app");

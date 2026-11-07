@@ -6,20 +6,19 @@
 
     <v-container
       v-bind:class="{
-        mobile: $vuetify.breakpoint.width < 800,
-        browser: $vuetify.breakpoint.width >= 800,
-        wide: $vuetify.breakpoint.width >= 1200,
+        mobile: $vuetify.display.width < 800,
+        browser: $vuetify.display.width >= 800,
+        wide: $vuetify.display.width >= 1200,
       }"
     >
       <v-card
         style="background: transparent"
-        elevation="10"
-        outlined
-        :dark="$store.getters.getTheme"
+        elevation="3"
+        variant="outlined"
       >
         <v-row>
-          <v-col cols="12" xs="12" sm="12" md="12">
-            <v-row justfify="center">
+          <v-col cols="12" sm="12" md="12">
+            <v-row class="justify-center">
               <v-col>
                 <h1 style="margin: 30px">{{ $t("weighting") }}</h1>
                 <h2 style="margin: 10px; color: chartreuse">
@@ -32,29 +31,28 @@
       </v-card>
 
       <!-- Tabs -->
-      <v-tabs
+      <v-tabs slider-color="blue-darken-4"
         v-model="tab"
-        background-color="blue lighten-2"
-        color="blue darken-4"
+        bg-color="blue-lighten-2"
+        color="blue-darken-4"
         grow
         show-arrows
         next-icon="mdi-arrow-right-bold-box-outline"
         prev-icon="mdi-arrow-left-bold-box-outline"
         center-active
       >
-        <v-tabs-slider color="blue darken-4"></v-tabs-slider>
-        <v-tab href="#weighting">{{ $t("weighting") }}</v-tab>
-        <v-tab href="#situation">{{ $t("leaderboard") }}</v-tab>
-        <v-tab v-if="!allReturned" href="#onwater">{{
+        <v-tab value="weighting">{{ $t("weighting") }}</v-tab>
+        <v-tab value="situation">{{ $t("leaderboard") }}</v-tab>
+        <v-tab v-if="!allReturned" value="onwater">{{
           $t("comp-overview.still-on-water")
         }}</v-tab>
       </v-tabs>
-      <v-tabs-items v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
+      <v-window v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
         <!-- "Punnitus" tab -->
-        <v-tab-item
+        <v-window-item
           v-bind:class="{
-            inputarea: !$store.getters.getTheme,
-            'inputarea-dark': $store.getters.getTheme,
+            inputarea: !$store.getTheme,
+            'inputarea-dark': $store.getTheme,
           }"
           :value="'weighting'"
         >
@@ -72,8 +70,8 @@
                   <v-row v-if="!loading" style="margin-top: 20px">
                     <v-col
                       v-bind:class="{
-                        'grey darken-4': $store.getters.getTheme,
-                        'input-fields': !$store.getters.getTheme,
+                        'bg-grey-darken-4': $store.getTheme,
+                        'input-fields': !$store.getTheme,
                       }"
                       md="6"
                       offset-md="3"
@@ -83,7 +81,7 @@
                         <p
                           class="flow-text"
                           v-bind:class="{
-                            'white--text': $store.getters.getTheme,
+                            'text-white': $store.getTheme,
                           }"
                         >
                           {{ $t("boat") }}
@@ -91,10 +89,6 @@
                       </v-col>
                       <v-col class="d-flex">
                         <v-autocomplete
-                          :menu-props="
-                            $store.getters.getTheme ? 'dark' : 'light'
-                          "
-                          :dark="$store.getters.getTheme"
                           v-model="boat_number_input"
                           :items="sortedArray"
                           :label="$t('choose-boat')"
@@ -104,54 +98,43 @@
                               : $t('choose-boat')
                           "
                           :disabled="loading_site"
-                          outlined
                           return-object
                           single-line
-                          @input="searchSelected"
-                          :filter="filterBoat"
+                          @update:model-value="searchSelected"
+                          :custom-filter="filterBoat"
+                          :item-title="boatTitle"
+                          variant="outlined"
                         >
                           <template v-slot:selection="data">
-                            <div>
-                              <v-chip
-                                v-bind="data.attrs"
-                                :input-value="data.selected"
-                                close
-                                @click="data.select"
-                                @click:close="clearInputs"
-                              >
-                                ({{ data.item.boat_number }})
-                                {{ data.item.captain_name }},
-                                {{ data.item.temp_captain_name }}
-                              </v-chip>
-                            </div>
+                            <v-chip closable @click:close="clearInputs">
+                              ({{ data.item.boat_number }})
+                              {{ data.item.captain_name }},
+                              {{ data.item.temp_captain_name }}
+                            </v-chip>
                           </template>
                           <template v-slot:item="data">
-                            <v-list-item-icon>
-                              <v-icon v-if="data.item.returned" color="green"
-                                >mdi-checkbox-marked-circle</v-icon
-                              >
-                              <v-icon v-else color="yellow darken-2"
-                                >mdi-account-question</v-icon
-                              >
-                            </v-list-item-icon>
-                            <v-list-item-content>
-                              <v-list-item-title
-                                ><span>{{
-                                  data.item.boat_number
-                                }}</span></v-list-item-title
-                              >
+                            <v-list-item v-bind="data.props" :title="undefined">
+                              <template v-slot:prepend>
+                                <v-icon v-if="data.item.returned" color="green"
+                                  >mdi-checkbox-marked-circle</v-icon
+                                >
+                                <v-icon v-else color="yellow-darken-2"
+                                  >mdi-account-question</v-icon
+                                >
+                              </template>
+                              <v-list-item-title>{{
+                                data.item.boat_number
+                              }}</v-list-item-title>
                               <v-list-item-subtitle
-                                ><span
-                                  >{{ data.item.captain_name }},
-                                  {{ data.item.temp_captain_name }}</span
-                                ></v-list-item-subtitle
+                                >{{ data.item.captain_name }},
+                                {{ data.item.temp_captain_name }}</v-list-item-subtitle
                               >
-                            </v-list-item-content>
-                            <v-list-item-action>
-                              <v-chip v-if="data.item.returned">{{
-                                data.item.placement
-                              }}</v-chip>
-                            </v-list-item-action>
+                              <template v-slot:append>
+                                <v-chip v-if="data.item.returned">{{
+                                  data.item.placement
+                                }}</v-chip>
+                              </template>
+                            </v-list-item>
                           </template>
                         </v-autocomplete>
                       </v-col>
@@ -172,15 +155,14 @@
                     <v-col>
                       <v-row v-if="!loading" style="margin-top: 30px">
                         <v-col offset="4" cols="4">
-                          <v-btn large block color="yellow" @click="clearInputs"
-                            ><v-icon>mdi-backspace-reverse-outline</v-icon
+                          <v-btn block color="yellow" @click="clearInputs" size="large"><v-icon>mdi-backspace-reverse-outline</v-icon
                             >{{ $t("cancel") }}</v-btn
                           >
                         </v-col>
                       </v-row>
                       <v-row>
                         <v-col>
-                          <v-divider class="black"></v-divider>
+                          <v-divider class="bg-black"></v-divider>
                         </v-col>
                       </v-row>
 
@@ -211,7 +193,7 @@
                                 <p
                                   class="flow-text"
                                   v-bind:class="{
-                                    'white--text': $store.getters.getTheme,
+                                    'text-white': $store.getTheme,
                                   }"
                                 >
                                   {{ $t("adding-fish") }}
@@ -220,15 +202,15 @@
                               </v-col>
                             </v-row>
                             <v-row
+                              class="align-center"
                               v-if="!loading_fish && isBiggestFishVisible"
                               style="margin-top: 20px"
-                              align="center"
                             >
                               <v-col md="3">
                                 <p
                                   class="flow-text"
                                   v-bind:class="{
-                                    'white--text': $store.getters.getTheme,
+                                    'text-white': $store.getTheme,
                                   }"
                                 >
                                   {{ $t("biggest-fish") }}?
@@ -236,19 +218,19 @@
                               </v-col>
                               <v-col md="4">
                                 <v-select
-                                  outlined
                                   class="flow-text"
                                   :label="$t('choose-fish')"
                                   v-model="selected_fish"
-                                  item-text="name"
+                                  item-title="name"
                                   :items="competition.fishes"
-                                  :dark="$store.getters.getTheme"
+                                  variant="outlined"
                                 >
                                   <template v-slot:selection="data">
                                     <v-chip
                                       color="primary"
-                                      close
+                                      closable
                                       @click:close="selected_fish = null"
+                                      variant="flat"
                                     >
                                       {{ data.item.name }}
                                     </v-chip>
@@ -257,13 +239,11 @@
                               </v-col>
                               <v-col class="input-fields" md="3">
                                 <v-text-field
-                                  :dark="$store.getters.getTheme"
                                   :label="$t('weight-grams')"
                                   v-model="biggest_fish"
                                   type="number"
                                   @paste.prevent
                                   @keypress="isNumber($event)"
-                                  value="0"
                                   step="50"
                                   min="0"
                                   :rules="number_rules"
@@ -273,10 +253,10 @@
                               <v-col md="2">
                                 <v-btn
                                   v-if="selected_fish && biggest_fish"
-                                  large
                                   tile
                                   color="green"
                                   @click="saveBiggestFish"
+                                  size="large"
                                   ><v-icon>mdi-content-save</v-icon
                                   >{{ $t("save") }}</v-btn
                                 >
@@ -290,15 +270,15 @@
                           >
                             <v-row>
                               <v-col md="12">
-                                <v-divider class="black"></v-divider>
+                                <v-divider class="bg-black"></v-divider>
                               </v-col>
                             </v-row>
-                            <v-row align="center" justify="center">
+                            <v-row class="justify-center align-center">
                               <v-col md="6">
                                 <span
                                   class="flow-text"
                                   v-bind:class="{
-                                    'white--text': $store.getters.getTheme,
+                                    'text-white': $store.getTheme,
                                   }"
                                 >
                                   {{ index + 1 }}.
@@ -306,7 +286,7 @@
                                 <span
                                   class="flow-text"
                                   v-bind:class="{
-                                    'white--text': $store.getters.getTheme,
+                                    'text-white': $store.getTheme,
                                   }"
                                 >
                                   {{ input.name }}
@@ -314,13 +294,11 @@
                               </v-col>
                               <v-col md="4" class="input-fields">
                                 <v-text-field
-                                  :dark="$store.getters.getTheme"
                                   :label="$t('weight-grams')"
                                   v-model="input.value"
                                   type="number"
                                   @paste.prevent
                                   @keypress="isNumber($event)"
-                                  value="0"
                                   step="50"
                                   min="0"
                                   :rules="number_rules"
@@ -334,20 +312,18 @@
                                   persistent
                                   max-width="600px"
                                 >
-                                  <template v-slot:activator="{ on, attrs }">
+                                  <template v-slot:activator="{ props }">
                                     <v-btn
                                       color="primary"
-                                      dark
-                                      v-bind="attrs"
-                                      v-on="on"
+                                      v-bind="props"
                                       :disabled="loading || loading_fish"
                                       ><v-icon>mdi-plus</v-icon
                                       >{{ $t("add-calculation") }}</v-btn
                                     >
                                   </template>
-                                  <v-card :dark="$store.getters.getTheme">
+                                  <v-card>
                                     <v-card-title>
-                                      <span class="headline">{{
+                                      <span class="text-headline-small">{{
                                         $t("add-together")
                                       }}</span>
                                     </v-card-title>
@@ -357,7 +333,7 @@
                                           <v-text-field
                                             class="title"
                                             :label="$t('value-original')"
-                                            :value="input.value"
+                                            :model-value="input.value"
                                             disabled
                                           ></v-text-field>
                                         </v-col>
@@ -373,7 +349,7 @@
                                             step="50"
                                             min="0"
                                             single-line
-                                            outlined
+                                            variant="outlined"
                                           ></v-text-field>
                                         </v-col>
                                       </v-row>
@@ -381,10 +357,10 @@
                                         <v-col
                                           md="6"
                                           offset-md="3"
-                                          class="title red--text"
+                                          class="title text-red"
                                         >
                                           <v-text-field
-                                            :value="
+                                            :model-value="
                                               parseInt(input.value) +
                                               parseInt(
                                                 input.addition
@@ -401,17 +377,16 @@
                                     <v-card-actions>
                                       <v-spacer></v-spacer>
                                       <v-btn
-                                        outlined
-                                        color="red darken-1"
+                                        color="red-darken-1"
                                         @click="
                                           input.addition = null;
                                           input.dialog = false;
                                         "
+                                        variant="outlined"
                                         >{{ $t("cancel") }}</v-btn
                                       >
                                       <v-btn
-                                        outlined
-                                        color="green darken-1"
+                                        color="green-darken-1"
                                         @click="
                                           input.value =
                                             parseInt(input.value) +
@@ -423,6 +398,7 @@
                                           input.dialog = false;
                                           input.addition = 0;
                                         "
+                                        variant="outlined"
                                         >{{ $t("save") }}</v-btn
                                       >
                                     </v-card-actions>
@@ -434,23 +410,21 @@
                         </ul>
                         <v-row>
                           <v-col md="12">
-                            <v-divider class="black"></v-divider>
+                            <v-divider class="bg-black"></v-divider>
                           </v-col>
                         </v-row>
-                        <v-row v-if="!loading" align="center" justify="center">
+                        <v-row class="justify-center align-center" v-if="!loading">
                           <v-col cols="8">
                             <v-card
-                              :dark="$store.getters.getTheme"
-                              outlined
                               tile
+                              variant="outlined"
                             >
                               <v-card-title>{{ $t("overview") }}</v-card-title>
-                              <v-list dense>
+                              <v-list density="compact">
                                 <v-list-item>
-                                  <v-list-item-icon>
+                                  <template v-slot:prepend>
                                     <v-icon>mdi-sail-boat</v-icon>
-                                  </v-list-item-icon>
-                                  <v-list-item-content>
+                                  </template>
                                     <v-list-item-title>
                                       <h3>
                                         ({{ boat_number_input.boat_number }})
@@ -463,13 +437,11 @@
                                     <v-list-item-subtitle>
                                       {{ $t("boat") }}
                                     </v-list-item-subtitle>
-                                  </v-list-item-content>
                                 </v-list-item>
                                 <v-list-item>
-                                  <v-list-item-icon>
+                                  <template v-slot:prepend>
                                     <v-icon>mdi-weight-gram</v-icon>
-                                  </v-list-item-icon>
-                                  <v-list-item-content>
+                                  </template>
                                     <v-list-item-title>
                                       <h3>
                                         {{
@@ -481,13 +453,11 @@
                                     <v-list-item-subtitle>
                                       {{ $t("total-weights") }}
                                     </v-list-item-subtitle>
-                                  </v-list-item-content>
                                 </v-list-item>
                                 <v-list-item>
-                                  <v-list-item-icon>
+                                  <template v-slot:prepend>
                                     <v-icon>mdi-counter</v-icon>
-                                  </v-list-item-icon>
-                                  <v-list-item-content>
+                                  </template>
                                     <v-list-item-title>
                                       <h3>
                                         {{
@@ -499,20 +469,17 @@
                                     <v-list-item-subtitle>
                                       {{ $t("total-points") }}
                                     </v-list-item-subtitle>
-                                  </v-list-item-content>
                                 </v-list-item>
                                 <v-list-item>
-                                  <v-list-item-icon>
+                                  <template v-slot:prepend>
                                     <v-icon>mdi-pound-box</v-icon>
-                                  </v-list-item-icon>
-                                  <v-list-item-content>
+                                  </template>
                                     <v-list-item-title>
                                       <h3>#{{ getBoatPlacing() }}</h3>
                                     </v-list-item-title>
                                     <v-list-item-subtitle>
                                       {{ $t("placement") }}
                                     </v-list-item-subtitle>
-                                  </v-list-item-content>
                                 </v-list-item>
                               </v-list>
                             </v-card>
@@ -520,17 +487,17 @@
                         </v-row>
                         <v-row>
                           <v-col md="12">
-                            <v-divider class="black"></v-divider>
+                            <v-divider class="bg-black"></v-divider>
                           </v-col>
                         </v-row>
                         <v-row v-if="!loading">
                           <v-col>
                             <v-btn
-                              large
                               tile
                               color="red"
                               @click="saveToDatabase(true)"
                               :loading="refreshing"
+                              size="large"
                               ><v-icon>mdi-delete</v-icon
                               >{{ $t("button.clear-signee") }}</v-btn
                             >
@@ -540,7 +507,7 @@
                               class="flow-text"
                               v-if="refreshing"
                               v-bind:class="{
-                                'white--text': $store.getters.getTheme,
+                                'text-white': $store.getTheme,
                               }"
                             >
                               {{ $t("updating") }}...
@@ -548,11 +515,11 @@
                           </v-col>
                           <v-col>
                             <v-btn
-                              large
                               tile
                               color="green"
                               @click="saveToDatabase(false)"
                               :loading="refreshing"
+                              size="large"
                               ><v-icon>mdi-check</v-icon>{{ $t("save") }}</v-btn
                             >
                           </v-col>
@@ -561,11 +528,11 @@
                           <v-col>
                             <v-btn
                               id="updatebtn"
-                              large
                               tile
-                              color="blue darken-4"
+                              color="blue-darken-4"
                               @click="refreshCompetition(competition_id)"
-                              class="white--text"
+                              class="text-white"
+                              size="large"
                             >
                               <v-icon>mdi-update</v-icon
                               >{{ $t("button.update") }}
@@ -577,7 +544,7 @@
                             <p
                               class="flow-text"
                               v-bind:class="{
-                                'white--text': $store.getters.getTheme,
+                                'text-white': $store.getTheme,
                               }"
                             >
                               {{ $t("updating") }}...
@@ -594,7 +561,7 @@
                 <v-col style="padding: 30px">
                   <p
                     class="flow-text"
-                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
+                    v-bind:class="{ 'text-white': $store.getTheme }"
                   >
                     Kilpailussa ei vielä ilmoittautuneita!
                   </p>
@@ -604,19 +571,19 @@
           </v-row>
           <v-row v-else>
             <v-col>
-              <h2 v-bind:class="{ 'white--text': $store.getters.getTheme }">
+              <h2 v-bind:class="{ 'text-white': $store.getTheme }">
                 Haetaan veneitä...
               </h2>
               <ProgressBarQuery />
             </v-col>
           </v-row>
-        </v-tab-item>
+        </v-window-item>
 
         <!-- "Tilannekatsaus" tab -->
-        <v-tab-item
+        <v-window-item
           v-bind:class="{
-            inputarea: !$store.getters.getTheme,
-            'inputarea-dark': $store.getters.getTheme,
+            inputarea: !$store.getTheme,
+            'inputarea-dark': $store.getTheme,
           }"
           :value="'situation'"
         >
@@ -624,14 +591,13 @@
             <v-col>
               <v-row v-if="signees.filter((s) => s.returned).length">
                 <v-col md="8" offset-md="2" style="margin-top: 20px">
-                  <v-card :dark="$store.getters.getTheme">
-                    <v-card-title>
+                  <v-card>
+                    <v-card-title class="d-flex flex-wrap align-center">
                       <p class="flow-text">{{ $t("leaderboard") }}</p>
-                      <v-tooltip bottom>
-                        <template v-slot:activator="{ on, attrs }">
+                      <v-tooltip location="bottom">
+                        <template v-slot:activator="{ props }">
                           <v-icon
-                            v-bind="attrs"
-                            v-on="on"
+                            v-bind="props"
                             style="margin: 0px 0px 20px 5px"
                             >mdi-chat-question-outline</v-icon
                           >
@@ -641,7 +607,7 @@
                       <v-spacer></v-spacer>
                       <v-text-field
                         v-model="search"
-                        append-icon="mdi-magnify"
+                        append-inner-icon="mdi-magnify"
                         :label="$t('search-boat')"
                         single-line
                         hide-details
@@ -649,25 +615,25 @@
                     </v-card-title>
                     <v-data-table
                       @click:row="rowClick"
-                      :headers="headers"
+                      :headers="$tableHeaders(headers)"
                       :items="sortedCompetition"
                       :search="search"
                     >
                       <template
                         v-for="(h, index) in headers"
-                        v-slot:[`header.${h.value}`]="{ header }"
+                        v-slot:[`header.${h.value}`]="{ column: header }"
                       >
-                        <span :key="index"> {{ $t(header.text) }}</span>
+                        <span> {{ $t(header.text) }}</span>
                       </template>
                       <template v-slot:[`item.placement`]="{ item }">
                         <v-chip
-                          :outlined="$store.getters.getTheme"
                           :color="getColor(item.placement)"
+                          :variant="$store.getTheme ? 'outlined' : 'flat'"
                           >{{ item.placement }}.</v-chip
                         >
                       </template>
                       <template v-slot:[`item.total_points`]="{ item }">
-                        <v-chip :color="getColorPoints(item.total_points)">{{
+                        <v-chip :color="getColorPoints(item.total_points)" variant="flat">{{
                           item.total_points.toLocaleString()
                         }}</v-chip>
                       </template>
@@ -683,7 +649,7 @@
                 >
                   <p
                     class="flow-text"
-                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
+                    v-bind:class="{ 'text-white': $store.getTheme }"
                   >
                     Ei vielä tuloksia!
                   </p>
@@ -691,13 +657,13 @@
               </v-row>
             </v-col>
           </v-row>
-        </v-tab-item>
+        </v-window-item>
 
         <!-- "Vielä vesillä" tab -->
-        <v-tab-item
+        <v-window-item
           v-bind:class="{
-            inputarea: !$store.getters.getTheme,
-            'inputarea-dark': $store.getters.getTheme,
+            inputarea: !$store.getTheme,
+            'inputarea-dark': $store.getTheme,
           }"
           :value="'onwater'"
         >
@@ -705,12 +671,12 @@
             <v-col>
               <v-row v-if="!signees.length">
                 <v-col md="8" offset-md="2" style="margin-top: 100px">
-                  <p v-if="!signees.length" class="flow-text red--text">
+                  <p v-if="!signees.length" class="flow-text text-red">
                     Kilpailussa ei vielä ilmoittautuneita
                   </p>
                   <p
                     v-if="!signees.filter((s) => !s.returned).length"
-                    class="flow-text green--text"
+                    class="flow-text text-green"
                   >
                     Kaikki venekunnat palanneet maaliin!
                   </p>
@@ -721,16 +687,15 @@
                 style="margin: 0px 0px 0px 0px"
               >
                 <v-col md="8" offset-md="2">
-                  <v-card :dark="$store.getters.getTheme">
-                    <v-card-title>
+                  <v-card>
+                    <v-card-title class="d-flex flex-wrap align-center">
                       <p class="flow-text">
                         {{ $t("comp-overview.still-on-water") }}
                       </p>
-                      <v-tooltip bottom>
-                        <template v-slot:activator="{ on, attrs }">
+                      <v-tooltip location="bottom">
+                        <template v-slot:activator="{ props }">
                           <v-icon
-                            v-bind="attrs"
-                            v-on="on"
+                            v-bind="props"
                             style="margin: 0px 0px 20px 5px"
                             >mdi-chat-question-outline</v-icon
                           >
@@ -740,7 +705,7 @@
                       <v-spacer></v-spacer>
                       <v-text-field
                         v-model="search_on_water"
-                        append-icon="mdi-magnify"
+                        append-inner-icon="mdi-magnify"
                         :label="$t('search-boat')"
                         single-line
                         hide-details
@@ -749,16 +714,16 @@
 
                     <v-data-table
                       @click:row="rowClick"
-                      :headers="headers_on_water"
+                      :headers="$tableHeaders(headers_on_water)"
                       :items="signees.filter((s) => !s.returned)"
                       :search="search_on_water"
                       :loading="loading"
                     >
                       <template
                         v-for="(h, index) in headers_on_water"
-                        v-slot:[`header.${h.value}`]="{ header }"
+                        v-slot:[`header.${h.value}`]="{ column: header }"
                       >
-                        <span :key="index"> {{ $t(header.text) }}</span>
+                        <span> {{ $t(header.text) }}</span>
                       </template>
                       <template v-slot:[`item.boat_number`]="{ item }">
                         <v-chip>{{ item.boat_number }}.</v-chip>
@@ -774,12 +739,12 @@
                   style="margin-top: 30px; margin-bottom: 30px"
                 >
                   <v-btn
-                    large
                     tile
-                    color="grey darken-4"
-                    class="white--text"
+                    color="grey-darken-4"
+                    class="text-white"
                     @click="allFinished"
                     :loading="loading"
+                    size="large"
                     ><v-icon>mdi-check-outline</v-icon
                     >{{ $t("button.set-all-finished") }}</v-btn
                   >
@@ -793,7 +758,7 @@
                 >
                   <p
                     class="flow-text"
-                    v-bind:class="{ 'white--text': $store.getters.getTheme }"
+                    v-bind:class="{ 'text-white': $store.getTheme }"
                   >
                     {{ $t("all-finished") }}
                   </p>
@@ -801,8 +766,8 @@
               </v-row>
             </v-col>
           </v-row>
-        </v-tab-item>
-      </v-tabs-items>
+        </v-window-item>
+      </v-window>
     </v-container>
     <notification-bar :snackbar="snackbar" :text="text"></notification-bar>
   </div>
@@ -811,8 +776,8 @@
 import CompetitionService from "../services/CompetitionService";
 import ResultService from "../services/ResultService";
 import FishService from "../services/FishService";
-import Timedate from "../components/layout/Timedate";
-import ProgressBarQuery from "../components/layout/ProgressBarQuery";
+import Timedate from "../components/layout/Timedate.vue";
+import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
 import { isNumber } from "../shared";
 import NotificationBar from "../components/NotificationBar.vue";
 
@@ -915,7 +880,12 @@ export default {
     }
   },
   methods: {
-    filterBoat(item, queryText) {
+    boatTitle(item) {
+      return `${item.boat_number} ${item.captain_name}`;
+    },
+    // Vuetify 3+ custom-filter: (value, query, internalItem)
+    filterBoat(value, queryText, internalItem) {
+      const item = internalItem.raw;
       return (
         item.captain_name
           .toLocaleLowerCase()
@@ -1031,10 +1001,11 @@ export default {
       else return "green";
     },
     getColorPoints(points) {
-      if (points > 0) return "indigo lighten-2";
+      if (points > 0) return "indigo-lighten-2";
       else return "grey";
     },
-    rowClick(item) {
+    // Vuetify 3+: (event, { item, internalItem, index })
+    rowClick(event, { item }) {
       this.boat_number_input = item;
       this.searchSelected();
     },
@@ -1182,7 +1153,7 @@ export default {
         } else {
           this.competition.state = "all-finished";
           // Refresh to vuex
-          this.$store.commit("refreshCompetition", this.competition);
+          this.$store.refreshCompetition(this.competition);
           let newvalues = {
             $set: {
               state: this.competition.state,

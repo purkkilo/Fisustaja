@@ -3,16 +3,15 @@
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container
     v-bind:class="{
-      mobile: $vuetify.breakpoint.width < 800,
-      browser: $vuetify.breakpoint.width >= 800,
-      wide: $vuetify.breakpoint.width >= 1200,
+      mobile: $vuetify.display.width < 800,
+      browser: $vuetify.display.width >= 800,
+      wide: $vuetify.display.width >= 1200,
     }"
   >
     <v-card
       style="background: transparent; padding: 20px"
-      elevation="10"
-      outlined
-      :dark="$store.getters.getTheme"
+      elevation="3"
+      variant="outlined"
     >
       <error-list :errors="errors"></error-list>
       <h1 style="margin: 50px">{{ $t("nav.login") }}</h1>
@@ -20,7 +19,6 @@
         <v-row>
           <v-col md="8" offset-md="2" class="input-fields">
             <v-text-field
-              :dark="$store.getters.getTheme"
               id="name"
               :label="$t('username')"
               v-model="name"
@@ -33,16 +31,15 @@
         <v-row>
           <v-col md="8" offset-md="2" class="input-fields">
             <v-text-field
-              :dark="$store.getters.getTheme"
               :label="$t('password')"
               id="password"
               v-model="password"
               :type="showPassword ? 'text' : 'password'"
-              @click:append="showPassword = !showPassword"
+              @click:append-inner="showPassword = !showPassword"
               maxlength="40"
               :loading="loading"
               :counter="40"
-              :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+              :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
             />
           </v-col>
         </v-row>
@@ -53,12 +50,12 @@
           <v-col>
             <v-btn
               id="sbtn"
-              large
               tile
-              outlined
               color="white"
-              class="white--text"
+              class="text-white"
               @click="handleSubmit"
+              size="large"
+              variant="outlined"
             >
               <v-icon>mdi-login</v-icon>{{ $t("nav.login") }}
             </v-btn>
@@ -70,7 +67,7 @@
 </template>
 <script>
 import UserService from "../services/UserService";
-import ProgressBarQuery from "../components/layout/ProgressBarQuery";
+import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
 import ErrorList from "../components/ErrorList.vue";
 
 export default {
@@ -127,8 +124,8 @@ export default {
           // Login user  (check 'client\src\UserService.js' and 'server\routes\api\users.js' to see how this works)
           let res = await UserService.loginUser(user);
           if (res.success) {
-            this.$store.state.is_admin = res.is_admin;
-            this.$store.state.logged_in = true;
+            this.$store.is_admin = res.is_admin;
+            this.$store.logged_in = true;
             if (this.$route.params.nextUrl != null) {
               this.$router.push(this.$route.params.nextUrl);
             }

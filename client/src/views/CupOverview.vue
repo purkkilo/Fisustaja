@@ -4,19 +4,18 @@
   <div>
     <v-container
       v-bind:class="{
-        mobile: $vuetify.breakpoint.width < 800,
-        browser: $vuetify.breakpoint.width >= 800,
-        wide: $vuetify.breakpoint.width >= 1200,
+        mobile: $vuetify.display.width < 800,
+        browser: $vuetify.display.width >= 800,
+        wide: $vuetify.display.width >= 1200,
       }"
     >
       <v-card
         style="background: transparent"
-        elevation="10"
-        outlined
-        :dark="$store.getters.getTheme"
+        elevation="3"
+        variant="outlined"
       >
         <v-dialog v-model="dialog" width="500">
-          <v-card :dark="$store.getters.getTheme">
+          <v-card>
             <v-card-title> Pdf {{ $t("settings") }} </v-card-title>
             <v-card-text>
               <v-checkbox
@@ -28,14 +27,14 @@
             <v-divider></v-divider>
 
             <v-card-actions>
-              <v-btn color="yellow" text @click="dialog = false">
+              <v-btn color="yellow" @click="dialog = false" variant="text">
                 Peruuta
               </v-btn>
               <v-spacer></v-spacer>
               <v-btn
                 color="primary"
-                text
                 @click="pdfWrapper(`Ilmoittautuneet`)"
+                variant="text"
               >
                 {{ $t("download") }}
               </v-btn>
@@ -43,38 +42,36 @@
           </v-card>
         </v-dialog>
 
-        <v-row justify="center" align="center">
+        <v-row class="justify-center align-center">
           <v-col v-if="!loading && cup">
             <h1>{{ cup.name }}, {{ cup.year }}</h1>
           </v-col>
-          <v-col v-else
-            ><h1>{{ $t("downloading") }}..</h1></v-col
+          <v-col v-else><h1>{{ $t("downloading") }}..</h1></v-col
           >
         </v-row>
-        <v-tabs
+        <v-tabs slider-color="blue-darken-4"
           v-model="tab"
-          background-color="blue lighten-2"
-          color="blue darken-4"
+          bg-color="blue-lighten-2"
+          color="blue-darken-4"
           grow
           show-arrows
           next-icon="mdi-arrow-right-bold-box-outline"
           prev-icon="mdi-arrow-left-bold-box-outline"
           center-active
         >
-          <v-tabs-slider color="blue darken-4"></v-tabs-slider>
-          <v-tab href="#overview">{{ $t("overview") }}</v-tab>
-          <v-tab href="#points" :disabled="!competitions.length">{{
+          <v-tab value="overview">{{ $t("overview") }}</v-tab>
+          <v-tab :disabled="!competitions.length" value="points">{{
             $t("point-status")
           }}</v-tab>
-          <v-tab href="#stats" :disabled="!competitions.length">{{
+          <v-tab :disabled="!competitions.length" value="stats">{{
             $t("general-statistics")
           }}</v-tab>
         </v-tabs>
-        <v-tabs-items v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
-          <v-tab-item :value="'overview'">
+        <v-window v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
+          <v-window-item :value="'overview'">
             <v-row v-if="loading">
               <v-col>
-                <h2 class="white--text">{{ $t("preparing-cup") }}...</h2>
+                <h2 class="text-white">{{ $t("preparing-cup") }}...</h2>
                 <ProgressBarQuery />
               </v-col>
             </v-row>
@@ -83,7 +80,7 @@
                 <p
                   class="flow-text"
                   v-bind:class="{
-                    'white--text': $store.getters.getTheme,
+                    'text-white': $store.getTheme,
                   }"
                 >
                   {{ $t("errors.no-cup-selected") }}
@@ -97,8 +94,7 @@
                   <v-text-field
                     v-model="newCupName"
                     :label="$t('name')"
-                    outlined
-                    :dark="$store.getters.getTheme"
+                    variant="outlined"
                   ></v-text-field>
                 </v-col>
               </v-row>
@@ -107,20 +103,18 @@
                   <v-text-field
                     v-model="newCupYear"
                     :label="$t('year')"
-                    outlined
                     type="number"
                     @keypress="isNumber($event, true)"
                     maxlength="4"
-                    :dark="$store.getters.getTheme"
+                    variant="outlined"
                   ></v-text-field>
                   <v-btn
                     color="primary"
-                    large
-                    :dark="$store.getters.getTheme"
-                    outlined
                     :loading="publishing || loading"
                     @click="updateCupValues"
                     class="mt-2"
+                    size="large"
+                    variant="outlined"
                   >
                     <v-icon>mdi-refresh</v-icon>
                     {{ $t("save") }}
@@ -130,17 +124,15 @@
               <v-row>
                 <v-col md="4" offset-md="4">
                   <v-select
-                    dark
-                    :menu-props="$store.getters.getTheme ? 'dark' : 'light'"
                     label="Valitse näytettävät tiedot"
-                    outlined
                     :items="select_table"
-                    @input="selectTableData"
                     v-model="selected"
+                    @update:model-value="selectTableData"
+                    variant="outlined"
                   >
-                    <template v-slot:item="{ item }">
-                      <span>{{ $t(item) }}</span>
-                    </template>
+                    <template v-slot:item="{ item, props }">
+                <v-list-item v-bind="props" :title="$t(item)" />
+              </template>
                     <template v-slot:selection="{ item }">
                       <span>{{ $t(item) }}</span>
                     </template></v-select
@@ -148,27 +140,26 @@
                 </v-col>
               </v-row>
             </v-col>
-            <v-row justify="center" v-if="selected === 'signees-signed'">
+            <v-row class="justify-center" v-if="selected === 'signees-signed'">
               <v-btn
                 @click="dialog = true"
-                large
-                outlined
-                dark
                 color="red"
                 :loading="publishing || loading"
                 :disabled="!cup.signees.length"
+                size="large"
+                variant="outlined"
                 ><v-icon>mdi-file-pdf-box</v-icon>
                 {{ $t("download-signees") }}</v-btn
               ></v-row
             >
             <v-row v-if="!loading && cup">
               <v-col md="10" offset-md="1">
-                <v-card :dark="$store.getters.getTheme">
-                  <v-card-title>
+                <v-card>
+                  <v-card-title class="d-flex flex-wrap align-center">
                     <p
                       class="flow-text"
                       v-bind:class="{
-                        'white--text': $store.getters.getTheme,
+                        'text-white': $store.getTheme,
                       }"
                     >
                       {{ $t(selected) }}
@@ -176,7 +167,7 @@
                     <v-spacer></v-spacer>
                     <v-text-field
                       v-model="search_comp"
-                      append-icon="mdi-magnify"
+                      append-inner-icon="mdi-magnify"
                       :label="$t('search')"
                       single-line
                       hide-details
@@ -184,36 +175,35 @@
                   </v-card-title>
                   <v-data-table
                     id="normal-table"
-                    :headers="selected_headers"
+                    :headers="$tableHeaders(selected_headers)"
                     :items="selected_items"
                     :search="search_comp"
                     :loading="loading || updating"
                   >
                     <template
                       v-for="(h, index) in selected_headers"
-                      v-slot:[`header.${h.value}`]="{ header }"
+                      v-slot:[`header.${h.value}`]="{ column: header }"
                     >
-                      <span :key="index"> {{ $t(header.text) }}</span>
+                      <span> {{ $t(header.text) }}</span>
                     </template>
                     <template v-slot:[`item.start_date`]="{ item }">
-                      <v-chip color="primary darken-2">{{
+                      <v-chip color="primary-darken-2" variant="flat">{{
                         formatDateToLocaleDateString(item.start_date)
                       }}</v-chip>
                     </template>
                     <template v-slot:[`item.isFinished`]="{ item }">
-                      <v-tooltip right>
-                        <template v-slot:activator="{ on, attrs }">
+                      <v-tooltip location="end">
+                        <template v-slot:activator="{ props }">
                           <v-chip
-                            v-bind="attrs"
-                            v-on="on"
+                            v-bind="props"
                             :color="
                               item.isFinished
-                                ? 'green lighten-2'
-                                : 'red lighten-2'
+                                ? 'green-lighten-2'
+                                : 'red-lighten-2'
                             "
                             @click="endCompetition(item)"
-                            :outlined="$store.getters.getTheme"
                             :disabled="updating"
+                            :variant="$store.getTheme ? 'outlined' : 'flat'"
                             >{{
                               item.isFinished ? $t("yes") : $t("no")
                             }}</v-chip
@@ -223,17 +213,16 @@
                       </v-tooltip>
                     </template>
                     <template v-slot:[`item.isPublic`]="{ item }">
-                      <v-tooltip right>
-                        <template v-slot:activator="{ on, attrs }">
+                      <v-tooltip location="end">
+                        <template v-slot:activator="{ props }">
                           <v-chip
-                            v-bind="attrs"
-                            v-on="on"
-                            :outlined="$store.getters.getTheme"
+                            v-bind="props"
                             :color="
-                              item.isPublic ? 'green darken-2' : 'red darken-2'
+                              item.isPublic ? 'green-darken-2' : 'red-darken-2'
                             "
                             @click="publishCompetition(item)"
                             :disabled="updating"
+                            :variant="$store.getTheme ? 'outlined' : 'flat'"
                             >{{
                               item.isPublic ? $t("public") : $t("private")
                             }}</v-chip
@@ -245,21 +234,19 @@
                     <template v-slot:[`item.cup_points_multiplier`]="{ item }">
                       <v-chip
                         :color="getMultiplierColor(item.cup_points_multiplier)"
-                        :outlined="$store.getters.getTheme"
+                        :variant="$store.getTheme ? 'outlined' : 'flat'"
                         >{{ item.cup_points_multiplier }}x</v-chip
                       >
                     </template>
                     <template v-slot:[`item.choose`]="{ item }">
-                      <v-tooltip right>
-                        <template v-slot:activator="{ on, attrs }">
+                      <v-tooltip location="end">
+                        <template v-slot:activator="{ props }">
                           <v-btn
                             color="primary"
-                            v-bind="attrs"
-                            v-on="on"
+                            v-bind="props"
                             :disabled="updating"
                             @click="pickCompetition(item)"
-                            ><v-icon color="black"
-                              >mdi-arrow-right-bold-box-outline</v-icon
+                            ><v-icon color="black">mdi-arrow-right-bold-box-outline</v-icon
                             ></v-btn
                           >
                         </template>
@@ -268,14 +255,13 @@
                     </template>
                     <template v-slot:[`item.modify`]="{ item }">
                       <v-btn
-                        color="yellow darken-2"
-                        :dark="$store.getters.getTheme"
+                        color="yellow-darken-2"
                         :disabled="loading || publishing"
                         @click.stop="
                           new_captain_name = item.captain_name;
                           new_temp_captain_name = item.temp_captain_name;
                           new_locality = item.locality;
-                          $set(dialog_signee, item.boat_number, true);
+                          dialog_signee[item.boat_number] = true;
                         "
                         ><v-icon color="black">mdi-account-edit</v-icon></v-btn
                       >
@@ -285,9 +271,9 @@
                         max-width="600px"
                         :key="item.boat_number"
                       >
-                        <v-card :dark="$store.getters.getTheme">
+                        <v-card>
                           <v-card-title>
-                            <span class="headline"
+                            <span class="text-headline-small"
                               >{{ $t("modify") }} ({{
                                 $t("boat-number-short")
                               }}
@@ -316,7 +302,7 @@
                                     v-for="(error, index) in errors"
                                     v-bind:key="index"
                                   >
-                                    <p class="flow-text black--text">
+                                    <p class="flow-text text-black">
                                       {{ index + 1 }}. {{ error }}
                                     </p>
                                   </li>
@@ -363,8 +349,7 @@
                           </v-card-text>
                           <v-card-actions>
                             <v-btn
-                              color="yellow darken-2"
-                              outlined
+                              color="yellow-darken-2"
                               :loading="publishing"
                               @click.stop="
                                 modifySignee(
@@ -375,12 +360,12 @@
                                   false
                                 )
                               "
+                              variant="outlined"
                               >Peruuta</v-btn
                             >
                             <v-spacer></v-spacer>
                             <v-btn
-                              color="green darken-2"
-                              outlined
+                              color="green-darken-2"
                               :loading="publishing"
                               @click.stop="
                                 modifySignee(
@@ -391,6 +376,7 @@
                                   true
                                 )
                               "
+                              variant="outlined"
                               >Tallenna</v-btn
                             >
                           </v-card-actions>
@@ -399,8 +385,7 @@
                     </template>
                     <template v-slot:[`item.delete`]="{ item }">
                       <v-btn
-                        color="red darken-2"
-                        :dark="$store.getters.getTheme"
+                        color="red-darken-2"
                         :disabled="loading || publishing"
                         @click.stop="deleteSignee(item)"
                         ><v-icon color="black">mdi-delete</v-icon></v-btn
@@ -414,30 +399,29 @@
               <v-col>
                 <v-btn
                   @click="createSigneeDialog = true"
-                  large
-                  outlined
-                  dark
                   :loading="publishing || loading"
+                  size="large"
+                  variant="outlined"
                   ><v-icon color="green">mdi-plus</v-icon>{{ $t("add") }}</v-btn
                 >
                 <v-dialog v-model="createSigneeDialog" width="500">
-                  <v-card :dark="$store.getters.getTheme">
+                  <v-card>
                     <v-card-title>
                       {{ $t("add") }} {{ $t("signee") }}</v-card-title
                     >
                     <v-card-text>
-                      <h3 v-if="signeeError" class="red--text">
+                      <h3 v-if="signeeError" class="text-red">
                         {{ $t(signeeError) }}
                       </h3>
                       <v-text-field
                         :label="$t('boat-number')"
                         v-model="signeeNumber"
-                        append-outer-icon="add"
+                        append-icon="mdi-plus"
                         maxlength="6"
-                        @click:append-outer="
+                        @click:append="
                           signeeNumber > 0 ? signeeNumber++ : (signeeNumber = 1)
                         "
-                        prepend-icon="remove"
+                        prepend-icon="mdi-minus"
                         @click:prepend="
                           signeeNumber > 1 ? signeeNumber-- : (signeeNumber = 1)
                         "
@@ -465,13 +449,13 @@
                     <v-card-actions>
                       <v-btn
                         color="yellow"
-                        text
                         @click="createSigneeDialog = false"
+                        variant="text"
                       >
                         {{ $t("cancel") }}
                       </v-btn>
                       <v-spacer></v-spacer>
-                      <v-btn color="primary" text @click="addSignee">
+                      <v-btn color="primary" @click="addSignee" variant="text">
                         {{ $t("add") }}
                       </v-btn>
                     </v-card-actions>
@@ -486,22 +470,22 @@
               <v-col>
                 <v-btn
                   tile
-                  color="green lighten-1"
-                  outlined
+                  color="green-lighten-1"
                   :loading="publishing || loading"
                   @click="changePage('/register-comp')"
+                  variant="outlined"
                   ><v-icon>mdi-plus-circle</v-icon
                   >{{ $t("create-new-comp") }}</v-btn
                 >
               </v-col>
               <v-col>
                 <v-btn
-                  large
                   tile
-                  :color="cup.isPublic ? 'grey darken-4' : 'green darken-4'"
+                  :color="cup.isPublic ? 'grey-darken-4' : 'green-darken-4'"
                   @click="publishCup(cup.isPublic)"
-                  class="white--text"
+                  class="text-white"
                   :loading="publishing || loading"
+                  size="large"
                 >
                   <div v-if="cup.isPublic">
                     <v-icon>mdi-incognito</v-icon>{{ $t("button.set-private") }}
@@ -515,13 +499,13 @@
             </v-row>
             <v-row v-if="error">
               <v-col>
-                <h2 class="error white--text">
+                <h2 class="bg-error text-white">
                   {{ error }}
                 </h2>
               </v-col>
             </v-row>
-          </v-tab-item>
-          <v-tab-item :value="'points'">
+          </v-window-item>
+          <v-window-item :value="'points'">
             <cup-points
               :competitions="competitions"
               :allCompetitions="allCompetitions"
@@ -552,8 +536,8 @@
                 }
               "
             ></cup-points>
-          </v-tab-item>
-          <v-tab-item :value="'stats'">
+          </v-window-item>
+          <v-window-item :value="'stats'">
             <cup-stats
               :competitions="competitions"
               :cup="cup"
@@ -562,8 +546,8 @@
               :biggest_amounts="biggest_amounts"
               :loading="loading"
             ></cup-stats>
-          </v-tab-item>
-        </v-tabs-items>
+          </v-window-item>
+        </v-window>
         <notification-bar :snackbar="snackbar" :text="text"></notification-bar>
       </v-card>
     </v-container>
@@ -574,7 +558,6 @@ import CupService from "../services/CupService";
 import CompetitionService from "../services/CompetitionService";
 import ResultService from "../services/ResultService";
 import FishService from "../services/FishService";
-import "jspdf-autotable";
 import CupPoints from "../components/CupPoints.vue";
 import CupStats from "../components/CupStats.vue";
 import {
@@ -590,7 +573,7 @@ import NotificationBar from "../components/NotificationBar.vue";
 export default {
   name: "CupOverview",
   components: {
-    ProgressBarQuery: () => import("../components/layout/ProgressBarQuery"),
+    ProgressBarQuery: () => import("../components/layout/ProgressBarQuery.vue"),
     CupPoints,
     CupStats,
     NotificationBar,
@@ -682,7 +665,7 @@ export default {
     if (localStorage.getItem("cup") != null) {
       // update from database
       this.refreshCup(localStorage.getItem("cup"));
-      this.$store.state.cup = this.cup;
+      this.$store.cup = this.cup;
     } else {
       console.log("No cup in localstorage!");
     }
@@ -714,8 +697,8 @@ export default {
             },
           };
           await CupService.updateValues(this.cup._id, newValues);
-          this.$store.state.cup.name = this.cup.name = this.newCupName;
-          this.$store.state.cup.year = this.cup.year = this.newCupYear;
+          this.$store.cup.name = this.cup.name = this.newCupName;
+          this.$store.cup.year = this.cup.year = this.newCupYear;
           this.text = "notification.updated";
           this.snackbar = true;
         } catch (err) {
@@ -731,7 +714,7 @@ export default {
 
       try {
         //TODO update only this one variable (competition.normal_points) to database, not the whole competition
-        this.$store.state.cup = this.cup;
+        this.$store.cup = this.cup;
         this.publishing = true;
         const newValues = {
           $set: { isPublic: this.cup.isPublic },
@@ -846,7 +829,7 @@ export default {
       }
     },
     async updateSignees(signees) {
-      this.$store.state.cup = this.cup;
+      this.$store.cup = this.cup;
       this.publishing = true;
       const new_signees = [...signees];
       // No need to have this variable in database
@@ -910,17 +893,17 @@ export default {
             await this.updateSignees(this.signees).finally(() => {
               // Update names to "points" table
               this.calculateAll(this.competitions, this.selectedCompetitions);
-              this.$set(this.dialog_signee, signee.boat_number, false);
+              this.dialog_signee[signee.boat_number] = false;
             });
           } else {
-            this.$set(this.dialog_signee, signee.boat_number, false);
+            this.dialog_signee[signee.boat_number] = false;
           }
         }
       }
       // If user has pressed "Peruuta" button
       else {
         // Do nothing
-        this.$set(this.dialog_signee, signee.boat_number, false);
+        this.dialog_signee[signee.boat_number] = false;
       }
     },
     setCompetitionData(cup) {
@@ -1036,7 +1019,7 @@ export default {
           this.newCupName = this.cup.name;
           this.newCupYear = this.cup.year;
           // Update to vuex, Assing variables from vuex (see client/store/index.js)
-          this.$store.commit("refreshCup", this.cup);
+          this.$store.refreshCup(this.cup);
           try {
             this.allCompetitions = await CompetitionService.getCompetitions({
               cup_id: cup_id,
@@ -1098,7 +1081,7 @@ export default {
     pickCompetition(competition) {
       // Pick competition for the app to use
       //NOTE Store competition to vuex, redundant?
-      this.$store.state.competition = competition;
+      this.$store.competition = competition;
       // Set competition._id to localstorage for database queries
       localStorage.setItem(
         "competition",
