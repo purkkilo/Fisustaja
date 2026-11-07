@@ -430,7 +430,7 @@ async function saveCup() {
       cups.value.push(cup);
       cupsAmount.value = cups.value.length;
       cups.value.sort((a, b) => {
-        return parseInt(a.year) < parseInt(b.year);
+        return parseInt(b.year) - parseInt(a.year);
       });
       loading.value = false;
       year.value = null;
@@ -464,7 +464,9 @@ async function saveCup() {
         competition.end_date = new Date(competition.end_date);
       });
       // Sort them based on start_date so the oldest competitions are the last
-      competitions.value.sort((a, b) => a.start_date < b.start_date);
+      competitions.value.sort(
+        (a, b) => new Date(b.start_date) - new Date(a.start_date),
+      );
     })
     .catch((err) => {
       if (err.response) {
@@ -488,7 +490,7 @@ async function saveCup() {
       cups.value = response;
       cupsAmount.value = cups.value.length;
       cups.value.sort((a, b) => {
-        return parseInt(a.year) < parseInt(b.year);
+        return parseInt(b.year) - parseInt(a.year);
       });
     })
     .catch((err) => {

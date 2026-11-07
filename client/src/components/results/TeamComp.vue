@@ -82,6 +82,7 @@
   </div>
 </template>
 <script setup>
+import ProgressBarQuery from "../layout/ProgressBarQuery.vue";
 import { tableHeaders } from "@/utils/tableHeaders";
 import { useMainStore } from "@/store";
 import { ref } from "vue";

@@ -724,7 +724,7 @@ onMounted(async () => {
         );
         // Sort them based on start_date so the oldest competitions are the last
         all_competitions.value.sort(function compare(a, b) {
-          return a.start_date < b.start_date;
+          return new Date(b.start_date) - new Date(a.start_date);
         });
         loading_competitions.value = false;
       })

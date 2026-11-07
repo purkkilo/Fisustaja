@@ -443,7 +443,7 @@ function setCompetitionData(_cup) {
     counter++;
   });
   allCompetitions.value.sort((a, b) => {
-    return b.start_date < a.start_date;
+    return new Date(a.start_date) - new Date(b.start_date);
   });
   signees.value = cup.value.signees.sort(sortBy("boat_number", true));
   signees.value.forEach((signee) => {

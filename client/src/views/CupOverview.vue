@@ -551,6 +551,7 @@
   </div>
 </template>
 <script setup>
+import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
 import { tableHeaders } from "@/utils/tableHeaders";
 import { onMounted, ref } from "vue";
 import { useMainStore } from "@/store";
@@ -904,7 +905,7 @@ function setCompetitionData(_cup) {
     competition.key_name = i + 1;
   });
   allCompetitions.value.sort((a, b) => {
-    return b.start_date < a.start_date;
+    return new Date(a.start_date) - new Date(b.start_date);
   });
   signees.value = cup.value.signees.sort(sortBy("boat_number", true));
   signees.value.forEach((signee) => {
