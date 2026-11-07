@@ -121,7 +121,9 @@ async function handleSubmit(e) {
         loading.value = false;
       } else {
         loading.value = false;
-        if (res.status === 401 || res.status === 404) {
+        if (res.status === 429) {
+          showError("errors.too-many-attempts");
+        } else if (res.status === 401 || res.status === 404) {
           showError("errors.details-not-match");
         } else {
           showError("errors.something-wrong");

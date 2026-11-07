@@ -1,34 +1,30 @@
 const JwtStrategy = require("passport-jwt").Strategy;
 const ExtractJwt = require("passport-jwt").ExtractJwt;
 const User = require("../models/User");
-const { ACCESS_COOKIE } = require("../utils/authCookies");
+const { ACCESS, ACCESS_COOKIE, hasSession } = require("../utils/authCookies");
 
-const key = process.env.SECRET;
-
-const cookieExtractor = (req) => {
-  if (req && req.cookies && req.cookies[ACCESS_COOKIE]) {
-    return req.cookies[ACCESS_COOKIE];
-  }
-  return null;
-};
+const cookieExtractor = (req) => req?.cookies?.[ACCESS_COOKIE] || null;
 
 const opts = {
   jwtFromRequest: ExtractJwt.fromExtractors([
     cookieExtractor,
     ExtractJwt.fromAuthHeaderAsBearerToken(),
   ]),
-  secretOrKey: key,
+  secretOrKey: process.env.SECRET,
 };
 
 module.exports = (passport) => {
   passport.use(
-    new JwtStrategy(opts, (jwt_payload, done) => {
-      User.findById(jwt_payload._id)
-        .then((user) => {
-          if (user) return done(null, user);
-          return done(null, false);
-        })
-        .catch((err) => done(err, false));
+    new JwtStrategy(opts, async (payload, done) => {
+      // Only access tokens of a session that hasn't been logged out
+      if (payload.typ !== ACCESS) return done(null, false);
+      try {
+        const user = await User.findById(payload._id);
+        if (!user || !hasSession(user, payload.sid)) return done(null, false);
+        return done(null, user);
+      } catch (err) {
+        return done(err, false);
+      }
     }),
   );
 };

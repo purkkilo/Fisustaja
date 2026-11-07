@@ -24,6 +24,17 @@ const UserSchema = new Schema({
     type: Date,
     default: Date.now,
   },
+  // Logged-in browsers; removed on logout (see utils/authCookies.js)
+  sessions: {
+    type: [
+      {
+        _id: false,
+        sid: { type: String, required: true },
+        expiresAt: { type: Date, required: true },
+      },
+    ],
+    default: [],
+  },
 });
 
 module.exports = User = mongoose.model("users", UserSchema);

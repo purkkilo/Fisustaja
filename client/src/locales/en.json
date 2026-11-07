@@ -182,7 +182,8 @@
     "session-expired": "Session expired, please login again!",
     "something-wrong": "Something went wrong... Try again!",
     "timeout": "Connection timed out, try refreshing the page!",
-    "team-too-long": "Team name must be at most 40 characters (shortened to 40)!"
+    "team-too-long": "Team name must be at most 40 characters (shortened to 40)!",
+    "too-many-attempts": "Too many login attempts. Try again in 15 minutes."
   },
   "fetching": "Fetching",
   "finished": "Finished",

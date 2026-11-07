@@ -1,5 +1,6 @@
 const express = require("express");
 const mongodb = require("mongodb");
+const { pickQuery, parseObjectId, parseBoolean } = require("../../utils/query");
 const router = express.Router();
 const Competition = require("../../models/Competition");
 const {
@@ -7,39 +8,24 @@ const {
   requireAuthUnlessPublic,
 } = require("../../middleware/auth");
 
-// Get competitions with given query
-router.get("/", requireAuthUnlessPublic, async (req, res) => {
-  let query = req.query;
+// Query fields the client may filter by
+const FIELDS = ["cup_id", "user_id", "state"];
+
+router.get("/", requireAuthUnlessPublic, async (req, res, next) => {
   try {
-    if (req.query.isPublic) {
-      let boolean = req.query.isPublic === "true";
-      query = { ...query, isPublic: boolean };
+    const isPublic = parseBoolean(req.query.isPublic);
+    const visibility = isPublic === undefined ? {} : { isPublic };
+    if (req.query._id !== undefined) {
+      const id = parseObjectId(req.query._id);
+      if (!id) return res.status(400).json({ msg: "Invalid id" });
+      return res
+        .status(200)
+        .send(await Competition.findOne({ _id: id, ...visibility }));
     }
-    if (req.query._id) {
-      query = { _id: mongodb.ObjectId.createFromHexString(req.query._id) };
-      if (req.query.isPublic === "true") {
-        query.isPublic = true;
-      }
-      await Competition.findOne(query)
-        .then((comps) => {
-          res.status(200).send(comps);
-        })
-        .catch((err) => {
-          console.log(err);
-          res.status(500).send(err);
-        });
-    } else {
-      await Competition.find(query)
-        .then((comps) => {
-          res.status(200).send(comps);
-        })
-        .catch((err) => {
-          console.log(err);
-          res.status(500).send(err);
-        });
-    }
-  } catch (error) {
-    res.status(400).send(error);
+    const filter = { ...pickQuery(req.query, FIELDS), ...visibility };
+    return res.status(200).send(await Competition.find(filter));
+  } catch (err) {
+    return next(err);
   }
 });
 

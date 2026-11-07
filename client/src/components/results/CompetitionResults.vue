@@ -284,6 +284,8 @@ import BiggestAmounts from "./BiggestAmounts.vue";
 const props = defineProps({
   // _id of the competition to show; changing it loads the new competition
   competitionId: { type: String, default: null },
+  // Public page: only public data is requested (works without a login)
+  publicOnly: Boolean,
 });
 const emit = defineEmits(["loaded"]);
 
@@ -330,7 +332,7 @@ const {
   optionLabel,
   savePdf,
   saveSelectedPdfs,
-} = useCompetitionResults();
+} = useCompetitionResults({ publicOnly: props.publicOnly });
 
 const pdfDialog = ref(false);
 const printDialog = ref(false);

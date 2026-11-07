@@ -100,6 +100,7 @@
         v-if="selected"
         ref="resultsView"
         :competition-id="selected._id"
+        public-only
       />
     </v-card>
   </v-container>

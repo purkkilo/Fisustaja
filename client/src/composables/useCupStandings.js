@@ -62,8 +62,8 @@ export function useCupStandings({ publicOnly = false } = {}) {
       };
       const [comps, fishes, results] = await Promise.all([
         CompetitionService.getCompetitions(query),
-        FishService.getFishes({ cup_id: found._id }),
-        ResultService.getResults({ cup_id: found._id }),
+        FishService.getFishes(query),
+        ResultService.getResults(query),
       ]);
       allCompetitions.value = comps
         .map((c) => ({

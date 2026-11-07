@@ -180,7 +180,8 @@
     "session-expired": "Sessio vanhentunut, kirjaudu sisään uudelleen!",
     "something-wrong": "Jokin meni vikaan, yritä uudestaan!",
     "timeout": "Yhteyttä tietokantaan ei saatu... Yritä uudelleen päivittämällä sivu (Connection timed out)",
-    "team-too-long": "Valitse tiimin nimeksi enintään 40 merkkiä pitkä nimi (nimi lyhennetty 40 merkkiin)!"
+    "team-too-long": "Valitse tiimin nimeksi enintään 40 merkkiä pitkä nimi (nimi lyhennetty 40 merkkiin)!",
+    "too-many-attempts": "Liian monta kirjautumisyritystä. Yritä uudelleen 15 minuutin päästä."
   },
   "fetching": "Haetaan",
   "finished": "Päättynyt",

@@ -1,36 +1,36 @@
 const express = require("express");
 const mongodb = require("mongodb");
+const { pickQuery, parseObjectId } = require("../../utils/query");
+const { publicScope } = require("../../utils/publicScope");
 const router = express.Router();
 const Fish = require("../../models/Fish");
-const { requireAuth } = require("../../middleware/auth");
+const { requireAuth, optionalAuth } = require("../../middleware/auth");
 
-// Get fishes with given query
-router.get("/", async (req, res) => {
-  let query = req.query;
+// Query fields the client may filter by
+const FIELDS = ["competition_id", "cup_id", "boat_number", "fish_id"];
+
+router.get("/", optionalAuth, async (req, res, next) => {
   try {
-    // Fetch by _id
-    if (req.query._id) {
-      query = { _id: mongodb.ObjectId.createFromHexString(req.query._id) };
-      await Fish.findOne(query)
-        .then((fish) => {
-          res.status(200).send(fish);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+    const filter = pickQuery(req.query, FIELDS);
+    if (!req.user) {
+      // Without a login, only data of public competitions/cups
+      if (req.query.isPublic !== "true") {
+        return res
+          .status(401)
+          .json({ error: "Unauthorized access", success: false });
+      }
+      const scope = await publicScope(filter);
+      if (!scope) return res.status(404).json({ msg: "Not found" });
+      Object.assign(filter, scope);
     }
-    // Otherwise return an array of all the competitions that match query
-    else {
-      await Fish.find(query)
-        .then((fish) => {
-          res.status(200).send(fish);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+    if (req.query._id !== undefined) {
+      const id = parseObjectId(req.query._id);
+      if (!id) return res.status(400).json({ msg: "Invalid id" });
+      return res.status(200).send(await Fish.findOne({ ...filter, _id: id }));
     }
-  } catch (error) {
-    res.status(400).send(error);
+    return res.status(200).send(await Fish.find(filter));
+  } catch (err) {
+    return next(err);
   }
 });
 
@@ -67,7 +67,7 @@ router.put("/:id/update", requireAuth, async (req, res) => {
   try {
     await Fish.updateOne(
       { _id: mongodb.ObjectId.createFromHexString(req.params.id) },
-      req.body
+      req.body,
     ).catch((err) => {
       console.log(err);
     });
@@ -82,7 +82,7 @@ router.put("/:id/replace", requireAuth, async (req, res) => {
   try {
     await Fish.replaceOne(
       { _id: mongodb.ObjectId.createFromHexString(req.params.id) },
-      req.body
+      req.body,
     ).catch((err) => {
       console.log(err);
     });

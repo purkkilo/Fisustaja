@@ -16,6 +16,9 @@ app.use(router);
 app.use(i18n);
 app.use(vuetify);
 
+// The session lives in HttpOnly cookies now; drop what older versions kept
+for (const key of ["jwt", "user", "auth"]) localStorage.removeItem(key);
+
 const store = useMainStore();
 setupAuthInterceptor({
   onUnauthorized: () => {

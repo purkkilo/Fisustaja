@@ -17,31 +17,31 @@ import {
 import { saveAllAsPDF, saveAsPDF, saveStatsAsPDF } from "@/pdf";
 
 const NORMAL_HEADERS = [
-  { title: "placement", key: "placement"},
-  { title: "boat-number", key: "boat_number"},
-  { title: "captain-name", key: "captain_name"},
-  { title: "temp-captain-name", key: "temp_captain_name"},
-  { title: "locality", key: "locality"},
-  { title: "points", key: "total_points"},
+  { title: "placement", key: "placement" },
+  { title: "boat-number", key: "boat_number" },
+  { title: "captain-name", key: "captain_name" },
+  { title: "temp-captain-name", key: "temp_captain_name" },
+  { title: "locality", key: "locality" },
+  { title: "points", key: "total_points" },
 ];
 const CUP_HEADERS = [
   ...NORMAL_HEADERS,
-  { title: "cup.normal", key: "cup_points_total"},
+  { title: "cup.normal", key: "cup_points_total" },
 ];
 const TEAM_HEADERS = [
-  { title: "placement", key: "placement"},
-  { title: "team", key: "name"},
-  { title: "name", key: "captain_name_1"},
-  { title: "name", key: "captain_name_2"},
-  { title: "name", key: "captain_name_3"},
-  { title: "points", key: "points"},
+  { title: "placement", key: "placement" },
+  { title: "team", key: "name" },
+  { title: "name", key: "captain_name_1" },
+  { title: "name", key: "captain_name_2" },
+  { title: "name", key: "captain_name_3" },
+  { title: "points", key: "points" },
 ];
 const SIGNEE_HEADERS = [
-  { title: "boat-number", key: "boat_number"},
-  { title: "captain-name", key: "captain_name"},
-  { title: "temp-captain-name", key: "temp_captain_name"},
-  { title: "locality", key: "locality"},
-  { title: "starting-place", key: "starting_place"},
+  { title: "boat-number", key: "boat_number" },
+  { title: "captain-name", key: "captain_name" },
+  { title: "temp-captain-name", key: "temp_captain_name" },
+  { title: "locality", key: "locality" },
+  { title: "starting-place", key: "starting_place" },
 ];
 
 /** Equal results share a placement (1, 2, 2, 4...). */
@@ -64,7 +64,7 @@ function assignPlacements(items, key) {
  * Loads one competition with its signees and catches, and calculates every
  * results table, chart and PDF export shown on the Results/PublicResults pages.
  */
-export function useCompetitionResults() {
+export function useCompetitionResults({ publicOnly = false } = {}) {
   const store = useMainStore();
   const { t, locale } = useI18n();
 
@@ -134,11 +134,11 @@ export function useCompetitionResults() {
     fish_names.value = ["all", ...table_fish_names.value, "winners"];
     fish_amount_names.value = [...fish_names.value];
     weight_headers.value = [
-      { title: "placement", key: "placement"},
-      { title: "boat-number", key: "boat_number"},
-      { title: "captain-name", key: "captain_name"},
-      ...fishes.map((fish) => ({ title: fish.name, key: String(fish.id)})),
-      { title: "points", key: "total_points"},
+      { title: "placement", key: "placement" },
+      { title: "boat-number", key: "boat_number" },
+      { title: "captain-name", key: "captain_name" },
+      ...fishes.map((fish) => ({ title: fish.name, key: String(fish.id) })),
+      { title: "points", key: "total_points" },
     ];
   }
 
@@ -177,8 +177,11 @@ export function useCompetitionResults() {
     if (!competitionId) return;
     loading.value = true;
     try {
+      // Logged-out visitors may only read public competitions
+      const visibility = publicOnly ? { isPublic: true } : {};
       const found = await CompetitionService.getCompetitions({
         _id: competitionId,
+        ...visibility,
       });
       if (!found) {
         competition.value = null;
@@ -192,14 +195,14 @@ export function useCompetitionResults() {
       resetFishLists(found.fishes);
 
       const [rawResults, fishes] = await Promise.all([
-        ResultService.getResults({ competition_id: found._id }),
-        FishService.getFishes({ competition_id: found._id }),
+        ResultService.getResults({ competition_id: found._id, ...visibility }),
+        FishService.getFishes({ competition_id: found._id, ...visibility }),
       ]);
       processResults(rawResults || []);
       biggest_fishes.value = fishes || [];
 
       signee_headers.value = found.isTeamCompetition
-        ? [...SIGNEE_HEADERS, { title: "team", key: "team"}]
+        ? [...SIGNEE_HEADERS, { title: "team", key: "team" }]
         : [...SIGNEE_HEADERS];
       team_results.value = found.isTeamCompetition
         ? found.team_results || []
