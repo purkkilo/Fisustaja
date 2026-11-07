@@ -196,7 +196,8 @@ export function calculateNormalResults(competition, signees) {
     if (!p || signee.total_points === 0) {
       cup_placement_points = 0;
     } else {
-      cup_placement_points = p.points * competition.cup_points_multiplier;
+      // stored placement points already include the cup multiplier
+      cup_placement_points = Number(p.points);
     }
     // Calculate total cup points, cup points multiplier only scales the placement points
     cup_points_total = cup_placement_points + cup_participation_points;

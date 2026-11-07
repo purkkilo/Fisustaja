@@ -147,34 +147,25 @@
                 >
               </template>
               <template
-                v-for="(c, index) in competitions.length"
-                v-slot:[resultSlot(c)]="{ item }"
+                v-for="comp in competitions"
+                :key="comp.key_name"
+                v-slot:[resultSlot(comp.key_name)]="{ item }"
               >
-                <div v-if="item.cup_results[c]" v-bind:key="c">
-                  <span
-                    class="strokeme"
-                    v-if="
-                      item.cup_results[c].points ===
-                      competitions[index].cup_participation_points
-                    "
-                    >{{ item.cup_results[c].points }}p ({{
-                      item.cup_results[c].placement
-                    }}.)</span
-                  >
-                  <span
-                    class="strokeme"
-                    v-else
-                    :class="[
-                      'font-weight-bold',
-                      getColor(item.cup_results[c].placement) + '--text',
-                      'strokeme',
-                    ]"
-                    >{{ item.cup_results[c].points }}p ({{
-                      item.cup_results[c].placement
-                    }}.)</span
-                  >
-                </div>
-                <span v-else v-bind:key="index"> - </span>
+                <span
+                  v-if="item.cup_results[comp.key_name]"
+                  :class="[
+                    'strokeme',
+                    item.cup_results[comp.key_name].points ===
+                    comp.cup_participation_points
+                      ? ''
+                      : 'font-weight-bold text-' +
+                        getColor(item.cup_results[comp.key_name].placement),
+                  ]"
+                  >{{ item.cup_results[comp.key_name].points }}p ({{
+                    item.cup_results[comp.key_name].placement
+                  }}.)</span
+                >
+                <span v-else> - </span>
               </template>
               <template v-slot:[`item.final_cup_points`]="{ item }">
                 <v-chip color="primary" variant="flat"
@@ -192,7 +183,7 @@
               'text-white': store.getTheme,
             }"
           >
-            Kilpailuissa ei vielä tuloksia!
+            {{ $t("no-results") }}
           </h2>
         </v-col>
       </v-row>
@@ -204,7 +195,7 @@
               'text-white': store.getTheme,
             }"
           >
-            Päivitetään tuloksia...
+            {{ $t("updating-results") }}...
           </p>
         </v-col>
       </v-row>

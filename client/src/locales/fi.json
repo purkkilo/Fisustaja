@@ -179,7 +179,8 @@
     "number-used": "Numero on jo käytössä!",
     "session-expired": "Sessio vanhentunut, kirjaudu sisään uudelleen!",
     "something-wrong": "Jokin meni vikaan, yritä uudestaan!",
-    "timeout": "Yhteyttä tietokantaan ei saatu... Yritä uudelleen päivittämällä sivu (Connection timed out)"
+    "timeout": "Yhteyttä tietokantaan ei saatu... Yritä uudelleen päivittämällä sivu (Connection timed out)",
+    "team-too-long": "Valitse tiimin nimeksi enintään 40 merkkiä pitkä nimi (nimi lyhennetty 40 merkkiin)!"
   },
   "fetching": "Haetaan",
   "finished": "Päättynyt",
@@ -340,5 +341,10 @@
   "winners": "Voittajat",
   "with-enter": "painamalla Enter",
   "year": "Vuosi",
-  "yes": "Kyllä"
+  "yes": "Kyllä",
+  "click-to-change": "Muuta tila painamalla",
+  "updating-results": "Päivitetään tuloksia",
+  "signing-replace-confirm": "Numerolla {number} on jo ilmoitettu venekunta ({name}). Korvataanko sen tiedot näillä?",
+  "signing-delete-confirm": "Oletko varma että haluat poistaa kilpailijan",
+  "go-to-competition": "Siirry kilpailuun"
 }

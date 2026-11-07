@@ -45,7 +45,7 @@ export const useMainStore = defineStore("main", {
     getSigneesCount: (state) => state.competition.signees.length,
     getSigneeByBoatNumber: (state) => (boat_number) =>
       state.competition.signees.find(
-        (signee) => signee.boat_number === boat_number,
+        (signee) => Number(signee.boat_number) === Number(boat_number),
       ),
     getCompetition: (state) => state.competition,
     getCompetitionId: (state) => state.competition._id,
@@ -79,7 +79,9 @@ export const useMainStore = defineStore("main", {
       this.competition.signees.push(signee);
     },
     removeSignee(signee) {
-      const index = this.competition.signees.indexOf(signee);
+      const index = this.competition.signees.findIndex(
+        (item) => item === signee || (signee._id && item._id === signee._id),
+      );
       if (index > -1) {
         this.competition.signees.splice(index, 1);
       }
@@ -100,10 +102,13 @@ export const useMainStore = defineStore("main", {
       this.competition.teams = [...teams];
     },
     replaceSignee(found_signee) {
+      // results have a Mongo `_id`; an `id` match was never found, so the
+      // last signee used to be replaced instead
       const index = this.competition.signees.findIndex(
-        (item) => parseInt(found_signee.id) === parseInt(item.id),
+        (item) => item._id === found_signee._id,
       );
-      this.competition.signees.splice(index, 1, found_signee);
+      if (index > -1) this.competition.signees.splice(index, 1, found_signee);
+      else this.competition.signees.push(found_signee);
     },
     refreshCompetition(competition) {
       this.competition = competition;

@@ -391,13 +391,6 @@ function calculateCupStatistics() {
         const fish_weight = Number.isInteger(fish.weights) ? fish.weights : 0;
         if (comp_fish) {
           comp_fish.weights += fish_weight;
-          console.log(
-            "comp_fish",
-            comp_fish.name,
-            comp_fish.id,
-            comp_fish.weights,
-          );
-          console.log("fish", fish_name, fish.id, fish.weights);
         } else {
           cup_fishes_competition.value.push({
             id: fish.id,
@@ -436,7 +429,7 @@ function calculateCupStatistics() {
           id: fishes[0].id,
           boat_number: fishes[0].boat_number,
           captain_name: fishes[0].captain_name,
-          competition_name: competition.name,
+          competition_name: competition?.name ?? "",
           fish_name: name,
           weight: fishes[0].weight,
         });
