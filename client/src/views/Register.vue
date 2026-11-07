@@ -90,7 +90,7 @@
             <span
               class="flow-text"
               v-bind:class="{
-                'text-white': $store.getTheme,
+                'text-white': store.getTheme,
               }"
               >{{ $t("notification.passwords-matching") }}
               <v-icon>mdi-check-outline</v-icon></span
@@ -112,7 +112,7 @@
             <span
               class="col s6 flow-text"
               v-bind:class="{
-                'text-white': $store.getTheme,
+                'text-white': store.getTheme,
               }"
               >{{ $t("nav.admin") }}?</span
             >
@@ -147,101 +147,99 @@
     <notification-bar :snackbar="snackbar" :text="text"></notification-bar>
   </v-container>
 </template>
-<script>
+<script setup>
+import { useMainStore } from "@/store";
+import { nextTick, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 import UserService from "../services/UserService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
 import NotificationBar from "../components/NotificationBar.vue";
 import ErrorList from "../components/ErrorList.vue";
 
-export default {
-  props: ["nextUrl"],
-  data() {
-    return {
-      errors: [],
-      name: "",
-      email: "",
-      password: "",
-      password_confirmation: "",
-      is_admin: "No",
-      loading: false,
-      snackbar: false,
-      text: "",
-      showPassword: true,
-    };
-  },
-  components: {
-    ProgressBarQuery,
-    NotificationBar,
-    ErrorList,
-  },
-  mounted() {
-    // Press button by enter key when focusing password_confirmation input
-    var input = document.getElementById("password_confirmation");
-    input.addEventListener("keyup", function (event) {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        document.getElementById("sbtn").click();
-      }
-    });
-  },
-  methods: {
-    // Add error to error array and direct user to it
-    showError(error) {
-      this.errors.push(error);
-      this.$nextTick(() => {
-        document.getElementById("error-list").scrollIntoView();
-      });
-    },
-    // Submit register credentials and confirm user login
-    async handleSubmit(e) {
-      this.loading = true;
-      e.preventDefault();
-      this.errors = [];
-      //TODO check if it's really an email adress
-      if (!this.email) {
-        this.showError("errors.missing-email");
-      }
-      if (!this.password) {
-        this.showError("errors.missing-password");
-      }
-      if (!this.name) {
-        this.showError("errors.missing-name");
-      }
-      if (
-        this.password === this.password_confirmation &&
-        this.password.length > 0
-      ) {
-        if (!this.errors.length) {
-          const user = {
-            name: this.name,
-            email: this.email,
-            password: this.password,
-            is_admin: this.is_admin === "Yes" ? true : false,
-          };
-          // Add admin to database (check 'client\src\UserServiceService.js' and 'server\routes\api\users.js' to see how this works)
-          const res = await UserService.insertUser(user);
-          this.loading = false;
-          if (res.success) {
-            this.$router.push({ path: "/login" });
-          } else {
-            if (res.error.msg === "Email is already in use!") {
-              this.showError("errors.email-used");
-            } else if (res.error.msg === "Username is already taken!") {
-              this.showError("errors.name-used");
-            } else {
-              this.showError("errors.something-wrong");
-              console.log(res.error);
-            }
-          }
-        } else {
-          // IF there are errors left
-          this.loading = false;
-        }
+const store = useMainStore();
+defineProps(["nextUrl"]);
+const router = useRouter();
+
+const errors = ref([]);
+const name = ref("");
+const email = ref("");
+const password = ref("");
+const password_confirmation = ref("");
+const is_admin = ref("No");
+const loading = ref(false);
+const snackbar = ref(false);
+const text = ref("");
+const showPassword = ref(true);
+
+// Add error to error array and direct user to it
+
+function showError(error) {
+  errors.value.push(error);
+  nextTick(() => {
+    document.getElementById("error-list").scrollIntoView();
+  });
+}
+
+// Submit register credentials and confirm user login
+
+async function handleSubmit(e) {
+  loading.value = true;
+  e.preventDefault();
+  errors.value = [];
+  //TODO check if it's really an email adress
+  if (!email.value) {
+    showError("errors.missing-email");
+  }
+  if (!password.value) {
+    showError("errors.missing-password");
+  }
+  if (!name.value) {
+    showError("errors.missing-name");
+  }
+  if (
+    password.value === password_confirmation.value &&
+    password.value.length > 0
+  ) {
+    if (!errors.value.length) {
+      const user = {
+        name: name.value,
+        email: email.value,
+        password: password.value,
+        is_admin: is_admin.value === "Yes" ? true : false,
+      };
+      // Add admin to database (check 'client\src\UserServiceService.js' and 'server\routes\api\users.js' to see how this works)
+      const res = await UserService.insertUser(user);
+      loading.value = false;
+      if (res.success) {
+        router.push({ path: "/login" });
       } else {
-        this.loading = false;
-        this.showError("notification.passwords-not-matching");
+        if (res.error.msg === "Email is already in use!") {
+          showError("errors.email-used");
+        } else if (res.error.msg === "Username is already taken!") {
+          showError("errors.name-used");
+        } else {
+          showError("errors.something-wrong");
+          console.log(res.error);
+        }
       }
-    },
-  },
-};
+    } else {
+      // IF there are errors left
+      loading.value = false;
+    }
+  } else {
+    loading.value = false;
+    showError("notification.passwords-not-matching");
+  }
+}
+
+onMounted(() => {
+  // Press button by enter key when focusing password_confirmation input
+  var input = document.getElementById("password_confirmation");
+  input.addEventListener("keyup", function (event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      document.getElementById("sbtn").click();
+    }
+  });
+});
 </script>

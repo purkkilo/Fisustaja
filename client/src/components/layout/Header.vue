@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-app-bar
-      :color="$store.getTheme ? 'grey-darken-4' : 'primary-lighten-1'"
+      :color="store.getTheme ? 'grey-darken-4' : 'primary-lighten-1'"
       scroll-behavior="elevate"
     >
       <v-app-bar-nav-icon @click="drawer = true"></v-app-bar-nav-icon>
@@ -17,7 +17,8 @@
         🌐 {{ $i18n.locale }}
       </v-btn>
       <router-link to="/"
-        ><v-btn rounded variant="outlined"><v-icon>mdi-home</v-icon></v-btn
+        ><v-btn rounded variant="outlined"
+          ><v-icon>mdi-home</v-icon></v-btn
         ></router-link
       >
       <template v-slot:extension v-if="isPublicPage || isCompetitionPage">
@@ -31,30 +32,30 @@
     <v-navigation-drawer
       v-model="drawer"
       temporary
-      :color="$store.getTheme ? 'grey-darken-4' : 'primary-lighten-1'"
+      :color="store.getTheme ? 'grey-darken-4' : 'primary-lighten-1'"
     >
       <v-list nav class="py-0" density="compact">
         <v-list-item lines="two">
-          <template v-slot:prepend><v-avatar>
-            <v-icon color="blue-darken-4">mdi-account-circle</v-icon>
-          </v-avatar></template>
+          <template v-slot:prepend
+            ><v-avatar>
+              <v-icon color="blue-darken-4">mdi-account-circle</v-icon>
+            </v-avatar></template
+          >
 
-            <v-list-item-title>{{ isUser.name }}</v-list-item-title>
-            <v-list-item-subtitle>{{ isUser.email }}</v-list-item-subtitle>
+          <v-list-item-title>{{ isUser.name }}</v-list-item-title>
+          <v-list-item-subtitle>{{ isUser.email }}</v-list-item-subtitle>
         </v-list-item>
 
         <v-divider></v-divider>
         <v-list-item v-if="isCompetitionSet">
-            <p class="text-center">{{ $t("nav.header") }}</p>
+          <p class="text-center">{{ $t("nav.header") }}</p>
         </v-list-item>
         <v-list-item v-if="isCompetitionSet" @click="changePage('/overview')">
           <template v-slot:prepend>
             <v-icon>mdi-ferry</v-icon>
           </template>
 
-            <v-list-item-title>{{
-              $store.getCompetition.name
-            }}</v-list-item-title>
+          <v-list-item-title>{{ store.getCompetition.name }}</v-list-item-title>
         </v-list-item>
 
         <v-list-item
@@ -65,9 +66,9 @@
             <v-icon>mdi-tune</v-icon>
           </template>
 
-            <v-list-item-title>{{
-              $store.getCompetition.cup_name
-            }}</v-list-item-title>
+          <v-list-item-title>{{
+            store.getCompetition.cup_name
+          }}</v-list-item-title>
         </v-list-item>
         <v-divider></v-divider>
         <v-list-item
@@ -80,7 +81,7 @@
             <v-icon :color="item.color">{{ item.icon }}</v-icon>
           </template>
 
-            <v-list-item-title>{{ $t(item.title) }}</v-list-item-title>
+          <v-list-item-title>{{ $t(item.title) }}</v-list-item-title>
         </v-list-item>
         <v-list-item>
           <v-list-item-action>
@@ -93,8 +94,9 @@
           <v-list-item-title>{{ $t("nav.theme") }}</v-list-item-title>
         </v-list-item>
         <v-list-item>
-            <v-btn rounded color="red" @click="logout" size="large"><v-icon>mdi-logout</v-icon>{{ $t("nav.logout") }}</v-btn
-            >
+          <v-btn rounded color="red" @click="logout" size="large"
+            ><v-icon>mdi-logout</v-icon>{{ $t("nav.logout") }}</v-btn
+          >
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
@@ -103,245 +105,255 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed, ref, watch } from "vue";
+import { useMainStore } from "@/store";
+import { useI18n } from "vue-i18n";
+import { useRouter, useRoute } from "vue-router";
 import UserService from "../../services/UserService";
 import NotificationBar from "../NotificationBar.vue";
 import SubNavigation from "./SubNavigation.vue";
-export default {
-  name: "Header",
-  components: {
-    SubNavigation,
-    NotificationBar,
+
+defineOptions({ name: "Header" });
+const store = useMainStore();
+const { locale } = useI18n();
+const router = useRouter();
+const route = useRoute();
+
+const user = ref(null);
+const items = ref([]);
+const preferences = ref(JSON.parse(localStorage.getItem("preferences")));
+const isDark = ref(true);
+const drawer = ref(null);
+const uploading = ref(false);
+const snackbar = ref(false);
+const text = ref("");
+const isCompetitionPage = ref(false);
+const isPublicPage = ref(false);
+const competition_pages = ref([
+  "/overview",
+  "/comp-settings",
+  "/signing",
+  "/weighting",
+  "/results",
+]);
+const public_pages = ref(["/public-results", "/public-cups"]);
+const bottom_navigation_items = ref([]);
+const type = ref("public");
+const public_items = ref([
+  {
+    text: "home.comp",
+    icon: "mdi-seal",
+    path: "/public-results",
   },
-  data() {
-    return {
-      user: null,
-      items: [],
-      preferences: JSON.parse(localStorage.getItem("preferences")),
-      isDark: true,
-      drawer: null,
-      uploading: false,
-      snackbar: false,
-      text: "",
-      isCompetitionPage: false,
-      isPublicPage: false,
-      competition_pages: [
-        "/overview",
-        "/comp-settings",
-        "/signing",
-        "/weighting",
-        "/results",
-      ],
-      public_pages: ["/public-results", "/public-cups"],
-      bottom_navigation_items: [],
-      type: "public",
-      public_items: [
-        {
-          text: "home.comp",
-          icon: "mdi-seal",
-          path: "/public-results",
-        },
-        {
-          text: "home.cup",
-          icon: "mdi-trophy",
-          path: "/public-cups",
-        },
-      ],
-      competition_items: [
-        {
-          text: "overview",
-          icon: "mdi-magnify-expand",
-          path: "/overview",
-        },
-        {
-          text: "settings",
-          icon: "mdi-tune",
-          path: "/comp-settings",
-        },
-        {
-          text: "signing",
-          icon: "mdi-draw",
-          path: "/signing",
-        },
-        {
-          text: "weighting",
-          icon: "mdi-dumbbell",
-          path: "/weighting",
-        },
-        {
-          text: "results",
-          icon: "mdi-seal",
-          path: "/results",
-        },
-      ],
-    };
+  {
+    text: "home.cup",
+    icon: "mdi-trophy",
+    path: "/public-cups",
   },
-  created() {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user) {
-      const isAdmin = JSON.parse(localStorage.getItem("auth"));
-      this.$store.isDark = this.preferences.isDark;
-      this.isDark = this.preferences.isDark;
-      if (isAdmin) {
-        this.items = [
-          {
-            title: "nav.dashboard",
-            route: "/dashboard",
-            icon: "mdi-view-dashboard",
-            color: "white",
-          },
-          {
-            title: "nav.admin",
-            route: "/admin",
-            icon: "mdi-shield-crown",
-            color: "red",
-          },
-          {
-            title: "nav.register-user",
-            route: "/register",
-            icon: "mdi-account-plus",
-            color: "green-darken-1",
-          },
-          {
-            title: "nav.public-comps",
-            route: "/public-results",
-            icon: "mdi-format-list-numbered",
-            color: "green-darken-1",
-          },
-          {
-            title: "nav.public-cups",
-            route: "/public-cups",
-            icon: "mdi-medal",
-            color: "yellow-darken-1",
-          },
-        ];
-      } else {
-        this.items = [
-          { title: "nav.dashboard", route: "/dashboard", icon: "dashboard" },
-          {
-            title: "nav.public-comps",
-            route: "/public-results",
-            icon: "mdi-format-list-numbered",
-          },
-          {
-            title: "nav.public-cups",
-            route: "/public-cups",
-            icon: "mdi-medal",
-          },
-        ];
-      }
+]);
+const competition_items = ref([
+  {
+    text: "overview",
+    icon: "mdi-magnify-expand",
+    path: "/overview",
+  },
+  {
+    text: "settings",
+    icon: "mdi-tune",
+    path: "/comp-settings",
+  },
+  {
+    text: "signing",
+    icon: "mdi-draw",
+    path: "/signing",
+  },
+  {
+    text: "weighting",
+    icon: "mdi-dumbbell",
+    path: "/weighting",
+  },
+  {
+    text: "results",
+    icon: "mdi-seal",
+    path: "/results",
+  },
+]);
+
+const isOverviewPage = computed(() => {
+  return {
+    active: route.name === "Overview",
+  };
+});
+
+const isCupPage = computed(() => {
+  return {
+    active: route.name === "CupOverview",
+  };
+});
+
+const isUser = computed(() => {
+  if (localStorage.getItem("user") != null) {
+    return JSON.parse(localStorage.getItem("user"));
+  } else {
+    return { name: "", email: "" };
+  }
+});
+
+const isUserLoggedIn = computed(() => {
+  return store.isLoggedIn;
+});
+
+const isAdmin = computed(() => {
+  return store.isAdmin;
+});
+
+const isCompetitionSet = computed(() => {
+  if (store.getCompetition) {
+    return true;
+  } else {
+    return false;
+  }
+});
+
+const isCupCompetition = computed(() => {
+  if (store.getCompetition.isCupCompetition) {
+    return true;
+  } else {
+    return false;
+  }
+});
+
+watch(
+  () => route.fullPath,
+  () => {
+    const to = route;
+    setSubNavigation(to);
+  },
+);
+
+watch(isDark, (newValue) => {
+  //called whenever isDark switch changes
+  store.isDark = newValue;
+  localStorage.setItem(
+    "preferences",
+    JSON.stringify({ isDark: newValue, lang: "fi" }),
+  );
+});
+
+function openDrawer() {
+  drawer.value = !drawer.value;
+}
+
+function setSubNavigation(route) {
+  if (competition_pages.value.includes(route.path)) {
+    isCompetitionPage.value = true;
+    bottom_navigation_items.value = competition_items.value;
+    type.value = "competition";
+  } else {
+    isCompetitionPage.value = false;
+  }
+
+  if (public_pages.value.includes(route.path)) {
+    isPublicPage.value = true;
+    bottom_navigation_items.value = public_items.value;
+    type.value = "public";
+  } else {
+    isPublicPage.value = false;
+  }
+}
+
+function changePage(route) {
+  if (route.path !== route) {
+    router.push(route);
+    drawer.value = !drawer.value;
+  } else {
+    text.value = "errors.already-here";
+    snackbar.value = true;
+  }
+}
+
+async function logout() {
+  await UserService.logoutUser().then(() => {
+    // Do something with the module.
+    store.logged_in = false;
+    store.is_admin = false;
+    if (route.path !== "/") router.push({ path: "/" });
+    store.refreshCompetition(null);
+    user.value = null;
+    text.value = "notification.logout-success";
+    snackbar.value = true;
+    localStorage.removeItem("user");
+  });
+}
+
+function setLocale() {
+  locale.value === "en" ? (locale.value = "fi") : (locale.value = "en");
+
+  let preferences = JSON.parse(localStorage.getItem("preferences"));
+  preferences.lang = locale.value;
+  localStorage.setItem("preferences", JSON.stringify(preferences));
+}
+
+// Runs when the component is created
+{
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (user) {
+    const isAdmin = JSON.parse(localStorage.getItem("auth"));
+    store.isDark = preferences.value.isDark;
+    isDark.value = preferences.value.isDark;
+    if (isAdmin) {
+      items.value = [
+        {
+          title: "nav.dashboard",
+          route: "/dashboard",
+          icon: "mdi-view-dashboard",
+          color: "white",
+        },
+        {
+          title: "nav.admin",
+          route: "/admin",
+          icon: "mdi-shield-crown",
+          color: "red",
+        },
+        {
+          title: "nav.register-user",
+          route: "/register",
+          icon: "mdi-account-plus",
+          color: "green-darken-1",
+        },
+        {
+          title: "nav.public-comps",
+          route: "/public-results",
+          icon: "mdi-format-list-numbered",
+          color: "green-darken-1",
+        },
+        {
+          title: "nav.public-cups",
+          route: "/public-cups",
+          icon: "mdi-medal",
+          color: "yellow-darken-1",
+        },
+      ];
+    } else {
+      items.value = [
+        { title: "nav.dashboard", route: "/dashboard", icon: "dashboard" },
+        {
+          title: "nav.public-comps",
+          route: "/public-results",
+          icon: "mdi-format-list-numbered",
+        },
+        {
+          title: "nav.public-cups",
+          route: "/public-cups",
+          icon: "mdi-medal",
+        },
+      ];
     }
+  }
 
-    this.setSubNavigation(this.$route);
-  },
-  computed: {
-    isOverviewPage() {
-      return {
-        active: this.$route.name === "Overview",
-      };
-    },
-    isCupPage() {
-      return {
-        active: this.$route.name === "CupOverview",
-      };
-    },
-    isUser() {
-      if (localStorage.getItem("user") != null) {
-        return JSON.parse(localStorage.getItem("user"));
-      } else {
-        return { name: "", email: "" };
-      }
-    },
-    isUserLoggedIn() {
-      return this.$store.isLoggedIn;
-    },
-    isAdmin() {
-      return this.$store.isAdmin;
-    },
-    isCompetitionSet() {
-      if (this.$store.getCompetition) {
-        return true;
-      } else {
-        return false;
-      }
-    },
-    isCupCompetition() {
-      if (this.$store.getCompetition.isCupCompetition) {
-        return true;
-      } else {
-        return false;
-      }
-    },
-  },
-  watch: {
-    $route(to) {
-      this.setSubNavigation(to);
-    },
-
-    isDark(newValue) {
-      //called whenever isDark switch changes
-      this.$store.isDark = newValue;
-      localStorage.setItem(
-        "preferences",
-        JSON.stringify({ isDark: newValue, lang: "fi" })
-      );
-    },
-  },
-  methods: {
-    openDrawer() {
-      this.drawer = !this.drawer;
-    },
-    setSubNavigation(route) {
-      if (this.competition_pages.includes(route.path)) {
-        this.isCompetitionPage = true;
-        this.bottom_navigation_items = this.competition_items;
-        this.type = "competition";
-      } else {
-        this.isCompetitionPage = false;
-      }
-
-      if (this.public_pages.includes(route.path)) {
-        this.isPublicPage = true;
-        this.bottom_navigation_items = this.public_items;
-        this.type = "public";
-      } else {
-        this.isPublicPage = false;
-      }
-    },
-    changePage(route) {
-      if (this.$route.path !== route) {
-        this.$router.push(route);
-        this.drawer = !this.drawer;
-      } else {
-        this.text = "errors.already-here";
-        this.snackbar = true;
-      }
-    },
-    async logout() {
-      await UserService.logoutUser().then(() => {
-        // Do something with the module.
-        this.$store.logged_in = false;
-        this.$store.is_admin = false;
-        if (this.$route.path !== "/")
-          this.$router.push({ path: "/" });
-        this.$store.refreshCompetition(null);
-        this.user = null;
-        this.text = "notification.logout-success";
-        this.snackbar = true;
-        localStorage.removeItem("user");
-      });
-    },
-    setLocale() {
-      this.$i18n.locale === "en"
-        ? (this.$i18n.locale = "fi")
-        : (this.$i18n.locale = "en");
-
-      let preferences = JSON.parse(localStorage.getItem("preferences"));
-      preferences.lang = this.$i18n.locale;
-      localStorage.setItem("preferences", JSON.stringify(preferences));
-    },
-  },
-};
+  setSubNavigation(route);
+}
 </script>
 
 <style scoped></style>

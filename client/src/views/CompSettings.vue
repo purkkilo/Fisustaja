@@ -11,11 +11,7 @@
         wide: $vuetify.display.width >= 1200,
       }"
     >
-      <v-card
-        style="background: transparent"
-        elevation="3"
-        variant="outlined"
-      >
+      <v-card style="background: transparent" elevation="3" variant="outlined">
         <v-row class="align-center">
           <v-col>
             <h1 style="margin: 30px">{{ $t("comp.is") }} määritykset</h1>
@@ -79,40 +75,43 @@
                       <template v-slot:prepend>
                         <v-icon color="green">mdi-clipboard-check</v-icon>
                       </template>
-                        <v-list-item-title>{{ $t("comp.is") }}
-                          {{ $t("placement-points") }}</v-list-item-title
+                      <v-list-item-title
+                        >{{ $t("comp.is") }}
+                        {{ $t("placement-points") }}</v-list-item-title
+                      >
+                      <v-list
+                        elevation="5"
+                        style="max-height: 400px; overflow-y: auto"
+                        border
+                      >
+                        <div
+                          v-for="(p, index) in placement_points_array"
+                          :key="index"
+                          style="margin-top: 20px"
                         >
-                        <v-list
-                          elevation="5"
-                          style="max-height: 400px; overflow-y: auto"
-                          border
-                        >
-                          <div
-                            v-for="(p, index) in placement_points_array"
-                            :key="index"
-                            style="margin-top: 20px"
-                          >
-                            <v-list-item>
-                              <v-row class="align-center">
-                                <v-col>
-                                  <h3>#{{ p.placement }}</h3>
-                                </v-col>
-                                <v-col>
-                                  <p>{{ p.points }}p</p>
-                                </v-col>
-                              </v-row>
-                            </v-list-item>
-                            <v-divider></v-divider>
-                          </div>
-                        </v-list>
+                          <v-list-item>
+                            <v-row class="align-center">
+                              <v-col>
+                                <h3>#{{ p.placement }}</h3>
+                              </v-col>
+                              <v-col>
+                                <p>{{ p.points }}p</p>
+                              </v-col>
+                            </v-row>
+                          </v-list-item>
+                          <v-divider></v-divider>
+                        </div>
+                      </v-list>
                     </v-list-item>
                     <v-divider></v-divider>
                     <v-list-item v-if="competition.isCupCompetition">
                       <template v-slot:prepend>
-                        <v-icon color="green-darken-2">mdi-clipboard-check</v-icon
+                        <v-icon color="green-darken-2"
+                          >mdi-clipboard-check</v-icon
                         >
                       </template>
-                      <v-list-item-title>{{ $t("cup.normal") }}
+                      <v-list-item-title
+                        >{{ $t("cup.normal") }}
                         {{ $t("participation-points") }}</v-list-item-title
                       >
                       <v-list-item-subtitle class="blue-text">
@@ -122,10 +121,12 @@
                     <v-divider></v-divider>
                     <v-list-item v-if="competition.isCupCompetition">
                       <template v-slot:prepend>
-                        <v-icon color="green-darken-1">mdi-calculator-variant-outline</v-icon
+                        <v-icon color="green-darken-1"
+                          >mdi-calculator-variant-outline</v-icon
                         >
                       </template>
-                      <v-list-item-title>{{ $t("cup.normal") }}
+                      <v-list-item-title
+                        >{{ $t("cup.normal") }}
                         {{ $t("multiplier") }}</v-list-item-title
                       >
                       <v-list-item-subtitle class="blue-text">
@@ -137,7 +138,8 @@
                       <template v-slot:prepend>
                         <v-icon>mdi-incognito</v-icon>
                       </template>
-                      <v-list-item-title>{{ $t("is") }} {{ $t("public") }}</v-list-item-title
+                      <v-list-item-title
+                        >{{ $t("is") }} {{ $t("public") }}</v-list-item-title
                       >
                       <v-list-item-subtitle class="blue-text">
                         <v-icon
@@ -151,7 +153,8 @@
                     <v-divider></v-divider>
                     <v-list-item>
                       <template v-slot:prepend>
-                        <v-icon color="yellow-darken-4">mdi-trophy-award</v-icon
+                        <v-icon color="yellow-darken-4"
+                          >mdi-trophy-award</v-icon
                         >
                       </template>
                       <v-list-item-title>{{
@@ -173,7 +176,8 @@
             <v-row class="fishes_summary">
               <v-col md="10" offset-md="1" class="scroll_table">
                 <v-card variant="outlined">
-                  <v-card-title class="text-center"><p class="text-headline-large">
+                  <v-card-title class="text-center"
+                    ><p class="text-headline-large">
                       {{ $t("fish-specs") }}
                     </p></v-card-title
                   >
@@ -330,7 +334,7 @@
               <v-col>
                 <h2
                   v-bind:class="{
-                    'text-white': $store.getTheme,
+                    'text-white': store.getTheme,
                   }"
                 >
                   Cuppeja ei löytynyt...
@@ -341,7 +345,7 @@
               <v-col>
                 <h2
                   v-bind:class="{
-                    'text-white': $store.getTheme,
+                    'text-white': store.getTheme,
                   }"
                 >
                   Kilpailusta ei löytynyt cuppia...
@@ -400,7 +404,8 @@
                             @blur="sortPlacements"
                           />
                         </v-col>
-                        <v-col v-if="editPoints"><v-btn @click="removePlacement(index)" color="red">
+                        <v-col v-if="editPoints"
+                          ><v-btn @click="removePlacement(index)" color="red">
                             <v-icon>mdi-delete</v-icon>
                           </v-btn>
                         </v-col>
@@ -411,7 +416,8 @@
                 </v-list>
                 <v-row v-if="editPoints">
                   <v-col>
-                    <v-btn color="green" @click="addPlacement"><v-icon>mdi-plus</v-icon>{{ $t("add-placement") }}</v-btn
+                    <v-btn color="green" @click="addPlacement"
+                      ><v-icon>mdi-plus</v-icon>{{ $t("add-placement") }}</v-btn
                     >
                   </v-col>
                 </v-row>
@@ -442,7 +448,7 @@
                   <p
                     class="center-align flow-text"
                     v-bind:class="{
-                      'text-white': $store.getTheme,
+                      'text-white': store.getTheme,
                     }"
                   >
                     {{ $t("restore-original-points") }}:<br />#1 = 30, #2 = 28,
@@ -616,72 +622,75 @@
                   <!-- vuedraggable 4: rows come from the #item slot -->
                   <draggable v-model="inputs" tag="tbody" item-key="id">
                     <template #item="{ element: input, index }">
-                    <tr>
-                      <th style="border: 1px solid black" scope="row">
-                        <v-text-field
-                          :label="$t('name')"
-                          v-model="input.name"
-                          :disabled="basic_info_validated"
-                          :rules="rules"
-                          :counter="max_input"
-                        />
-                      </th>
-                      <td style="border: 1px solid black">
-                        <v-text-field
-                          :label="$t('multiplier')"
-                          v-model="input.multiplier"
-                          maxlength="4"
-                          append-icon="mdi-plus"
-                          @click:append="
-                            parseInt(input.multiplier) >= 1
-                              ? (input.multiplier += 0.5)
-                              : (input.multiplier = 1)
-                          "
-                          prepend-icon="mdi-minus"
-                          @click:prepend="
-                            input.multiplier >= 1.5
-                              ? (input.multiplier -= 0.5)
-                              : (input.multiplier = 1)
-                          "
-                          @paste.prevent
-                          :counter="3"
-                          @keypress="isNumber($event, true)"
-                          :rules="number_rules"
-                          :disabled="basic_info_validated"
-                        />
-                      </td>
-                      <td style="border: 1px solid black">
-                        <v-text-field
-                          :label="$t('min-size') + ' (cm)'"
-                          v-model="input.minsize"
-                          :maxlength="40"
-                          :disabled="basic_info_validated"
-                          :rules="rules"
-                          :counter="40"
-                        />
-                      </td>
-                      <td
-                        style="border: 1px solid black"
-                        v-if="!basic_info_validated"
-                      >
-                        <v-btn
-                          icon
-                          color="red-darken-4"
-                          class="text-white"
-                          :disabled="basic_info_validated"
-                          @click="deleteFish(index, input.original_name, false)"
-                          variant="text"
-                          ><v-icon>mdi-delete</v-icon></v-btn
+                      <tr>
+                        <th style="border: 1px solid black" scope="row">
+                          <v-text-field
+                            :label="$t('name')"
+                            v-model="input.name"
+                            :disabled="basic_info_validated"
+                            :rules="rules"
+                            :counter="max_input"
+                          />
+                        </th>
+                        <td style="border: 1px solid black">
+                          <v-text-field
+                            :label="$t('multiplier')"
+                            v-model="input.multiplier"
+                            maxlength="4"
+                            append-icon="mdi-plus"
+                            @click:append="
+                              parseInt(input.multiplier) >= 1
+                                ? (input.multiplier += 0.5)
+                                : (input.multiplier = 1)
+                            "
+                            prepend-icon="mdi-minus"
+                            @click:prepend="
+                              input.multiplier >= 1.5
+                                ? (input.multiplier -= 0.5)
+                                : (input.multiplier = 1)
+                            "
+                            @paste.prevent
+                            :counter="3"
+                            @keypress="isNumber($event, true)"
+                            :rules="number_rules"
+                            :disabled="basic_info_validated"
+                          />
+                        </td>
+                        <td style="border: 1px solid black">
+                          <v-text-field
+                            :label="$t('min-size') + ' (cm)'"
+                            v-model="input.minsize"
+                            :maxlength="40"
+                            :disabled="basic_info_validated"
+                            :rules="rules"
+                            :counter="40"
+                          />
+                        </td>
+                        <td
+                          style="border: 1px solid black"
+                          v-if="!basic_info_validated"
                         >
-                      </td>
-                    </tr>
+                          <v-btn
+                            icon
+                            color="red-darken-4"
+                            class="text-white"
+                            :disabled="basic_info_validated"
+                            @click="
+                              deleteFish(index, input.original_name, false)
+                            "
+                            variant="text"
+                            ><v-icon>mdi-delete</v-icon></v-btn
+                          >
+                        </td>
+                      </tr>
                     </template>
                   </draggable>
                 </table>
               </v-col>
             </v-row>
             <v-row v-if="!basic_info_validated">
-              <v-col><b>
+              <v-col
+                ><b>
                   <p>
                     {{ $t("create-competition.table-row-instruction") }}
                   </p></b
@@ -713,7 +722,8 @@
                 >
               </v-col>
               <v-col md="6" v-if="competition">
-                <v-btn color="green" @click="checkBasicInformation" size="large"><v-icon color="green-darken-4">mdi-check-outline</v-icon>
+                <v-btn color="green" @click="checkBasicInformation" size="large"
+                  ><v-icon color="green-darken-4">mdi-check-outline</v-icon>
                   {{ $t("save") }}</v-btn
                 >
               </v-col>
@@ -726,7 +736,12 @@
     </v-container>
   </div>
 </template>
-<script>
+<script setup>
+import { nextTick, onMounted, ref } from "vue";
+import { useMainStore } from "@/store";
+import { useI18n } from "vue-i18n";
+import { useRouter } from "vue-router";
+import { alert, confirm } from "@/plugins/alerts";
 import CompetitionService from "../services/CompetitionService";
 import CupService from "../services/CupService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
@@ -738,512 +753,514 @@ import {
   formatDateToLocaleDateString,
   formatDate,
   isNumber,
-} from "../shared";
+} from "@/utils/format";
 import NotificationBar from "../components/NotificationBar.vue";
 import ErrorList from "../components/ErrorList.vue";
 
-export default {
-  name: "CompSettings",
-  components: {
-    ProgressBarQuery,
-    Timedate,
-    draggable,
-    NotificationBar,
-    ErrorList,
-  },
-  data() {
-    return {
-      dialog: false,
-      errors: [],
-      cups: [],
-      cup: {},
-      competition: null,
-      name: null,
-      locality: null,
-      isCupCompetition: null,
-      cup_participation_points: null,
-      cup_points_multiplier: null,
-      isTeamCompetition: null,
-      fish_specs: null,
-      start_date: null,
-      end_date: null,
-      start_time: null,
-      end_time: null,
-      loading: false,
-      loadingMessage: "Haetaan määrityksiä...",
-      loading_cups: false,
-      updating: false,
-      tab: null,
-      basic_info_validated: true,
-      inputs: [],
-      rules: [
-        (value) => !!value || "Kenttä ei voi jäädä tyhjäksi!",
-        (value) =>
-          (value || "").length <= this.max_input || "Enintään 40 merkkiä",
-      ],
-      number_rules: [
-        (value) => !!value || "Kenttä ei voi jäädä tyhjäksi!",
-        (value) => !isNaN(value || "") || "Ei ole numero!",
-        (value) => (value || "") >= 0 || "Numeron pitää olla positiivinen!",
-      ],
-      max_input: 40,
-      placement_points_array: [],
-      temp_placement_points_array: [],
-      snackbar: false,
-      text: "",
-      editPoints: false,
-    };
-  },
-  created() {
-    if (localStorage.getItem("competition") != null) {
-      const competition = JSON.parse(localStorage.getItem("competition"));
-      const competition_id = competition["_id"];
-      this.refreshCompetition(competition_id);
-    } else {
-      console.log("No competition in localstorage!");
+defineOptions({ name: "CompSettings" });
+const store = useMainStore();
+const { t } = useI18n();
+const router = useRouter();
+
+const dialog = ref(false);
+const errors = ref([]);
+const cups = ref([]);
+const cup = ref({});
+const competition = ref(null);
+const name = ref(null);
+const locality = ref(null);
+const isCupCompetition = ref(null);
+const cup_participation_points = ref(null);
+const cup_points_multiplier = ref(null);
+const isTeamCompetition = ref(null);
+const fish_specs = ref(null);
+const start_date = ref(null);
+const end_date = ref(null);
+const start_time = ref(null);
+const end_time = ref(null);
+const loading = ref(false);
+const loadingMessage = ref("Haetaan määrityksiä...");
+const loading_cups = ref(false);
+const updating = ref(false);
+const tab = ref(null);
+const basic_info_validated = ref(true);
+const inputs = ref([]);
+const rules = ref([
+  (value) => !!value || "Kenttä ei voi jäädä tyhjäksi!",
+  (value) => (value || "").length <= max_input.value || "Enintään 40 merkkiä",
+]);
+const number_rules = ref([
+  (value) => !!value || "Kenttä ei voi jäädä tyhjäksi!",
+  (value) => !isNaN(value || "") || "Ei ole numero!",
+  (value) => (value || "") >= 0 || "Numeron pitää olla positiivinen!",
+]);
+const max_input = ref(40);
+const placement_points_array = ref([]);
+const temp_placement_points_array = ref([]);
+const snackbar = ref(false);
+const text = ref("");
+const editPoints = ref(false);
+const error = ref(null);
+const validated = ref(null);
+
+function addPlacement() {
+  const lastItem =
+    placement_points_array.value[placement_points_array.value.length - 1];
+  placement_points_array.value.push({
+    points: lastItem.points > 1 ? lastItem.points - 1 : 1,
+    placement: lastItem.placement + 1,
+  });
+}
+
+function removePlacement(index) {
+  placement_points_array.value.splice(index, 1);
+}
+
+function sortPlacements() {
+  placement_points_array.value.sort((a, b) => b.points - a.points);
+  savePlacements();
+}
+
+function savePlacements() {
+  placement_points_array.value.forEach((p, index) => {
+    p.placement = index + 1;
+  });
+}
+
+function cancelPoints() {
+  editPoints.value = !editPoints.value;
+  placement_points_array.value = JSON.parse(
+    JSON.stringify(temp_placement_points_array.value),
+  );
+}
+
+function confirmPoints() {
+  savePlacements();
+  editPoints.value = !editPoints.value;
+  temp_placement_points_array.value = JSON.parse(
+    JSON.stringify(placement_points_array.value),
+  );
+}
+
+function resetPoints() {
+  placement_points_array.value = JSON.parse(
+    JSON.stringify(constants.placement_points),
+  );
+  editPoints.value = !editPoints.value;
+}
+
+async function publishCompetition(isPublic) {
+  competition.value.isPublic = !isPublic;
+  const newvalues = {
+    $set: { isPublic: competition.value.isPublic },
+  };
+  updateToDatabase(competition.value, newvalues);
+}
+
+async function endCompetition(isFinished) {
+  competition.value.isFinished = !isFinished;
+  competition.value.isFinished
+    ? (competition.value.state = "ended")
+    : (competition.value.state = "not-finished");
+
+  const newvalues = {
+    $set: {
+      isFinished: competition.value.isFinished,
+      state: competition.value.state,
+    },
+  };
+  updateToDatabase(competition.value, newvalues);
+}
+
+async function updateToDatabase(_competition, newvalues) {
+  try {
+    store.refreshCompetition(_competition);
+    updating.value = true;
+    await CompetitionService.updateValues(competition.value._id, newvalues);
+  } catch (err) {
+    console.error(err.message);
+  }
+  updating.value = false;
+}
+
+async function getCups() {
+  loading_cups.value = true;
+  const user = JSON.parse(localStorage.getItem("user"));
+  const user_id = user["_id"];
+  // Get Cups
+  try {
+    cups.value = await CupService.getCups({
+      user_id: user_id,
+    });
+    if (cups.value.length) {
+      cups.value.sort(function compare(a, b) {
+        return a.name - b.name;
+      });
+      cups.value.forEach((_cup) => {
+        _cup.select = `${_cup.name} (${_cup.year})`;
+      });
+      if (competition.value.isCupCompetition) {
+        let temp_cup = cups.value.find((_cup) => {
+          return competition.value.cup_id === _cup._id;
+        });
+        if (temp_cup) {
+          cup.value = temp_cup;
+        }
+      }
     }
+  } catch (err) {
+    error.value = err.message;
+  }
+  loading_cups.value = false;
+}
 
-    this.placement_points_array = JSON.parse(
-      JSON.stringify(constants.placement_points)
-    );
-  },
-  mounted() {},
-  methods: {
-    formatDate: formatDate,
-    formatDateToLocaleDateString: formatDateToLocaleDateString,
-    addPlacement() {
-      const lastItem =
-        this.placement_points_array[this.placement_points_array.length - 1];
-      this.placement_points_array.push({
-        points: lastItem.points > 1 ? lastItem.points - 1 : 1,
-        placement: lastItem.placement + 1,
+// Update competition data from database
+
+async function refreshCompetition(competition_id) {
+  loadingMessage.value = "Haetaan määrityksiä...";
+  loading.value = true;
+  inputs.value = [];
+  try {
+    //Get competition from database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
+    let _competition = await CompetitionService.getCompetitions({
+      _id: competition_id,
+    });
+    // IF competition found from database
+    if (_competition) {
+      //TODO make a test for this?
+      competition.value = _competition;
+      // Update to vuex, Assing variables from vuex (see client/store/index.js)
+      store.refreshCompetition(_competition);
+      fish_specs.value = store.getCompetitionFishes;
+      setOriginalValues();
+      if (!cups.value.length) {
+        getCups();
+      }
+    } else {
+      console.log("No competition found on database...");
+    }
+  } catch (err) {
+    console.error(err.message);
+  }
+  loading.value = false;
+}
+
+//filter other characters out for number inputs
+
+function addInput() {
+  inputs.value.push({
+    // unique even after deleting a row (draggable uses it as the row key)
+    id: Math.max(inputs.value.length - 1, ...inputs.value.map((i) => i.id)) + 1,
+    name: "",
+    multiplier: 1,
+    minsize: "0",
+    weights: 0,
+    color: generateRandomColor(),
+  });
+}
+
+function deleteFish(index, fish_name, confirmed) {
+  if (confirmed) {
+    try {
+      inputs.value.splice(index, 1);
+      competition.value.signees.forEach((signee) => {
+        if (signee.weights.length) {
+          let signee_index = signee.weights.findIndex((fish) => {
+            return fish.name === fish_name;
+          });
+          if (signee_index > -1) {
+            // Replace
+            signee.weights.splice(signee_index, 1);
+          }
+        }
       });
-    },
-    removePlacement(index) {
-      this.placement_points_array.splice(index, 1);
-    },
-    sortPlacements() {
-      this.placement_points_array.sort((a, b) => b.points - a.points);
-      this.savePlacements();
-    },
-    savePlacements() {
-      this.placement_points_array.forEach((p, index) => {
-        p.placement = index + 1;
+    } catch (err) {
+      console.error = err.message;
+    }
+  } else {
+    // demos for this -->  https://constkhi.github.io/vue-simple-alert/
+    confirm("Oletko varma?", "Poista kala", "question")
+      .then((r) => {
+        if (r) {
+          deleteFish(index, fish_name, r);
+        }
+      })
+      .catch((error) => {
+        if (error) {
+          console.error(error);
+        }
       });
-    },
-    cancelPoints() {
-      this.editPoints = !this.editPoints;
-      this.placement_points_array = JSON.parse(
-        JSON.stringify(this.temp_placement_points_array)
+  }
+}
+
+function setOriginalValues() {
+  inputs.value = [];
+  fish_specs.value.forEach((fish, index) => {
+    inputs.value.push({
+      id: index,
+      name: fish.name,
+      multiplier: parseInt(fish.multiplier),
+      minsize: fish.minsize,
+      weights: parseInt(fish.weights),
+      color: fish.color,
+    });
+  });
+  name.value = competition.value.name;
+  locality.value = competition.value.locality;
+
+  isTeamCompetition.value = competition.value.isTeamCompetition
+    ? "Kyllä"
+    : "Ei";
+  isCupCompetition.value = competition.value.isCupCompetition ? "Kyllä" : "Ei";
+
+  if (competition.value.isCupCompetition) {
+    placement_points_array.value = [...competition.value.cup_placement_points];
+    cup_participation_points.value = competition.value.cup_participation_points;
+    cup_points_multiplier.value = competition.value.cup_points_multiplier;
+  } else {
+    placement_points_array.value = constants.placement_points;
+    cup_participation_points.value = 5;
+    cup_points_multiplier.value = 1;
+  }
+  start_date.value = new Date(competition.value.start_date)
+    .toISOString()
+    .substring(0, 10);
+  end_date.value = new Date(competition.value.end_date)
+    .toISOString()
+    .substring(0, 10);
+  start_time.value = competition.value.start_time;
+  end_time.value = competition.value.end_time;
+  basic_info_validated.value = true;
+}
+
+// Generate random colors for the fish chart in Result.vue (since adding fishes is dynamic)
+//TODO look for 8-15 good colors to add/choose from, maybe with color picker next to fish name
+
+function generateRandomColor() {
+  var randomColor = "#" + Math.floor(Math.random() * 16777215).toString(16);
+  return randomColor;
+}
+
+// Add error to error array and direct user to it
+
+function showError(error) {
+  errors.value.push(error);
+  nextTick(() => {
+    document.getElementById("error-list").scrollIntoView();
+  });
+}
+
+// Check competitions basic information (Perustiedot)
+
+function checkBasicInformation() {
+  loadingMessage.value = "Päivitetään tietoja...";
+  errors.value = [];
+  basic_info_validated.value = false;
+  validated.value = false;
+
+  var isDateValid = !isNaN(new Date(start_date.value).getTime());
+  var isEndDateValid = !isNaN(new Date(end_date.value).getTime());
+
+  var isStartTimeValid = validateTime(start_time.value);
+  var isEndTimeValid = validateTime(end_time.value);
+
+  // Check other variables
+  if (!name.value) {
+    showError("errors.missing-comp-name");
+  }
+
+  // Check other variables
+  if (!locality.value) {
+    showError("errors.missing-comp-locality");
+  }
+
+  if (isCupCompetition.value === "Kyllä") {
+    if (!cup.value._id) {
+      showError("errors.cup-not-selected");
+    }
+    if (!placement_points_array.value.length) {
+      showError("errors.missing-placement-points");
+    }
+    if (!cup_participation_points.value) {
+      showError("errors.missing-participation-points");
+    }
+    if (!cup_points_multiplier.value) {
+      showError("errors.missing-multiplier");
+    }
+    if (cup_points_multiplier.value < 0.1) {
+      showError("errors.invalid-multiplier");
+    }
+  }
+
+  if (!start_time.value || !isStartTimeValid) {
+    !start_time.value == true
+      ? showError("errors.missing-start-time")
+      : showError("errors.invalid-time");
+  }
+  if (!end_time.value || !isEndTimeValid) {
+    !end_time.value == true
+      ? showError("errors.missing-end-time")
+      : showError("errors.invalid-time");
+  }
+  if (!start_date.value || !isDateValid) {
+    showError("errors.missing-start-date");
+  }
+  if (!end_date.value || !isEndDateValid) {
+    showError("errors.missing-end-date");
+  }
+
+  // Check all the inputs
+  inputs.value.forEach((input) => {
+    if (!input.name) {
+      showError("errors.missing-fish-name");
+    }
+    if (!input.multiplier) {
+      showError(
+        `${input.name ? input.name : t("fish-genetive")} ${t(
+          "errors.invalid-fish-multiplier",
+        )}`,
       );
-    },
-    confirmPoints() {
-      this.savePlacements();
-      this.editPoints = !this.editPoints;
-      this.temp_placement_points_array = JSON.parse(
-        JSON.stringify(this.placement_points_array)
+    }
+    if (!input.minsize) {
+      showError(
+        `${input.name ? input.name : t("fish-genetive")} ${t(
+          "errors.invalid-fish-minsize",
+        )}`,
       );
-    },
-    resetPoints() {
-      this.placement_points_array = JSON.parse(
-        JSON.stringify(constants.placement_points)
-      );
-      this.editPoints = !this.editPoints;
-    },
+    }
+  });
 
-    async publishCompetition(isPublic) {
-      this.competition.isPublic = !isPublic;
-      const newvalues = {
-        $set: { isPublic: this.competition.isPublic },
-      };
-      this.updateToDatabase(this.competition, newvalues);
-    },
-    async endCompetition(isFinished) {
-      this.competition.isFinished = !isFinished;
-      this.competition.isFinished
-        ? (this.competition.state = "ended")
-        : (this.competition.state = "not-finished");
+  // If all inputs validated
+  if (!errors.value.length) {
+    // If dates are valid, check that start_date is before end_date
+    let _start_date = new Date(start_date.value);
+    let _start_time = start_time.value.split(":").map(Number);
+    _start_date.setHours(_start_time[0], _start_time[1]);
 
-      const newvalues = {
-        $set: {
-          isFinished: this.competition.isFinished,
-          state: this.competition.state,
-        },
-      };
-      this.updateToDatabase(this.competition, newvalues);
-    },
-    async updateToDatabase(competition, newvalues) {
-      try {
-        this.$store.refreshCompetition(competition);
-        this.updating = true;
-        await CompetitionService.updateValues(this.competition._id, newvalues);
-      } catch (err) {
-        console.error(err.message);
-      }
-      this.updating = false;
-    },
-    async getCups() {
-      this.loading_cups = true;
-      const user = JSON.parse(localStorage.getItem("user"));
-      const user_id = user["_id"];
-      // Get Cups
-      try {
-        this.cups = await CupService.getCups({
-          user_id: user_id,
-        });
-        if (this.cups.length) {
-          this.cups.sort(function compare(a, b) {
-            return a.name - b.name;
-          });
-          this.cups.forEach((cup) => {
-            cup.select = `${cup.name} (${cup.year})`;
-          });
-          if (this.competition.isCupCompetition) {
-            let temp_cup = this.cups.find((cup) => {
-              return this.competition.cup_id === cup._id;
-            });
-            if (temp_cup) {
-              this.cup = temp_cup;
-            }
-          }
-        }
-      } catch (err) {
-        this.error = err.message;
-      }
-      this.loading_cups = false;
-    },
-    // Update competition data from database
-    async refreshCompetition(competition_id) {
-      this.loadingMessage = "Haetaan määrityksiä...";
-      this.loading = true;
-      this.inputs = [];
-      try {
-        //Get competition from database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
-        let competition = await CompetitionService.getCompetitions({
-          _id: competition_id,
-        });
-        // IF competition found from database
-        if (competition) {
-          //TODO make a test for this?
-          this.competition = competition;
-          // Update to vuex, Assing variables from vuex (see client/store/index.js)
-          this.$store.refreshCompetition(competition);
-          this.fish_specs = this.$store.getCompetitionFishes;
-          this.setOriginalValues();
-          if (!this.cups.length) {
-            this.getCups();
-          }
-        } else {
-          console.log("No competition found on database...");
-        }
-      } catch (err) {
-        console.error(err.message);
-      }
-      this.loading = false;
-    },
-    //filter other characters out for number inputs
-    isNumber: isNumber,
-    addInput() {
-      this.inputs.push({
-        // unique even after deleting a row (draggable uses it as the row key)
-        id: Math.max(this.inputs.length - 1, ...this.inputs.map((i) => i.id)) + 1,
-        name: "",
-        multiplier: 1,
-        minsize: "0",
-        weights: 0,
-        color: this.generateRandomColor(),
-      });
-    },
-    deleteFish(index, fish_name, confirmed) {
-      if (confirmed) {
-        try {
-          this.inputs.splice(index, 1);
-          this.competition.signees.forEach((signee) => {
-            if (signee.weights.length) {
-              let signee_index = signee.weights.findIndex((fish) => {
-                return fish.name === fish_name;
-              });
-              if (signee_index > -1) {
-                // Replace
-                signee.weights.splice(signee_index, 1);
-              }
-            }
-          });
-        } catch (err) {
-          console.error = err.message;
-        }
-      } else {
-        // demos for this -->  https://constkhi.github.io/vue-simple-alert/
-        this.$confirm("Oletko varma?", "Poista kala", "question")
-          .then((r) => {
-            if (r) {
-              this.deleteFish(index, fish_name, r);
-            }
-          })
-          .catch((error) => {
-            if (error) {
-              console.error(error);
-            }
-          });
-      }
-    },
-    setOriginalValues() {
-      this.inputs = [];
-      this.fish_specs.forEach((fish, index) => {
-        this.inputs.push({
-          id: index,
-          name: fish.name,
-          multiplier: parseInt(fish.multiplier),
-          minsize: fish.minsize,
-          weights: parseInt(fish.weights),
-          color: fish.color,
-        });
-      });
-      this.name = this.competition.name;
-      this.locality = this.competition.locality;
-
-      this.isTeamCompetition = this.competition.isTeamCompetition
-        ? "Kyllä"
-        : "Ei";
-      this.isCupCompetition = this.competition.isCupCompetition
-        ? "Kyllä"
-        : "Ei";
-
-      if (this.competition.isCupCompetition) {
-        this.placement_points_array = [
-          ...this.competition.cup_placement_points,
-        ];
-        this.cup_participation_points =
-          this.competition.cup_participation_points;
-        this.cup_points_multiplier = this.competition.cup_points_multiplier;
-      } else {
-        this.placement_points_array = constants.placement_points;
-        this.cup_participation_points = 5;
-        this.cup_points_multiplier = 1;
-      }
-      this.start_date = new Date(this.competition.start_date)
-        .toISOString()
-        .substring(0, 10);
-      this.end_date = new Date(this.competition.end_date)
-        .toISOString()
-        .substring(0, 10);
-      this.start_time = this.competition.start_time;
-      this.end_time = this.competition.end_time;
-      this.basic_info_validated = true;
-    },
-    // Generate random colors for the fish chart in Result.vue (since adding fishes is dynamic)
-    //TODO look for 8-15 good colors to add/choose from, maybe with color picker next to fish name
-    generateRandomColor() {
-      var randomColor = "#" + Math.floor(Math.random() * 16777215).toString(16);
-      return randomColor;
-    },
-    // Add error to error array and direct user to it
-    showError(error) {
-      this.errors.push(error);
-      this.$nextTick(() => {
-        document.getElementById("error-list").scrollIntoView();
-      });
-    },
-    // Check competitions basic information (Perustiedot)
-    checkBasicInformation() {
-      this.loadingMessage = "Päivitetään tietoja...";
-      this.errors = [];
-      this.basic_info_validated = false;
-      this.validated = false;
-
-      var isDateValid = !isNaN(new Date(this.start_date).getTime());
-      var isEndDateValid = !isNaN(new Date(this.end_date).getTime());
-
-      var isStartTimeValid = validateTime(this.start_time);
-      var isEndTimeValid = validateTime(this.end_time);
-
-      // Check other variables
-      if (!this.name) {
-        this.showError("errors.missing-comp-name");
-      }
-
-      // Check other variables
-      if (!this.locality) {
-        this.showError("errors.missing-comp-locality");
-      }
-
-      if (this.isCupCompetition === "Kyllä") {
-        if (!this.cup._id) {
-          this.showError("errors.cup-not-selected");
-        }
-        if (!this.placement_points_array.length) {
-          this.showError("errors.missing-placement-points");
-        }
-        if (!this.cup_participation_points) {
-          this.showError("errors.missing-participation-points");
-        }
-        if (!this.cup_points_multiplier) {
-          this.showError("errors.missing-multiplier");
-        }
-        if (this.cup_points_multiplier < 0.1) {
-          this.showError("errors.invalid-multiplier");
-        }
-      }
-
-      if (!this.start_time || !isStartTimeValid) {
-        !this.start_time == true
-          ? this.showError("errors.missing-start-time")
-          : this.showError("errors.invalid-time");
-      }
-      if (!this.end_time || !isEndTimeValid) {
-        !this.end_time == true
-          ? this.showError("errors.missing-end-time")
-          : this.showError("errors.invalid-time");
-      }
-      if (!this.start_date || !isDateValid) {
-        this.showError("errors.missing-start-date");
-      }
-      if (!this.end_date || !isEndDateValid) {
-        this.showError("errors.missing-end-date");
-      }
-
-      // Check all the inputs
-      this.inputs.forEach((input) => {
-        if (!input.name) {
-          this.showError("errors.missing-fish-name");
-        }
-        if (!input.multiplier) {
-          this.showError(
-            `${input.name ? input.name : this.$t("fish-genetive")} ${this.$t(
-              "errors.invalid-fish-multiplier"
-            )}`
-          );
-        }
-        if (!input.minsize) {
-          this.showError(
-            `${input.name ? input.name : this.$t("fish-genetive")} ${this.$t(
-              "errors.invalid-fish-minsize"
-            )}`
-          );
-        }
-      });
-
-      // If all inputs validated
-      if (!this.errors.length) {
-        // If dates are valid, check that start_date is before end_date
-        let start_date = new Date(this.start_date);
-        let start_time = this.start_time.split(":").map(Number);
-        start_date.setHours(start_time[0], start_time[1]);
-
-        let end_date = new Date(this.end_date);
-        let end_time = this.end_time.split(":").map(Number);
-        end_date.setHours(end_time[0], end_time[1]);
-        if (end_date < start_date) {
-          this.showError("errors.invalid-times");
-        } else {
-          if (this.isCupCompetition === "Kyllä") {
-            // Basic info, change all the competition variables with values from inputs
-            this.competition.cup_id = this.cup._id;
-            this.competition.cup_name = this.cup.name;
-            this.competition.cup_participation_points = Number(
-              this.cup_participation_points
-            );
-            let temp_placement_points = [];
-            // IF the multiplier has been changed, and is different from 1, calculate new points, else just use template array
-            if (
-              this.competition.cup_points_multiplier !==
-                this.cup_points_multiplier &&
-              this.cup_points_multiplier !== 1.0
-            ) {
-              let temp_placement = 1;
-              this.placement_points_array.forEach((placement_point) => {
-                temp_placement_points.push({
-                  placement: temp_placement,
-                  points: placement_point.points * this.cup_points_multiplier,
-                });
-                temp_placement++;
-              });
-            } else {
-              temp_placement_points = [...this.placement_points_array];
-            }
-            this.competition.cup_points_multiplier = this.cup_points_multiplier;
-            this.competition.cup_placement_points = temp_placement_points;
-          } else {
-            delete this.competition.cup_id;
-            delete this.competition.cup_name;
-            delete this.competition.cup_points_multiplier;
-            delete this.competition.cup_placement_points;
-            delete this.competition.cup_participation_points;
-          }
-
-          if (this.isCupCompetition === "Ei") {
-            delete this.competition.teams;
-          }
-
-          this.competition.name = this.name;
-          this.competition.locality = this.locality;
-          this.competition.isTeamCompetition =
-            this.isTeamCompetition === "Ei" ? false : true;
-          this.competition.isCupCompetition =
-            this.isCupCompetition === "Ei" ? false : true;
-          this.competition.start_date = start_date.toISOString();
-          this.competition.end_date = end_date.toISOString();
-          this.competition.start_time = this.start_time;
-          this.competition.end_time = this.end_time;
-          //Update to database, calculate current standings and points in case multipliers have been changed
-          this.competition.fishes = this.fish_specs = this.inputs;
-          this.updateCompetition(this.competition);
-          this.basic_info_validated = true;
-        }
-      }
-    },
-    // Update competition to database
-    async updateCompetition(competition) {
-      try {
-        this.$store.refreshCompetition(competition);
-        this.loading = true;
-        await CompetitionService.updateCompetition(
-          competition._id,
-          competition
+    let _end_date = new Date(end_date.value);
+    let _end_time = end_time.value.split(":").map(Number);
+    _end_date.setHours(_end_time[0], _end_time[1]);
+    if (_end_date < _start_date) {
+      showError("errors.invalid-times");
+    } else {
+      if (isCupCompetition.value === "Kyllä") {
+        // Basic info, change all the competition variables with values from inputs
+        competition.value.cup_id = cup.value._id;
+        competition.value.cup_name = cup.value.name;
+        competition.value.cup_participation_points = Number(
+          cup_participation_points.value,
         );
-        this.tab = "show-settings";
-      } catch (err) {
-        console.error(err.message);
-      }
-      this.loading = false;
-      this.text = "notification.updated";
-      this.snackbar = true;
-    },
-    // Delete competition
-    async deleteCompetition(id, confirmed) {
-      // If user clicked "OK" on confirmation box
-      if (confirmed) {
-        this.text = "notification.deleting";
-        this.snackbar = true;
-        try {
-          //Delete competition from database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
-          await CompetitionService.deleteCompetition(id);
-          // Competition deleted, remove it from localstorage and vuex
-          this.$store.competition = null;
-          localStorage.removeItem("competition");
-          // Redirect to dashboard
-          this.$router.push({ path: "/dashboard" });
-        } catch (err) {
-          this.error = err.message;
-        }
-      } else {
-        this.$confirm(
-          this.$t("confirm-dialog"),
-          this.$t("button.delete-comp"),
-          "question"
-        )
-          .then((r) => {
-            if (r) {
-              this.deleteCompetition(id, r);
-            }
-          })
-          .catch((error) => {
-            if (error) {
-              console.error(error);
-            }
+        let temp_placement_points = [];
+        // IF the multiplier has been changed, and is different from 1, calculate new points, else just use template array
+        if (
+          competition.value.cup_points_multiplier !==
+            cup_points_multiplier.value &&
+          cup_points_multiplier.value !== 1.0
+        ) {
+          let temp_placement = 1;
+          placement_points_array.value.forEach((placement_point) => {
+            temp_placement_points.push({
+              placement: temp_placement,
+              points: placement_point.points * cup_points_multiplier.value,
+            });
+            temp_placement++;
           });
+        } else {
+          temp_placement_points = [...placement_points_array.value];
+        }
+        competition.value.cup_points_multiplier = cup_points_multiplier.value;
+        competition.value.cup_placement_points = temp_placement_points;
+      } else {
+        delete competition.value.cup_id;
+        delete competition.value.cup_name;
+        delete competition.value.cup_points_multiplier;
+        delete competition.value.cup_placement_points;
+        delete competition.value.cup_participation_points;
       }
-    },
-  },
-};
+
+      if (isCupCompetition.value === "Ei") {
+        delete competition.value.teams;
+      }
+
+      competition.value.name = name.value;
+      competition.value.locality = locality.value;
+      competition.value.isTeamCompetition =
+        isTeamCompetition.value === "Ei" ? false : true;
+      competition.value.isCupCompetition =
+        isCupCompetition.value === "Ei" ? false : true;
+      competition.value.start_date = _start_date.toISOString();
+      competition.value.end_date = _end_date.toISOString();
+      competition.value.start_time = start_time.value;
+      competition.value.end_time = end_time.value;
+      //Update to database, calculate current standings and points in case multipliers have been changed
+      competition.value.fishes = fish_specs.value = inputs.value;
+      updateCompetition(competition.value);
+      basic_info_validated.value = true;
+    }
+  }
+}
+
+// Update competition to database
+
+async function updateCompetition(competition) {
+  try {
+    store.refreshCompetition(competition);
+    loading.value = true;
+    await CompetitionService.updateCompetition(competition._id, competition);
+    tab.value = "show-settings";
+  } catch (err) {
+    console.error(err.message);
+  }
+  loading.value = false;
+  text.value = "notification.updated";
+  snackbar.value = true;
+}
+
+// Delete competition
+
+async function deleteCompetition(id, confirmed) {
+  // If user clicked "OK" on confirmation box
+  if (confirmed) {
+    text.value = "notification.deleting";
+    snackbar.value = true;
+    try {
+      //Delete competition from database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
+      await CompetitionService.deleteCompetition(id);
+      // Competition deleted, remove it from localstorage and vuex
+      store.competition = null;
+      localStorage.removeItem("competition");
+      // Redirect to dashboard
+      router.push({ path: "/dashboard" });
+    } catch (err) {
+      error.value = err.message;
+    }
+  } else {
+    confirm(t("confirm-dialog"), t("button.delete-comp"), "question")
+      .then((r) => {
+        if (r) {
+          deleteCompetition(id, r);
+        }
+      })
+      .catch((_error) => {
+        if (_error) {
+          console.error(_error);
+        }
+      });
+  }
+}
+
+// Runs when the component is created
+if (localStorage.getItem("competition") != null) {
+  const competition = JSON.parse(localStorage.getItem("competition"));
+  const competition_id = competition["_id"];
+  refreshCompetition(competition_id);
+} else {
+  console.log("No competition in localstorage!");
+}
+
+placement_points_array.value = JSON.parse(
+  JSON.stringify(constants.placement_points),
+);
+
+onMounted(() => {});
 </script>

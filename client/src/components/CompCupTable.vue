@@ -7,7 +7,8 @@
       elevation="3"
       variant="outlined"
     >
-      <v-tabs slider-color="blue-darken-4"
+      <v-tabs
+        slider-color="blue-darken-4"
         v-model="tab"
         bg-color="blue-lighten-2"
         color="blue-darken-4"
@@ -39,7 +40,7 @@
                   </v-card-title>
                   <v-data-table
                     id="normal-table"
-                    :headers="$tableHeaders(headers)"
+                    :headers="tableHeaders(headers)"
                     :items="competitions"
                     :search="search_comp"
                   >
@@ -56,7 +57,8 @@
                       }}</v-chip>
                     </template>
                     <template v-slot:[`item.cup_name`]="{ item }">
-                      <v-chip v-if="item.cup_id">{{ item.cup_name }} ({{
+                      <v-chip v-if="item.cup_id"
+                        >{{ item.cup_name }} ({{
                           getYear(item.start_date)
                         }})</v-chip
                       >
@@ -65,7 +67,7 @@
                       <v-chip
                         v-if="item.cup_id"
                         :color="getColor(item.cup_points_multiplier)"
-                        :variant="$store.getTheme ? 'outlined' : 'flat'"
+                        :variant="store.getTheme ? 'outlined' : 'flat'"
                         >{{ item.cup_points_multiplier }}x</v-chip
                       >
                     </template>
@@ -77,7 +79,8 @@
                             v-bind="props"
                             @click="pickCompetition(item)"
                             :disabled="loading || publishing"
-                            ><v-icon color="black">mdi-arrow-right-bold-box-outline</v-icon
+                            ><v-icon color="black"
+                              >mdi-arrow-right-bold-box-outline</v-icon
                             ></v-btn
                           >
                         </template>
@@ -93,7 +96,7 @@
                     <v-col v-if="cups.length">
                       <h2
                         v-bind:class="{
-                          'text-white': $store.getTheme,
+                          'text-white': store.getTheme,
                         }"
                       >
                         {{ $t("comp.not-found") }}
@@ -102,14 +105,14 @@
                     <v-col v-else>
                       <h2
                         v-bind:class="{
-                          'text-white': $store.getTheme,
+                          'text-white': store.getTheme,
                         }"
                       >
                         {{ $t("comp.not-found") }}
                       </h2>
                       <h2
                         v-bind:class="{
-                          'text-white': $store.getTheme,
+                          'text-white': store.getTheme,
                         }"
                       >
                         {{ $t("cup.not-found") }}
@@ -123,7 +126,7 @@
                 <v-col v-else>
                   <h2
                     v-bind:class="{
-                      'text-white': $store.getTheme,
+                      'text-white': store.getTheme,
                     }"
                   >
                     {{ $t("loading") }} {{ $t("comp.count") }}...
@@ -152,7 +155,7 @@
                   </v-card-title>
                   <v-data-table
                     id="normal-table"
-                    :headers="$tableHeaders(headers_cup)"
+                    :headers="tableHeaders(headers_cup)"
                     :items="cups"
                     :search="search_cup"
                     :loading="publishing"
@@ -164,12 +167,14 @@
                       <span> {{ $t(header.text) }}</span>
                     </template>
                     <template v-slot:[`item.name`]="{ item }">
-                      <v-chip color="primary-darken-3" variant="flat">{{ item.name }}</v-chip>
+                      <v-chip color="primary-darken-3" variant="flat">{{
+                        item.name
+                      }}</v-chip>
                     </template>
                     <template v-slot:[`item.year`]="{ item }">
                       <v-chip
                         color="grey"
-                        :variant="$store.getTheme ? 'outlined' : 'flat'"
+                        :variant="store.getTheme ? 'outlined' : 'flat'"
                         >{{ item.year }}</v-chip
                       >
                     </template>
@@ -183,7 +188,7 @@
                             "
                             @click="$emit('publish', item)"
                             :disabled="publishing"
-                            :variant="$store.getTheme ? 'outlined' : 'flat'"
+                            :variant="store.getTheme ? 'outlined' : 'flat'"
                             >{{
                               item.isPublic ? "Julkinen" : "Salainen"
                             }}</v-chip
@@ -200,7 +205,8 @@
                             v-bind="props"
                             @click="pickCup(item)"
                             :disabled="loading || publishing"
-                            ><v-icon color="black">mdi-arrow-right-bold-box-outline</v-icon
+                            ><v-icon color="black"
+                              >mdi-arrow-right-bold-box-outline</v-icon
                             ></v-btn
                           >
                         </template>
@@ -211,12 +217,13 @@
                 </v-card>
               </div>
               <v-row v-else>
-                <v-col v-if="error" class="bg-error"><h2>{{ error }}</h2></v-col
+                <v-col v-if="error" class="bg-error"
+                  ><h2>{{ error }}</h2></v-col
                 >
                 <v-col v-else>
                   <h2
                     v-bind:class="{
-                      'text-white': $store.getTheme,
+                      'text-white': store.getTheme,
                     }"
                   >
                     Ladataan Cuppeja...
@@ -232,95 +239,94 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { tableHeaders } from "@/utils/tableHeaders";
+import { onMounted, ref } from "vue";
+import { useMainStore } from "@/store";
+import { useRouter } from "vue-router";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
 import CupService from "../services/CupService.js";
-import { formatDateToLocaleDateString } from "../shared";
+import { formatDateToLocaleDateString } from "@/utils/format";
 
-export default {
-  name: "ContinueComp",
-  emits: ["publish"],
-  props: ["competitions", "cups", "loading", "publishing"],
-  data() {
-    return {
-      tab: null,
-      headers: [
-        { text: "date", value: "start_date", groupable: false },
-        { text: "name", value: "name", groupable: false },
-        { text: "cup.normal", value: "cup_name" },
-        {
-          text: "multiplier",
-          value: "cup_points_multiplier",
-          groupable: false,
-        },
-        { text: "choose", value: "choose", sortable: false, groupable: false },
-      ],
-      headers_cup: [
-        { text: "name", value: "name" },
-        { text: "year", value: "year" },
-        { text: "publicity", value: "isPublic" },
-        { text: "choose", value: "choose", sortable: false },
-      ],
-      error: "",
-      competition_input: null,
-      search_comp: "",
-      search_cup: "",
+defineOptions({ name: "ContinueComp" });
+const props = defineProps(["competitions", "cups", "loading", "publishing"]);
+defineEmits(["publish"]);
+const store = useMainStore();
+const router = useRouter();
+
+const tab = ref(null);
+const headers = ref([
+  { text: "date", value: "start_date", groupable: false },
+  { text: "name", value: "name", groupable: false },
+  { text: "cup.normal", value: "cup_name" },
+  {
+    text: "multiplier",
+    value: "cup_points_multiplier",
+    groupable: false,
+  },
+  { text: "choose", value: "choose", sortable: false, groupable: false },
+]);
+const headers_cup = ref([
+  { text: "name", value: "name" },
+  { text: "year", value: "year" },
+  { text: "publicity", value: "isPublic" },
+  { text: "choose", value: "choose", sortable: false },
+]);
+const error = ref("");
+const competition_input = ref(null);
+const search_comp = ref("");
+const search_cup = ref("");
+
+function getYear(date) {
+  return new Date(date).getFullYear();
+}
+
+function getColor(multiplier) {
+  if (multiplier > 1) return "red";
+  if (multiplier === 1) return "green";
+  else return "grey";
+}
+
+function pickCompetition(competition) {
+  // Pick competition for the app to use
+  //NOTE Store competition to vuex, redundant?
+  store.competition = competition;
+  // Set competition._id to localstorage for database queries
+  localStorage.setItem(
+    "competition",
+    JSON.stringify({
+      _id: competition._id,
+      start_date: competition.start_date,
+      end_date: competition.end_date,
+    }),
+  );
+  // redirect to /overview
+  router.push({ path: "/overview" });
+}
+
+function pickCup(cup) {
+  // Pick cup for the app to use
+  // Set cup._id to localstorage for database queries
+  localStorage.setItem("cup", cup._id);
+  // redirect to /cup-overview
+  router.push({ path: "/cup-overview" });
+}
+
+async function publishCup(cup) {
+  cup.isPublic = !cup.isPublic;
+  try {
+    props.publishing = true;
+    const newValues = {
+      $set: { isPublic: cup.isPublic },
     };
-  },
-  watch: {},
-  components: {
-    ProgressBarQuery,
-  },
+    await CupService.updateValues(cup._id, newValues);
+  } catch (err) {
+    console.error(err.message);
+  }
+  props.publishing = false;
+}
 
-  mounted() {},
-  methods: {
-    formatDateToLocaleDateString: formatDateToLocaleDateString,
-    getYear(date) {
-      return new Date(date).getFullYear();
-    },
-    getColor(multiplier) {
-      if (multiplier > 1) return "red";
-      if (multiplier === 1) return "green";
-      else return "grey";
-    },
-    pickCompetition(competition) {
-      // Pick competition for the app to use
-      //NOTE Store competition to vuex, redundant?
-      this.$store.competition = competition;
-      // Set competition._id to localstorage for database queries
-      localStorage.setItem(
-        "competition",
-        JSON.stringify({
-          _id: competition._id,
-          start_date: competition.start_date,
-          end_date: competition.end_date,
-        })
-      );
-      // redirect to /overview
-      this.$router.push({ path: "/overview" });
-    },
-    pickCup(cup) {
-      // Pick cup for the app to use
-      // Set cup._id to localstorage for database queries
-      localStorage.setItem("cup", cup._id);
-      // redirect to /cup-overview
-      this.$router.push({ path: "/cup-overview" });
-    },
-    async publishCup(cup) {
-      cup.isPublic = !cup.isPublic;
-      try {
-        this.publishing = true;
-        const newValues = {
-          $set: { isPublic: cup.isPublic },
-        };
-        await CupService.updateValues(cup._id, newValues);
-      } catch (err) {
-        console.error(err.message);
-      }
-      this.publishing = false;
-    },
-  },
-};
+onMounted(() => {});
 </script>
 
 <style></style>

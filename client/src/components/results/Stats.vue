@@ -28,12 +28,14 @@
           <v-col sm="12" md="5" offset-md="1" style="margin-bottom: 50px">
             <div v-if="fishes_chart_data">
               <v-hover v-slot="{ isHovering, props }">
-                <v-card v-bind="props"
+                <v-card
+                  v-bind="props"
                   :elevation="isHovering ? 5 : 2"
                   :class="{ 'on-hover': isHovering }"
                   style="padding: 20px"
                 >
-                  <v-card-title><h4 class="text-headline-small mb-1">
+                  <v-card-title
+                    ><h4 class="text-headline-small mb-1">
                       {{ $t(fishes_chart_title) }}
                     </h4></v-card-title
                   >
@@ -49,12 +51,14 @@
           <v-col sm="12" md="5">
             <div v-if="signee_chart_data">
               <v-hover v-slot="{ isHovering, props }">
-                <v-card v-bind="props"
+                <v-card
+                  v-bind="props"
                   :elevation="isHovering ? 5 : 2"
                   :class="{ 'on-hover': isHovering }"
                   style="padding: 20px"
                 >
-                  <v-card-title><h4 class="text-headline-small mb-1">
+                  <v-card-title
+                    ><h4 class="text-headline-small mb-1">
                       {{ $t(signee_chart_title) }}
                     </h4></v-card-title
                   >
@@ -73,7 +77,7 @@
             <p
               class="flow-text"
               v-bind:class="{
-                'text-white': $store.getTheme,
+                'text-white': store.getTheme,
               }"
             >
               Ei tuloksia, vielä...
@@ -87,12 +91,16 @@
         <v-row>
           <v-col>
             <v-hover v-slot="{ isHovering, props }">
-              <v-card v-bind="props"
+              <v-card
+                v-bind="props"
                 :elevation="isHovering ? 5 : 2"
                 :class="{ 'on-hover': isHovering }"
                 style="padding: 20px"
               >
-                <v-card-title class="text-center"><p class="text-headline-large">{{ $t("fish-specs") }}</p></v-card-title
+                <v-card-title class="text-center"
+                  ><p class="text-headline-large">
+                    {{ $t("fish-specs") }}
+                  </p></v-card-title
                 >
                 <v-list border>
                   <div v-for="(fish, index) in competition.fishes" :key="index">
@@ -118,7 +126,7 @@
                           {{
                             fish.weights
                               ? Math.round(
-                                  (fish.weights / 1000 + Number.EPSILON) * 100
+                                  (fish.weights / 1000 + Number.EPSILON) * 100,
                                 ) / 100
                               : 0
                           }}
@@ -139,7 +147,7 @@
                             Math.round(
                               (competition.total_weights / 1000 +
                                 Number.EPSILON) *
-                                100
+                                100,
                             ) / 100
                           }}
                           kg</b
@@ -155,18 +163,21 @@
         <v-row>
           <v-col>
             <v-hover v-slot="{ isHovering, props }">
-              <v-card v-bind="props"
+              <v-card
+                v-bind="props"
                 :elevation="isHovering ? 5 : 2"
                 :class="{ 'on-hover': isHovering }"
                 style="padding: 20px; margin-bottom: 20px"
               >
-                <v-card-title class="text-center"><p class="text-headline-large">
+                <v-card-title class="text-center"
+                  ><p class="text-headline-large">
                     {{ $t("general-statistics") }}
                   </p></v-card-title
                 >
                 <v-list border>
                   <v-list-item>
-                    <v-list-item-title><b
+                    <v-list-item-title
+                      ><b
                         >{{ $t("cup.normal") }} {{ $t("multiplier") }}</b
                       ></v-list-item-title
                     >
@@ -174,7 +185,7 @@
                     <v-list-item-subtitle
                       :class="
                         getMultiplierTextColor(
-                          competition.cup_points_multiplier
+                          competition.cup_points_multiplier,
                         ) + '--text'
                       "
                     >
@@ -204,12 +215,13 @@
                       <b
                         >{{
                           Math.round(
-                            (hasGottenFishCount / signees.length) * 100 * 100
+                            (hasGottenFishCount / signees.length) * 100 * 100,
                           ) / 100
                         }}% ({{ hasGottenFishCount }} / {{ signees.length }})</b
                       >
                     </v-list-item-subtitle>
-                    <v-list-item-subtitle class="red-text" v-else><b>0% (0/0)</b></v-list-item-subtitle
+                    <v-list-item-subtitle class="red-text" v-else
+                      ><b>0% (0/0)</b></v-list-item-subtitle
                     >
                   </v-list-item>
                 </v-list>
@@ -221,33 +233,28 @@
     </v-row>
   </div>
 </template>
-<script>
+<script setup>
+import { useMainStore } from "@/store";
 import PieChart from "../PieChart.vue";
 import DoughnutChart from "../DoughnutChart.vue";
-import { getMultiplierTextColor } from "@/shared";
+import { getMultiplierTextColor } from "@/utils/colors";
 
-export default {
-  name: "Stats",
-  components: {
-    PieChart,
-    DoughnutChart,
-  },
-  emits: ["dialog"],
-  props: [
-    "competition",
-    "normal_points",
-    "hasGottenFishCount",
-    "signees",
-    "loading",
-    "biggest_amounts",
-    "fishes_chart_title",
-    "fishes_chart_data",
-    "signee_chart_title",
-    "signee_chart_data",
-  ],
-  created() {
-    this.getMultiplierTextColor = getMultiplierTextColor;
-  },
-};
+const store = useMainStore();
+defineOptions({ name: "Stats" });
+defineProps([
+  "competition",
+  "normal_points",
+  "hasGottenFishCount",
+  "signees",
+  "loading",
+  "biggest_amounts",
+  "fishes_chart_title",
+  "fishes_chart_data",
+  "signee_chart_title",
+  "signee_chart_data",
+]);
+defineEmits(["dialog"]);
+
+// Runs when the component is created
 </script>
 <style scoped></style>

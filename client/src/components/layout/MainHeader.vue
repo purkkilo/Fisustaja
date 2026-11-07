@@ -1,8 +1,6 @@
 <template>
   <div>
-    <v-app-bar
-      :color="$store.getTheme ? 'grey-darken-4' : 'blue-lighten-2'"
-    >
+    <v-app-bar :color="store.getTheme ? 'grey-darken-4' : 'blue-lighten-2'">
       <v-app-bar-nav-icon @click="drawer = true"></v-app-bar-nav-icon>
 
       <v-toolbar-title>Fisustaja</v-toolbar-title>
@@ -26,7 +24,9 @@
         ></router-link
       >
       <router-link to="/"
-        ><v-btn rounded variant="outlined"><v-icon>mdi-home</v-icon></v-btn></router-link
+        ><v-btn rounded variant="outlined"
+          ><v-icon>mdi-home</v-icon></v-btn
+        ></router-link
       >
       <template v-slot:extension v-if="isPublicPage">
         <sub-navigation :items="public_items" :type="type"></sub-navigation>
@@ -35,12 +35,12 @@
     <v-navigation-drawer
       v-model="drawer"
       temporary
-      :color="$store.getTheme ? 'grey-darken-4' : 'blue-lighten-2'"
+      :color="store.getTheme ? 'grey-darken-4' : 'blue-lighten-2'"
     >
       <v-list nav class="py-0" density="compact">
         <v-list-item lines="two">
-            <v-list-item-title></v-list-item-title>
-            <v-list-item-subtitle></v-list-item-subtitle>
+          <v-list-item-title></v-list-item-title>
+          <v-list-item-subtitle></v-list-item-subtitle>
         </v-list-item>
         <v-list-item
           v-for="item in items"
@@ -52,7 +52,7 @@
             <v-icon :color="item.color">{{ item.icon }}</v-icon>
           </template>
 
-            <v-list-item-title>{{ $t(item.title) }}</v-list-item-title>
+          <v-list-item-title>{{ $t(item.title) }}</v-list-item-title>
         </v-list-item>
         <v-list-item>
           <v-list-item-action>
@@ -66,108 +66,112 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed, onMounted, ref, watch } from "vue";
+import { useMainStore } from "@/store";
+import { useI18n } from "vue-i18n";
+import { useRouter, useRoute } from "vue-router";
 import NotificationBar from "../NotificationBar.vue";
 import SubNavigation from "./SubNavigation.vue";
 
-export default {
-  components: {
-    SubNavigation,
-    NotificationBar,
-  },
-  name: "Header",
-  data() {
-    return {
-      user: null,
-      drawer: null,
-      updateSwitch: this.$store.getTheme,
-      items: [
-        { title: "nav.home", route: "/", icon: "mdi-home", color: "white" },
-        {
-          title: "nav.login",
-          route: "/login",
-          icon: "mdi-login",
-          color: "green-darken-1",
-        },
-      ],
-      snackbar: false,
-      text: "",
-      isPublicPage: false,
-      type: "public",
-      public_pages: ["/public-results", "/public-cups"],
-      public_items: [
-        {
-          text: "home.comp",
-          icon: "mdi-seal",
-          path: "/public-results",
-        },
-        {
-          text: "home.cup",
-          icon: "mdi-trophy",
-          path: "/public-cups",
-        },
-      ],
-    };
-  },
-  mounted() {},
-  watch: {
-    $route(to) {
-      if (this.public_pages.includes(to.path)) {
-        this.isPublicPage = true;
-      } else {
-        this.isPublicPage = false;
-      }
-    },
-    updateSwitch(newValue) {
-      //called whenever isDark switch changes
-      this.$store.isDark = newValue;
-      localStorage.setItem(
-        "preferences",
-        JSON.stringify({ isDark: newValue, lang: "fi" })
-      );
-    },
-  },
-  computed: {
-    isHome() {
-      return {
-        active: this.$route.name === "Home",
-      };
-    },
-    isLogin() {
-      return {
-        active: this.$route.name === "login",
-      };
-    },
-    isRegister() {
-      return {
-        active: this.$route.name === "register",
-      };
-    },
-  },
-  methods: {
-    openDrawer() {
-      this.drawer = !this.drawer;
-    },
-    changePage(route) {
-      if (this.$route.path !== route) {
-        this.$router.push(route);
-        this.drawer = !this.drawer;
-      } else {
-        this.text = "errors.already-here";
-        this.snackbar = true;
-      }
-    },
-    setLocale() {
-      this.$i18n.locale === "en"
-        ? (this.$i18n.locale = "fi")
-        : (this.$i18n.locale = "en");
+defineOptions({ name: "Header" });
+const store = useMainStore();
+const { locale } = useI18n();
+const router = useRouter();
+const route = useRoute();
 
-      let preferences = JSON.parse(localStorage.getItem("preferences"));
-      preferences.lang = this.$i18n.locale;
-      localStorage.setItem("preferences", JSON.stringify(preferences));
-    },
+const user = ref(null);
+const drawer = ref(null);
+const updateSwitch = ref(store.getTheme);
+const items = ref([
+  { title: "nav.home", route: "/", icon: "mdi-home", color: "white" },
+  {
+    title: "nav.login",
+    route: "/login",
+    icon: "mdi-login",
+    color: "green-darken-1",
   },
-};
+]);
+const snackbar = ref(false);
+const text = ref("");
+const isPublicPage = ref(false);
+const type = ref("public");
+const public_pages = ref(["/public-results", "/public-cups"]);
+const public_items = ref([
+  {
+    text: "home.comp",
+    icon: "mdi-seal",
+    path: "/public-results",
+  },
+  {
+    text: "home.cup",
+    icon: "mdi-trophy",
+    path: "/public-cups",
+  },
+]);
+
+const isHome = computed(() => {
+  return {
+    active: route.name === "Home",
+  };
+});
+
+const isLogin = computed(() => {
+  return {
+    active: route.name === "login",
+  };
+});
+
+const isRegister = computed(() => {
+  return {
+    active: route.name === "register",
+  };
+});
+
+watch(
+  () => route.fullPath,
+  () => {
+    const to = route;
+    if (public_pages.value.includes(to.path)) {
+      isPublicPage.value = true;
+    } else {
+      isPublicPage.value = false;
+    }
+  },
+);
+
+watch(updateSwitch, (newValue) => {
+  //called whenever isDark switch changes
+  store.isDark = newValue;
+  localStorage.setItem(
+    "preferences",
+    JSON.stringify({ isDark: newValue, lang: "fi" }),
+  );
+});
+
+function openDrawer() {
+  drawer.value = !drawer.value;
+}
+
+function changePage(route) {
+  if (route.path !== route) {
+    router.push(route);
+    drawer.value = !drawer.value;
+  } else {
+    text.value = "errors.already-here";
+    snackbar.value = true;
+  }
+}
+
+function setLocale() {
+  locale.value === "en" ? (locale.value = "fi") : (locale.value = "en");
+
+  let preferences = JSON.parse(localStorage.getItem("preferences"));
+  preferences.lang = locale.value;
+  localStorage.setItem("preferences", JSON.stringify(preferences));
+}
+
+onMounted(() => {});
 </script>
 
 <style scoped></style>

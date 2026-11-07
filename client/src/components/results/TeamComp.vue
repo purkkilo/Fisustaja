@@ -30,7 +30,7 @@
             <p
               class="flow-text"
               v-bind:class="{
-                'text-white': $store.getTheme,
+                'text-white': store.getTheme,
               }"
             >
               Tiimikilpailu
@@ -45,14 +45,14 @@
             ></v-text-field>
           </v-card-title>
           <v-data-table
-            :headers="$tableHeaders(headers)"
+            :headers="tableHeaders(headers)"
             :items="team_results"
             :search="searchText"
           >
             <template v-slot:[`item.placement`]="{ item }">
               <v-chip
                 :color="getColor(item.placement)"
-                :variant="$store.getTheme ? 'outlined' : 'flat'"
+                :variant="store.getTheme ? 'outlined' : 'flat'"
                 >{{ item.placement }}.</v-chip
               >
             </template>
@@ -68,7 +68,7 @@
           v-if="!loading"
           class="flow-text"
           v-bind:class="{
-            'text-white': $store.getTheme,
+            'text-white': store.getTheme,
           }"
         >
           Ei tuloksia, vielä...
@@ -81,22 +81,24 @@
     </v-row>
   </div>
 </template>
-<script>
-import { getColorPoints, getColor } from "@/shared";
+<script setup>
+import { tableHeaders } from "@/utils/tableHeaders";
+import { useMainStore } from "@/store";
+import { ref } from "vue";
+import { getColorPoints, getColor } from "@/utils/colors";
 
-export default {
-  name: "TeamComp",
-  components: {},
-  emits: ["dialog"],
-  props: ["team_results", "search_team", "loading", "headers"],
-  data() {
-    // Vue 3 can't v-model a prop: the search box edits a local copy (as it did in Vue 2)
-    return { searchText: this.search_team || "" };
-  },
-  created() {
-    this.getColorPoints = getColorPoints;
-    this.getColor = getColor;
-  },
-};
+const store = useMainStore();
+defineOptions({ name: "TeamComp" });
+const props = defineProps([
+  "team_results",
+  "search_team",
+  "loading",
+  "headers",
+]);
+defineEmits(["dialog"]);
+
+const searchText = ref(props.search_team || "");
+
+// Runs when the component is created
 </script>
 <style scoped></style>

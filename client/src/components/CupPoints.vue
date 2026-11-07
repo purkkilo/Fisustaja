@@ -52,8 +52,8 @@
             variant="outlined"
           >
             <template v-slot:item="{ item, props }">
-                <v-list-item v-bind="props" :title="$t(item)" />
-              </template>
+              <v-list-item v-bind="props" :title="$t(item)" />
+            </template>
             <template v-slot:selection="{ item }">
               <span>{{ $t(item) }}</span>
             </template></v-select
@@ -114,7 +114,7 @@
             </v-card-title>
             <v-data-table
               id="normal-table"
-              :headers="$tableHeaders(headers)"
+              :headers="tableHeaders(headers)"
               :items="results"
               :search="search"
               :loading="loading"
@@ -142,7 +142,7 @@
               <template v-slot:[`item.final_placement`]="{ item }">
                 <v-chip
                   :color="getColor(item.final_placement)"
-                  :variant="$store.getTheme ? 'outlined' : 'flat'"
+                  :variant="store.getTheme ? 'outlined' : 'flat'"
                   >{{ item.final_placement }}.</v-chip
                 >
               </template>
@@ -177,7 +177,9 @@
                 <span v-else v-bind:key="index"> - </span>
               </template>
               <template v-slot:[`item.final_cup_points`]="{ item }">
-                <v-chip color="primary" variant="flat">{{ item.final_cup_points }}p</v-chip>
+                <v-chip color="primary" variant="flat"
+                  >{{ item.final_cup_points }}p</v-chip
+                >
               </template>
             </v-data-table>
           </v-card>
@@ -187,7 +189,7 @@
         <v-col>
           <h2
             v-bind:class="{
-              'text-white': $store.getTheme,
+              'text-white': store.getTheme,
             }"
           >
             Kilpailuissa ei vielä tuloksia!
@@ -199,7 +201,7 @@
           <p
             class="flow-text"
             v-bind:class="{
-              'text-white': $store.getTheme,
+              'text-white': store.getTheme,
             }"
           >
             Päivitetään tuloksia...
@@ -226,7 +228,7 @@
         <v-col>
           <h2
             v-bind:class="{
-              'text-white': $store.getTheme,
+              'text-white': store.getTheme,
             }"
           >
             Ei kilpailuja rekisteröitynä!
@@ -236,46 +238,46 @@
     </v-col>
   </v-row>
 </template>
-<script>
-import { getColor } from "@/shared";
-export default {
-  name: "CupPoints",
-  emits: ["calculate", "change", "refresh", "save", "sort"],
-  props: [
-    "competitions",
-    "allCompetitions",
-    "results",
-    "cup",
-    "headers",
-    "isResults",
-    "notFinishedCount",
-    "loading",
-    "selectNumbers",
-  ],
-  data() {
-    return {
-      headerOptions: ["locality", "name"],
-      headerSelection: "locality",
-      selectedCompetitions: this.competitions.length,
-      search: "",
-      showInfoInPdf: false,
-      showUnfinishedCompetitions: false,
-      isLandscape: false,
-      dialog: false,
-    };
-  },
-  mounted() {
-    if (this.cup.meaningful_competitions > 0)
-      this.selectedCompetitions = this.cup.meaningful_competitions;
-    else this.selectedCompetitions = this.competitions.length;
-  },
-  methods: {
-    // Vue 3 can't parse "[" "]" inside a dynamic slot name in the template
-    resultSlot(c) {
-      return `item.cup_results[${c}].points`;
-    },
-    getColor: getColor,
-  },
-};
+<script setup>
+import { tableHeaders } from "@/utils/tableHeaders";
+import { useMainStore } from "@/store";
+import { onMounted, ref } from "vue";
+import { getColor } from "@/utils/colors";
+
+const store = useMainStore();
+defineOptions({ name: "CupPoints" });
+const props = defineProps([
+  "competitions",
+  "allCompetitions",
+  "results",
+  "cup",
+  "headers",
+  "isResults",
+  "notFinishedCount",
+  "loading",
+  "selectNumbers",
+]);
+defineEmits(["calculate", "change", "refresh", "save", "sort"]);
+
+const headerOptions = ref(["locality", "name"]);
+const headerSelection = ref("locality");
+const selectedCompetitions = ref(props.competitions.length);
+const search = ref("");
+const showInfoInPdf = ref(false);
+const showUnfinishedCompetitions = ref(false);
+const isLandscape = ref(false);
+const dialog = ref(false);
+
+// Vue 3 can't parse "[" "]" inside a dynamic slot name in the template
+
+function resultSlot(c) {
+  return `item.cup_results[${c}].points`;
+}
+
+onMounted(() => {
+  if (props.cup.meaningful_competitions > 0)
+    selectedCompetitions.value = props.cup.meaningful_competitions;
+  else selectedCompetitions.value = props.competitions.length;
+});
 </script>
 <style scoped></style>

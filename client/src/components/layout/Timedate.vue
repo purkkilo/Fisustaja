@@ -24,9 +24,7 @@
             <v-col>
               <h3
                 :class="
-                  competition_state === 'comp-ended'
-                    ? 'text-red'
-                    : 'text-green'
+                  competition_state === 'comp-ended' ? 'text-red' : 'text-green'
                 "
                 id="date"
               >
@@ -36,9 +34,7 @@
             <v-col>
               <h2
                 :class="
-                  competition_state === 'comp-ended'
-                    ? 'text-red'
-                    : 'text-green'
+                  competition_state === 'comp-ended' ? 'text-red' : 'text-green'
                 "
                 id="comp-left"
                 v-if="competitionChosen"
@@ -53,154 +49,156 @@
   </v-row>
 </template>
 
-<script>
-export default {
-  name: "Timedate",
-  data() {
-    return {
-      competition: null,
-      competition_started: false,
-      competition_ended: false,
-      calculated_time: null,
-      date_interval: 100,
-      clock_interval: 100,
-      remaining_interval: 100,
-      clock: null,
-      date: null,
-      timer: null,
-      timer_date: null,
-      timer_clock: null,
-      timer_string: "",
-      competition_state: "",
-      amount: 40,
-    };
-  },
-  computed: {
-    competitionChosen() {
-      return localStorage.getItem("competition") != null;
-    },
-  },
-  mounted() {
-    this.setTime();
-    this.setDate();
-    this.timer_clock = setInterval(this.setTime, this.clock_interval);
-    this.timer_date = setInterval(this.setDate, this.date_interval);
+<script setup>
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 
-    if (localStorage.getItem("competition") != null) {
-      let comp = JSON.parse(localStorage.getItem("competition"));
-      this.competition = {
-        id: comp["id"],
-        start_date: comp["start_date"],
-        end_date: comp["end_date"],
-      };
-      this.remainingTime();
-      this.timer = setInterval(this.remainingTime, this.remaining_interval);
-    } else {
-      this.timer_string = "";
-      clearInterval(this.timer);
-    }
-  },
-  beforeUnmount() {
-    clearInterval(this.timer);
-    clearInterval(this.timer_clock);
-    clearInterval(this.timer_date);
-  },
-  methods: {
-    setTime() {
-      if (document.getElementById("clock")) {
-        // Get time, parse it and change the text of the clock
-        const today = new Date();
-        let h = today.getHours();
-        let m = today.getMinutes();
-        let s = today.getSeconds();
-        m = this.checkZeros(m);
-        s = this.checkZeros(s);
-        this.clock = `${h}:${m}:${s}`;
-        this.clock_interval = 300;
-        //document.getElementById('clock').innerText = h + ":" + m + ":" + s;
-      } else {
-        clearInterval(this.timer_clock);
-      }
-    },
-    setDate() {
-      if (document.getElementById("date")) {
-        const today = new Date();
-        let day = today.getDate();
-        let month = today.getMonth() + 1; //month is zero indexed
-        let year = today.getFullYear();
-        day = this.checkZeros(day);
-        month = this.checkZeros(month);
-        this.date = `${day}.${month}.${year}`;
-        this.date_interval = 60000;
-      } else {
-        clearInterval(this.timer_date);
-      }
-    },
-    remainingTime() {
-      if (document.getElementById("comp-left")) {
-        if (this.competition) {
-          let start_dateTime = new Date(this.competition.start_date);
-          let end_dateTime = new Date(this.competition.end_date);
-          let now = new Date();
-          let formatted = "";
-          let duration = null;
+defineOptions({ name: "Timedate" });
 
-          this.competition_started = start_dateTime < now;
-          this.competition_ended = end_dateTime < now;
-          if (!this.competition_started && !this.competition_ended) {
-            duration = this.getDuration(now, start_dateTime);
-            formatted = this.durationToString(duration);
-            this.competition_state = "timer.to-start";
-            if (duration.days < 1) {
-              // under an 24 hours
-              this.timer_string = formatted;
-            } else {
-              this.timer_string = `${duration.days}d ` + formatted;
-            }
-          } else if (this.competition_started && !this.competition_ended) {
-            duration = this.getDuration(now, end_dateTime);
-            let days = duration.days ? `${duration.days}d ` : ` `;
-            formatted = days + this.durationToString(duration);
-            this.remaining_interval = 300;
-            this.competition_state = "timer.comp-left";
-            this.timer_string = formatted;
-          } else {
-            this.timer_string = null;
-            this.competition_state = "timer.comp-ended";
-          }
+const competition = ref(null);
+const competition_started = ref(false);
+const competition_ended = ref(false);
+const calculated_time = ref(null);
+const date_interval = ref(100);
+const clock_interval = ref(100);
+const remaining_interval = ref(100);
+const clock = ref(null);
+const date = ref(null);
+const timer = ref(null);
+const timer_date = ref(null);
+const timer_clock = ref(null);
+const timer_string = ref("");
+const competition_state = ref("");
+const amount = ref(40);
+
+const competitionChosen = computed(() => {
+  return localStorage.getItem("competition") != null;
+});
+
+function setTime() {
+  if (document.getElementById("clock")) {
+    // Get time, parse it and change the text of the clock
+    const today = new Date();
+    let h = today.getHours();
+    let m = today.getMinutes();
+    let s = today.getSeconds();
+    m = checkZeros(m);
+    s = checkZeros(s);
+    clock.value = `${h}:${m}:${s}`;
+    clock_interval.value = 300;
+    //document.getElementById('clock').innerText = h + ":" + m + ":" + s;
+  } else {
+    clearInterval(timer_clock.value);
+  }
+}
+
+function setDate() {
+  if (document.getElementById("date")) {
+    const today = new Date();
+    let day = today.getDate();
+    let month = today.getMonth() + 1; //month is zero indexed
+    let year = today.getFullYear();
+    day = checkZeros(day);
+    month = checkZeros(month);
+    date.value = `${day}.${month}.${year}`;
+    date_interval.value = 60000;
+  } else {
+    clearInterval(timer_date.value);
+  }
+}
+
+function remainingTime() {
+  if (document.getElementById("comp-left")) {
+    if (competition.value) {
+      let start_dateTime = new Date(competition.value.start_date);
+      let end_dateTime = new Date(competition.value.end_date);
+      let now = new Date();
+      let formatted = "";
+      let duration = null;
+
+      competition_started.value = start_dateTime < now;
+      competition_ended.value = end_dateTime < now;
+      if (!competition_started.value && !competition_ended.value) {
+        duration = getDuration(now, start_dateTime);
+        formatted = durationToString(duration);
+        competition_state.value = "timer.to-start";
+        if (duration.days < 1) {
+          // under an 24 hours
+          timer_string.value = formatted;
+        } else {
+          timer_string.value = `${duration.days}d ` + formatted;
         }
+      } else if (competition_started.value && !competition_ended.value) {
+        duration = getDuration(now, end_dateTime);
+        let days = duration.days ? `${duration.days}d ` : ` `;
+        formatted = days + durationToString(duration);
+        remaining_interval.value = 300;
+        competition_state.value = "timer.comp-left";
+        timer_string.value = formatted;
       } else {
-        clearInterval(this.timer);
+        timer_string.value = null;
+        competition_state.value = "timer.comp-ended";
       }
-    },
-    checkZeros(time) {
-      if (time < 10) {
-        time = "0" + time;
-      }
-      return time;
-    },
-    getDuration(startDate, endDate) {
-      var seconds = Math.floor((endDate - startDate) / 1000);
-      var minutes = Math.floor(seconds / 60);
-      var hours = Math.floor(minutes / 60);
-      var days = Math.floor(hours / 24);
-      hours = hours - days * 24;
-      minutes = minutes - days * 24 * 60 - hours * 60;
-      seconds = seconds - days * 24 * 60 * 60 - hours * 60 * 60 - minutes * 60;
-      return { days, hours, minutes, seconds };
-    },
-    durationToString(duration) {
-      return (
-        this.checkZeros(duration.hours) +
-        "h " +
-        this.checkZeros(duration.minutes) +
-        "m " +
-        this.checkZeros(duration.seconds) +
-        "s"
-      );
-    },
-  },
-};
+    }
+  } else {
+    clearInterval(timer.value);
+  }
+}
+
+function checkZeros(time) {
+  if (time < 10) {
+    time = "0" + time;
+  }
+  return time;
+}
+
+function getDuration(startDate, endDate) {
+  var seconds = Math.floor((endDate - startDate) / 1000);
+  var minutes = Math.floor(seconds / 60);
+  var hours = Math.floor(minutes / 60);
+  var days = Math.floor(hours / 24);
+  hours = hours - days * 24;
+  minutes = minutes - days * 24 * 60 - hours * 60;
+  seconds = seconds - days * 24 * 60 * 60 - hours * 60 * 60 - minutes * 60;
+  return { days, hours, minutes, seconds };
+}
+
+function durationToString(duration) {
+  return (
+    checkZeros(duration.hours) +
+    "h " +
+    checkZeros(duration.minutes) +
+    "m " +
+    checkZeros(duration.seconds) +
+    "s"
+  );
+}
+
+onMounted(() => {
+  setTime();
+  setDate();
+  timer_clock.value = setInterval(setTime, clock_interval.value);
+  timer_date.value = setInterval(setDate, date_interval.value);
+
+  if (localStorage.getItem("competition") != null) {
+    let comp = JSON.parse(localStorage.getItem("competition"));
+    competition.value = {
+      id: comp["id"],
+      start_date: comp["start_date"],
+      end_date: comp["end_date"],
+    };
+    remainingTime();
+    timer.value = setInterval(remainingTime, remaining_interval.value);
+  } else {
+    timer_string.value = "";
+    clearInterval(timer.value);
+  }
+});
+
+onBeforeUnmount(() => {
+  clearInterval(timer.value);
+  clearInterval(timer_clock.value);
+  clearInterval(timer_date.value);
+});
 </script>
 
 <style scoped></style>

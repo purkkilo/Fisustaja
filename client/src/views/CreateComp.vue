@@ -23,15 +23,12 @@
     </v-row>
     <error-list :errors="errors"></error-list>
 
-    <v-card
-      style="background: transparent"
-      elevation="3"
-      variant="outlined"
-    >
+    <v-card style="background: transparent" elevation="3" variant="outlined">
       <h1 style="margin: 30px">{{ $t("comp.is") }} {{ $t("creation") }}</h1>
 
       <!-- Tabs -->
-      <v-tabs slider-color="blue-darken-4"
+      <v-tabs
+        slider-color="blue-darken-4"
         v-model="tab"
         bg-color="blue-lighten-2"
         color="blue-darken-4"
@@ -42,11 +39,14 @@
         center-active
       >
         <v-tab value="basic-info">1. {{ $t("basic-info") }}</v-tab>
-        <v-tab :disabled="!basic_info_validated" value="fishes">2. {{ $t("fish-species") }}</v-tab
+        <v-tab :disabled="!basic_info_validated" value="fishes"
+          >2. {{ $t("fish-species") }}</v-tab
         >
-        <v-tab :disabled="!fish_species_validated" value="points">3. {{ $t("multipliers") }} {{ $t("and") }} {{ $t("min-sizes") }}
+        <v-tab :disabled="!fish_species_validated" value="points"
+          >3. {{ $t("multipliers") }} {{ $t("and") }} {{ $t("min-sizes") }}
         </v-tab>
-        <v-tab :disabled="!fish_specs_validated" value="summary">4. {{ $t("overview") }}</v-tab
+        <v-tab :disabled="!fish_specs_validated" value="summary"
+          >4. {{ $t("overview") }}</v-tab
         >
       </v-tabs>
 
@@ -116,7 +116,8 @@
                   v-if="cup.name && isCupCompetition === 'Kyllä'"
                 >
                   <v-col cols="6" class="input-fields">
-                    <v-list-subheader class="text-white">{{ $t("choose") }} {{ $t("cup.normal") }}
+                    <v-list-subheader class="text-white"
+                      >{{ $t("choose") }} {{ $t("cup.normal") }}
                     </v-list-subheader>
                     <v-select
                       v-model="cup"
@@ -154,7 +155,7 @@
                     <p
                       class="flow-text"
                       v-bind:class="{
-                        'text-white': $store.getTheme,
+                        'text-white': store.getTheme,
                       }"
                     >
                       {{ $t("create-competition.no-cups-created") }}
@@ -162,7 +163,8 @@
                   </v-col>
                   <v-col md="2" style="margin-top: 20px">
                     <router-link to="/continue">
-                      <v-btn tile color="blue-lighten-1"><v-icon>mdi-plus-circle</v-icon>{{ $t("create") }}
+                      <v-btn tile color="blue-lighten-1"
+                        ><v-icon>mdi-plus-circle</v-icon>{{ $t("create") }}
                         {{ $t("cup.normal") }}!</v-btn
                       >
                     </router-link>
@@ -199,7 +201,8 @@
                                 @blur="sortPlacements"
                               />
                             </v-col>
-                            <v-col v-if="editPoints"><v-btn
+                            <v-col v-if="editPoints"
+                              ><v-btn
                                 @click="removePlacement(index)"
                                 color="red"
                               >
@@ -213,14 +216,16 @@
                     </v-list>
                     <v-row v-if="editPoints">
                       <v-col>
-                        <v-btn color="green" @click="addPlacement"><v-icon>mdi-plus</v-icon
+                        <v-btn color="green" @click="addPlacement"
+                          ><v-icon>mdi-plus</v-icon
                           >{{ $t("add-placement") }}</v-btn
                         >
                       </v-col>
                     </v-row>
                     <v-row>
                       <v-col v-if="editPoints">
-                        <v-btn block color="yellow" @click="cancelPoints"><v-icon>mdi-cancel</v-icon>{{ $t("cancel") }}</v-btn
+                        <v-btn block color="yellow" @click="cancelPoints"
+                          ><v-icon>mdi-cancel</v-icon>{{ $t("cancel") }}</v-btn
                         >
                       </v-col>
                       <v-col>
@@ -411,11 +416,21 @@
                 style="margin-bottom: 20px; margin-top: 20px"
               >
                 <v-col md="6">
-                  <v-btn tile color="grey" @click="disableInputs(false)" size="large"><v-icon>mdi-pencil</v-icon>Muuta tietoja</v-btn
+                  <v-btn
+                    tile
+                    color="grey"
+                    @click="disableInputs(false)"
+                    size="large"
+                    ><v-icon>mdi-pencil</v-icon>Muuta tietoja</v-btn
                   >
                 </v-col>
                 <v-col md="6">
-                  <v-btn tile color="green" @click="changeTab('fishes')" size="large"><v-icon>mdi-check</v-icon>Jatka</v-btn
+                  <v-btn
+                    tile
+                    color="green"
+                    @click="changeTab('fishes')"
+                    size="large"
+                    ><v-icon>mdi-check</v-icon>Jatka</v-btn
                   >
                 </v-col>
               </v-row>
@@ -426,7 +441,7 @@
               <v-col>
                 <h2
                   v-bind:class="{
-                    'text-white': $store.getTheme,
+                    'text-white': store.getTheme,
                   }"
                 >
                   Valmistellaan kilpailun luontia...
@@ -440,8 +455,8 @@
         <!-- "Kilpailun kalalajit" tab -->
         <v-window-item
           v-bind:class="{
-            inputarea: !$store.getTheme,
-            'inputarea-dark': $store.getTheme,
+            inputarea: !store.getTheme,
+            'inputarea-dark': store.getTheme,
           }"
           :value="'fishes'"
         >
@@ -469,7 +484,7 @@
                   <v-col>
                     <h3
                       v-bind:class="{
-                        'text-white': $store.getTheme,
+                        'text-white': store.getTheme,
                       }"
                     >
                       {{ $t("fish-species-choose") }}
@@ -497,10 +512,15 @@
                       <template v-slot:no-data>
                         <v-list-item>
                           <span class="subheading"
-                            >{{ $t("create") }} {{ $t("new") }}
-                            {{ $t("fish") }} {{ $t("with-enter") }}:
+                            >{{ $t("create") }} {{ $t("new") }} {{ $t("fish") }}
+                            {{ $t("with-enter") }}:
                           </span>
-                          <v-chip :color="`${colors[nonce - 1]}`" label size="small" variant="flat">
+                          <v-chip
+                            :color="`${colors[nonce - 1]}`"
+                            label
+                            size="small"
+                            variant="flat"
+                          >
                             {{ search }}
                           </v-chip>
                         </v-list-item>
@@ -515,7 +535,10 @@
                           <span class="pr-2">
                             {{ item.text }}
                           </span>
-                          <v-icon @click.stop="removeSelected(item)" size="small">
+                          <v-icon
+                            @click.stop="removeSelected(item)"
+                            size="small"
+                          >
                             $delete
                           </v-icon>
                         </v-chip>
@@ -534,7 +557,12 @@
                             @keyup.enter="edit(index, item)"
                             variant="solo"
                           ></v-text-field>
-                          <v-chip v-else :color="item.color" label variant="flat">
+                          <v-chip
+                            v-else
+                            :color="item.color"
+                            label
+                            variant="flat"
+                          >
                             {{ item.text }}
                           </v-chip>
                           <template v-slot:append>
@@ -567,7 +595,12 @@
                   >
                 </v-col>
                 <v-col md="6">
-                  <v-btn tile color="green" @click="checkFishSpecies" size="large"><v-icon>mdi-check</v-icon>{{ $t("continue") }}</v-btn
+                  <v-btn
+                    tile
+                    color="green"
+                    @click="checkFishSpecies"
+                    size="large"
+                    ><v-icon>mdi-check</v-icon>{{ $t("continue") }}</v-btn
                   >
                 </v-col>
               </v-row>
@@ -582,11 +615,21 @@
                   >
                 </v-col>
                 <v-col>
-                  <v-btn tile color="grey" @click="disableInputs(false)" size="large"><v-icon>mdi-pencil</v-icon>{{ $t("modify-info") }}</v-btn
+                  <v-btn
+                    tile
+                    color="grey"
+                    @click="disableInputs(false)"
+                    size="large"
+                    ><v-icon>mdi-pencil</v-icon>{{ $t("modify-info") }}</v-btn
                   >
                 </v-col>
                 <v-col>
-                  <v-btn tile color="green" @click="changeTab('points')" size="large"><v-icon>mdi-check</v-icon>{{ $t("continue") }}</v-btn
+                  <v-btn
+                    tile
+                    color="green"
+                    @click="changeTab('points')"
+                    size="large"
+                    ><v-icon>mdi-check</v-icon>{{ $t("continue") }}</v-btn
                   >
                 </v-col>
               </v-row>
@@ -597,8 +640,8 @@
         <!-- "Pistekertoimet ja alamitat" tab -->
         <v-window-item
           v-bind:class="{
-            inputarea: !$store.getTheme,
-            'inputarea-dark': $store.getTheme,
+            inputarea: !store.getTheme,
+            'inputarea-dark': store.getTheme,
           }"
           :value="'points'"
         >
@@ -614,7 +657,7 @@
                 <p
                   class="flow-text center-align"
                   v-bind:class="{
-                    'text-white': $store.getTheme,
+                    'text-white': store.getTheme,
                   }"
                 >
                   {{ $t("create-competition.multiplier-title") }}
@@ -641,7 +684,7 @@
                         <span
                           class="flow-text"
                           v-bind:class="{
-                            'text-white': $store.getTheme,
+                            'text-white': store.getTheme,
                           }"
                           :id="'fish_' + (index + 1) + '_name'"
                           >{{ index + 1 }}. {{ fish.text }}</span
@@ -695,7 +738,8 @@
                   >
                 </v-col>
                 <v-col md="6" style="margin-top: 20px">
-                  <v-btn tile color="green" @click="checkFishSpecs" size="large"><v-icon>mdi-check</v-icon>{{ $t("continue") }}</v-btn
+                  <v-btn tile color="green" @click="checkFishSpecs" size="large"
+                    ><v-icon>mdi-check</v-icon>{{ $t("continue") }}</v-btn
                   >
                 </v-col>
               </v-row>
@@ -710,11 +754,21 @@
                   >
                 </v-col>
                 <v-col md="4">
-                  <v-btn tile color="grey" @click="disableInputs(false)" size="large"><v-icon>mdi-pencil</v-icon>{{ $t("modify-info") }}a</v-btn
+                  <v-btn
+                    tile
+                    color="grey"
+                    @click="disableInputs(false)"
+                    size="large"
+                    ><v-icon>mdi-pencil</v-icon>{{ $t("modify-info") }}a</v-btn
                   >
                 </v-col>
                 <v-col md="4">
-                  <v-btn tile color="green" @click="changeTab('summary')" size="large"><v-icon>mdi-check</v-icon>{{ $t("continue") }}</v-btn
+                  <v-btn
+                    tile
+                    color="green"
+                    @click="changeTab('summary')"
+                    size="large"
+                    ><v-icon>mdi-check</v-icon>{{ $t("continue") }}</v-btn
                   >
                 </v-col>
               </v-row>
@@ -725,8 +779,8 @@
         <!-- "Yhteenveto" tab -->
         <v-window-item
           v-bind:class="{
-            inputarea: !$store.getTheme,
-            'inputarea-dark': $store.getTheme,
+            inputarea: !store.getTheme,
+            'inputarea-dark': store.getTheme,
           }"
           :value="'summary'"
           v-if="basic_info"
@@ -736,7 +790,7 @@
               <v-col>
                 <h2
                   v-bind:class="{
-                    'text-white': $store.getTheme,
+                    'text-white': store.getTheme,
                   }"
                 >
                   {{ $t("basic-info") }}
@@ -774,39 +828,41 @@
                     <template v-slot:prepend>
                       <v-icon color="green">mdi-clipboard-check</v-icon>
                     </template>
-                      <v-list-item-title>{{ $t("comp.is") }}
-                        {{ $t("placement-points") }}</v-list-item-title
+                    <v-list-item-title
+                      >{{ $t("comp.is") }}
+                      {{ $t("placement-points") }}</v-list-item-title
+                    >
+                    <v-list
+                      elevation="5"
+                      style="max-height: 400px; overflow-y: auto"
+                      border
+                    >
+                      <div
+                        v-for="(p, index) in placement_points_array"
+                        :key="index"
+                        style="margin-top: 20px"
                       >
-                      <v-list
-                        elevation="5"
-                        style="max-height: 400px; overflow-y: auto"
-                        border
-                      >
-                        <div
-                          v-for="(p, index) in placement_points_array"
-                          :key="index"
-                          style="margin-top: 20px"
-                        >
-                          <v-list-item>
-                            <v-row class="align-center">
-                              <v-col>
-                                <h3>#{{ p.placement }}</h3>
-                              </v-col>
-                              <v-col>
-                                <p>{{ p.points }}p</p>
-                              </v-col>
-                            </v-row>
-                          </v-list-item>
-                          <v-divider></v-divider>
-                        </div>
-                      </v-list>
+                        <v-list-item>
+                          <v-row class="align-center">
+                            <v-col>
+                              <h3>#{{ p.placement }}</h3>
+                            </v-col>
+                            <v-col>
+                              <p>{{ p.points }}p</p>
+                            </v-col>
+                          </v-row>
+                        </v-list-item>
+                        <v-divider></v-divider>
+                      </div>
+                    </v-list>
                   </v-list-item>
                   <v-divider v-if="basic_info.isCupCompetition"></v-divider>
                   <v-list-item v-if="basic_info.isCupCompetition">
                     <template v-slot:prepend>
                       <v-icon color="green-darken-1">mdi-scoreboard</v-icon>
                     </template>
-                    <v-list-item-title>{{ $t("cup.normal") + " " + $t("participation-points") }}
+                    <v-list-item-title
+                      >{{ $t("cup.normal") + " " + $t("participation-points") }}
                     </v-list-item-title>
                     <v-list-item-subtitle class="blue-text">
                       <b>{{ basic_info.cup_participation_points }}</b>
@@ -834,7 +890,8 @@
                       <v-icon>mdi-account-multiple-outline</v-icon>
                     </template>
                     <v-list-item-title>Onko Tiimikilpailua?</v-list-item-title>
-                    <v-list-item-subtitle class="blue-text">{{ isTeamCompetition }}
+                    <v-list-item-subtitle class="blue-text"
+                      >{{ isTeamCompetition }}
                     </v-list-item-subtitle>
                   </v-list-item>
                   <v-divider></v-divider>
@@ -858,7 +915,7 @@
               <v-col md="12">
                 <h2
                   v-bind:class="{
-                    'text-white': $store.getTheme,
+                    'text-white': store.getTheme,
                   }"
                 >
                   {{ $t("fish-specs") }}
@@ -906,7 +963,12 @@
                 >
               </v-col>
               <v-col md="5" v-if="validated">
-                <v-btn tile color="green" @click="submitCompetition" size="large"><v-icon>mdi-plus-circle</v-icon
+                <v-btn
+                  tile
+                  color="green"
+                  @click="submitCompetition"
+                  size="large"
+                  ><v-icon>mdi-plus-circle</v-icon
                   >{{ $t("create-competition.submit-button") }}</v-btn
                 >
               </v-col>
@@ -915,7 +977,7 @@
           <v-container v-else>
             <h2
               v-bind:class="{
-                'text-white': $store.getTheme,
+                'text-white': store.getTheme,
               }"
             >
               {{ $t("saving") }}...
@@ -929,588 +991,594 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
+import { useMainStore } from "@/store";
+import { nextTick, onMounted, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
+import { useRouter, useRoute } from "vue-router";
+import { usePreviousRoute } from "@/composables/usePreviousRoute";
 import CompetitionService from "../services/CompetitionService";
 import CupService from "../services/CupService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
-import { getRandomColors, validateTime, formatDate } from "../shared";
+import { getRandomColors } from "@/utils/colors";
+import { validateTime, formatDate } from "@/utils/format";
 import constants from "../data/constants";
 import NotificationBar from "../components/NotificationBar.vue";
 import ErrorList from "../components/ErrorList.vue";
 
-export default {
-  name: "CreateComp",
-  components: {
-    ProgressBarQuery,
-    NotificationBar,
-    ErrorList,
-  },
-  data() {
-    return {
-      prevRoute: null,
-      tab: null,
-      errors: [],
-      selected: [],
-      days_options: [1, 2, 3, 4, 5, 6, 7],
-      name: null,
-      locality: null,
-      cups: [],
-      cup: {},
-      cup_participation_points: 5,
-      cup_points_multiplier: 1.0,
-      isTeamCompetition: "Ei",
-      isCupCompetition: "Kyllä",
-      start_date: new Date().toISOString().substring(0, 10),
-      end_date: new Date().toISOString().substring(0, 10),
-      start_time: null,
-      end_time: null,
-      basic_info: null,
-      completed_fish_specs: [],
-      basic_info_validated: false,
-      fish_species_validated: false,
-      fish_specs_validated: false,
-      validated: false,
-      loading: false,
-      max_input: 40,
-      tabs: null,
-      rules: [
-        (value) => !!value || this.$t("rules.no-empty"),
-        (value) =>
-          (value || "").length <= this.max_input || this.$t("rules.max-len"),
-      ],
-      number_rules: [
-        (value) => !!value || this.$t("rules.no-empty"),
-        (value) => !isNaN(value || "") || this.$t("rules.not-number"),
-        (value) => (value || "") >= 0 || this.$t("rules.must-be-positive"),
-      ],
-      placement_points_array: [],
-      temp_placement_points_array: [],
-      activator: null,
-      attach: null,
-      colors: [
-        "green-lighten-2",
-        "purple-lighten-2",
-        "indigo-lighten-2",
-        "cyan-lighten-2",
-        "teal-lighten-2",
-        "orange-lighten-2",
-      ],
-      options: [],
-      options_fi: [
-        {
-          text: "Ahven",
-          color: "blue-lighten-1",
-          id: 0,
-        },
-        {
-          text: "Hauki",
-          color: "red-lighten-1",
-          id: 1,
-        },
-        {
-          text: "Kuha",
-          color: "green-lighten-1",
-          id: 2,
-        },
-        {
-          text: "Lohi",
-          color: "purple-lighten-1",
-          id: 3,
-        },
-        {
-          text: "Taimen",
-          color: "indigo-lighten-1",
-          id: 4,
-        },
-      ],
-      options_en: [
-        {
-          text: "Perch",
-          color: "blue-lighten-1",
-          id: 0,
-        },
-        {
-          text: "Pike",
-          color: "red-lighten-1",
-          id: 1,
-        },
-        {
-          text: "Zander",
-          color: "green-lighten-1",
-          id: 2,
-        },
-        {
-          text: "Salmon",
-          color: "purple-lighten-1",
-          id: 3,
-        },
-        {
-          text: "Trout",
-          color: "indigo-lighten-1",
-          id: 4,
-        },
-      ],
-      editing: null,
-      editingIndex: -1,
-      nonce: 1,
-      menu: false,
-      x: 0,
-      search: null,
-      y: 0,
-      snackbar: false,
-      text: "",
+const store = useMainStore();
+defineOptions({ name: "CreateComp" });
+const { t, locale } = useI18n();
+const router = useRouter();
+const route = useRoute();
 
-      editPoints: false,
-    };
+const prevRoute = usePreviousRoute();
+const tab = ref(null);
+const errors = ref([]);
+const selected = ref([]);
+const days_options = ref([1, 2, 3, 4, 5, 6, 7]);
+const name = ref(null);
+const locality = ref(null);
+const cups = ref([]);
+const cup = ref({});
+const cup_participation_points = ref(5);
+const cup_points_multiplier = ref(1.0);
+const isTeamCompetition = ref("Ei");
+const isCupCompetition = ref("Kyllä");
+const start_date = ref(new Date().toISOString().substring(0, 10));
+const end_date = ref(new Date().toISOString().substring(0, 10));
+const start_time = ref(null);
+const end_time = ref(null);
+const basic_info = ref(null);
+const completed_fish_specs = ref([]);
+const basic_info_validated = ref(false);
+const fish_species_validated = ref(false);
+const fish_specs_validated = ref(false);
+const validated = ref(false);
+const loading = ref(false);
+const max_input = ref(40);
+const tabs = ref(null);
+const rules = ref([
+  (value) => !!value || t("rules.no-empty"),
+  (value) => (value || "").length <= max_input.value || t("rules.max-len"),
+]);
+const number_rules = ref([
+  (value) => !!value || t("rules.no-empty"),
+  (value) => !isNaN(value || "") || t("rules.not-number"),
+  (value) => (value || "") >= 0 || t("rules.must-be-positive"),
+]);
+const placement_points_array = ref([]);
+const temp_placement_points_array = ref([]);
+const activator = ref(null);
+const attach = ref(null);
+const colors = ref([
+  "green-lighten-2",
+  "purple-lighten-2",
+  "indigo-lighten-2",
+  "cyan-lighten-2",
+  "teal-lighten-2",
+  "orange-lighten-2",
+]);
+const options = ref([]);
+const options_fi = ref([
+  {
+    text: "Ahven",
+    color: "blue-lighten-1",
+    id: 0,
   },
-  beforeRouteEnter(to, from, next) {
-    next((vm) => {
-      vm.prevRoute = from;
+  {
+    text: "Hauki",
+    color: "red-lighten-1",
+    id: 1,
+  },
+  {
+    text: "Kuha",
+    color: "green-lighten-1",
+    id: 2,
+  },
+  {
+    text: "Lohi",
+    color: "purple-lighten-1",
+    id: 3,
+  },
+  {
+    text: "Taimen",
+    color: "indigo-lighten-1",
+    id: 4,
+  },
+]);
+const options_en = ref([
+  {
+    text: "Perch",
+    color: "blue-lighten-1",
+    id: 0,
+  },
+  {
+    text: "Pike",
+    color: "red-lighten-1",
+    id: 1,
+  },
+  {
+    text: "Zander",
+    color: "green-lighten-1",
+    id: 2,
+  },
+  {
+    text: "Salmon",
+    color: "purple-lighten-1",
+    id: 3,
+  },
+  {
+    text: "Trout",
+    color: "indigo-lighten-1",
+    id: 4,
+  },
+]);
+const editing = ref(null);
+const editingIndex = ref(-1);
+const nonce = ref(1);
+const menu = ref(false);
+const x = ref(0);
+const search = ref(null);
+const y = ref(0);
+const snackbar = ref(false);
+const text = ref("");
+const editPoints = ref(false);
+const error = ref(null);
+
+watch(locale, (newValue) => {
+  if (newValue) {
+    let _options = options_fi.value;
+    if (newValue === "en") {
+      _options = options_en.value;
+    }
+    _options.forEach((o) => {
+      let option = options.value.find((op) => o.id === op.id);
+      if (!option) {
+        _options.push(option);
+      }
     });
-  },
-  // Runs everytime this page loads
-  mounted() {
-    this.getCups();
-    this.placement_points_array = JSON.parse(
-      JSON.stringify(constants.placement_points)
-    );
-    this.$i18n.locale === "en"
-      ? (this.options = this.options_en)
-      : (this.options = this.options_fi);
-  },
-  watch: {
-    "$i18n.locale"(newValue) {
-      if (newValue) {
-        let options = this.options_fi;
-        if (newValue === "en") {
-          options = this.options_en;
-        }
-        options.forEach((o) => {
-          let option = this.options.find((op) => o.id === op.id);
-          if (!option) {
-            options.push(option);
-          }
-        });
-        this.options = options;
+    options.value = _options;
+  }
+});
+
+watch(selected, (val, prev) => {
+  if (val.length === prev.length) return;
+
+  selected.value = val.map((v, i) => {
+    if (typeof v === "string") {
+      let colorIndex = 0;
+      if (nonce.value >= 1) {
+        colorIndex = nonce.value - 1;
       }
-    },
-    selected(val, prev) {
-      if (val.length === prev.length) return;
 
-      this.selected = val.map((v, i) => {
-        if (typeof v === "string") {
-          let colorIndex = 0;
-          if (this.nonce >= 1) {
-            colorIndex = this.nonce - 1;
-          }
+      v = {
+        text: v,
+        color: colors.value[colorIndex],
+        id: i,
+      };
 
-          v = {
-            text: v,
-            color: this.colors[colorIndex],
-            id: i,
-          };
+      options.value.push(v);
+      nonce.value++;
+    }
 
-          this.options.push(v);
-          this.nonce++;
-        }
+    return v;
+  });
+});
 
-        return v;
+function addPlacement() {
+  const lastItem =
+    placement_points_array.value[placement_points_array.value.length - 1];
+  placement_points_array.value.push({
+    points: lastItem.points > 1 ? lastItem.points - 1 : 1,
+    placement: lastItem.placement + 1,
+  });
+}
+
+function removePlacement(index) {
+  placement_points_array.value.splice(index, 1);
+}
+
+function sortPlacements() {
+  placement_points_array.value.sort((a, b) => b.points - a.points);
+  savePlacements();
+}
+
+function savePlacements() {
+  placement_points_array.value.forEach((p, index) => {
+    p.placement = index + 1;
+  });
+}
+
+function cancelPoints() {
+  editPoints.value = !editPoints.value;
+  placement_points_array.value = JSON.parse(
+    JSON.stringify(temp_placement_points_array.value),
+  );
+}
+
+function confirmPoints() {
+  savePlacements();
+  editPoints.value = !editPoints.value;
+  temp_placement_points_array.value = JSON.parse(
+    JSON.stringify(placement_points_array.value),
+  );
+}
+
+function resetPoints() {
+  placement_points_array.value = JSON.parse(
+    JSON.stringify(constants.placement_points),
+  );
+  editPoints.value = !editPoints.value;
+}
+
+function changeTab(id) {
+  tab.value = id;
+}
+
+function edit(index, item) {
+  if (!editing.value) {
+    editing.value = item;
+    editingIndex.value = index;
+  } else {
+    editing.value = null;
+    editingIndex.value = -1;
+  }
+}
+
+function removeSelected(item) {
+  selected.value = selected.value.filter((s) => s !== item);
+}
+
+async function getCups() {
+  const user = JSON.parse(localStorage.getItem("user"));
+  const user_id = user["_id"];
+  loading.value = true;
+  // Get Cups
+  try {
+    cups.value = await CupService.getCups({
+      user_id: user_id,
+    });
+    if (cups.value.length) {
+      cups.value.sort(function compare(a, b) {
+        return a.name - b.name;
       });
-    },
-  },
-  methods: {
-    formatDate: formatDate,
-    addPlacement() {
-      const lastItem =
-        this.placement_points_array[this.placement_points_array.length - 1];
-      this.placement_points_array.push({
-        points: lastItem.points > 1 ? lastItem.points - 1 : 1,
-        placement: lastItem.placement + 1,
+      cups.value.forEach((_cup) => {
+        _cup.select = `${_cup.name} (${_cup.year})`;
       });
-    },
-    removePlacement(index) {
-      this.placement_points_array.splice(index, 1);
-    },
-    sortPlacements() {
-      this.placement_points_array.sort((a, b) => b.points - a.points);
-      this.savePlacements();
-    },
-    savePlacements() {
-      this.placement_points_array.forEach((p, index) => {
-        p.placement = index + 1;
-      });
-    },
-    cancelPoints() {
-      this.editPoints = !this.editPoints;
-      this.placement_points_array = JSON.parse(
-        JSON.stringify(this.temp_placement_points_array)
-      );
-    },
-    confirmPoints() {
-      this.savePlacements();
-      this.editPoints = !this.editPoints;
-      this.temp_placement_points_array = JSON.parse(
-        JSON.stringify(this.placement_points_array)
-      );
-    },
-    resetPoints() {
-      this.placement_points_array = JSON.parse(
-        JSON.stringify(constants.placement_points)
-      );
-      this.editPoints = !this.editPoints;
-    },
-    changeTab(id) {
-      this.tab = id;
-    },
-    edit(index, item) {
-      if (!this.editing) {
-        this.editing = item;
-        this.editingIndex = index;
+      // If localstorage has cup, select it
+      if (route.query.cup) {
+        cup.value = cups.value.find((_cup) => _cup._id === route.query.cup);
       } else {
-        this.editing = null;
-        this.editingIndex = -1;
+        cup.value = cups.value[cups.value.length - 1];
       }
-    },
-    removeSelected(item) {
-      this.selected = this.selected.filter((s) => s !== item);
-    },
-    async getCups() {
-      const user = JSON.parse(localStorage.getItem("user"));
-      const user_id = user["_id"];
-      this.loading = true;
-      // Get Cups
-      try {
-        this.cups = await CupService.getCups({
-          user_id: user_id,
-        });
-        if (this.cups.length) {
-          this.cups.sort(function compare(a, b) {
-            return a.name - b.name;
-          });
-          this.cups.forEach((cup) => {
-            cup.select = `${cup.name} (${cup.year})`;
-          });
-          // If localstorage has cup, select it
-          if (this.$route.query.cup) {
-            this.cup = this.cups.find(
-              (cup) => cup._id === this.$route.query.cup
-            );
-          } else {
-            this.cup = this.cups[this.cups.length - 1];
-          }
-        }
-      } catch (err) {
-        this.error = err.message;
-      }
-      this.loading = false;
-    },
-    //filter other characters out for number inputs
-    isNumber(evt, isDate) {
-      var charToCheckCode = 46; // --> .
-      var charToCheck = ".";
+    }
+  } catch (err) {
+    error.value = err.message;
+  }
+  loading.value = false;
+}
 
-      if (!isDate) {
-        charToCheckCode = 58; // --> :
-        charToCheck = ":";
-      }
+//filter other characters out for number inputs
 
-      evt = evt ? evt : window.event;
-      var charCode = evt.which ? evt.which : evt.keyCode;
-      if (
-        charCode > 31 &&
-        (charCode < 48 || charCode > 57) &&
-        charCode !== charToCheckCode
-      ) {
+function isNumber(evt, isDate) {
+  var charToCheckCode = 46; // --> .
+  var charToCheck = ".";
+
+  if (!isDate) {
+    charToCheckCode = 58; // --> :
+    charToCheck = ":";
+  }
+
+  evt = evt ? evt : window.event;
+  var charCode = evt.which ? evt.which : evt.keyCode;
+  if (
+    charCode > 31 &&
+    (charCode < 48 || charCode > 57) &&
+    charCode !== charToCheckCode
+  ) {
+    evt.preventDefault();
+  } else {
+    if (charCode == charToCheckCode) {
+      if (evt.target.value.indexOf(charToCheck) >= 0) {
         evt.preventDefault();
       } else {
-        if (charCode == charToCheckCode) {
-          if (evt.target.value.indexOf(charToCheck) >= 0) {
-            evt.preventDefault();
-          } else {
-            return true;
-          }
-        } else {
-          return true;
-        }
+        return true;
       }
-    },
-    // Add error to error array and direct user to it
-    showError(error) {
-      this.errors.push(error);
-      this.$nextTick(() => {
-        document.getElementById("error-list").scrollIntoView();
-      });
-    },
-    // Check competitions basic information (Perustiedot)
-    checkBasicInformation() {
-      this.errors = [];
-      this.basic_info_validated = false;
-      this.validated = false;
+    } else {
+      return true;
+    }
+  }
+}
 
-      var isDateValid = !isNaN(new Date(this.start_date).getTime());
-      var isEndDateValid = !isNaN(new Date(this.end_date).getTime());
+// Add error to error array and direct user to it
 
-      var isStartTimeValid = validateTime(this.start_time);
-      var isEndTimeValid = validateTime(this.end_time);
+function showError(error) {
+  errors.value.push(error);
+  nextTick(() => {
+    document.getElementById("error-list").scrollIntoView();
+  });
+}
 
-      // Check other variables
-      if (!this.name) {
-        this.showError("errors.missing-comp-name");
-      }
+// Check competitions basic information (Perustiedot)
 
-      // Check other variables
-      if (!this.locality) {
-        this.showError("errors.missing-comp-locality");
-      }
+function checkBasicInformation() {
+  errors.value = [];
+  basic_info_validated.value = false;
+  validated.value = false;
 
-      if (!this.cup._id) {
-        this.showError("errors.cup-not-selected");
-      }
-      if (!this.placement_points_array.length) {
-        this.showError("errors.missing-placement-points");
-      }
-      if (!this.cup_participation_points) {
-        this.showError("errors.missing-participation-points");
-      }
-      if (!this.cup_points_multiplier) {
-        this.showError("errors.missing-multiplier");
-      }
-      if (this.cup_points_multiplier < 0.1) {
-        this.showError("errors.invalid-multiplier");
-      }
-      if (!this.start_time || !isStartTimeValid) {
-        !this.start_time == true
-          ? this.showError("errors.missing-start-time")
-          : this.showError("errors.invalid-time");
-      }
-      if (!this.end_time || !isEndTimeValid) {
-        !this.end_time == true
-          ? this.showError("errors.missing-end-time")
-          : this.showError("errors.invalid-time");
-      }
-      if (!this.start_date || !isDateValid) {
-        this.showError("errors.missing-start-date");
-      }
-      if (!this.end_date || !isEndDateValid) {
-        this.showError("errors.missing-end-date");
-      }
+  var isDateValid = !isNaN(new Date(start_date.value).getTime());
+  var isEndDateValid = !isNaN(new Date(end_date.value).getTime());
 
-      // If all inputs validated
-      if (!this.errors.length) {
-        // If dates are valid, check that start_date is before end_date
-        let start_date = new Date(this.start_date);
-        let start_time = this.start_time.split(":").map(Number);
-        start_date.setHours(start_time[0], start_time[1]);
+  var isStartTimeValid = validateTime(start_time.value);
+  var isEndTimeValid = validateTime(end_time.value);
 
-        let end_date = new Date(this.end_date);
-        let end_time = this.end_time.split(":").map(Number);
-        end_date.setHours(end_time[0], end_time[1]);
-        if (end_date < start_date) {
-          this.showError("errors.invalid-times");
-        } else {
-          let temp_placement_points = [];
-          if (this.cup_points_multiplier !== 1) {
-            let temp_placement = 1;
-            this.placement_points_array.forEach((placement_point) => {
-              temp_placement_points.push({
-                placement: temp_placement,
-                points: placement_point.points * this.cup_points_multiplier,
-              });
-              temp_placement++;
-            });
-          } else {
-            temp_placement_points = [...this.placement_points_array];
-          }
+  // Check other variables
+  if (!name.value) {
+    showError("errors.missing-comp-name");
+  }
 
-          this.basic_info = {
-            name: this.name,
-            locality: this.locality,
-            isTeamCompetition: this.isTeamCompetition === "Ei" ? false : true,
-            isCupCompetition: this.isCupCompetition === "Ei" ? false : true,
-            start_date: start_date.toISOString(),
-            end_date: end_date.toISOString(),
-            start_time: this.start_time,
-            end_time: this.end_time,
-          };
-          if (this.isCupCompetition === "Kyllä") {
-            this.basic_info = {
-              ...this.basic_info,
-              cup_id: this.cup._id,
-              cup_name: this.cup.name,
-              cup_participation_points: Number(this.cup_participation_points),
-              cup_placement_points: temp_placement_points,
-              cup_points_multiplier: Number(this.cup_points_multiplier),
-            };
-          }
+  // Check other variables
+  if (!locality.value) {
+    showError("errors.missing-comp-locality");
+  }
 
-          // Enable next tab and open it
-          // Disable current tab's inputs
-          this.disableInputs(true);
-          // Open next tab
-          this.tab = "fishes";
-        }
-      }
-    },
-    // Check chosen fish species (Kilpailun Kalalajit)
-    checkFishSpecies() {
-      this.errors = [];
-      this.fish_species_validated = false;
-      this.validated = false;
+  if (!cup.value._id) {
+    showError("errors.cup-not-selected");
+  }
+  if (!placement_points_array.value.length) {
+    showError("errors.missing-placement-points");
+  }
+  if (!cup_participation_points.value) {
+    showError("errors.missing-participation-points");
+  }
+  if (!cup_points_multiplier.value) {
+    showError("errors.missing-multiplier");
+  }
+  if (cup_points_multiplier.value < 0.1) {
+    showError("errors.invalid-multiplier");
+  }
+  if (!start_time.value || !isStartTimeValid) {
+    !start_time.value == true
+      ? showError("errors.missing-start-time")
+      : showError("errors.invalid-time");
+  }
+  if (!end_time.value || !isEndTimeValid) {
+    !end_time.value == true
+      ? showError("errors.missing-end-time")
+      : showError("errors.invalid-time");
+  }
+  if (!start_date.value || !isDateValid) {
+    showError("errors.missing-start-date");
+  }
+  if (!end_date.value || !isEndDateValid) {
+    showError("errors.missing-end-date");
+  }
 
-      // If there are at least one fish chosen from v-select
-      if (this.selected.length) {
-        //TODO better solution for long names, change to vuetify combobox(https://vuetifyjs.com/en/components/combobox/) or vuetify select(https://vuetifyjs.com/en/components/selects/)
-        this.selected.forEach((fish) => {
-          if (fish.text.length > 40) {
-            fish.text = fish.text.slice(0, 40);
-          }
+  // If all inputs validated
+  if (!errors.value.length) {
+    // If dates are valid, check that start_date is before end_date
+    let _start_date = new Date(start_date.value);
+    let _start_time = start_time.value.split(":").map(Number);
+    _start_date.setHours(_start_time[0], _start_time[1]);
+
+    let _end_date = new Date(end_date.value);
+    let _end_time = end_time.value.split(":").map(Number);
+    _end_date.setHours(_end_time[0], _end_time[1]);
+    if (_end_date < _start_date) {
+      showError("errors.invalid-times");
+    } else {
+      let temp_placement_points = [];
+      if (cup_points_multiplier.value !== 1) {
+        let temp_placement = 1;
+        placement_points_array.value.forEach((placement_point) => {
+          temp_placement_points.push({
+            placement: temp_placement,
+            points: placement_point.points * cup_points_multiplier.value,
+          });
+          temp_placement++;
         });
-        // Enable next tab
-        // Disable current tab's inputs
-        this.disableInputs(true);
-        // Open next tab
-        this.tab = "points";
       } else {
-        this.fish_species_validated = false;
-        this.showError("errors.missing-fishes");
+        temp_placement_points = [...placement_points_array.value];
       }
-    },
 
-    // Validate fish specifications from "Pistekertoimet ja alamitat" tab
-    checkFishSpecs() {
-      this.completed_fish_specs = [];
-      let colors = getRandomColors(this.selected.length);
-      this.errors = [];
-      // Create fish objects
-      for (let i = 1; i < this.selected.length + 1; i++) {
-        // Fish object
-        let fish_spec = {
-          id: i - 1,
-          name: document
-            .getElementById(`fish_${i}_name`)
-            .innerHTML.replace(`${i}. `, ""),
-          multiplier: Number(
-            document.getElementById(`fish_${i}_multiplier`).value
-          ),
-          minsize: document.getElementById(`fish_${i}_minsize`).value,
-          weights: 0,
-          color: colors[i - 1],
+      basic_info.value = {
+        name: name.value,
+        locality: locality.value,
+        isTeamCompetition: isTeamCompetition.value === "Ei" ? false : true,
+        isCupCompetition: isCupCompetition.value === "Ei" ? false : true,
+        start_date: _start_date.toISOString(),
+        end_date: _end_date.toISOString(),
+        start_time: start_time.value,
+        end_time: end_time.value,
+      };
+      if (isCupCompetition.value === "Kyllä") {
+        basic_info.value = {
+          ...basic_info.value,
+          cup_id: cup.value._id,
+          cup_name: cup.value.name,
+          cup_participation_points: Number(cup_participation_points.value),
+          cup_placement_points: temp_placement_points,
+          cup_points_multiplier: Number(cup_points_multiplier.value),
         };
-
-        // If there are some missing inputs
-        if (
-          !fish_spec.multiplier ||
-          !fish_spec.minsize ||
-          parseInt(fish_spec.multiplier) < 1 ||
-          parseInt(fish_spec.minsize) < 0
-        ) {
-          this.showError(
-            `${this.$t("input-fish-genetive")} '${fish_spec.name} ${this.$t(
-              "all-correct-info"
-            )}! (${this.$t("multiplier")} > 0, ${this.$t("min-size")} >= 0 )`
-          );
-        } else {
-          // If all the inputs are validated, push the validated fish to an array
-          this.completed_fish_specs.push(fish_spec);
-        }
       }
 
-      // If there aren't any errors AND
-      // If there is as much validated fishes as selected fishes AND
-      // If there are at least one validated fish
-      if (
-        !this.errors.length &&
-        this.completed_fish_specs.length == this.selected.length &&
-        this.completed_fish_specs.length > 0
-      ) {
-        // Every fish is validated
-        this.fish_specs_validated = true;
+      // Enable next tab and open it
+      // Disable current tab's inputs
+      disableInputs(true);
+      // Open next tab
+      tab.value = "fishes";
+    }
+  }
+}
 
-        // If "Perustiedot", "Kalalajit", "Pistekertoimet ja alamitat" are validated
-        if (
-          this.basic_info_validated &&
-          this.fish_species_validated &&
-          this.fish_specs_validated
-        ) {
-          // Enable summary tab
-          // Disable current tab's inputs
-          this.disableInputs(true);
-          // Open next tab
-          this.tab = "summary";
-        } else {
-          // there is some info that is not validated,
-          // notify user what is wrong
-          this.validated = false;
+// Check chosen fish species (Kilpailun Kalalajit)
 
-          if (!this.basic_info_validated)
-            this.showError("errors.check-basic-info");
-          if (!this.fish_species_validated)
-            this.showError("errors.check-fish-info");
-          if (!this.fish_specs_validated)
-            this.showError("errors.check-multiplier");
-        }
-      } else {
-        this.showError("errors.missing-some-info");
+function checkFishSpecies() {
+  errors.value = [];
+  fish_species_validated.value = false;
+  validated.value = false;
+
+  // If there are at least one fish chosen from v-select
+  if (selected.value.length) {
+    //TODO better solution for long names, change to vuetify combobox(https://vuetifyjs.com/en/components/combobox/) or vuetify select(https://vuetifyjs.com/en/components/selects/)
+    selected.value.forEach((fish) => {
+      if (fish.text.length > 40) {
+        fish.text = fish.text.slice(0, 40);
       }
-    },
-    disableInputs(disable) {
-      if (this.tab === "basic-info") {
-        if (disable) {
-          this.basic_info_validated = true;
-        } else {
-          this.basic_info_validated = false;
-          this.validated = false;
-        }
-      }
-      if (this.tab === "fishes") {
-        if (disable) {
-          this.fish_species_validated = true;
-        } else {
-          this.fish_species_validated = false;
-          this.validated = false;
-        }
-      }
-      if (this.tab === "points") {
-        if (disable) {
-          this.fish_specs_validated = true;
-          this.validated = true;
-        } else {
-          this.fish_specs_validated = false;
-          this.validated = false;
-        }
-      }
-    },
+    });
+    // Enable next tab
+    // Disable current tab's inputs
+    disableInputs(true);
+    // Open next tab
+    tab.value = "points";
+  } else {
+    fish_species_validated.value = false;
+    showError("errors.missing-fishes");
+  }
+}
 
-    // Submit competition to database
-    async submitCompetition() {
-      // TODO server side input validation
-      if (this.validated) {
-        this.loading = true;
+// Validate fish specifications from "Pistekertoimet ja alamitat" tab
 
-        // Get user id from localstorage
-        const user = JSON.parse(localStorage.getItem("user"));
-        const user_id = user["_id"];
+function checkFishSpecs() {
+  completed_fish_specs.value = [];
+  let colors = getRandomColors(selected.value.length);
+  errors.value = [];
+  // Create fish objects
+  for (let i = 1; i < selected.value.length + 1; i++) {
+    // Fish object
+    let fish_spec = {
+      id: i - 1,
+      name: document
+        .getElementById(`fish_${i}_name`)
+        .innerHTML.replace(`${i}. `, ""),
+      multiplier: Number(document.getElementById(`fish_${i}_multiplier`).value),
+      minsize: document.getElementById(`fish_${i}_minsize`).value,
+      weights: 0,
+      color: colors[i - 1],
+    };
 
-        // Whole competition object
-        const competition = {
-          user_id: user_id,
-          ...this.basic_info,
-          fishes: this.completed_fish_specs,
-          state: "signing",
-        };
+    // If there are some missing inputs
+    if (
+      !fish_spec.multiplier ||
+      !fish_spec.minsize ||
+      parseInt(fish_spec.multiplier) < 1 ||
+      parseInt(fish_spec.minsize) < 0
+    ) {
+      showError(
+        `${t("input-fish-genetive")} '${fish_spec.name} ${t(
+          "all-correct-info",
+        )}! (${t("multiplier")} > 0, ${t("min-size")} >= 0 )`,
+      );
+    } else {
+      // If all the inputs are validated, push the validated fish to an array
+      completed_fish_specs.value.push(fish_spec);
+    }
+  }
 
-        try {
-          //Submit competition to database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
-          await CompetitionService.insertCompetitions([competition]);
-          this.text = "notification.updated";
-          this.snackbar = true;
-          this.$router.push({ path: "/dashboard" });
-        } catch (err) {
-          this.errors.push(err.message);
-        }
-      }
-    },
-  },
-};
+  // If there aren't any errors AND
+  // If there is as much validated fishes as selected fishes AND
+  // If there are at least one validated fish
+  if (
+    !errors.value.length &&
+    completed_fish_specs.value.length == selected.value.length &&
+    completed_fish_specs.value.length > 0
+  ) {
+    // Every fish is validated
+    fish_specs_validated.value = true;
+
+    // If "Perustiedot", "Kalalajit", "Pistekertoimet ja alamitat" are validated
+    if (
+      basic_info_validated.value &&
+      fish_species_validated.value &&
+      fish_specs_validated.value
+    ) {
+      // Enable summary tab
+      // Disable current tab's inputs
+      disableInputs(true);
+      // Open next tab
+      tab.value = "summary";
+    } else {
+      // there is some info that is not validated,
+      // notify user what is wrong
+      validated.value = false;
+
+      if (!basic_info_validated.value) showError("errors.check-basic-info");
+      if (!fish_species_validated.value) showError("errors.check-fish-info");
+      if (!fish_specs_validated.value) showError("errors.check-multiplier");
+    }
+  } else {
+    showError("errors.missing-some-info");
+  }
+}
+
+function disableInputs(disable) {
+  if (tab.value === "basic-info") {
+    if (disable) {
+      basic_info_validated.value = true;
+    } else {
+      basic_info_validated.value = false;
+      validated.value = false;
+    }
+  }
+  if (tab.value === "fishes") {
+    if (disable) {
+      fish_species_validated.value = true;
+    } else {
+      fish_species_validated.value = false;
+      validated.value = false;
+    }
+  }
+  if (tab.value === "points") {
+    if (disable) {
+      fish_specs_validated.value = true;
+      validated.value = true;
+    } else {
+      fish_specs_validated.value = false;
+      validated.value = false;
+    }
+  }
+}
+
+// Submit competition to database
+
+async function submitCompetition() {
+  // TODO server side input validation
+  if (validated.value) {
+    loading.value = true;
+
+    // Get user id from localstorage
+    const user = JSON.parse(localStorage.getItem("user"));
+    const user_id = user["_id"];
+
+    // Whole competition object
+    const competition = {
+      user_id: user_id,
+      ...basic_info.value,
+      fishes: completed_fish_specs.value,
+      state: "signing",
+    };
+
+    try {
+      //Submit competition to database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
+      await CompetitionService.insertCompetitions([competition]);
+      text.value = "notification.updated";
+      snackbar.value = true;
+      router.push({ path: "/dashboard" });
+    } catch (err) {
+      errors.value.push(err.message);
+    }
+  }
+}
+
+onMounted(() => {
+  getCups();
+  placement_points_array.value = JSON.parse(
+    JSON.stringify(constants.placement_points),
+  );
+  locale.value === "en"
+    ? (options.value = options_en.value)
+    : (options.value = options_fi.value);
+});
 </script>
 <style></style>

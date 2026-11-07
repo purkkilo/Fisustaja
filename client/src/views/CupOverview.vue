@@ -9,11 +9,7 @@
         wide: $vuetify.display.width >= 1200,
       }"
     >
-      <v-card
-        style="background: transparent"
-        elevation="3"
-        variant="outlined"
-      >
+      <v-card style="background: transparent" elevation="3" variant="outlined">
         <v-dialog v-model="dialog" width="500">
           <v-card>
             <v-card-title> Pdf {{ $t("settings") }} </v-card-title>
@@ -46,10 +42,12 @@
           <v-col v-if="!loading && cup">
             <h1>{{ cup.name }}, {{ cup.year }}</h1>
           </v-col>
-          <v-col v-else><h1>{{ $t("downloading") }}..</h1></v-col
+          <v-col v-else
+            ><h1>{{ $t("downloading") }}..</h1></v-col
           >
         </v-row>
-        <v-tabs slider-color="blue-darken-4"
+        <v-tabs
+          slider-color="blue-darken-4"
           v-model="tab"
           bg-color="blue-lighten-2"
           color="blue-darken-4"
@@ -80,7 +78,7 @@
                 <p
                   class="flow-text"
                   v-bind:class="{
-                    'text-white': $store.getTheme,
+                    'text-white': store.getTheme,
                   }"
                 >
                   {{ $t("errors.no-cup-selected") }}
@@ -131,8 +129,8 @@
                     variant="outlined"
                   >
                     <template v-slot:item="{ item, props }">
-                <v-list-item v-bind="props" :title="$t(item)" />
-              </template>
+                      <v-list-item v-bind="props" :title="$t(item)" />
+                    </template>
                     <template v-slot:selection="{ item }">
                       <span>{{ $t(item) }}</span>
                     </template></v-select
@@ -159,7 +157,7 @@
                     <p
                       class="flow-text"
                       v-bind:class="{
-                        'text-white': $store.getTheme,
+                        'text-white': store.getTheme,
                       }"
                     >
                       {{ $t(selected) }}
@@ -175,7 +173,7 @@
                   </v-card-title>
                   <v-data-table
                     id="normal-table"
-                    :headers="$tableHeaders(selected_headers)"
+                    :headers="tableHeaders(selected_headers)"
                     :items="selected_items"
                     :search="search_comp"
                     :loading="loading || updating"
@@ -203,7 +201,7 @@
                             "
                             @click="endCompetition(item)"
                             :disabled="updating"
-                            :variant="$store.getTheme ? 'outlined' : 'flat'"
+                            :variant="store.getTheme ? 'outlined' : 'flat'"
                             >{{
                               item.isFinished ? $t("yes") : $t("no")
                             }}</v-chip
@@ -222,7 +220,7 @@
                             "
                             @click="publishCompetition(item)"
                             :disabled="updating"
-                            :variant="$store.getTheme ? 'outlined' : 'flat'"
+                            :variant="store.getTheme ? 'outlined' : 'flat'"
                             >{{
                               item.isPublic ? $t("public") : $t("private")
                             }}</v-chip
@@ -234,7 +232,7 @@
                     <template v-slot:[`item.cup_points_multiplier`]="{ item }">
                       <v-chip
                         :color="getMultiplierColor(item.cup_points_multiplier)"
-                        :variant="$store.getTheme ? 'outlined' : 'flat'"
+                        :variant="store.getTheme ? 'outlined' : 'flat'"
                         >{{ item.cup_points_multiplier }}x</v-chip
                       >
                     </template>
@@ -246,7 +244,8 @@
                             v-bind="props"
                             :disabled="updating"
                             @click="pickCompetition(item)"
-                            ><v-icon color="black">mdi-arrow-right-bold-box-outline</v-icon
+                            ><v-icon color="black"
+                              >mdi-arrow-right-bold-box-outline</v-icon
                             ></v-btn
                           >
                         </template>
@@ -274,9 +273,7 @@
                         <v-card>
                           <v-card-title>
                             <span class="text-headline-small"
-                              >{{ $t("modify") }} ({{
-                                $t("boat-number-short")
-                              }}
+                              >{{ $t("modify") }} ({{ $t("boat-number-short") }}
                               {{ item.boat_number }}) {{ $t("cup.normal") }}
                               {{ $t("information") }}</span
                             >
@@ -357,7 +354,7 @@
                                   new_captain_name,
                                   new_temp_captain_name,
                                   new_locality,
-                                  false
+                                  false,
                                 )
                               "
                               variant="outlined"
@@ -373,7 +370,7 @@
                                   new_captain_name,
                                   new_temp_captain_name,
                                   new_locality,
-                                  true
+                                  true,
                                 )
                               "
                               variant="outlined"
@@ -553,7 +550,14 @@
     </v-container>
   </div>
 </template>
-<script>
+<script setup>
+import { tableHeaders } from "@/utils/tableHeaders";
+import { onMounted, ref } from "vue";
+import { useMainStore } from "@/store";
+import { useI18n } from "vue-i18n";
+import { useRouter } from "vue-router";
+import { alert, confirm } from "@/plugins/alerts";
+import { usePreviousRoute } from "@/composables/usePreviousRoute";
 import CupService from "../services/CupService";
 import CompetitionService from "../services/CompetitionService";
 import ResultService from "../services/ResultService";
@@ -563,798 +567,797 @@ import CupStats from "../components/CupStats.vue";
 import {
   capitalize_words,
   sortBy,
-  getMultiplierColor,
   formatDateToLocaleDateString,
-  saveCupAsPDF,
   isNumber,
-} from "../shared";
+} from "@/utils/format";
+import { getMultiplierColor } from "@/utils/colors";
+import { saveCupAsPDF } from "@/pdf";
 import NotificationBar from "../components/NotificationBar.vue";
 
-export default {
-  name: "CupOverview",
-  components: {
-    ProgressBarQuery: () => import("../components/layout/ProgressBarQuery.vue"),
-    CupPoints,
-    CupStats,
-    NotificationBar,
-  },
-  data() {
-    return {
-      prevRoute: null,
-      dialog: false,
-      createSigneeDialog: false,
-      signeeError: "",
-      signeeNumber: 1,
-      number_rules: [
-        (value) => !isNaN(value || "") || "Ei ole numero!",
-        (value) => (value || "") >= 0 || "Numeron pitää olla positiivinen!",
-      ],
-      signeeCaptain: "",
-      signeeTempCaptain: "",
-      signeeLocality: "",
-      isLandscape: false,
-      dialog_clock: false,
-      dialog_signee: {},
-      cup: null,
-      allCompetitions: [],
-      competitions: [],
-      signees: [],
-      all_signees: [],
-      headers: [],
-      select_table: ["comp.plural", "signees-signed"],
-      selected: "comp.plural",
-      selected_headers: [],
-      selected_items: [],
-      cup_fishes_competition: [],
-      cup_fishes_total: [],
-      cup_signees: [],
-      biggest_fishes: [],
-      biggest_amounts: [],
-      total_fishes_chart_data: null,
-      competition_fishes_chart_data: null,
-      cup_signees_chart_data: null,
-      cup_biggest_fishes_chart_data: null,
-      cup_biggest_amounts_chart_data: null,
-      headers_comp: [
-        { text: "date", value: "start_date" },
-        { text: "name", value: "name" },
-        { text: "ended", value: "isFinished" },
-        { text: "publicity", value: "isPublic" },
-        { text: "multiplier", value: "cup_points_multiplier" },
-        { text: "choose", value: "choose", sortable: false },
-      ],
-      headers_signees: [
-        { text: "boat-number", value: "boat_number" },
-        { text: "captain-name", value: "captain_name" },
-        { text: "temp-captain-name", value: "temp_captain_name" },
-        { text: "locality-team", value: "locality" },
-        { text: "edit", value: "modify", sortable: false },
-        { text: "delete", value: "delete", sortable: false },
-      ],
+defineOptions({ name: "CupOverview" });
+const store = useMainStore();
+const { t } = useI18n();
+const router = useRouter();
 
-      results: [],
-      loading: false,
-      publishing: false,
-      updating: false,
-      selectNumbers: [],
-      tab: null,
-      search_comp: "",
-      competition: null,
-      error: null,
-      errors: [],
-      new_locality: null,
-      new_captain_name: null,
-      new_temp_captain_name: null,
-      isSimpleMode: true,
-      snackbar: false,
-      text: "",
+const prevRoute = usePreviousRoute();
+const dialog = ref(false);
+const createSigneeDialog = ref(false);
+const signeeError = ref("");
+const signeeNumber = ref(1);
+const number_rules = ref([
+  (value) => !isNaN(value || "") || "Ei ole numero!",
+  (value) => (value || "") >= 0 || "Numeron pitää olla positiivinen!",
+]);
+const signeeCaptain = ref("");
+const signeeTempCaptain = ref("");
+const signeeLocality = ref("");
+const isLandscape = ref(false);
+const dialog_clock = ref(false);
+const dialog_signee = ref({});
+const cup = ref(null);
+const allCompetitions = ref([]);
+const competitions = ref([]);
+const signees = ref([]);
+const all_signees = ref([]);
+const headers = ref([]);
+const select_table = ref(["comp.plural", "signees-signed"]);
+const selected = ref("comp.plural");
+const selected_headers = ref([]);
+const selected_items = ref([]);
+const cup_fishes_competition = ref([]);
+const cup_fishes_total = ref([]);
+const cup_signees = ref([]);
+const biggest_fishes = ref([]);
+const biggest_amounts = ref([]);
+const total_fishes_chart_data = ref(null);
+const competition_fishes_chart_data = ref(null);
+const cup_signees_chart_data = ref(null);
+const cup_biggest_fishes_chart_data = ref(null);
+const cup_biggest_amounts_chart_data = ref(null);
+const headers_comp = ref([
+  { text: "date", value: "start_date" },
+  { text: "name", value: "name" },
+  { text: "ended", value: "isFinished" },
+  { text: "publicity", value: "isPublic" },
+  { text: "multiplier", value: "cup_points_multiplier" },
+  { text: "choose", value: "choose", sortable: false },
+]);
+const headers_signees = ref([
+  { text: "boat-number", value: "boat_number" },
+  { text: "captain-name", value: "captain_name" },
+  { text: "temp-captain-name", value: "temp_captain_name" },
+  { text: "locality-team", value: "locality" },
+  { text: "edit", value: "modify", sortable: false },
+  { text: "delete", value: "delete", sortable: false },
+]);
+const results = ref([]);
+const loading = ref(false);
+const publishing = ref(false);
+const updating = ref(false);
+const selectNumbers = ref([]);
+const tab = ref(null);
+const search_comp = ref("");
+const competition = ref(null);
+const error = ref(null);
+const errors = ref([]);
+const new_locality = ref(null);
+const new_captain_name = ref(null);
+const new_temp_captain_name = ref(null);
+const isSimpleMode = ref(true);
+const snackbar = ref(false);
+const text = ref("");
+const isResults = ref(false);
+const showInfoInPdf = ref(false);
+const showUnfinishedCompetitions = ref(false);
+const selectedCompetitions = ref(null);
+const newCupName = ref(null);
+const newCupYear = ref(null);
+const notFinishedCount = ref(null);
 
-      isResults: false,
-      showInfoInPdf: false,
-      showUnfinishedCompetitions: false,
-    };
-  },
-  beforeRouteEnter(to, from, next) {
-    next((vm) => {
-      vm.prevRoute = from;
-    });
-  },
-  mounted() {
-    this.competition = localStorage.getItem("competition");
-    // IF competition on localstorage
-    if (localStorage.getItem("cup") != null) {
-      // update from database
-      this.refreshCup(localStorage.getItem("cup"));
-      this.$store.cup = this.cup;
-    } else {
-      console.log("No cup in localstorage!");
-    }
-  },
-  methods: {
-    formatDateToLocaleDateString: formatDateToLocaleDateString,
-    getMultiplierColor: getMultiplierColor,
-    isNumber: isNumber,
-    async updateCupValues() {
-      this.publishing = true;
-      if (!this.newCupName || !this.newCupYear) {
-        this.text = "errors.missing-cup-name-or-year";
-        this.snackbar = true;
-        this.publishing = false;
-      } else if (
-        this.newCupName === this.cup.name &&
-        this.newCupYear === this.cup.year
-      ) {
-        this.text = "errors.no-changes-made";
-        this.snackbar = true;
-        this.publishing = false;
-      } else {
-        try {
-          // Update cup name and year to database
-          const newValues = {
-            $set: {
-              name: this.newCupName,
-              year: this.newCupYear,
-            },
-          };
-          await CupService.updateValues(this.cup._id, newValues);
-          this.$store.cup.name = this.cup.name = this.newCupName;
-          this.$store.cup.year = this.cup.year = this.newCupYear;
-          this.text = "notification.updated";
-          this.snackbar = true;
-        } catch (err) {
-          console.error(err.message);
-          this.text = "errors.in-saving";
-          this.snackbar = true;
-        }
-        this.publishing = false;
-      }
-    },
-    async publishCup(isPublic) {
-      this.cup.isPublic = !isPublic;
-
-      try {
-        //TODO update only this one variable (competition.normal_points) to database, not the whole competition
-        this.$store.cup = this.cup;
-        this.publishing = true;
-        const newValues = {
-          $set: { isPublic: this.cup.isPublic },
-        };
-        await CupService.updateValues(this.cup._id, newValues);
-      } catch (err) {
-        console.error(err.message);
-      }
-      this.publishing = false;
-    },
-    async publishCompetition(competition) {
-      competition.isPublic = !competition.isPublic;
-      const newvalues = {
-        $set: { isPublic: competition.isPublic },
-      };
-      this.updateToDatabase(competition, newvalues);
-    },
-    async endCompetition(competition) {
-      competition.isFinished = !competition.isFinished;
-      competition.isFinished
-        ? (competition.state = "ended")
-        : (competition.state = "not-finished");
-      const newvalues = {
+async function updateCupValues() {
+  publishing.value = true;
+  if (!newCupName.value || !newCupYear.value) {
+    text.value = "errors.missing-cup-name-or-year";
+    snackbar.value = true;
+    publishing.value = false;
+  } else if (
+    newCupName.value === cup.value.name &&
+    newCupYear.value === cup.value.year
+  ) {
+    text.value = "errors.no-changes-made";
+    snackbar.value = true;
+    publishing.value = false;
+  } else {
+    try {
+      // Update cup name and year to database
+      const newValues = {
         $set: {
-          isFinished: competition.isFinished,
-          state: competition.state,
+          name: newCupName.value,
+          year: newCupYear.value,
         },
       };
-      this.updateToDatabase(competition, newvalues);
+      await CupService.updateValues(cup.value._id, newValues);
+      store.cup.name = cup.value.name = newCupName.value;
+      store.cup.year = cup.value.year = newCupYear.value;
+      text.value = "notification.updated";
+      snackbar.value = true;
+    } catch (err) {
+      console.error(err.message);
+      text.value = "errors.in-saving";
+      snackbar.value = true;
+    }
+    publishing.value = false;
+  }
+}
+
+async function publishCup(isPublic) {
+  cup.value.isPublic = !isPublic;
+
+  try {
+    //TODO update only this one variable (competition.normal_points) to database, not the whole competition
+    store.cup = cup.value;
+    publishing.value = true;
+    const newValues = {
+      $set: { isPublic: cup.value.isPublic },
+    };
+    await CupService.updateValues(cup.value._id, newValues);
+  } catch (err) {
+    console.error(err.message);
+  }
+  publishing.value = false;
+}
+
+async function publishCompetition(competition) {
+  competition.isPublic = !competition.isPublic;
+  const newvalues = {
+    $set: { isPublic: competition.isPublic },
+  };
+  updateToDatabase(competition, newvalues);
+}
+
+async function endCompetition(competition) {
+  competition.isFinished = !competition.isFinished;
+  competition.isFinished
+    ? (competition.state = "ended")
+    : (competition.state = "not-finished");
+  const newvalues = {
+    $set: {
+      isFinished: competition.isFinished,
+      state: competition.state,
     },
-    async updateToDatabase(competition, newvalues) {
-      try {
-        this.updating = true;
-        await CompetitionService.updateValues(competition._id, newvalues);
-      } catch (err) {
-        console.error(err.message);
-      }
-      this.updating = false;
-    },
-    changePage(path) {
-      this.$router.push({
-        path: path,
-        query: { cup: localStorage.getItem("cup") },
+  };
+  updateToDatabase(competition, newvalues);
+}
+
+async function updateToDatabase(competition, newvalues) {
+  try {
+    updating.value = true;
+    await CompetitionService.updateValues(competition._id, newvalues);
+  } catch (err) {
+    console.error(err.message);
+  }
+  updating.value = false;
+}
+
+function changePage(path) {
+  router.push({
+    path: path,
+    query: { cup: localStorage.getItem("cup") },
+  });
+}
+
+function selectTableData() {
+  if (selected.value === "comp.plural") {
+    selected_items.value = allCompetitions.value;
+    selected_headers.value = headers_comp.value;
+  } else {
+    selected_items.value = signees.value;
+    selected_headers.value = headers_signees.value;
+  }
+}
+
+async function deleteSignee(item, confirmed) {
+  if (confirmed) {
+    let signeeIndex = signees.value.findIndex(
+      (o) => o.boat_number === item.boat_number,
+    );
+    signees.value.splice(signeeIndex, 1);
+    await updateSignees(signees.value);
+  } else {
+    confirm(t("confirm-dialog"), t("button.delete-signee"), "question")
+      .then((r) => {
+        if (r) {
+          deleteSignee(item, r);
+        }
+      })
+      .catch((error) => {
+        if (error) {
+          console.error(error);
+        }
       });
-    },
-    selectTableData() {
-      if (this.selected === "comp.plural") {
-        this.selected_items = this.allCompetitions;
-        this.selected_headers = this.headers_comp;
-      } else {
-        this.selected_items = this.signees;
-        this.selected_headers = this.headers_signees;
-      }
-    },
-    async deleteSignee(item, confirmed) {
-      if (confirmed) {
-        let signeeIndex = this.signees.findIndex(
-          (o) => o.boat_number === item.boat_number
-        );
-        this.signees.splice(signeeIndex, 1);
-        await this.updateSignees(this.signees);
-      } else {
-        this.$confirm(
-          this.$t("confirm-dialog"),
-          this.$t("button.delete-signee"),
-          "question"
-        )
-          .then((r) => {
-            if (r) {
-              this.deleteSignee(item, r);
-            }
-          })
-          .catch((error) => {
-            if (error) {
-              console.error(error);
-            }
-          });
-      }
-    },
-    async addSignee() {
-      if (this.signeeNumber < 1 || this.signeeNumber === null) {
-        this.signeeError = "errors.missing-number";
-      } else if (
-        this.signeeCaptain.trim() === "" ||
-        this.signeeCaptain === null
+  }
+}
+
+async function addSignee() {
+  if (signeeNumber.value < 1 || signeeNumber.value === null) {
+    signeeError.value = "errors.missing-number";
+  } else if (
+    signeeCaptain.value.trim() === "" ||
+    signeeCaptain.value === null
+  ) {
+    signeeError.value = "errors.missing-captain!";
+  } else {
+    const numberInSignees = cup.value.signees.find(
+      (s) => s.boat_number === signeeNumber.value,
+    );
+    if (numberInSignees) {
+      signeeError.value = "errors.number-used";
+    } else {
+      signees.value.push({
+        boat_number: signeeNumber.value,
+        captain_name: signeeCaptain.value,
+        dialog: false,
+        locality: signeeLocality.value || "-",
+        starting_place: "-",
+        temp_captain_name: signeeTempCaptain.value || "-",
+      });
+      await updateSignees(signees.value).finally(() => {
+        createSigneeDialog.value = false;
+        signeeNumber.value = signeeNumber.value + 1;
+        signeeCaptain.value =
+          signeeTempCaptain.value =
+          signeeLocality.value =
+            "";
+      });
+    }
+  }
+}
+
+async function updateSignees(signees) {
+  store.cup = cup.value;
+  publishing.value = true;
+  const new_signees = [...signees];
+  // No need to have this variable in database
+  new_signees.forEach((signee) => {
+    delete signee.dialog;
+  });
+  const newvalues = {
+    $set: { signees: new_signees },
+  };
+  await CupService.updateValues(cup.value._id, newvalues)
+    .then(() => {
+      text.value = "notification.updated";
+      snackbar.value = true;
+    })
+    .catch((err) => {
+      text.value = "errors.in-saving";
+      snackbar.value = true;
+      console.log(err);
+    });
+  publishing.value = false;
+}
+
+// Function to modify signees' captain, temp_captain or locality
+
+async function modifySignee(
+  signee,
+  new_captain_name,
+  new_temp_captain_name,
+  new_locality,
+  modify,
+) {
+  errors.value = [];
+  // If user has pressed "Tallenna" button
+  if (modify) {
+    // First check that all the inputs are correctly filled
+    if (!new_captain_name) {
+      errors.value.push("errors.missing-captain");
+    } else {
+      signee.captain_name = capitalize_words(signee.captain_name);
+    }
+
+    if (!new_temp_captain_name) {
+      new_temp_captain_name = signee.temp_captain_name = "-";
+    } else {
+      signee.temp_captain_name = capitalize_words(signee.temp_captain_name);
+    }
+    if (!new_locality) {
+      errors.value.push("errors.missing-locality");
+    } else {
+      signee.locality = capitalize_words(signee.locality);
+    }
+    // No errors left
+    if (!errors.value.length) {
+      // Check if anything has been modified, if there is something modified -> update to database
+      if (
+        signee.captain_name !== new_captain_name ||
+        signee.temp_captain_name !== new_temp_captain_name ||
+        signee.locality !== new_locality
       ) {
-        this.signeeError = "errors.missing-captain!";
+        signee.captain_name = new_captain_name;
+        signee.temp_captain_name = new_temp_captain_name;
+        signee.locality = new_locality;
+        await updateSignees(signees.value).finally(() => {
+          // Update names to "points" table
+          calculateAll(competitions.value, selectedCompetitions.value);
+          dialog_signee.value[signee.boat_number] = false;
+        });
       } else {
-        const numberInSignees = this.cup.signees.find(
-          (s) => s.boat_number === this.signeeNumber
-        );
-        if (numberInSignees) {
-          this.signeeError = "errors.number-used";
-        } else {
-          this.signees.push({
-            boat_number: this.signeeNumber,
-            captain_name: this.signeeCaptain,
-            dialog: false,
-            locality: this.signeeLocality || "-",
-            starting_place: "-",
-            temp_captain_name: this.signeeTempCaptain || "-",
-          });
-          await this.updateSignees(this.signees).finally(() => {
-            this.createSigneeDialog = false;
-            this.signeeNumber = this.signeeNumber + 1;
-            this.signeeCaptain =
-              this.signeeTempCaptain =
-              this.signeeLocality =
-                "";
-          });
-        }
+        dialog_signee.value[signee.boat_number] = false;
       }
-    },
-    async updateSignees(signees) {
-      this.$store.cup = this.cup;
-      this.publishing = true;
-      const new_signees = [...signees];
-      // No need to have this variable in database
-      new_signees.forEach((signee) => {
-        delete signee.dialog;
-      });
-      const newvalues = {
-        $set: { signees: new_signees },
-      };
-      await CupService.updateValues(this.cup._id, newvalues)
-        .then(() => {
-          this.text = "notification.updated";
-          this.snackbar = true;
-        })
-        .catch((err) => {
-          this.text = "errors.in-saving";
-          this.snackbar = true;
-          console.log(err);
-        });
-      this.publishing = false;
-    },
-    // Function to modify signees' captain, temp_captain or locality
-    async modifySignee(
-      signee,
-      new_captain_name,
-      new_temp_captain_name,
-      new_locality,
-      modify
-    ) {
-      this.errors = [];
-      // If user has pressed "Tallenna" button
-      if (modify) {
-        // First check that all the inputs are correctly filled
-        if (!new_captain_name) {
-          this.errors.push("errors.missing-captain");
-        } else {
-          signee.captain_name = capitalize_words(signee.captain_name);
-        }
+    }
+  }
+  // If user has pressed "Peruuta" button
+  else {
+    // Do nothing
+    dialog_signee.value[signee.boat_number] = false;
+  }
+}
 
-        if (!new_temp_captain_name) {
-          new_temp_captain_name = signee.temp_captain_name = "-";
-        } else {
-          signee.temp_captain_name = capitalize_words(signee.temp_captain_name);
-        }
-        if (!new_locality) {
-          this.errors.push("errors.missing-locality");
-        } else {
-          signee.locality = capitalize_words(signee.locality);
-        }
-        // No errors left
-        if (!this.errors.length) {
-          // Check if anything has been modified, if there is something modified -> update to database
-          if (
-            signee.captain_name !== new_captain_name ||
-            signee.temp_captain_name !== new_temp_captain_name ||
-            signee.locality !== new_locality
-          ) {
-            signee.captain_name = new_captain_name;
-            signee.temp_captain_name = new_temp_captain_name;
-            signee.locality = new_locality;
-            await this.updateSignees(this.signees).finally(() => {
-              // Update names to "points" table
-              this.calculateAll(this.competitions, this.selectedCompetitions);
-              this.dialog_signee[signee.boat_number] = false;
-            });
-          } else {
-            this.dialog_signee[signee.boat_number] = false;
-          }
-        }
-      }
-      // If user has pressed "Peruuta" button
-      else {
-        // Do nothing
-        this.dialog_signee[signee.boat_number] = false;
-      }
-    },
-    setCompetitionData(cup) {
-      this.selectNumbers = [];
-      // Convert dates
-      this.allCompetitions.forEach((competition, i) => {
-        competition.start_date = new Date(competition.start_date);
-        competition.end_date = new Date(competition.end_date);
-        // Index for competition
-        competition.key_name = i + 1;
-      });
-      this.allCompetitions.sort((a, b) => {
-        return b.start_date < a.start_date;
-      });
-      this.signees = this.cup.signees.sort(sortBy("boat_number", true));
-      this.signees.forEach((signee) => {
-        signee.dialog = false;
-      });
+function setCompetitionData(_cup) {
+  selectNumbers.value = [];
+  // Convert dates
+  allCompetitions.value.forEach((competition, i) => {
+    competition.start_date = new Date(competition.start_date);
+    competition.end_date = new Date(competition.end_date);
+    // Index for competition
+    competition.key_name = i + 1;
+  });
+  allCompetitions.value.sort((a, b) => {
+    return b.start_date < a.start_date;
+  });
+  signees.value = cup.value.signees.sort(sortBy("boat_number", true));
+  signees.value.forEach((signee) => {
+    signee.dialog = false;
+  });
 
-      this.competitions = [...this.allCompetitions];
-      if (!this.showUnfinishedCompetitions) {
-        this.competitions = this.competitions.filter((comp) => comp.isFinished);
-      }
+  competitions.value = [...allCompetitions.value];
+  if (!showUnfinishedCompetitions.value) {
+    competitions.value = competitions.value.filter((comp) => comp.isFinished);
+  }
 
-      this.competitions.forEach((_, i) => {
-        this.selectNumbers.push(i + 1);
-      });
+  competitions.value.forEach((_, i) => {
+    selectNumbers.value.push(i + 1);
+  });
 
-      if (cup.meaningful_competitions > 0)
-        this.selectedCompetitions = cup.meaningful_competitions;
-      else this.selectedCompetitions = this.competitions.length;
+  if (_cup.meaningful_competitions > 0)
+    selectedCompetitions.value = _cup.meaningful_competitions;
+  else selectedCompetitions.value = competitions.value.length;
 
-      this.calculateAll(this.competitions, this.selectedCompetitions);
-    },
-    // "Normaalikilpailu" results
-    calculateNormalResults(competition, signees) {
-      const placement_points = competition.cup_placement_points;
-      let cup_placement_points = placement_points[0];
-      const cup_participation_points = competition.cup_participation_points;
-      let last_points = 0;
-      let last_placement = 1;
+  calculateAll(competitions.value, selectedCompetitions.value);
+}
 
-      let placement = 1;
-      let cup_points_total = 0;
-      let normal_points = [];
-      let normal_weights = [];
-      signees = signees.filter((signee) => signee.returned == true);
-      signees = signees.sort(function compare(a, b) {
-        return parseInt(b.total_points) - parseInt(a.total_points);
-      });
-      // For every signee, calculate their cup points and placing
-      //TODO rework the structure, seems more complex than it should be
-      // Placements and points now saved in every competition to cup_placement_points_array, based on placement fetch from there?
-      signees.forEach((signee, index) => {
-        // If competitor has same points as last competitor
-        if (signee.total_points === last_points) {
-          placement = last_placement;
-        }
-        // If no tie, add tied_competitors to placement, to give correct placement to next not tied competitor
-        else {
-          placement = index + 1;
-        }
+// "Normaalikilpailu" results
 
-        // Find the placement points according to the placement
-        let p = placement_points.find((e) => e.placement === placement);
-        // If placement isn't found (placement > than provided placements), or points = 0 (no points from competition)
-        if (!p || signee.total_points === 0) {
-          cup_placement_points = 0;
-        } else {
-          cup_placement_points = p.points * competition.cup_points_multiplier;
-        }
-        // Calculate total cup points, cup points multiplier only scales the placement points
-        cup_points_total = cup_placement_points + cup_participation_points;
-        //For showing cup points, "Pisteet" on v-select
-        normal_points.push({
-          placement: placement,
-          boat_number: signee.boat_number,
-          captain_name: signee.captain_name,
-          temp_captain_name: signee.temp_captain_name,
-          locality: signee.locality,
-          total_points: signee.total_points,
-          cup_placement_points: cup_placement_points,
-          cup_participation_points: cup_participation_points,
-          cup_points_total: cup_points_total,
-        });
-        //For showing fish weights, "Kalat" on v-select
-        signee.placement = placement;
-        // For the data-table
-        signee.fishes.forEach((f) => {
-          signee[f.id] = f.weights;
-        });
-        normal_weights.push(signee);
+function calculateNormalResults(competition, signees) {
+  const placement_points = competition.cup_placement_points;
+  let cup_placement_points = placement_points[0];
+  const cup_participation_points = competition.cup_participation_points;
+  let last_points = 0;
+  let last_placement = 1;
 
-        last_placement = placement;
-        last_points = signee.total_points;
-      });
+  let placement = 1;
+  let cup_points_total = 0;
+  let normal_points = [];
+  let normal_weights = [];
+  signees = signees.filter((signee) => signee.returned == true);
+  signees = signees.sort(function compare(a, b) {
+    return parseInt(b.total_points) - parseInt(a.total_points);
+  });
+  // For every signee, calculate their cup points and placing
+  //TODO rework the structure, seems more complex than it should be
+  // Placements and points now saved in every competition to cup_placement_points_array, based on placement fetch from there?
+  signees.forEach((signee, index) => {
+    // If competitor has same points as last competitor
+    if (signee.total_points === last_points) {
+      placement = last_placement;
+    }
+    // If no tie, add tied_competitors to placement, to give correct placement to next not tied competitor
+    else {
+      placement = index + 1;
+    }
 
-      return { normal_points, normal_weights };
-    },
+    // Find the placement points according to the placement
+    let p = placement_points.find((e) => e.placement === placement);
+    // If placement isn't found (placement > than provided placements), or points = 0 (no points from competition)
+    if (!p || signee.total_points === 0) {
+      cup_placement_points = 0;
+    } else {
+      cup_placement_points = p.points * competition.cup_points_multiplier;
+    }
+    // Calculate total cup points, cup points multiplier only scales the placement points
+    cup_points_total = cup_placement_points + cup_participation_points;
+    //For showing cup points, "Pisteet" on v-select
+    normal_points.push({
+      placement: placement,
+      boat_number: signee.boat_number,
+      captain_name: signee.captain_name,
+      temp_captain_name: signee.temp_captain_name,
+      locality: signee.locality,
+      total_points: signee.total_points,
+      cup_placement_points: cup_placement_points,
+      cup_participation_points: cup_participation_points,
+      cup_points_total: cup_points_total,
+    });
+    //For showing fish weights, "Kalat" on v-select
+    signee.placement = placement;
+    // For the data-table
+    signee.fishes.forEach((f) => {
+      signee[f.id] = f.weights;
+    });
+    normal_weights.push(signee);
 
-    async refreshCup(cup_id) {
-      this.loading = true;
+    last_placement = placement;
+    last_points = signee.total_points;
+  });
+
+  return { normal_points, normal_weights };
+}
+
+async function refreshCup(cup_id) {
+  loading.value = true;
+  try {
+    //Get competition from database (check 'client\src\CupService.js' and 'server\routes\api\cups.js' to see how this works)
+    let _cup = await CupService.getCups({
+      _id: cup_id,
+    });
+    // IF competition found from database
+    if (_cup) {
+      // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
+      //TODO make a test for this?
+      cup.value = _cup;
+      newCupName.value = cup.value.name;
+      newCupYear.value = cup.value.year;
+      // Update to vuex, Assing variables from vuex (see client/store/index.js)
+      store.refreshCup(cup.value);
       try {
-        //Get competition from database (check 'client\src\CupService.js' and 'server\routes\api\cups.js' to see how this works)
-        let cup = await CupService.getCups({
-          _id: cup_id,
+        allCompetitions.value = await CompetitionService.getCompetitions({
+          cup_id: cup_id,
         });
-        // IF competition found from database
-        if (cup) {
-          // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
-          //TODO make a test for this?
-          this.cup = cup;
-          this.newCupName = this.cup.name;
-          this.newCupYear = this.cup.year;
-          // Update to vuex, Assing variables from vuex (see client/store/index.js)
-          this.$store.refreshCup(this.cup);
-          try {
-            this.allCompetitions = await CompetitionService.getCompetitions({
-              cup_id: cup_id,
-            });
 
-            this.biggest_fishes = await FishService.getFishes({
-              cup_id: cup_id,
-            });
-            this.biggest_fishes = this.biggest_fishes.sort(
-              (a, b) => b.weight - a.weight
-            );
-
-            await ResultService.getResults({ cup_id: cup_id })
-              .then((r) => {
-                r.forEach((s) => {
-                  if (s.fishes.length) {
-                    s.fishes.forEach((f) => {
-                      let comp = this.allCompetitions.find(
-                        (c) => c._id === s.competition_id
-                      );
-                      let fish = comp.fishes.find((cf) => cf.id === f.id);
-
-                      this.biggest_amounts.push({
-                        id: fish.id,
-                        competition_id: comp._id,
-                        competition_name: comp.name,
-                        boat_number: s.boat_number,
-                        captain_name: s.captain_name,
-                        name: fish.name,
-                        weight: f.weights,
-                      });
-                    });
-                  }
-                });
-
-                this.all_signees = r;
-                this.biggest_amounts = this.biggest_amounts.sort(
-                  (a, b) => b.weight - a.weight
-                );
-              })
-              .catch((e) => {
-                console.log(e);
-              })
-              .finally(() => {
-                this.setCompetitionData(this.cup);
-                this.selectTableData();
-                this.text = "notification.info-up-to-date";
-                this.snackbar = true;
-              });
-          } catch (error) {
-            console.error(error);
-          }
-        }
-      } catch (err) {
-        console.log(err.message);
-      }
-      this.loading = false;
-    },
-    pickCompetition(competition) {
-      // Pick competition for the app to use
-      //NOTE Store competition to vuex, redundant?
-      this.$store.competition = competition;
-      // Set competition._id to localstorage for database queries
-      localStorage.setItem(
-        "competition",
-        JSON.stringify({
-          _id: competition._id,
-          start_date: competition.start_date,
-          end_date: competition.end_date,
-        })
-      );
-      // redirect to /overview
-      this.$router.push({ path: "/overview" });
-    },
-    // Calculate all the cup points, and limit the number of races taken into account
-    // If limit = 4, 4 races with highest points will be calculated, other races will have 5 points where the signee has participated
-    async calculateAll(competitions, limit) {
-      let all_results = [];
-      this.isResults = false;
-      competitions.forEach((competition) => {
-        let signees = this.all_signees.filter(
-          (s) => s.competition_id === competition._id
+        biggest_fishes.value = await FishService.getFishes({
+          cup_id: cup_id,
+        });
+        biggest_fishes.value = biggest_fishes.value.sort(
+          (a, b) => b.weight - a.weight,
         );
 
-        competition.total_weights = 0;
-        signees.forEach((s) => {
-          s.total_points = 0;
-          if (s.fishes.length) {
-            s.fishes.forEach((f) => {
-              let fish = competition.fishes.find((cf) => cf.id === f.id);
-              s.total_points += f.weights * fish.multiplier;
-              competition.total_weights += f.weights;
-              fish.weights += f.weights;
-            });
-          } else {
-            // Fix for pdf
-            competition.fishes.forEach((cf) => {
-              s.fishes.push({ id: cf.id, name: cf.name, weights: "-" });
-            });
-          }
-        });
-        competition.normal_points = this.calculateNormalResults(
-          competition,
-          signees
-        ).normal_points;
-        // Dynamic headers, because competition names change
-        //If there are any results in the competition
-        if (competition.normal_points.length) {
-          //Loop through each competition's results
-          competition.normal_points.forEach((signee) => {
-            // Get each signee's results from array that has all the results
-            let index = all_results.findIndex((item) => {
-              return (
-                parseInt(signee.boat_number) === parseInt(item.boat_number)
-              );
-            });
+        await ResultService.getResults({ cup_id: cup_id })
+          .then((r) => {
+            r.forEach((s) => {
+              if (s.fishes.length) {
+                s.fishes.forEach((f) => {
+                  let comp = allCompetitions.value.find(
+                    (c) => c._id === s.competition_id,
+                  );
+                  let fish = comp.fishes.find((cf) => cf.id === f.id);
 
-            //If the signee is found there
-            if (index > -1) {
-              // Get the signee, and add competitions results to array, under the competition.name key
-              let found_signee = all_results[index];
-              found_signee.cup_results[competition.key_name] = {
-                competition: competition._id,
-                key_name: competition.key_name,
-                points: signee.cup_points_total,
-                placement: signee.placement,
-              };
-              // For tracking total points
-              all_results.splice(index, 1, found_signee);
-            }
-            // Not any points on cup_results yet
-            else {
-              // Get the data that is stored in the cup's signees array
-              let cup_signee = this.signees.find(
-                (element) => element.boat_number === signee.boat_number
-              );
-              if (cup_signee) {
-                // Add original names from the first instance
-                signee.captain_name = cup_signee.captain_name;
-                signee.temp_captain_name = cup_signee.temp_captain_name;
-                signee.locality = cup_signee.locality;
-              } else {
-                // TODO: Figure out a better way to notify
-                console.log(
-                  `(${signee.boat_number}) - ${signee.captain_name} wasn't found on results!`
-                );
-                alert(
-                  `(${signee.boat_number}) - ${signee.captain_name} wasn't found on results!`
-                );
+                  biggest_amounts.value.push({
+                    id: fish.id,
+                    competition_id: comp._id,
+                    competition_name: comp.name,
+                    boat_number: s.boat_number,
+                    captain_name: s.captain_name,
+                    name: fish.name,
+                    weight: f.weights,
+                  });
+                });
               }
-              // Initialize variables and add first points
-              signee.cup_results = [];
-              // Array for comparing points with limit
-              signee.cup_results[competition.key_name] = {
-                competition: competition._id,
-                key_name: competition.key_name,
-                points: signee.cup_points_total,
-                placement: signee.placement,
-              };
-              all_results.push(signee);
-            }
-          });
-        }
+            });
 
-        all_results.length ? (this.isResults = true) : (this.isResults = false);
-
-        if (all_results.length) {
-          // limits the amount of competitions are taken into account in the cup
-          all_results = this.limitCompetitions(all_results, limit);
-          // Sort the array based on total cup points
-          all_results = all_results.sort(function compare(a, b) {
-            return (
-              parseInt(b.cup_results["total"]) -
-              parseInt(a.cup_results["total"])
+            all_signees.value = r;
+            biggest_amounts.value = biggest_amounts.value.sort(
+              (a, b) => b.weight - a.weight,
             );
+          })
+          .catch((e) => {
+            console.log(e);
+          })
+          .finally(() => {
+            setCompetitionData(cup.value);
+            selectTableData();
+            text.value = "notification.info-up-to-date";
+            snackbar.value = true;
           });
-          this.changeHeaders("locality");
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  } catch (err) {
+    console.log(err.message);
+  }
+  loading.value = false;
+}
 
-          let final_placement = 1;
-          let last_points = -1;
-          let last_placement = -1;
+function pickCompetition(competition) {
+  // Pick competition for the app to use
+  //NOTE Store competition to vuex, redundant?
+  store.competition = competition;
+  // Set competition._id to localstorage for database queries
+  localStorage.setItem(
+    "competition",
+    JSON.stringify({
+      _id: competition._id,
+      start_date: competition.start_date,
+      end_date: competition.end_date,
+    }),
+  );
+  // redirect to /overview
+  router.push({ path: "/overview" });
+}
 
-          all_results.forEach((signee) => {
-            if (last_points === signee.cup_results["total"]) {
-              signee.final_placement = last_placement;
-            } else {
-              signee.final_placement = final_placement;
-              last_points = signee.cup_results["total"];
-              last_placement = signee.final_placement;
-            }
-            signee.final_cup_points = signee.cup_results["total"];
-            final_placement++;
-          });
-          this.results = all_results;
+// Calculate all the cup points, and limit the number of races taken into account
+// If limit = 4, 4 races with highest points will be calculated, other races will have 5 points where the signee has participated
+
+async function calculateAll(competitions, limit) {
+  let all_results = [];
+  isResults.value = false;
+  competitions.forEach((competition) => {
+    let _signees = all_signees.value.filter(
+      (s) => s.competition_id === competition._id,
+    );
+
+    competition.total_weights = 0;
+    _signees.forEach((s) => {
+      s.total_points = 0;
+      if (s.fishes.length) {
+        s.fishes.forEach((f) => {
+          let fish = competition.fishes.find((cf) => cf.id === f.id);
+          s.total_points += f.weights * fish.multiplier;
+          competition.total_weights += f.weights;
+          fish.weights += f.weights;
+        });
+      } else {
+        // Fix for pdf
+        competition.fishes.forEach((cf) => {
+          s.fishes.push({ id: cf.id, name: cf.name, weights: "-" });
+        });
+      }
+    });
+    competition.normal_points = calculateNormalResults(
+      competition,
+      _signees,
+    ).normal_points;
+    // Dynamic headers, because competition names change
+    //If there are any results in the competition
+    if (competition.normal_points.length) {
+      //Loop through each competition's results
+      competition.normal_points.forEach((signee) => {
+        // Get each signee's results from array that has all the results
+        let index = all_results.findIndex((item) => {
+          return parseInt(signee.boat_number) === parseInt(item.boat_number);
+        });
+
+        //If the signee is found there
+        if (index > -1) {
+          // Get the signee, and add competitions results to array, under the competition.name key
+          let found_signee = all_results[index];
+          found_signee.cup_results[competition.key_name] = {
+            competition: competition._id,
+            key_name: competition.key_name,
+            points: signee.cup_points_total,
+            placement: signee.placement,
+          };
+          // For tracking total points
+          all_results.splice(index, 1, found_signee);
         }
-      });
-    },
-    changeHeaders(headerSelection) {
-      this.headers = [
-        {
-          text: "placement",
-          highlight: false,
-          align: "center",
-          translate: true,
-          value: "final_placement",
-          isFinished: true,
-        },
-        {
-          text: "boat-number",
-          align: "center",
-          translate: true,
-          highlight: false,
-          value: "boat_number",
-          isFinished: true,
-        },
-        {
-          text: "captain-name",
-          align: "center",
-          translate: true,
-          highlight: false,
-          value: "captain_name",
-          isFinished: true,
-        },
-        {
-          text: "locality",
-          align: "center",
-          translate: true,
-          highlight: false,
-          value: "locality",
-          isFinished: true,
-        },
-      ];
-
-      this.notFinishedCount = 0;
-      this.competitions.forEach((competition) => {
-        // Keep track if there are unfinished competitions
-        if (!competition.isFinished) {
-          this.notFinishedCount++;
-        }
-        // Dynamic headers, because competition names change
-        if (headerSelection === "locality") {
-          // Check if there are competitions with same locality, if so, add identifier
-          let found_headers = this.headers.filter((header) => {
-            return competition.locality === header.text;
-          });
-          if (found_headers.length) {
-            let new_header_text = `${competition.locality} #${
-              found_headers.length + 1
-            }`;
-            this.headers.push({
-              text: new_header_text,
-              align: "center",
-              highlight: true,
-              translate: false,
-              isFinished: competition.isFinished,
-              value: `cup_results[${competition.key_name}].points`,
-            });
+        // Not any points on cup_results yet
+        else {
+          // Get the data that is stored in the cup's signees array
+          let cup_signee = signees.value.find(
+            (element) => element.boat_number === signee.boat_number,
+          );
+          if (cup_signee) {
+            // Add original names from the first instance
+            signee.captain_name = cup_signee.captain_name;
+            signee.temp_captain_name = cup_signee.temp_captain_name;
+            signee.locality = cup_signee.locality;
           } else {
-            this.headers.push({
-              text: competition.locality,
-              translate: false,
-              align: "center",
-              highlight: true,
-              isFinished: competition.isFinished,
-              value: `cup_results[${competition.key_name}].points`,
-            });
+            // TODO: Figure out a better way to notify
+            console.log(
+              `(${signee.boat_number}) - ${signee.captain_name} wasn't found on results!`,
+            );
+            alert(
+              `(${signee.boat_number}) - ${signee.captain_name} wasn't found on results!`,
+            );
           }
+          // Initialize variables and add first points
+          signee.cup_results = [];
+          // Array for comparing points with limit
+          signee.cup_results[competition.key_name] = {
+            competition: competition._id,
+            key_name: competition.key_name,
+            points: signee.cup_points_total,
+            placement: signee.placement,
+          };
+          all_results.push(signee);
+        }
+      });
+    }
+
+    all_results.length ? (isResults.value = true) : (isResults.value = false);
+
+    if (all_results.length) {
+      // limits the amount of competitions are taken into account in the cup
+      all_results = limitCompetitions(all_results, limit);
+      // Sort the array based on total cup points
+      all_results = all_results.sort(function compare(a, b) {
+        return (
+          parseInt(b.cup_results["total"]) - parseInt(a.cup_results["total"])
+        );
+      });
+      changeHeaders("locality");
+
+      let final_placement = 1;
+      let last_points = -1;
+      let last_placement = -1;
+
+      all_results.forEach((signee) => {
+        if (last_points === signee.cup_results["total"]) {
+          signee.final_placement = last_placement;
         } else {
-          this.headers.push({
-            text: competition.name,
-            translate: false,
-            align: "center",
-            highlight: true,
-            isFinished: competition.isFinished,
-            value: `cup_results[${competition.key_name}].points`,
-          });
+          signee.final_placement = final_placement;
+          last_points = signee.cup_results["total"];
+          last_placement = signee.final_placement;
         }
+        signee.final_cup_points = signee.cup_results["total"];
+        final_placement++;
       });
-      this.headers.push({
-        text: "total-big",
+      results.value = all_results;
+    }
+  });
+}
+
+function changeHeaders(headerSelection) {
+  headers.value = [
+    {
+      text: "placement",
+      highlight: false,
+      align: "center",
+      translate: true,
+      value: "final_placement",
+      isFinished: true,
+    },
+    {
+      text: "boat-number",
+      align: "center",
+      translate: true,
+      highlight: false,
+      value: "boat_number",
+      isFinished: true,
+    },
+    {
+      text: "captain-name",
+      align: "center",
+      translate: true,
+      highlight: false,
+      value: "captain_name",
+      isFinished: true,
+    },
+    {
+      text: "locality",
+      align: "center",
+      translate: true,
+      highlight: false,
+      value: "locality",
+      isFinished: true,
+    },
+  ];
+
+  notFinishedCount.value = 0;
+  competitions.value.forEach((competition) => {
+    // Keep track if there are unfinished competitions
+    if (!competition.isFinished) {
+      notFinishedCount.value++;
+    }
+    // Dynamic headers, because competition names change
+    if (headerSelection === "locality") {
+      // Check if there are competitions with same locality, if so, add identifier
+      let found_headers = headers.value.filter((header) => {
+        return competition.locality === header.text;
+      });
+      if (found_headers.length) {
+        let new_header_text = `${competition.locality} #${
+          found_headers.length + 1
+        }`;
+        headers.value.push({
+          text: new_header_text,
+          align: "center",
+          highlight: true,
+          translate: false,
+          isFinished: competition.isFinished,
+          value: `cup_results[${competition.key_name}].points`,
+        });
+      } else {
+        headers.value.push({
+          text: competition.locality,
+          translate: false,
+          align: "center",
+          highlight: true,
+          isFinished: competition.isFinished,
+          value: `cup_results[${competition.key_name}].points`,
+        });
+      }
+    } else {
+      headers.value.push({
+        text: competition.name,
+        translate: false,
         align: "center",
-        translate: true,
-        highlight: false,
-        value: "final_cup_points",
-        isFinished: true,
+        highlight: true,
+        isFinished: competition.isFinished,
+        value: `cup_results[${competition.key_name}].points`,
       });
-    },
-    limitCompetitions(results, limit) {
-      results.forEach((signee) => {
-        // If there are more or equal amount of competitions than the limit, limit remaining competitions after the limit
-        if (this.competitions.length >= limit) {
-          // Initialize total points to 0
-          signee.cup_results["total"] = 0;
-          // sort the array that points are compared to
-          let temp = [...signee.cup_results];
-          temp.sort(function compare(a, b) {
-            return parseInt(b.points) - parseInt(a.points);
-          });
+    }
+  });
+  headers.value.push({
+    text: "total-big",
+    align: "center",
+    translate: true,
+    highlight: false,
+    value: "final_cup_points",
+    isFinished: true,
+  });
+}
 
-          // Add all the limited points to total points
-          temp.forEach((element, index) => {
-            if (element) {
-              if (index + 1 <= limit) {
-                signee.cup_results["total"] += element.points;
-              } else {
-                const comp = this.competitions.find(
-                  (c) => element.competition === c._id
-                );
-                signee.cup_results[element.key_name].points =
-                  comp.cup_participation_points;
-                signee.cup_results["total"] += comp.cup_participation_points;
-              }
-            }
-          });
+function limitCompetitions(results, limit) {
+  results.forEach((signee) => {
+    // If there are more or equal amount of competitions than the limit, limit remaining competitions after the limit
+    if (competitions.value.length >= limit) {
+      // Initialize total points to 0
+      signee.cup_results["total"] = 0;
+      // sort the array that points are compared to
+      let temp = [...signee.cup_results];
+      temp.sort(function compare(a, b) {
+        return parseInt(b.points) - parseInt(a.points);
+      });
+
+      // Add all the limited points to total points
+      temp.forEach((element, index) => {
+        if (element) {
+          if (index + 1 <= limit) {
+            signee.cup_results["total"] += element.points;
+          } else {
+            const comp = competitions.value.find(
+              (c) => element.competition === c._id,
+            );
+            signee.cup_results[element.key_name].points =
+              comp.cup_participation_points;
+            signee.cup_results["total"] += comp.cup_participation_points;
+          }
         }
       });
+    }
+  });
 
-      // Return sorted results
-      return results;
-    },
-    pdfWrapper(table_title) {
-      saveCupAsPDF(
-        table_title,
-        this.isLandscape,
-        this.cup,
-        this.competitions,
-        this.showUnfinishedCompetitions,
-        this.showInfoInPdf,
-        this.selectedCompetitions,
-        this.headers,
-        this.results,
-        this.signees
-      );
-      this.dialog = false;
-    },
-  },
-};
+  // Return sorted results
+  return results;
+}
+
+function pdfWrapper(table_title) {
+  saveCupAsPDF(
+    table_title,
+    isLandscape.value,
+    cup.value,
+    competitions.value,
+    showUnfinishedCompetitions.value,
+    showInfoInPdf.value,
+    selectedCompetitions.value,
+    headers.value,
+    results.value,
+    signees.value,
+  );
+  dialog.value = false;
+}
+
+onMounted(() => {
+  competition.value = localStorage.getItem("competition");
+  // IF competition on localstorage
+  if (localStorage.getItem("cup") != null) {
+    // update from database
+    refreshCup(localStorage.getItem("cup"));
+    store.cup = cup.value;
+  } else {
+    console.log("No cup in localstorage!");
+  }
+});
 </script>

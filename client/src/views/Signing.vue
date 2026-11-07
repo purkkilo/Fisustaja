@@ -12,11 +12,7 @@
       }"
     >
       <error-list :errors="errors"></error-list>
-      <v-card
-        style="background: transparent"
-        elevation="3"
-        variant="outlined"
-      >
+      <v-card style="background: transparent" elevation="3" variant="outlined">
         <v-row>
           <v-col cols="12" sm="12" md="12">
             <v-row class="justify-center">
@@ -29,7 +25,8 @@
       </v-card>
 
       <!-- Tabs -->
-      <v-tabs slider-color="blue-darken-4"
+      <v-tabs
+        slider-color="blue-darken-4"
         v-model="tab"
         bg-color="blue-lighten-2"
         color="blue-darken-4"
@@ -47,8 +44,8 @@
         <!-- Signing tab -->
         <v-window-item
           v-bind:class="{
-            inputarea: !$store.getTheme,
-            'inputarea-dark': $store.getTheme,
+            inputarea: !store.getTheme,
+            'inputarea-dark': store.getTheme,
           }"
           :value="'signing'"
         >
@@ -65,7 +62,7 @@
                 <v-col offset-md="4" md="4">
                   <p
                     class="flow-text"
-                    v-bind:class="{ 'text-white': $store.getTheme }"
+                    v-bind:class="{ 'text-white': store.getTheme }"
                   >
                     {{ $t("signees") }} {{ $t("total") }}:
                     <b>{{ signees.length }}</b>
@@ -105,7 +102,12 @@
                       style="margin-top: 20px"
                       v-if="cup"
                     >
-                      <v-btn block color="blue" @click="searchFromCup" size="large"><v-icon>find_replace</v-icon
+                      <v-btn
+                        block
+                        color="blue"
+                        @click="searchFromCup"
+                        size="large"
+                        ><v-icon>find_replace</v-icon
                         >{{ $t("button.search-cup") }}</v-btn
                       >
                     </v-col>
@@ -115,7 +117,12 @@
                       :offset-md="cup ? 2 : 4"
                       style="margin-top: 20px"
                     >
-                      <v-btn block color="indigo" @click="searchSelected" size="large"><v-icon>mdi-magnify</v-icon
+                      <v-btn
+                        block
+                        color="indigo"
+                        @click="searchSelected"
+                        size="large"
+                        ><v-icon>mdi-magnify</v-icon
                         >{{ $t("button.search-signees") }}</v-btn
                       >
                     </v-col>
@@ -198,7 +205,7 @@
                         <p
                           class="flow-text"
                           v-bind:class="{
-                            'text-white': $store.getTheme,
+                            'text-white': store.getTheme,
                           }"
                         >
                           {{ $t("saving") }}...
@@ -259,7 +266,7 @@
                         class="flow-text"
                         v-if="refreshing"
                         v-bind:class="{
-                          'text-white': $store.getTheme,
+                          'text-white': store.getTheme,
                         }"
                       >
                         {{ $t("updating") }}...
@@ -288,7 +295,7 @@
           <v-row v-else>
             <!-- Show progressbar if loading -->
             <v-col>
-              <h2 v-bind:class="{ 'text-white': $store.getTheme }">
+              <h2 v-bind:class="{ 'text-white': store.getTheme }">
                 {{ $t("fetching") }}...
               </h2>
               <ProgressBarQuery />
@@ -297,8 +304,8 @@
         </v-window-item>
         <v-window-item
           v-bind:class="{
-            inputarea: !$store.getTheme,
-            'inputarea-dark': $store.getTheme,
+            inputarea: !store.getTheme,
+            'inputarea-dark': store.getTheme,
           }"
           :value="'signees'"
         >
@@ -330,7 +337,7 @@
                     </v-card-title>
                     <v-data-table
                       @click:row="rowClick"
-                      :headers="$tableHeaders(headers)"
+                      :headers="tableHeaders(headers)"
                       :items="signees"
                       :search="search"
                     >
@@ -355,587 +362,597 @@
     <notification-bar :snackbar="snackbar" :text="text"></notification-bar>
   </div>
 </template>
-<script>
+<script setup>
+import { tableHeaders } from "@/utils/tableHeaders";
+import { nextTick, onMounted, ref } from "vue";
+import { useMainStore } from "@/store";
+import { alert, confirm } from "@/plugins/alerts";
 import CompetitionService from "../services/CompetitionService";
 import ResultService from "../services/ResultService.js";
 import CupService from "../services/CupService";
 import Timedate from "../components/layout/Timedate.vue";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
-import { capitalize_words, isNumber } from "../shared";
+import { capitalize_words, isNumber } from "@/utils/format";
 import NotificationBar from "../components/NotificationBar.vue";
 import ErrorList from "../components/ErrorList.vue";
 
-export default {
-  name: "Signing",
-  components: {
-    Timedate,
-    ProgressBarQuery,
-    NotificationBar,
-    ErrorList,
-  },
-  data() {
-    return {
-      dialog: false,
-      errors: [],
-      tab: null,
-      boat_number: null,
-      starting_place: null,
-      captain_name: null,
-      temp_captain_name: null,
-      locality: null,
-      team: null,
-      selected_id: null,
-      selected_row: null,
-      new_signee: null,
-      notification: null,
-      loading: false,
-      refreshing: false,
-      loading_site: false,
-      competition_id: null,
-      signees: [],
-      headers: [
-        { text: "boat-number", value: "boat_number" },
-        { text: "captain-name", value: "captain_name" },
-        { text: "temp-captain-name", value: "temp_captain_name" },
-        { text: "locality-team", value: "locality" },
-      ],
-      search: "",
-      cup: null,
-      teams: [],
-      maxlength: 40,
-      isTeamCompetition: false,
-      number_rules: [
-        (value) => !isNaN(value || "") || "Ei ole numero!",
-        (value) => (value || "") >= 0 || "Numeron pitää olla positiivinen!",
-      ],
-      timer_refresh: null,
-      interval: 60000,
-      snackbar: false,
-      text: "",
+defineOptions({ name: "Signing" });
+const store = useMainStore();
 
-      found: false,
-    };
-  },
-  mounted() {
-    if (localStorage.getItem("competition") != null) {
-      const competition = JSON.parse(localStorage.getItem("competition"));
-      this.competition_id = competition["_id"];
-      this.loading_site = true;
-      this.refreshCompetition(this.competition_id);
-    }
-  },
-  methods: {
-    isNumber: isNumber,
-    // Select row from table, if selected --> unselect
-    // selected_id bound to selected css class (on App.vue)
-    // Vuetify 3+: (event, { item, internalItem, index })
-    rowClick(event, row) {
-      const item = row.item;
-      this.selected_id = item._id;
-      this.selected_row = row;
-      this.searchSelected();
-    },
-    // Fetch competition from database, and update variables
-    async refreshCompetition(competition_id) {
-      this.refreshing = true;
-      try {
-        //Get competition from database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
-        let competition = await CompetitionService.getCompetitions({
-          _id: competition_id,
+const dialog = ref(false);
+const errors = ref([]);
+const tab = ref(null);
+const boat_number = ref(null);
+const starting_place = ref(null);
+const captain_name = ref(null);
+const temp_captain_name = ref(null);
+const locality = ref(null);
+const team = ref(null);
+const selected_id = ref(null);
+const selected_row = ref(null);
+const new_signee = ref(null);
+const notification = ref(null);
+const loading = ref(false);
+const refreshing = ref(false);
+const loading_site = ref(false);
+const competition_id = ref(null);
+const signees = ref([]);
+const headers = ref([
+  { text: "boat-number", value: "boat_number" },
+  { text: "captain-name", value: "captain_name" },
+  { text: "temp-captain-name", value: "temp_captain_name" },
+  { text: "locality-team", value: "locality" },
+]);
+const search = ref("");
+const cup = ref(null);
+const teams = ref([]);
+const maxlength = ref(40);
+const isTeamCompetition = ref(false);
+const number_rules = ref([
+  (value) => !isNaN(value || "") || "Ei ole numero!",
+  (value) => (value || "") >= 0 || "Numeron pitää olla positiivinen!",
+]);
+const timer_refresh = ref(null);
+const interval = ref(60000);
+const snackbar = ref(false);
+const text = ref("");
+const found = ref(false);
+const notification_info = ref(null);
+const results = ref(null);
+
+// Select row from table, if selected --> unselect
+// selected_id bound to selected css class (on App.vue)
+// Vuetify 3+: (event, { item, internalItem, index })
+
+function rowClick(event, row) {
+  const item = row.item;
+  selected_id.value = item._id;
+  selected_row.value = row;
+  searchSelected();
+}
+
+// Fetch competition from database, and update variables
+
+async function refreshCompetition(competition_id) {
+  refreshing.value = true;
+  try {
+    //Get competition from database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
+    let competition = await CompetitionService.getCompetitions({
+      _id: competition_id,
+    });
+    if (competition) {
+      // Get results === signees
+      await ResultService.getResults({ competition_id: competition._id })
+        .then((r) => {
+          competition.signees = r;
+          signees.value = r.sort((a, b) => a.boat_number - b.boat_number);
+        })
+        .catch((e) => {
+          console.log(e);
         });
-        if (competition) {
-          // Get results === signees
-          await ResultService.getResults({ competition_id: competition._id })
+      // Update to vuex, Assing variables and arrays from vuex (see client/store/index.js)
+      store.refreshCompetition(competition);
+      isTeamCompetition.value = store.isTeamCompetition;
+
+      teams.value = store.getTeams;
+      // Get max values and assign them
+      if (signees.value.length) {
+        boat_number.value =
+          Math.max.apply(
+            Math,
+            signees.value.map(function (o) {
+              return o.boat_number;
+            }),
+          ) + 1;
+      } else {
+        // Otherwise init with 1
+        boat_number.value = 1;
+      }
+
+      if (competition.isCupCompetition) {
+        cup.value = await CupService.getCups({
+          _id: competition.cup_id,
+        });
+      }
+    } else {
+      console.log("No competition found on database...");
+    }
+  } catch (err) {
+    console.log(err.message);
+  }
+  loading_site.value = false;
+  refreshing.value = false;
+}
+
+// Clear all selections and inputs and errors
+
+function clearInputs() {
+  boat_number.value = null;
+  starting_place.value = null;
+  captain_name.value = null;
+  temp_captain_name.value = null;
+  locality.value = null;
+  team.value = null;
+  errors.value = [];
+  found.value = false;
+  notification.value = "";
+}
+
+// Handle overwriting user data based on user answer
+
+function overwriteSignee(signee, overwrite) {
+  // User chose to overwrite data
+  if (overwrite) {
+    // Remove old data
+    store.removeSignee(signee);
+    // Replace the old existing signee info with new info, without changing the id
+    signee.boat_number = parseInt(boat_number.value);
+    signee.starting_place = starting_place.value;
+    signee.captain_name = capitalize_words(captain_name.value);
+    signee.temp_captain_name = capitalize_words(temp_captain_name.value);
+    signee.locality = capitalize_words(locality.value);
+    signee.team = team.value;
+    // Shorten team name if over 40 characters
+    if (team.value.length > 40) {
+      let temp_team = team.value;
+      temp_team = temp_team.slice(0, 40);
+      team.value = temp_team; // Set the name back, shortened
+      showError(
+        "Valitse tiimin nimeksi alle 40 merkkiä pitkä nimi (nimi lyhennetty 40 merkkiin)!",
+      );
+    } else {
+      //If the array doensn't have the team name already, add it
+      if (teams.value.indexOf(team.value) == -1) {
+        teams.value.push(team.value);
+        store.setTeams(teams.value);
+      }
+      // Save signee to database and clear inputs
+      saveToDatabase(signee, true);
+      clearInputs();
+      notification.value = "notification.replaced";
+    }
+  }
+  // Don't overwrite, add to new place
+  else {
+    notification.value = "notification.boat-number-moved";
+    boat_number.value =
+      Math.max.apply(
+        Math,
+        signees.value.map(function (o) {
+          return o.boat_number;
+        }),
+      ) + 1;
+  }
+}
+
+// If user selected from input/table, search from array and assing values to inputs
+
+function searchSelected() {
+  notification.value = null;
+  errors.value = [];
+  // Searched from Signing tab, from button
+  if (tab.value === "signing") {
+    if (boat_number.value) {
+      let found_signee = searchBoatNumber(boat_number.value);
+      // If signee found
+      if (found_signee) {
+        found.value = true;
+        notification.value = `notification.found-from-cup`;
+        selected_id.value = found_signee._id;
+        boat_number.value = found_signee.boat_number;
+        starting_place.value = found_signee.starting_place;
+        captain_name.value = found_signee.captain_name;
+        temp_captain_name.value = found_signee.temp_captain_name;
+        locality.value = found_signee.locality;
+        team.value = found_signee.team;
+      } else {
+        // Nothing found
+        let temp_boat_number = boat_number.value;
+        clearInputs();
+        boat_number.value = temp_boat_number;
+        notification.value = "notification.no-signee-found";
+        selected_id.value = null;
+      }
+    } else {
+      notification.value = `notification.empty-boat-number`;
+    }
+  } else {
+    // Searched from Signees tab (this.tab === 'signees'), from table
+    if (selected_id.value) {
+      var found_signee = signees.value.find((s) => selected_id.value === s._id);
+
+      if (found_signee) {
+        notification.value = `notification.found-from-cup`;
+        boat_number.value = found_signee.boat_number;
+        starting_place.value = found_signee.starting_place;
+        captain_name.value = found_signee.captain_name;
+        temp_captain_name.value = found_signee.temp_captain_name;
+        locality.value = found_signee.locality;
+        team.value = found_signee.team;
+        tab.value = "signing";
+      } else {
+        // Nothing found
+        let temp_boat_number = boat_number.value;
+        clearInputs();
+        boat_number.value = temp_boat_number;
+        notification.value = "notification.no-signee-found";
+        selected_id.value = null;
+        notification_info.value = "";
+      }
+    }
+  }
+}
+
+async function searchFromCup() {
+  selected_id.value = null;
+  // text input so parse to int, never vuetify would have number inputs
+  let _boat_number = parseInt(boat_number.value);
+  if (!isNaN(_boat_number) && cup.value && cup.value.signees.length) {
+    let found_signee = cup.value.signees.find(
+      (signee) => _boat_number === signee.boat_number,
+    );
+    //If the signee is not found on cup, add it
+    if (found_signee) {
+      notification.value = "notification.found-from-cup";
+      captain_name.value = found_signee.captain_name;
+      temp_captain_name.value = found_signee.temp_captain_name;
+      locality.value = found_signee.locality;
+      team.value = found_signee.team;
+      starting_place.value = found_signee.starting_place;
+
+      let f = signees.value.find(
+        (s) => s.boat_number === found_signee.boat_number,
+      );
+      if (f) {
+        found.value = true;
+        selected_id.value = f._id;
+      }
+    } else {
+      // Nothing found
+      let temp_boat_number = boat_number.value;
+      clearInputs();
+      boat_number.value = temp_boat_number;
+      notification.value = "notification.no-signee-found";
+    }
+  } else {
+    notification.value = "notification.empty-boat-number";
+  }
+}
+
+// Fetch signee from vuex based on boat number
+// Check client\src\store\index.js for implementation
+
+function searchBoatNumber(boat_number) {
+  return store.getSigneeByBoatNumber(parseInt(boat_number));
+}
+
+// Add error to error array and direct user to it
+
+function showError(error) {
+  errors.value.push(error);
+  nextTick(() => {
+    document.getElementById("error-list").scrollIntoView();
+  });
+}
+
+// Save signee to database
+
+async function saveToDatabase(new_signee, replace) {
+  // if replace == true, replace existing info, otherwise add new signee
+  if (replace) store.replaceSignee(new_signee);
+
+  // Create competition object
+  let comp = store.getCompetition;
+  signees.value = results.value = signees.value;
+  // Store to vuex
+  comp.signees = signees.value;
+  comp.state = "signing";
+
+  if (comp.isCupCompetition) {
+    let index = cup.value.signees.findIndex(
+      (signee) => new_signee.boat_number === signee.boat_number,
+    );
+    //If the signee is not found on cup, add it
+    if (index === -1) {
+      cup.value.signees.push({
+        boat_number: new_signee.boat_number,
+        captain_name: new_signee.captain_name,
+        temp_captain_name: new_signee.temp_captain_name,
+        locality: new_signee.locality,
+        competition_id: comp._id,
+      });
+      // Update signees to cup
+      let newvalues = {
+        $set: { signees: cup.value.signees },
+      };
+      await CupService.updateValues(comp.cup_id, newvalues);
+    } else {
+      // First competition for the signee, so update cup values
+      if (cup.value.signees[index].competition_id === comp._id) {
+        cup.value.signees[index] = {
+          ...new_signee,
+          competition_id: comp._id,
+        };
+
+        // Update signees to cup
+        let newvalues = {
+          $set: { signees: cup.value.signees },
+        };
+        await CupService.updateValues(comp.cup_id, newvalues);
+      }
+    }
+  }
+
+  store.refreshCompetition(comp);
+  try {
+    loading.value = true;
+    // Add result
+    new_signee = {
+      ...new_signee,
+      competition_id: comp._id,
+      cup_id: comp.cup_id,
+    };
+
+    if (replace) {
+      await ResultService.updateResult(new_signee._id, new_signee);
+    } else {
+      let res = await ResultService.insertResults([new_signee]);
+      new_signee._id = res.data.id;
+      store.addSignee(new_signee);
+    }
+
+    //await CompetitionService.updateCompetition(comp._id, comp);
+    await CompetitionService.updateValues(comp._id, { state: comp.state });
+    loading.value = false;
+
+    boat_number.value =
+      Math.max.apply(
+        Math,
+        signees.value.map(function (o) {
+          return o.boat_number;
+        }),
+      ) + 1;
+  } catch (err) {
+    console.error(err.message);
+  }
+}
+
+// Delete signee from vuex and database
+
+async function deleteSignee(confirmed, id) {
+  errors.value = [];
+  // If id on signees
+  let found_signee = signees.value.find((s) => s._id === id);
+
+  if (!confirmed) {
+    if (!boat_number.value) {
+      showError("Venekunnan kilpailunumero puuttuu!");
+    }
+    if (!errors.value.length) {
+      // If selected on the signees list or with the search button
+      if (id) {
+        if (found_signee) {
+          // Ask confirmation
+          confirm(
+            `Oletko varma että haluat poistaa kilpailijan: (${found_signee.boat_number}), ${found_signee.captain_name}?`,
+            "Poista kilpailija",
+            "question",
+          )
             .then((r) => {
-              competition.signees = r;
-              this.signees = r.sort((a, b) => a.boat_number - b.boat_number);
+              if (r) {
+                // Deletion confirmed by user, call function again with confirmed == true
+                deleteSignee(r, found_signee._id);
+              }
             })
-            .catch((e) => {
-              console.log(e);
+            .catch((error) => {
+              if (error) {
+                console.error(error);
+              }
             });
-          // Update to vuex, Assing variables and arrays from vuex (see client/store/index.js)
-          this.$store.refreshCompetition(competition);
-          this.isTeamCompetition = this.$store.isTeamCompetition;
-
-          this.teams = this.$store.getTeams;
-          // Get max values and assign them
-          if (this.signees.length) {
-            this.boat_number =
-              Math.max.apply(
-                Math,
-                this.signees.map(function (o) {
-                  return o.boat_number;
-                }),
-              ) + 1;
-          } else {
-            // Otherwise init with 1
-            this.boat_number = 1;
-          }
-
-          if (competition.isCupCompetition) {
-            this.cup = await CupService.getCups({
-              _id: competition.cup_id,
-            });
-          }
-        } else {
-          console.log("No competition found on database...");
         }
+      } else {
+        // No selected id, so new input
+        let temp_boat = searchBoatNumber(boat_number.value);
+        if (temp_boat) {
+          confirm(
+            `Oletko varma että haluat poistaa kilpailijan: (${temp_boat.boat_number}), ${temp_boat.captain_name}?`,
+            "Poista kilpailija",
+            "question",
+          )
+            .then((r) => {
+              if (r) {
+                // Deletion confirmed by user, call function again with confirmed == true
+                deleteSignee(r, temp_boat._id);
+              }
+            })
+            .catch((error) => {
+              if (error) {
+                console.error(error);
+              }
+            });
+        }
+      }
+    }
+  }
+  // Deletion confirmed, delete signee
+  else {
+    if (found_signee) {
+      // Remove from vuex
+      store.removeSignee(found_signee);
+      try {
+        loading.value = true;
+        await ResultService.deleteResult(id).catch((e) => console.log(e));
+        loading.value = false;
+        clearInputs();
+        // Update values for next signee
+        boat_number.value =
+          Math.max.apply(
+            Math,
+            signees.value.map(function (o) {
+              return o.boat_number;
+            }),
+          ) + 1;
+        text.value = `boat-removed`;
+        snackbar.value = true;
+        location.href = "#";
+        location.href = "#signing";
       } catch (err) {
         console.log(err.message);
       }
-      this.loading_site = false;
-      this.refreshing = false;
-    },
-    // Clear all selections and inputs and errors
-    clearInputs() {
-      this.boat_number = null;
-      this.starting_place = null;
-      this.captain_name = null;
-      this.temp_captain_name = null;
-      this.locality = null;
-      this.team = null;
-      this.errors = [];
-      this.found = false;
-      this.notification = "";
-    },
-    // Handle overwriting user data based on user answer
-    overwriteSignee(signee, overwrite) {
-      // User chose to overwrite data
-      if (overwrite) {
-        // Remove old data
-        this.$store.removeSignee(signee);
-        // Replace the old existing signee info with new info, without changing the id
-        signee.boat_number = parseInt(this.boat_number);
-        signee.starting_place = this.starting_place;
-        signee.captain_name = capitalize_words(this.captain_name);
-        signee.temp_captain_name = capitalize_words(this.temp_captain_name);
-        signee.locality = capitalize_words(this.locality);
-        signee.team = this.team;
-        // Shorten team name if over 40 characters
-        if (this.team.length > 40) {
-          let temp_team = this.team;
-          temp_team = temp_team.slice(0, 40);
-          this.team = temp_team; // Set the name back, shortened
-          this.showError(
-            "Valitse tiimin nimeksi alle 40 merkkiä pitkä nimi (nimi lyhennetty 40 merkkiin)!",
-          );
-        } else {
-          //If the array doensn't have the team name already, add it
-          if (this.teams.indexOf(this.team) == -1) {
-            this.teams.push(this.team);
-            this.$store.setTeams(this.teams);
-          }
-          // Save signee to database and clear inputs
-          this.saveToDatabase(signee, true);
-          this.clearInputs();
-          this.notification = "notification.replaced";
-        }
-      }
-      // Don't overwrite, add to new place
-      else {
-        this.notification = "notification.boat-number-moved";
-        this.boat_number =
-          Math.max.apply(
-            Math,
-            this.signees.map(function (o) {
-              return o.boat_number;
-            }),
-          ) + 1;
-      }
-    },
-    // If user selected from input/table, search from array and assing values to inputs
-    searchSelected() {
-      this.notification = null;
-      this.errors = [];
-      // Searched from Signing tab, from button
-      if (this.tab === "signing") {
-        if (this.boat_number) {
-          let found_signee = this.searchBoatNumber(this.boat_number);
-          // If signee found
-          if (found_signee) {
-            this.found = true;
-            this.notification = `notification.found-from-cup`;
-            this.selected_id = found_signee._id;
-            this.boat_number = found_signee.boat_number;
-            this.starting_place = found_signee.starting_place;
-            this.captain_name = found_signee.captain_name;
-            this.temp_captain_name = found_signee.temp_captain_name;
-            this.locality = found_signee.locality;
-            this.team = found_signee.team;
-          } else {
-            // Nothing found
-            let temp_boat_number = this.boat_number;
-            this.clearInputs();
-            this.boat_number = temp_boat_number;
-            this.notification = "notification.no-signee-found";
-            this.selected_id = null;
-          }
-        } else {
-          this.notification = `notification.empty-boat-number`;
-        }
-      } else {
-        // Searched from Signees tab (this.tab === 'signees'), from table
-        if (this.selected_id) {
-          var found_signee = this.signees.find(
-            (s) => this.selected_id === s._id,
-          );
+    } else {
+      console.log("Tällä id:llä ei löytynyt kilpailijaa...");
+    }
+  }
+}
 
-          if (found_signee) {
-            this.notification = `notification.found-from-cup`;
-            this.boat_number = found_signee.boat_number;
-            this.starting_place = found_signee.starting_place;
-            this.captain_name = found_signee.captain_name;
-            this.temp_captain_name = found_signee.temp_captain_name;
-            this.locality = found_signee.locality;
-            this.team = found_signee.team;
-            this.tab = "signing";
-          } else {
-            // Nothing found
-            let temp_boat_number = this.boat_number;
-            this.clearInputs();
-            this.boat_number = temp_boat_number;
-            this.notification = "notification.no-signee-found";
-            this.selected_id = null;
-            this.notification_info = "";
-          }
-        }
-      }
-    },
-    async searchFromCup() {
-      this.selected_id = null;
-      // text input so parse to int, never vuetify would have number inputs
-      let boat_number = parseInt(this.boat_number);
-      if (!isNaN(boat_number) && this.cup && this.cup.signees.length) {
-        let found_signee = this.cup.signees.find(
-          (signee) => boat_number === signee.boat_number,
-        );
-        //If the signee is not found on cup, add it
-        if (found_signee) {
-          this.notification = "notification.found-from-cup";
-          this.captain_name = found_signee.captain_name;
-          this.temp_captain_name = found_signee.temp_captain_name;
-          this.locality = found_signee.locality;
-          this.team = found_signee.team;
-          this.starting_place = found_signee.starting_place;
+// TODO serverside input validation
 
-          let f = this.signees.find(
-            (s) => s.boat_number === found_signee.boat_number,
-          );
-          if (f) {
-            this.found = true;
-            this.selected_id = f._id;
-          }
-        } else {
-          // Nothing found
-          let temp_boat_number = this.boat_number;
-          this.clearInputs();
-          this.boat_number = temp_boat_number;
-          this.notification = "notification.no-signee-found";
-        }
-      } else {
-        this.notification = "notification.empty-boat-number";
-      }
-    },
-    // Fetch signee from vuex based on boat number
-    // Check client\src\store\index.js for implementation
-    searchBoatNumber(boat_number) {
-      return this.$store.getSigneeByBoatNumber(parseInt(boat_number));
-    },
-    // Add error to error array and direct user to it
-    showError(error) {
-      this.errors.push(error);
-      this.$nextTick(() => {
-        document.getElementById("error-list").scrollIntoView();
-      });
-    },
-    // Save signee to database
-    async saveToDatabase(new_signee, replace) {
-      // if replace == true, replace existing info, otherwise add new signee
-      if (replace) this.$store.replaceSignee(new_signee);
+function validateInfo() {
+  notification.value = null;
+  errors.value = [];
 
-      // Create competition object
-      let comp = this.$store.getCompetition;
-      this.signees = this.results = this.signees;
-      // Store to vuex
-      comp.signees = this.signees;
-      comp.state = "signing";
+  // Check all the inputs
+  if (!boat_number.value) {
+    showError("Venekunnan kilpailunumero puuttuu!");
+  }
 
-      if (comp.isCupCompetition) {
-        let index = this.cup.signees.findIndex(
-          (signee) => new_signee.boat_number === signee.boat_number,
-        );
-        //If the signee is not found on cup, add it
-        if (index === -1) {
-          this.cup.signees.push({
-            boat_number: new_signee.boat_number,
-            captain_name: new_signee.captain_name,
-            temp_captain_name: new_signee.temp_captain_name,
-            locality: new_signee.locality,
-            competition_id: comp._id,
-          });
-          // Update signees to cup
-          let newvalues = {
-            $set: { signees: this.cup.signees },
-          };
-          await CupService.updateValues(comp.cup_id, newvalues);
-        } else {
-          // First competition for the signee, so update cup values
-          if (this.cup.signees[index].competition_id === comp._id) {
-            this.cup.signees[index] = {
-              ...new_signee,
-              competition_id: comp._id,
-            };
+  if (!captain_name.value) {
+    showError("Kipparin nimi puuttuu!");
+  } else {
+    captain_name.value = capitalize_words(captain_name.value);
+  }
 
-            // Update signees to cup
-            let newvalues = {
-              $set: { signees: this.cup.signees },
-            };
-            await CupService.updateValues(comp.cup_id, newvalues);
-          }
-        }
-      }
+  if (!temp_captain_name.value) {
+    temp_captain_name.value = "-";
+  } else {
+    temp_captain_name.value = capitalize_words(temp_captain_name.value);
+  }
 
-      this.$store.refreshCompetition(comp);
-      try {
-        this.loading = true;
-        // Add result
-        new_signee = {
-          ...new_signee,
-          competition_id: comp._id,
-          cup_id: comp.cup_id,
-        };
+  if (!starting_place.value) {
+    starting_place.value = "-";
+  }
+  if (!team.value) {
+    team.value = "-";
+  }
 
-        if (replace) {
-          await ResultService.updateResult(new_signee._id, new_signee);
-        } else {
-          let res = await ResultService.insertResults([new_signee]);
-          new_signee._id = res.data.id;
-          this.$store.addSignee(new_signee);
-        }
+  if (team.value.length > 40) {
+    let temp_team = team.value;
+    temp_team = temp_team.slice(0, 40);
+    team.value = temp_team; // Set the name back, shortened
+    showError(
+      "Valitse tiimin nimeksi alle 40 merkkiä pitkä nimi (nimi lyhennetty 40 merkkiin, valittavissa pudotusvalikosta)!",
+    );
+  }
 
-        //await CompetitionService.updateCompetition(comp._id, comp);
-        await CompetitionService.updateValues(comp._id, { state: comp.state });
-        this.loading = false;
+  if (!locality.value) {
+    showError("Seura/Paikkakunta puuttuu!");
+  } else {
+    locality.value = capitalize_words(locality.value);
+  }
 
-        this.boat_number =
-          Math.max.apply(
-            Math,
-            this.signees.map(function (o) {
-              return o.boat_number;
-            }),
-          ) + 1;
-      } catch (err) {
-        console.error(err.message);
-      }
-    },
-    // Delete signee from vuex and database
-    async deleteSignee(confirmed, id) {
-      this.errors = [];
+  // If no errors, proceed
+  if (!errors.value.length) {
+    // If selected on the signees list or with the search button
+    if (selected_id.value) {
       // If id on signees
-      let found_signee = this.signees.find((s) => s._id === id);
-
-      if (!confirmed) {
-        if (!this.boat_number) {
-          this.showError("Venekunnan kilpailunumero puuttuu!");
+      let found_signee = signees.value.find((s) => s._id === selected_id.value);
+      if (found_signee) {
+        // If there already exist a boat with same number, but it isn't the same id
+        // If there isn't any boats with this boat number
+        found_signee.boat_number = parseInt(boat_number.value);
+        found_signee.starting_place = starting_place.value;
+        found_signee.captain_name = captain_name.value;
+        found_signee.temp_captain_name = temp_captain_name.value;
+        found_signee.locality = locality.value;
+        found_signee.team = team.value;
+        new_signee.value = found_signee;
+        // Save to database and vuex
+        saveToDatabase(new_signee.value, true);
+        if (teams.value.indexOf(team.value) == -1) {
+          teams.value.push(team.value);
+          store.setTeams(teams.value);
         }
-        if (!this.errors.length) {
-          // If selected on the signees list or with the search button
-          if (id) {
-            if (found_signee) {
-              // Ask confirmation
-              this.$confirm(
-                `Oletko varma että haluat poistaa kilpailijan: (${found_signee.boat_number}), ${found_signee.captain_name}?`,
-                "Poista kilpailija",
-                "question",
-              )
-                .then((r) => {
-                  if (r) {
-                    // Deletion confirmed by user, call function again with confirmed == true
-                    this.deleteSignee(r, found_signee._id);
-                  }
-                })
-                .catch((error) => {
-                  if (error) {
-                    console.error(error);
-                  }
-                });
-            }
-          } else {
-            // No selected id, so new input
-            let temp_boat = this.searchBoatNumber(this.boat_number);
-            if (temp_boat) {
-              this.$confirm(
-                `Oletko varma että haluat poistaa kilpailijan: (${temp_boat.boat_number}), ${temp_boat.captain_name}?`,
-                "Poista kilpailija",
-                "question",
-              )
-                .then((r) => {
-                  if (r) {
-                    // Deletion confirmed by user, call function again with confirmed == true
-                    this.deleteSignee(r, temp_boat._id);
-                  }
-                })
-                .catch((error) => {
-                  if (error) {
-                    console.error(error);
-                  }
-                });
-            }
-          }
-        }
-      }
-      // Deletion confirmed, delete signee
-      else {
-        if (found_signee) {
-          // Remove from vuex
-          this.$store.removeSignee(found_signee);
-          try {
-            this.loading = true;
-            await ResultService.deleteResult(id).catch((e) => console.log(e));
-            this.loading = false;
-            this.clearInputs();
-            // Update values for next signee
-            this.boat_number =
-              Math.max.apply(
-                Math,
-                this.signees.map(function (o) {
-                  return o.boat_number;
-                }),
-              ) + 1;
-            this.text = `boat-removed`;
-            this.snackbar = true;
-            location.href = "#";
-            location.href = "#signing";
-          } catch (err) {
-            console.log(err.message);
-          }
-        } else {
-          console.log("Tällä id:llä ei löytynyt kilpailijaa...");
-        }
-      }
-    },
-    // TODO serverside input validation
-    validateInfo() {
-      this.notification = null;
-      this.errors = [];
+        text.value = `boat-updated`;
+        snackbar.value = true;
+        clearInputs();
+        location.href = "#";
+        location.href = "#signing";
+        // Update values for next signee
+        boat_number.value =
+          Math.max.apply(
+            Math,
+            signees.value.map(function (o) {
+              return o.boat_number;
+            }),
+          ) + 1;
 
-      // Check all the inputs
-      if (!this.boat_number) {
-        this.showError("Venekunnan kilpailunumero puuttuu!");
+        selected_id.value = null;
+      }
+    } else {
+      // Create signee object and save to database/vuex
+      new_signee.value = {
+        boat_number: parseInt(boat_number.value),
+        starting_place: starting_place.value,
+        captain_name: captain_name.value,
+        temp_captain_name: temp_captain_name.value,
+        locality: locality.value,
+        team: team.value,
+        returned: false,
+      };
+      saveToDatabase(new_signee.value, false);
+
+      if (teams.value.indexOf(team.value) == -1) {
+        teams.value.push(team.value);
+        store.setTeams(teams.value);
       }
 
-      if (!this.captain_name) {
-        this.showError("Kipparin nimi puuttuu!");
-      } else {
-        this.captain_name = capitalize_words(this.captain_name);
-      }
+      text.value = `boat-added`;
+      snackbar.value = true;
 
-      if (!this.temp_captain_name) {
-        this.temp_captain_name = "-";
-      } else {
-        this.temp_captain_name = capitalize_words(this.temp_captain_name);
-      }
+      clearInputs();
+      location.href = "#";
+      location.href = "#signing";
+      // Update values for next signee
+      boat_number.value =
+        Math.max.apply(
+          Math,
+          signees.value.map(function (o) {
+            return o.boat_number;
+          }),
+        ) + 1;
+      selected_id.value = null;
+    }
+  }
+}
 
-      if (!this.starting_place) {
-        this.starting_place = "-";
-      }
-      if (!this.team) {
-        this.team = "-";
-      }
-
-      if (this.team.length > 40) {
-        let temp_team = this.team;
-        temp_team = temp_team.slice(0, 40);
-        this.team = temp_team; // Set the name back, shortened
-        this.showError(
-          "Valitse tiimin nimeksi alle 40 merkkiä pitkä nimi (nimi lyhennetty 40 merkkiin, valittavissa pudotusvalikosta)!",
-        );
-      }
-
-      if (!this.locality) {
-        this.showError("Seura/Paikkakunta puuttuu!");
-      } else {
-        this.locality = capitalize_words(this.locality);
-      }
-
-      // If no errors, proceed
-      if (!this.errors.length) {
-        // If selected on the signees list or with the search button
-        if (this.selected_id) {
-          // If id on signees
-          let found_signee = this.signees.find(
-            (s) => s._id === this.selected_id,
-          );
-          if (found_signee) {
-            // If there already exist a boat with same number, but it isn't the same id
-            // If there isn't any boats with this boat number
-            found_signee.boat_number = parseInt(this.boat_number);
-            found_signee.starting_place = this.starting_place;
-            found_signee.captain_name = this.captain_name;
-            found_signee.temp_captain_name = this.temp_captain_name;
-            found_signee.locality = this.locality;
-            found_signee.team = this.team;
-            this.new_signee = found_signee;
-            // Save to database and vuex
-            this.saveToDatabase(this.new_signee, true);
-            if (this.teams.indexOf(this.team) == -1) {
-              this.teams.push(this.team);
-              this.$store.setTeams(this.teams);
-            }
-            this.text = `boat-updated`;
-            this.snackbar = true;
-            this.clearInputs();
-            location.href = "#";
-            location.href = "#signing";
-            // Update values for next signee
-            this.boat_number =
-              Math.max.apply(
-                Math,
-                this.signees.map(function (o) {
-                  return o.boat_number;
-                }),
-              ) + 1;
-
-            this.selected_id = null;
-          }
-        } else {
-          // Create signee object and save to database/vuex
-          this.new_signee = {
-            boat_number: parseInt(this.boat_number),
-            starting_place: this.starting_place,
-            captain_name: this.captain_name,
-            temp_captain_name: this.temp_captain_name,
-            locality: this.locality,
-            team: this.team,
-            returned: false,
-          };
-          this.saveToDatabase(this.new_signee, false);
-
-          if (this.teams.indexOf(this.team) == -1) {
-            this.teams.push(this.team);
-            this.$store.setTeams(this.teams);
-          }
-
-          this.text = `boat-added`;
-          this.snackbar = true;
-
-          this.clearInputs();
-          location.href = "#";
-          location.href = "#signing";
-          // Update values for next signee
-          this.boat_number =
-            Math.max.apply(
-              Math,
-              this.signees.map(function (o) {
-                return o.boat_number;
-              }),
-            ) + 1;
-          this.selected_id = null;
-        }
-      }
-    },
-  },
-};
+onMounted(() => {
+  if (localStorage.getItem("competition") != null) {
+    const competition = JSON.parse(localStorage.getItem("competition"));
+    competition_id.value = competition["_id"];
+    loading_site.value = true;
+    refreshCompetition(competition_id.value);
+  }
+});
 </script>
 <style>
 #old-info-container {

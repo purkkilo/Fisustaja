@@ -13,8 +13,7 @@ const routes = [
   {
     path: "/login",
     name: "login",
-    component: () =>
-      import("../views/Login.vue"),
+    component: () => import("../views/Login.vue"),
     meta: {
       requiresAuth: false,
     },
@@ -22,8 +21,7 @@ const routes = [
   {
     path: "/register",
     name: "register",
-    component: () =>
-      import("../views/Register.vue"),
+    component: () => import("../views/Register.vue"),
     meta: {
       requiresAuth: true,
       is_admin: true,
@@ -32,8 +30,7 @@ const routes = [
   {
     path: "/public-results",
     name: "PublicResults",
-    component: () =>
-      import("../views/PublicResults.vue"),
+    component: () => import("../views/PublicResults.vue"),
     meta: {
       requiresAuth: false,
     },
@@ -41,8 +38,7 @@ const routes = [
   {
     path: "/public-cups",
     name: "PublicCups",
-    component: () =>
-      import("../views/PublicCups.vue"),
+    component: () => import("../views/PublicCups.vue"),
     meta: {
       requiresAuth: false,
     },
@@ -50,8 +46,7 @@ const routes = [
   {
     path: "/dashboard",
     name: "dashboard",
-    component: () =>
-      import("../views/Dashboard.vue"),
+    component: () => import("../views/Dashboard.vue"),
     meta: {
       requiresAuth: true,
     },
@@ -59,8 +54,7 @@ const routes = [
   {
     path: "/admin",
     name: "admin",
-    component: () =>
-      import("../views/Admin.vue"),
+    component: () => import("../views/Admin.vue"),
     meta: {
       requiresAuth: true,
       is_admin: true,
@@ -69,8 +63,7 @@ const routes = [
   {
     path: "/cup-overview",
     name: "CupOverview",
-    component: () =>
-      import("../views/CupOverview.vue"),
+    component: () => import("../views/CupOverview.vue"),
     meta: {
       requiresAuth: true,
     },
@@ -78,8 +71,7 @@ const routes = [
   {
     path: "/register-comp",
     name: "CreateComp",
-    component: () =>
-      import("../views/CreateComp.vue"),
+    component: () => import("../views/CreateComp.vue"),
     meta: {
       requiresAuth: true,
     },
@@ -87,8 +79,7 @@ const routes = [
   {
     path: "/weighting",
     name: "Weighting",
-    component: () =>
-      import("../views/Weighting.vue"),
+    component: () => import("../views/Weighting.vue"),
     meta: {
       requiresAuth: true,
     },
@@ -96,8 +87,7 @@ const routes = [
   {
     path: "/overview",
     name: "Overview",
-    component: () =>
-      import("../views/Overview.vue"),
+    component: () => import("../views/Overview.vue"),
     meta: {
       requiresAuth: true,
     },
@@ -105,8 +95,7 @@ const routes = [
   {
     path: "/comp-settings",
     name: "CompSettings",
-    component: () =>
-      import("../views/CompSettings.vue"),
+    component: () => import("../views/CompSettings.vue"),
     meta: {
       requiresAuth: true,
     },
@@ -114,8 +103,7 @@ const routes = [
   {
     path: "/results",
     name: "Results",
-    component: () =>
-      import("../views/Results.vue"),
+    component: () => import("../views/Results.vue"),
     meta: {
       requiresAuth: true,
     },
@@ -123,8 +111,7 @@ const routes = [
   {
     path: "/signing",
     name: "Signing",
-    component: () =>
-      import("../views/Signing.vue"),
+    component: () => import("../views/Signing.vue"),
     meta: {
       requiresAuth: true,
     },
@@ -133,8 +120,7 @@ const routes = [
     name: "404",
     path: "/404",
     // route level code-splitting
-    component: () =>
-      import("../views/NotFound.vue"),
+    component: () => import("../views/NotFound.vue"),
     meta: { title: "Not Found" },
   },
   {

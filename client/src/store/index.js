@@ -1,7 +1,9 @@
 import { defineStore } from "pinia";
 
-const byBoatNumber = (a, b) => parseInt(a.boat_number) - parseInt(b.boat_number);
-const byPointsDesc = (a, b) => parseInt(b.total_points) - parseInt(a.total_points);
+const byBoatNumber = (a, b) =>
+  parseInt(a.boat_number) - parseInt(b.boat_number);
+const byPointsDesc = (a, b) =>
+  parseInt(b.total_points) - parseInt(a.total_points);
 
 function addToFishMap(map, fish) {
   const entry = {
@@ -15,7 +17,7 @@ function addToFishMap(map, fish) {
   }
   // Only one entry per boat
   const index = map[fish.name].findIndex(
-    (item) => parseInt(fish.boat_number) === parseInt(item.boat_number)
+    (item) => parseInt(fish.boat_number) === parseInt(item.boat_number),
   );
   if (index > -1) {
     map[fish.name].splice(index, 1);
@@ -23,8 +25,9 @@ function addToFishMap(map, fish) {
   map[fish.name].push(entry);
 }
 
-// App-wide state (was Vuex). Getters and actions keep their old names, so
-// components call this.$store.getCompetition / this.$store.refreshCompetition(c).
+// App-wide state (was Vuex). In components:
+//   const store = useMainStore();
+//   store.getCompetition, store.refreshCompetition(competition)
 export const useMainStore = defineStore("main", {
   state: () => ({
     competition: null,
@@ -42,7 +45,7 @@ export const useMainStore = defineStore("main", {
     getSigneesCount: (state) => state.competition.signees.length,
     getSigneeByBoatNumber: (state) => (boat_number) =>
       state.competition.signees.find(
-        (signee) => signee.boat_number === boat_number
+        (signee) => signee.boat_number === boat_number,
       ),
     getCompetition: (state) => state.competition,
     getCompetitionId: (state) => state.competition._id,
@@ -98,7 +101,7 @@ export const useMainStore = defineStore("main", {
     },
     replaceSignee(found_signee) {
       const index = this.competition.signees.findIndex(
-        (item) => parseInt(found_signee.id) === parseInt(item.id)
+        (item) => parseInt(found_signee.id) === parseInt(item.id),
       );
       this.competition.signees.splice(index, 1, found_signee);
     },

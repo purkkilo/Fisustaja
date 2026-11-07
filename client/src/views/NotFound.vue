@@ -19,7 +19,11 @@
       <v-row>
         <v-col class="text-center">
           <h3>Takaisin kotisivulle</h3>
-          <v-btn color="red" @click="$router.push({ path: '/' })" variant="outlined"><v-icon>mdi-home</v-icon></v-btn
+          <v-btn
+            color="red"
+            @click="$router.push({ path: '/' })"
+            variant="outlined"
+            ><v-icon>mdi-home</v-icon></v-btn
           >
         </v-col>
       </v-row>
@@ -27,23 +31,16 @@
   </v-container>
 </template>
 
-<script>
-export default {
-  name: "Notfound",
-  data() {
-    return {
-      prevRoute: null,
-      message: null,
-      type: "Bugi",
-      type_options: ["Bugi", "Ehdotus", "Muu"],
-      loading: false,
-      error: null,
-    };
-  },
-  beforeRouteEnter(to, from, next) {
-    next((vm) => {
-      vm.prevRoute = from;
-    });
-  },
-};
+<script setup>
+import { ref } from "vue";
+import { usePreviousRoute } from "@/composables/usePreviousRoute";
+
+defineOptions({ name: "Notfound" });
+
+const prevRoute = usePreviousRoute();
+const message = ref(null);
+const type = ref("Bugi");
+const type_options = ref(["Bugi", "Ehdotus", "Muu"]);
+const loading = ref(false);
+const error = ref(null);
 </script>

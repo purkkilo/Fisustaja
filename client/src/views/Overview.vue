@@ -21,7 +21,8 @@
         <v-row>
           <v-col>
             <v-card elevation="5" variant="outlined">
-              <v-card-title><span class="text-display-medium">
+              <v-card-title
+                ><span class="text-display-medium">
                   {{ competition.name }}
                 </span></v-card-title
               >
@@ -81,11 +82,10 @@
                     v-if="competition.signees.length"
                     v-bind:class="{
                       'text-green': !competition.signees.filter(
-                        (s) => !s.returned
+                        (s) => !s.returned,
                       ).length,
-                      'text-red': competition.signees.filter(
-                        (s) => !s.returned
-                      ).length,
+                      'text-red': competition.signees.filter((s) => !s.returned)
+                        .length,
                     }"
                   >
                     <b>{{ hasNotReturnedPercentage }}%</b>
@@ -95,7 +95,8 @@
                     / {{ competition.signees.length }})
                   </v-list-item-subtitle>
 
-                  <v-list-item-subtitle class="text-green" v-else><b>{{
+                  <v-list-item-subtitle class="text-green" v-else
+                    ><b>{{
                       $t("comp-overview.nobody-on-water")
                     }}</b></v-list-item-subtitle
                   >
@@ -117,7 +118,8 @@
                     }}
                     / {{ competition.signees.length }})
                   </v-list-item-subtitle>
-                  <v-list-item-subtitle class="text-red" v-else><b>{{
+                  <v-list-item-subtitle class="text-red" v-else
+                    ><b>{{
                       $t("comp-overview.no-signees")
                     }}</b></v-list-item-subtitle
                   >
@@ -136,7 +138,8 @@
                   >
                     <b>{{ competition.total_weights / 1000 }} kg</b>
                   </v-list-item-subtitle>
-                  <v-list-item-subtitle class="text-red" v-else><b>{{
+                  <v-list-item-subtitle class="text-red" v-else
+                    ><b>{{
                       $t("comp-overview.no-signees")
                     }}</b></v-list-item-subtitle
                   >
@@ -163,113 +166,105 @@
     </v-container>
   </div>
 </template>
-<script>
+<script setup>
+import { ref } from "vue";
+import { useMainStore } from "@/store";
 import CompetitionService from "../services/CompetitionService";
 import ResultService from "../services/ResultService.js";
 import Timedate from "../components/layout/Timedate.vue";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
-import { formatDate } from "../shared";
+import { formatDate } from "@/utils/format";
 import ErrorList from "../components/ErrorList.vue";
 
-export default {
-  name: "Overview",
-  components: {
-    Timedate,
-    ProgressBarQuery,
-    ErrorList,
-  },
-  data() {
-    return {
-      competition: null,
-      loading: false,
-      errors: [],
-      formatted_start_date: null,
-      formatted_end_date: null,
-      dialog: false,
-      hasNotReturnedPercentage: 0,
-      hasGottenFishPercentage: 0,
-      hasGottenFishCount: 0,
-    };
-  },
-  created() {
-    // IF competition on localstorage
-    if (localStorage.getItem("competition") != null) {
-      // update from database
-      const competition = JSON.parse(localStorage.getItem("competition"));
-      const competition_id = competition["_id"];
-      this.refreshCompetition(competition_id);
-    } else {
-      console.log("No competition in localstorage!");
-    }
-  },
-  methods: {
-    formatDate: formatDate,
-    // fetch/update competition from database
-    async refreshCompetition(competition_id) {
-      this.loading = true;
-      this.errors = [];
-      try {
-        //Get competition from database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
-        let competition = await CompetitionService.getCompetitions({
-          _id: competition_id,
-        });
-        // IF competition found from database
-        if (competition) {
-          this.competition = competition;
+defineOptions({ name: "Overview" });
+const store = useMainStore();
 
-          // Get results === signees
-          await ResultService.getResults({ competition_id: competition._id })
-            .then((r) => {
-              this.competition.total_weights = 0;
-              r.forEach((s) => {
-                s.fishes.forEach((f) => {
-                  this.competition.total_weights += f.weights;
-                });
-              });
-              this.competition.signees = r;
-            })
-            .catch((e) => {
-              console.log(e);
+const competition = ref(null);
+const loading = ref(false);
+const errors = ref([]);
+const formatted_start_date = ref(null);
+const formatted_end_date = ref(null);
+const dialog = ref(false);
+const hasNotReturnedPercentage = ref(0);
+const hasGottenFishPercentage = ref(0);
+const hasGottenFishCount = ref(0);
+
+// fetch/update competition from database
+
+async function refreshCompetition(competition_id) {
+  loading.value = true;
+  errors.value = [];
+  try {
+    //Get competition from database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
+    let _competition = await CompetitionService.getCompetitions({
+      _id: competition_id,
+    });
+    // IF competition found from database
+    if (_competition) {
+      competition.value = _competition;
+
+      // Get results === signees
+      await ResultService.getResults({ competition_id: _competition._id })
+        .then((r) => {
+          competition.value.total_weights = 0;
+          r.forEach((s) => {
+            s.fishes.forEach((f) => {
+              competition.value.total_weights += f.weights;
             });
-          // Update to vuex, Assing variables from vuex (see client/store/index.js)
-          this.$store.refreshCompetition(this.competition);
-          localStorage.setItem("cup", this.competition.cup_id);
-          let start_date = new Date(this.competition.start_date);
-          let end_date = new Date(this.competition.end_date);
-          this.formatted_start_date = `${start_date.getDate()}.${
-            start_date.getMonth() + 1
-          }.${start_date.getFullYear()}`;
-          this.formatted_end_date = `${end_date.getDate()}.${
-            end_date.getMonth() + 1
-          }.${end_date.getFullYear()}`;
-
-          this.hasNotReturnedPercentage =
-            Math.round(
-              (this.competition.signees.filter((s) => !s.returned).length /
-                this.competition.signees.length) *
-                100 *
-                100
-            ) / 100;
-
-          // Check how many signees have gotten fish
-          this.competition.signees.forEach((signee) => {
-            if (signee.fishes.length) this.hasGottenFishCount++;
           });
+          competition.value.signees = r;
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+      // Update to vuex, Assing variables from vuex (see client/store/index.js)
+      store.refreshCompetition(competition.value);
+      localStorage.setItem("cup", competition.value.cup_id);
+      let start_date = new Date(competition.value.start_date);
+      let end_date = new Date(competition.value.end_date);
+      formatted_start_date.value = `${start_date.getDate()}.${
+        start_date.getMonth() + 1
+      }.${start_date.getFullYear()}`;
+      formatted_end_date.value = `${end_date.getDate()}.${
+        end_date.getMonth() + 1
+      }.${end_date.getFullYear()}`;
 
-          this.hasGottenFishPercentage =
-            Math.round(
-              (this.hasGottenFishCount / this.competition.signees.length) *
-                100 *
-                100
-            ) / 100;
-        } else {
-          this.competition = { name: "Kilpailua ei löytynyt tietokannasta..." };
-        }
-      } catch (err) {
-        console.log(err);
-      }
-      this.loading = false;
-    },
-  },
-};
+      hasNotReturnedPercentage.value =
+        Math.round(
+          (competition.value.signees.filter((s) => !s.returned).length /
+            competition.value.signees.length) *
+            100 *
+            100,
+        ) / 100;
+
+      // Check how many signees have gotten fish
+      competition.value.signees.forEach((signee) => {
+        if (signee.fishes.length) hasGottenFishCount.value++;
+      });
+
+      hasGottenFishPercentage.value =
+        Math.round(
+          (hasGottenFishCount.value / competition.value.signees.length) *
+            100 *
+            100,
+        ) / 100;
+    } else {
+      competition.value = { name: "Kilpailua ei löytynyt tietokannasta..." };
+    }
+  } catch (err) {
+    console.log(err);
+  }
+  loading.value = false;
+}
+
+// Runs when the component is created
+// IF competition on localstorage
+if (localStorage.getItem("competition") != null) {
+  // update from database
+  const competition = JSON.parse(localStorage.getItem("competition"));
+  const competition_id = competition["_id"];
+  refreshCompetition(competition_id);
+} else {
+  console.log("No competition in localstorage!");
+}
 </script>

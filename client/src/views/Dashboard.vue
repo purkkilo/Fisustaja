@@ -24,62 +24,78 @@
           <v-row>
             <v-col>
               <!-- if user is found on localstorage (this.user is not null/false) -->
-              <v-card style="background: transparent" v-if="user" variant="outlined">
-                <v-card-title><v-icon size="x-large">mdi-account-circle</v-icon> &nbsp;{{
+              <v-card
+                style="background: transparent"
+                v-if="user"
+                variant="outlined"
+              >
+                <v-card-title
+                  ><v-icon size="x-large">mdi-account-circle</v-icon> &nbsp;{{
                     $t("dashboard.user-details")
                   }}</v-card-title
                 >
                 <v-list style="background: transparent" lines="two" border>
                   <v-list-item>
-                    <template v-slot:prepend><v-avatar>
-                      <v-icon> mdi-account-box </v-icon>
-                    </v-avatar></template>
+                    <template v-slot:prepend
+                      ><v-avatar>
+                        <v-icon> mdi-account-box </v-icon>
+                      </v-avatar></template
+                    >
 
-                      <v-list-item-title>{{ user.name }}</v-list-item-title>
+                    <v-list-item-title>{{ user.name }}</v-list-item-title>
 
-                      <v-list-item-subtitle>{{
-                        $t("name")
-                      }}</v-list-item-subtitle>
+                    <v-list-item-subtitle>{{
+                      $t("name")
+                    }}</v-list-item-subtitle>
                   </v-list-item>
                   <v-divider></v-divider>
                   <v-list-item>
-                    <template v-slot:prepend><v-avatar>
-                      <v-icon> mdi-email </v-icon>
-                    </v-avatar></template>
+                    <template v-slot:prepend
+                      ><v-avatar>
+                        <v-icon> mdi-email </v-icon>
+                      </v-avatar></template
+                    >
 
-                      <v-list-item-title>{{ user.email }}</v-list-item-title>
+                    <v-list-item-title>{{ user.email }}</v-list-item-title>
 
-                      <v-list-item-subtitle>{{
-                        $t("email")
-                      }}</v-list-item-subtitle>
+                    <v-list-item-subtitle>{{
+                      $t("email")
+                    }}</v-list-item-subtitle>
                   </v-list-item>
                   <v-divider></v-divider>
                   <v-list-item>
-                    <template v-slot:prepend><v-avatar>
-                      <v-icon> mdi-calendar </v-icon>
-                    </v-avatar></template>
+                    <template v-slot:prepend
+                      ><v-avatar>
+                        <v-icon> mdi-calendar </v-icon>
+                      </v-avatar></template
+                    >
 
-                      <v-list-item-title>{{ created }}</v-list-item-title>
+                    <v-list-item-title>{{ created }}</v-list-item-title>
 
-                      <v-list-item-subtitle>{{
-                        $t("created")
-                      }}</v-list-item-subtitle>
+                    <v-list-item-subtitle>{{
+                      $t("created")
+                    }}</v-list-item-subtitle>
                   </v-list-item>
                 </v-list>
               </v-card>
             </v-col>
             <v-col>
               <!-- if user is found on localstorage (this.user is not null/false) -->
-              <v-card style="background: transparent" v-if="user" variant="outlined">
-                <v-card-title><v-icon size="x-large">mdi-gauge</v-icon> &nbsp;{{
+              <v-card
+                style="background: transparent"
+                v-if="user"
+                variant="outlined"
+              >
+                <v-card-title
+                  ><v-icon size="x-large">mdi-gauge</v-icon> &nbsp;{{
                     $t("dashboard.functions")
                   }}</v-card-title
                 >
                 <v-list style="background: transparent" border>
                   <v-list-item>
-                      <v-list-item-title>{{
-                        $t("comp.create")
-                      }}</v-list-item-title>
+                    <v-list-item-title>{{
+                      $t("comp.create")
+                    }}</v-list-item-title>
                     <v-list-item-action>
                       <router-link to="/register-comp">
                         <v-btn
@@ -94,9 +110,9 @@
                   </v-list-item>
                   <v-divider></v-divider>
                   <v-list-item>
-                      <v-list-item-title>{{
-                        $t("cup.create")
-                      }}</v-list-item-title>
+                    <v-list-item-title>{{
+                      $t("cup.create")
+                    }}</v-list-item-title>
                     <v-list-item-action>
                       <v-dialog
                         v-model="createCupDialog"
@@ -213,23 +229,25 @@
                     <v-list style="background: transparent" border>
                       <v-list-item>
                         <v-spacer></v-spacer>
-                          <v-list-item-title><h2>
-                              {{ tweenedCompetitions.toFixed(0) }}
-                            </h2></v-list-item-title
-                          >
+                        <v-list-item-title
+                          ><h2>
+                            {{ tweenedCompetitions.toFixed(0) }}
+                          </h2></v-list-item-title
+                        >
 
-                          <v-list-item-subtitle>{{
-                            $t("comp.plural")
-                          }}</v-list-item-subtitle>
+                        <v-list-item-subtitle>{{
+                          $t("comp.plural")
+                        }}</v-list-item-subtitle>
                         <v-spacer></v-spacer>
-                          <v-list-item-title><h2>
-                              {{ tweenedCups.toFixed(0) }}
-                            </h2></v-list-item-title
-                          >
+                        <v-list-item-title
+                          ><h2>
+                            {{ tweenedCups.toFixed(0) }}
+                          </h2></v-list-item-title
+                        >
 
-                          <v-list-item-subtitle>{{
-                            $t("cup.plural")
-                          }}</v-list-item-subtitle>
+                        <v-list-item-subtitle>{{
+                          $t("cup.plural")
+                        }}</v-list-item-subtitle>
                         <v-spacer></v-spacer>
                       </v-list-item>
                     </v-list>
@@ -256,7 +274,9 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
+import { computed, nextTick, onMounted, reactive, ref, watch } from "vue";
+import { useMainStore } from "@/store";
 import CompCupTable from "../components/CompCupTable.vue";
 import CompetitionService from "../services/CompetitionService";
 import CupService from "../services/CupService";
@@ -264,251 +284,245 @@ import gsap from "gsap";
 import NotificationBar from "../components/NotificationBar.vue";
 import ErrorList from "../components/ErrorList.vue";
 
-export default {
-  name: "Home",
-  components: {
-    CompCupTable,
-    NotificationBar,
-    ErrorList,
-  },
-  data() {
-    return {
-      user: null,
-      created: null,
-      createCupDialog: false,
-      loading: false,
-      publishing: false,
-      name: null,
-      year: null,
-      meaningful_competitions: 1,
-      isThereCompetitionLimit: false,
-      competitions: [],
-      cups: [],
-      errors: [],
-      number_rules: [
-        (value) => !!value || "Kenttä ei voi jäädä tyhjäksi!",
-        (value) => !isNaN(value || "") || "Ei ole numero!",
-      ],
-      snackbar: false,
-      text: "",
+defineOptions({ name: "Home" });
+const store = useMainStore();
 
-      cupsAmount: 0,
-      competitionsAmount: 0,
-      tweenedCompetitions: 0,
-      tweenedCups: 0,
-      animationLength: 1.5,
-    };
-  },
-  computed: {
-    yearOptions() {
-      const years = [];
-      for (let y = new Date().getFullYear() + 1; y >= 2000; y--) {
-        years.push(String(y));
-      }
-      return years;
-    },
-  },
-  watch: {
-    cupsAmount(n) {
-      gsap.to(this, {
-        duration: this.animationLength,
-        tweenedCups: Number(n) || 0,
-      });
-    },
-    competitionsAmount(n) {
-      gsap.to(this, {
-        duration: this.animationLength,
-        tweenedCompetitions: Number(n) || 0,
-      });
-    },
-  },
-  async created() {
-    this.loading = true;
-    const user = JSON.parse(localStorage.getItem("user"));
-    const user_id = user["_id"];
-    // Get competitions
-    const query = { user_id: user_id };
+const user = ref(null);
+const created = ref(null);
+const createCupDialog = ref(false);
+const loading = ref(false);
+const publishing = ref(false);
+const name = ref(null);
+const year = ref(null);
+const meaningful_competitions = ref(1);
+const isThereCompetitionLimit = ref(false);
+const competitions = ref([]);
+const cups = ref([]);
+const errors = ref([]);
+const number_rules = ref([
+  (value) => !!value || "Kenttä ei voi jäädä tyhjäksi!",
+  (value) => !isNaN(value || "") || "Ei ole numero!",
+]);
+const snackbar = ref(false);
+const text = ref("");
+const cupsAmount = ref(0);
+const competitionsAmount = ref(0);
+// GSAP animates these numbers for the count-up effect
+const tweened = reactive({ cups: 0, competitions: 0 });
+const tweenedCups = computed(() => tweened.cups);
+const tweenedCompetitions = computed(() => tweened.competitions);
+const animationLength = ref(1.5);
+const tab = ref(null);
 
-    await CompetitionService.getCompetitions(query)
-      .then((response) => {
-        this.competitions = response;
-        this.competitionsAmount = this.competitions.length;
-        // Convert dates
-        this.competitions.forEach((competition) => {
-          competition.start_date = new Date(competition.start_date);
-          competition.end_date = new Date(competition.end_date);
-        });
-        // Sort them based on start_date so the oldest competitions are the last
-        this.competitions.sort((a, b) => a.start_date < b.start_date);
-      })
-      .catch((err) => {
-        if (err.response) {
-          if (err.response.status === 408) {
-            this.loading = false;
-            return console.log(err);
-          } else {
-            this.loading = false;
-            return console.log(err);
-          }
-        } else {
-          return console.log(err);
-        }
-      });
+const yearOptions = computed(() => {
+  const years = [];
+  for (let y = new Date().getFullYear() + 1; y >= 2000; y--) {
+    years.push(String(y));
+  }
+  return years;
+});
 
-    // Get Cups
-    await CupService.getCups({
-      user_id: user_id,
-    })
-      .then((response) => {
-        this.cups = response;
-        this.cupsAmount = this.cups.length;
-        this.cups.sort((a, b) => {
-          return parseInt(a.year) < parseInt(b.year);
-        });
-      })
-      .catch((err) => {
-        if (err.response) {
-          if (err.response.status === 400) {
-            console.log(err);
-            return this.showError("error.bad-request");
-          }
-          if (err.response.status === 408) {
-            return this.showError("error.timeout");
-          } else {
-            return console.log(err);
-          }
-        } else {
-          return console.log(err);
-        }
-      });
+watch(cupsAmount, (n) => {
+  gsap.to(tweened, {
+    duration: animationLength.value,
+    cups: Number(n) || 0,
+  });
+});
 
-    this.loading = false;
-  },
+watch(competitionsAmount, (n) => {
+  gsap.to(tweened, {
+    duration: animationLength.value,
+    competitions: Number(n) || 0,
+  });
+});
 
-  mounted() {
-    // Set competition in localstorage and vuex to null
-    this.$store.refreshCompetition(null);
-    localStorage.removeItem("competition");
-    this.$store.refreshCup(null);
-    localStorage.removeItem("cup");
-    // Get user info form localstorage
-    if (localStorage.getItem("user") != null) {
-      this.user = JSON.parse(localStorage.getItem("user"));
-      let createdAt = new Date(this.user.createdAt);
-      this.created = `${createdAt.getDate()}.${
-        createdAt.getMonth() + 1
-      }.${createdAt.getFullYear()}`;
-    }
-  },
-  methods: {
-    //filter other characters out for number inputs
-    isNumber(evt, isDate) {
-      var charToCheckCode = 46; // --> .
-      var charToCheck = ".";
+//filter other characters out for number inputs
 
-      if (!isDate) {
-        charToCheckCode = 58; // --> :
-        charToCheck = ":";
-      }
+function isNumber(evt, isDate) {
+  var charToCheckCode = 46; // --> .
+  var charToCheck = ".";
 
-      evt = evt ? evt : window.event;
-      var charCode = evt.which ? evt.which : evt.keyCode;
-      if (
-        charCode > 31 &&
-        (charCode < 48 || charCode > 57) &&
-        charCode !== charToCheckCode
-      ) {
+  if (!isDate) {
+    charToCheckCode = 58; // --> :
+    charToCheck = ":";
+  }
+
+  evt = evt ? evt : window.event;
+  var charCode = evt.which ? evt.which : evt.keyCode;
+  if (
+    charCode > 31 &&
+    (charCode < 48 || charCode > 57) &&
+    charCode !== charToCheckCode
+  ) {
+    evt.preventDefault();
+  } else {
+    if (charCode == charToCheckCode) {
+      if (evt.target.value.indexOf(charToCheck) >= 0) {
         evt.preventDefault();
       } else {
-        if (charCode == charToCheckCode) {
-          if (evt.target.value.indexOf(charToCheck) >= 0) {
-            evt.preventDefault();
-          } else {
-            return true;
-          }
-        } else {
-          return true;
-        }
+        return true;
       }
-    },
-    async publishCup(cup) {
-      cup.isPublic = !cup.isPublic;
-      try {
-        //TODO update only this one variable (competition.normal_points) to database, not the whole competition
-        this.publishing = true;
-        const newValues = {
-          $set: { isPublic: cup.isPublic },
-        };
-        await CupService.updateValues(cup._id, newValues);
-      } catch (err) {
-        console.error(err.message);
-      }
+    } else {
+      return true;
+    }
+  }
+}
 
-      this.publishing = false;
-    },
-    // Add error to error array and direct user to it
-    // Add error to error array and direct user to it
-    showError(error) {
-      this.errors.push(error);
-      this.$nextTick(() => {
-        document.getElementById("error-list").scrollIntoView();
+async function publishCup(cup) {
+  cup.isPublic = !cup.isPublic;
+  try {
+    //TODO update only this one variable (competition.normal_points) to database, not the whole competition
+    publishing.value = true;
+    const newValues = {
+      $set: { isPublic: cup.isPublic },
+    };
+    await CupService.updateValues(cup._id, newValues);
+  } catch (err) {
+    console.error(err.message);
+  }
+
+  publishing.value = false;
+}
+
+// Add error to error array and direct user to it
+// Add error to error array and direct user to it
+
+function showError(error) {
+  errors.value.push(error);
+  nextTick(() => {
+    document.getElementById("error-list").scrollIntoView();
+  });
+}
+
+//TODO dropdown to select current year as highlighted when opened
+
+async function saveCup() {
+  errors.value = [];
+  loading.value = true;
+
+  if (!name.value) {
+    showError("errors.missing-cup-name");
+  }
+  if (!year.value) {
+    showError("errors.missing-cup-year");
+  }
+
+  if (isThereCompetitionLimit.value && !meaningful_competitions.value) {
+    showError("errors.missing-meaningfull-comps");
+  }
+
+  if (!errors.value.length) {
+    const user = JSON.parse(localStorage.getItem("user"));
+    const user_id = user["_id"];
+    const cup = {
+      user_id: user_id,
+      name: name.value,
+      year: year.value,
+      meaningful_competitions: isThereCompetitionLimit.value
+        ? Number(meaningful_competitions.value)
+        : -1,
+    };
+    try {
+      //Submit Cup to database (check 'client\src\CupService.js' and 'server\routes\api\cups.js' to see how this works)
+      await CupService.insertCup([cup]);
+      text.value = "Cup lisätty tietokantaan!";
+      snackbar.value = true;
+      cups.value.push(cup);
+      cupsAmount.value = cups.value.length;
+      cups.value.sort((a, b) => {
+        return parseInt(a.year) < parseInt(b.year);
       });
-    },
-    //TODO dropdown to select current year as highlighted when opened
-    async saveCup() {
-      this.errors = [];
-      this.loading = true;
+      loading.value = false;
+      year.value = null;
+      name.value = null;
+      tab.value = "cups";
+    } catch (err) {
+      errors.value.push(err.message);
+    }
+  }
+  loading.value = false;
+  createCupDialog.value = false;
+  isThereCompetitionLimit.value = false;
+  meaningful_competitions.value = 1;
+}
 
-      if (!this.name) {
-        this.showError("errors.missing-cup-name");
-      }
-      if (!this.year) {
-        this.showError("errors.missing-cup-year");
-      }
+// Runs when the component is created
+(async () => {
+  loading.value = true;
+  const user = JSON.parse(localStorage.getItem("user"));
+  const user_id = user["_id"];
+  // Get competitions
+  const query = { user_id: user_id };
 
-      if (this.isThereCompetitionLimit && !this.meaningful_competitions) {
-        this.showError("errors.missing-meaningfull-comps");
-      }
-
-      if (!this.errors.length) {
-        const user = JSON.parse(localStorage.getItem("user"));
-        const user_id = user["_id"];
-        const cup = {
-          user_id: user_id,
-          name: this.name,
-          year: this.year,
-          meaningful_competitions: this.isThereCompetitionLimit
-            ? Number(this.meaningful_competitions)
-            : -1,
-        };
-        try {
-          //Submit Cup to database (check 'client\src\CupService.js' and 'server\routes\api\cups.js' to see how this works)
-          await CupService.insertCup([cup]);
-          this.text = "Cup lisätty tietokantaan!";
-          this.snackbar = true;
-          /*
-          this.cups = await CupService.getCups({
-            user_id: user_id,
-          });
-          */
-          this.cups.push(cup);
-          this.cupsAmount = this.cups.length;
-          this.cups.sort((a, b) => {
-            return parseInt(a.year) < parseInt(b.year);
-          });
-          this.loading = false;
-          this.year = null;
-          this.name = null;
-          this.tab = "cups";
-        } catch (err) {
-          this.errors.push(err.message);
+  await CompetitionService.getCompetitions(query)
+    .then((response) => {
+      competitions.value = response;
+      competitionsAmount.value = competitions.value.length;
+      // Convert dates
+      competitions.value.forEach((competition) => {
+        competition.start_date = new Date(competition.start_date);
+        competition.end_date = new Date(competition.end_date);
+      });
+      // Sort them based on start_date so the oldest competitions are the last
+      competitions.value.sort((a, b) => a.start_date < b.start_date);
+    })
+    .catch((err) => {
+      if (err.response) {
+        if (err.response.status === 408) {
+          loading.value = false;
+          return console.log(err);
+        } else {
+          loading.value = false;
+          return console.log(err);
         }
+      } else {
+        return console.log(err);
       }
-      this.loading = false;
-      this.createCupDialog = false;
-      this.isThereCompetitionLimit = false;
-      this.meaningful_competitions = 1;
-    },
-  },
-};
+    });
+
+  // Get Cups
+  await CupService.getCups({
+    user_id: user_id,
+  })
+    .then((response) => {
+      cups.value = response;
+      cupsAmount.value = cups.value.length;
+      cups.value.sort((a, b) => {
+        return parseInt(a.year) < parseInt(b.year);
+      });
+    })
+    .catch((err) => {
+      if (err.response) {
+        if (err.response.status === 400) {
+          console.log(err);
+          return showError("error.bad-request");
+        }
+        if (err.response.status === 408) {
+          return showError("error.timeout");
+        } else {
+          return console.log(err);
+        }
+      } else {
+        return console.log(err);
+      }
+    });
+
+  loading.value = false;
+})();
+
+onMounted(() => {
+  // Set competition in localstorage and vuex to null
+  store.refreshCompetition(null);
+  localStorage.removeItem("competition");
+  store.refreshCup(null);
+  localStorage.removeItem("cup");
+  // Get user info form localstorage
+  if (localStorage.getItem("user") != null) {
+    user.value = JSON.parse(localStorage.getItem("user"));
+    let createdAt = new Date(user.value.createdAt);
+    created.value = `${createdAt.getDate()}.${
+      createdAt.getMonth() + 1
+    }.${createdAt.getFullYear()}`;
+  }
+});
 </script>

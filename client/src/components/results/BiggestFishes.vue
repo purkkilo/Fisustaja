@@ -26,7 +26,7 @@
             ></v-text-field>
           </v-card-title>
           <v-data-table
-            :headers="$tableHeaders(headers)"
+            :headers="tableHeaders(headers)"
             :items="biggest_fishes_results"
             :search="searchText"
           >
@@ -39,7 +39,7 @@
             <template v-slot:[`item.placement`]="{ item }">
               <v-chip
                 :color="getColor(item.placement)"
-                :variant="$store.getTheme ? 'outlined' : 'flat'"
+                :variant="store.getTheme ? 'outlined' : 'flat'"
                 >{{ item.placement }}.</v-chip
               >
             </template>
@@ -58,7 +58,7 @@
         <p
           class="flow-text"
           v-bind:class="{
-            'text-white': $store.getTheme,
+            'text-white': store.getTheme,
           }"
         >
           {{ $t("no-results") }}
@@ -71,28 +71,25 @@
     </v-row>
   </div>
 </template>
-<script>
-import { getColorPoints, getColor } from "@/shared";
+<script setup>
+import { tableHeaders } from "@/utils/tableHeaders";
+import { useMainStore } from "@/store";
+import { ref } from "vue";
+import { getColorPoints, getColor } from "@/utils/colors";
 
-export default {
-  name: "BiggestFishes",
-  components: {},
-  props: [
-    "loading",
-    "fish_names",
-    "selected_biggest_fish",
-    "biggest_fishes_results",
-    "search_fishes",
-    "headers",
-  ],
-  data() {
-    // Vue 3 can't v-model a prop: the search box edits a local copy (as it did in Vue 2)
-    return { searchText: this.search_fishes || "" };
-  },
-  created() {
-    this.getColorPoints = getColorPoints;
-    this.getColor = getColor;
-  },
-};
+const store = useMainStore();
+defineOptions({ name: "BiggestFishes" });
+const props = defineProps([
+  "loading",
+  "fish_names",
+  "selected_biggest_fish",
+  "biggest_fishes_results",
+  "search_fishes",
+  "headers",
+]);
+
+const searchText = ref(props.search_fishes || "");
+
+// Runs when the component is created
 </script>
 <style scoped></style>

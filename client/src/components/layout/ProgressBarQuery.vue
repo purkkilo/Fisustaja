@@ -7,8 +7,6 @@
   ></v-progress-linear>
 </template>
 
-<script>
-export default {
-  name: "ProgressBarQuery",
-};
+<script setup>
+defineOptions({ name: "ProgressBarQuery" });
 </script>

@@ -4,20 +4,19 @@
   </v-snackbar>
 </template>
 
-<script>
-export default {
-  name: "NotificationBar",
-  props: ["text", "snackbar"],
-  watch: {
-    snackbar(newVal) {
-      this.show = newVal;
-    },
+<script setup>
+import { ref, watch } from "vue";
+
+defineOptions({ name: "NotificationBar" });
+const props = defineProps(["text", "snackbar"]);
+
+const timeout = ref(4000);
+const show = ref(false);
+
+watch(
+  () => props.snackbar,
+  (newVal) => {
+    show.value = newVal;
   },
-  data() {
-    return {
-      timeout: 4000,
-      show: false,
-    };
-  },
-};
+);
 </script>

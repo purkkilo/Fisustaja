@@ -28,7 +28,7 @@
                 ></v-text-field>
               </v-card-title>
               <v-data-table
-                :headers="$tableHeaders(headers)"
+                :headers="tableHeaders(headers)"
                 :items="results"
                 :search="searchText"
               >
@@ -44,7 +44,7 @@
                 <template v-slot:[`item.placement`]="{ item }">
                   <v-chip
                     :color="getColor(item.placement)"
-                    :variant="$store.getTheme ? 'outlined' : 'flat'"
+                    :variant="store.getTheme ? 'outlined' : 'flat'"
                     >{{ item.placement }}</v-chip
                   >
                 </template>
@@ -90,7 +90,7 @@
             <p
               class="flow-text"
               v-bind:class="{
-                'text-white': $store.getTheme,
+                'text-white': store.getTheme,
               }"
             >
               {{ $t("no-results") }}...
@@ -105,29 +105,26 @@
     </v-row>
   </div>
 </template>
-<script>
-import { getColorPoints, getColor } from "@/shared";
+<script setup>
+import { tableHeaders } from "@/utils/tableHeaders";
+import { useMainStore } from "@/store";
+import { ref } from "vue";
+import { getColorPoints, getColor } from "@/utils/colors";
 
-export default {
-  name: "NormalComp",
-  components: {},
-  props: [
-    "loading",
-    "headers",
-    "search",
-    "results",
-    "selected_normal",
-    "normal_points",
-    "fish_names",
-  ],
-  data() {
-    // Vue 3 can't v-model a prop: the search box edits a local copy (as it did in Vue 2)
-    return { searchText: this.search || "" };
-  },
-  created() {
-    this.getColorPoints = getColorPoints;
-    this.getColor = getColor;
-  },
-};
+const store = useMainStore();
+defineOptions({ name: "NormalComp" });
+const props = defineProps([
+  "loading",
+  "headers",
+  "search",
+  "results",
+  "selected_normal",
+  "normal_points",
+  "fish_names",
+]);
+
+const searchText = ref(props.search || "");
+
+// Runs when the component is created
 </script>
 <style scoped></style>

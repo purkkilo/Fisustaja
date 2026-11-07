@@ -26,7 +26,7 @@
             ></v-text-field>
           </v-card-title>
           <v-data-table
-            :headers="$tableHeaders(headers)"
+            :headers="tableHeaders(headers)"
             :items="biggest_amounts_results"
             :search="searchText"
             :loading="loading"
@@ -40,7 +40,7 @@
             <template v-slot:[`item.placement`]="{ item }">
               <v-chip
                 :color="getColor(item.placement)"
-                :variant="$store.getTheme ? 'outlined' : 'flat'"
+                :variant="store.getTheme ? 'outlined' : 'flat'"
                 >{{ item.placement }}.</v-chip
               >
             </template>
@@ -59,7 +59,7 @@
         <p
           class="flow-text"
           v-bind:class="{
-            'text-white': $store.getTheme,
+            'text-white': store.getTheme,
           }"
         >
           {{ $t("no-results") }}
@@ -72,28 +72,25 @@
     </v-row>
   </div>
 </template>
-<script>
-import { getColorPoints, getColor } from "@/shared";
+<script setup>
+import { tableHeaders } from "@/utils/tableHeaders";
+import { useMainStore } from "@/store";
+import { ref } from "vue";
+import { getColorPoints, getColor } from "@/utils/colors";
 
-export default {
-  name: "BiggestAmounts",
-  components: {},
-  props: [
-    "loading",
-    "fish_names",
-    "selected_biggest_amount",
-    "biggest_amounts_results",
-    "search_amounts",
-    "headers",
-  ],
-  data() {
-    // Vue 3 can't v-model a prop: the search box edits a local copy (as it did in Vue 2)
-    return { searchText: this.search_amounts || "" };
-  },
-  created() {
-    this.getColorPoints = getColorPoints;
-    this.getColor = getColor;
-  },
-};
+const store = useMainStore();
+defineOptions({ name: "BiggestAmounts" });
+const props = defineProps([
+  "loading",
+  "fish_names",
+  "selected_biggest_amount",
+  "biggest_amounts_results",
+  "search_amounts",
+  "headers",
+]);
+
+const searchText = ref(props.search_amounts || "");
+
+// Runs when the component is created
 </script>
 <style scoped></style>

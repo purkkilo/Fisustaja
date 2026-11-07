@@ -65,92 +65,92 @@
     </v-card>
   </v-container>
 </template>
-<script>
+<script setup>
+import { nextTick, onMounted, ref } from "vue";
+import { useMainStore } from "@/store";
+import { useRouter, useRoute } from "vue-router";
 import UserService from "../services/UserService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
 import ErrorList from "../components/ErrorList.vue";
 
-export default {
-  data() {
-    return {
-      errors: [],
-      name: null,
-      password: null,
-      loading: false,
-      showPassword: false,
+const store = useMainStore();
+const router = useRouter();
+const route = useRoute();
+
+const errors = ref([]);
+const name = ref(null);
+const password = ref(null);
+const loading = ref(false);
+const showPassword = ref(false);
+
+// Add error to error array and direct user to it
+
+function showError(error) {
+  errors.value.push(error);
+  nextTick(() => {
+    document.getElementById("error-list").scrollIntoView();
+  });
+}
+
+// Submit login credentials and confirm user login
+
+async function handleSubmit(e) {
+  e.preventDefault();
+  errors.value = [];
+  if (!name.value) {
+    showError("errors.missing-username");
+  }
+  if (!password.value) {
+    showError("errors.missing-password");
+  }
+  // If no errors in array, proceed to login
+  if (!errors.value.length) {
+    loading.value = true;
+    // user object
+    const user = {
+      name: name.value,
+      email: name.value,
+      password: password.value,
     };
-  },
-  components: {
-    ProgressBarQuery,
-    ErrorList,
-  },
-  mounted() {
-    var input = document.getElementById("password");
-    input.addEventListener("keyup", function (event) {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        document.getElementById("sbtn").click();
-      }
-    });
-  },
-  methods: {
-    // Add error to error array and direct user to it
-    showError(error) {
-      this.errors.push(error);
-      this.$nextTick(() => {
-        document.getElementById("error-list").scrollIntoView();
-      });
-    },
-    // Submit login credentials and confirm user login
-    async handleSubmit(e) {
-      e.preventDefault();
-      this.errors = [];
-      if (!this.name) {
-        this.showError("errors.missing-username");
-      }
-      if (!this.password) {
-        this.showError("errors.missing-password");
-      }
-      // If no errors in array, proceed to login
-      if (!this.errors.length) {
-        this.loading = true;
-        // user object
-        const user = {
-          name: this.name,
-          email: this.name,
-          password: this.password,
-        };
-        try {
-          // Login user  (check 'client\src\UserService.js' and 'server\routes\api\users.js' to see how this works)
-          let res = await UserService.loginUser(user);
-          if (res.success) {
-            this.$store.is_admin = res.is_admin;
-            this.$store.logged_in = true;
-            if (this.$route.params.nextUrl != null) {
-              this.$router.push(this.$route.params.nextUrl);
-            }
-            // if route.params.nextURL not set, redirect to dashboard
-            else {
-              this.$router.push({ path: "/dashboard" });
-            }
-            this.loading = false;
-          } else {
-            if (res.status === 401 || res.status === 404) {
-              this.loading = false;
-              this.showError("errors.details-not-match");
-              return;
-            } else {
-              this.loading = false;
-              this.showError("errors.something-wrong");
-              console.log(res.error, res.status);
-            }
-          }
-        } catch (error) {
-          this.showError("errors.no-user-found");
-          //this.$router.push({ path: "/login" });
+    try {
+      // Login user  (check 'client\src\UserService.js' and 'server\routes\api\users.js' to see how this works)
+      let res = await UserService.loginUser(user);
+      if (res.success) {
+        store.is_admin = res.is_admin;
+        store.logged_in = true;
+        if (route.params.nextUrl != null) {
+          router.push(route.params.nextUrl);
+        }
+        // if route.params.nextURL not set, redirect to dashboard
+        else {
+          router.push({ path: "/dashboard" });
+        }
+        loading.value = false;
+      } else {
+        if (res.status === 401 || res.status === 404) {
+          loading.value = false;
+          showError("errors.details-not-match");
+          return;
+        } else {
+          loading.value = false;
+          showError("errors.something-wrong");
+          console.log(res.error, res.status);
         }
       }
-    },
-  },
-};
+    } catch (error) {
+      showError("errors.no-user-found");
+      //this.$router.push({ path: "/login" });
+    }
+  }
+}
+
+onMounted(() => {
+  var input = document.getElementById("password");
+  input.addEventListener("keyup", function (event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      document.getElementById("sbtn").click();
+    }
+  });
+});
 </script>

@@ -33,7 +33,8 @@
       <v-col :cols="$vuetify.display.width < 800 ? 12 : 6">
         <div v-for="(link, i) in links" :key="i">
           <v-hover v-slot="{ isHovering, props }">
-            <v-card v-bind="props"
+            <v-card
+              v-bind="props"
               :key="i"
               tile
               :elevation="isHovering ? 3 : 2"
@@ -47,11 +48,7 @@
               <v-card-actions>
                 <v-spacer></v-spacer>
                 <router-link :to="link.path">
-                  <v-chip
-                    class="ma-2"
-                    :color="link.color"
-                    variant="outlined"
-                  >
+                  <v-chip class="ma-2" :color="link.color" variant="outlined">
                     {{ $t("go-to") }}
                     <v-icon end>
                       {{ link.icon }}
@@ -67,63 +64,64 @@
     </v-row>
   </v-container>
 </template>
-<script>
-export default {
-  name: "Home",
-  components: {},
-  data() {
-    return {
-      items: [
-        {
-          text: "home.comp",
-          icon: "mdi-seal",
-          path: "/public-results",
-          color: "yellow-darken-2",
-        },
-        {
-          text: "home.cup",
-          icon: "mdi-trophy",
-          path: "/public-cups",
-          color: "yellow-darken-1",
-        },
-      ],
-      links: [],
-      logged_in: false,
-      disabled: false,
-    };
+<script setup>
+import { onMounted, ref, watch } from "vue";
+import { useMainStore } from "@/store";
+
+defineOptions({ name: "Home" });
+const store = useMainStore();
+
+const items = ref([
+  {
+    text: "home.comp",
+    icon: "mdi-seal",
+    path: "/public-results",
+    color: "yellow-darken-2",
   },
-  watch: {
-    "$store.logged_in"(newValue) {
-      if (newValue) {
-        this.links = [
-          {
-            text: "nav.dashboard",
-            icon: "mdi-view-dashboard",
-            path: "/dashboard",
-            color: "yellow-darken-2",
-          },
-          ...this.items,
-        ];
-      } else {
-        this.links = this.items;
-      }
-    },
+  {
+    text: "home.cup",
+    icon: "mdi-trophy",
+    path: "/public-cups",
+    color: "yellow-darken-1",
   },
-  async mounted() {
-    this.links = this.items;
-    if (this.$store.logged_in) {
-      this.links = [
+]);
+const links = ref([]);
+const logged_in = ref(false);
+const disabled = ref(false);
+
+watch(
+  () => store.logged_in,
+  (newValue) => {
+    if (newValue) {
+      links.value = [
         {
           text: "nav.dashboard",
           icon: "mdi-view-dashboard",
           path: "/dashboard",
           color: "yellow-darken-2",
         },
-        ...this.items,
+        ...items.value,
       ];
+    } else {
+      links.value = items.value;
     }
   },
-};
+);
+
+onMounted(async () => {
+  links.value = items.value;
+  if (store.logged_in) {
+    links.value = [
+      {
+        text: "nav.dashboard",
+        icon: "mdi-view-dashboard",
+        path: "/dashboard",
+        color: "yellow-darken-2",
+      },
+      ...items.value,
+    ];
+  }
+});
 </script>
 <style scoped>
 .slideRight {

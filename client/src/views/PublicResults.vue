@@ -9,11 +9,7 @@
         wide: $vuetify.display.width >= 1200,
       }"
     >
-      <v-card
-        style="background: transparent"
-        elevation="3"
-        variant="outlined"
-      >
+      <v-card style="background: transparent" elevation="3" variant="outlined">
         <v-row>
           <v-dialog v-model="pdfDialog" width="500">
             <v-card>
@@ -230,7 +226,8 @@
               </v-col>
             </v-row>
             <!-- Tabs -->
-            <v-tabs slider-color="blue-darken-4"
+            <v-tabs
+              slider-color="blue-darken-4"
               v-model="tab"
               bg-color="blue-lighten-2"
               color="blue-darken-4"
@@ -278,8 +275,8 @@
               <!-- Tilastoja -->
               <v-window-item
                 v-bind:class="{
-                  inputarea: !$store.getTheme,
-                  'inputarea-dark': $store.getTheme,
+                  inputarea: !store.getTheme,
+                  'inputarea-dark': store.getTheme,
                 }"
                 :value="'stats'"
               >
@@ -307,8 +304,8 @@
               <!-- Normaalikilpailu -->
               <v-window-item
                 v-bind:class="{
-                  inputarea: !$store.getTheme,
-                  'inputarea-dark': $store.getTheme,
+                  inputarea: !store.getTheme,
+                  'inputarea-dark': store.getTheme,
                 }"
                 :value="'normal-competition'"
               >
@@ -322,8 +319,8 @@
                       variant="outlined"
                     >
                       <template v-slot:item="{ item, props }">
-                <v-list-item v-bind="props" :title="$t(item)" />
-              </template>
+                        <v-list-item v-bind="props" :title="$t(item)" />
+                      </template>
                       <template v-slot:selection="{ item }">
                         <span>{{ $t(item) }}</span>
                       </template>
@@ -364,8 +361,8 @@
               <!-- Tiimikilpailu -->
               <v-window-item
                 v-bind:class="{
-                  inputarea: !$store.getTheme,
-                  'inputarea-dark': $store.getTheme,
+                  inputarea: !store.getTheme,
+                  'inputarea-dark': store.getTheme,
                 }"
                 :value="'team-competition'"
                 v-if="isTeamCompetition"
@@ -387,8 +384,8 @@
               <!-- Suurimmat kalat -->
               <v-window-item
                 v-bind:class="{
-                  inputarea: !$store.getTheme,
-                  'inputarea-dark': $store.getTheme,
+                  inputarea: !store.getTheme,
+                  'inputarea-dark': store.getTheme,
                 }"
                 :value="'biggest-fishes'"
               >
@@ -436,8 +433,8 @@
               <!-- Suurimmat kalasaaliit -->
               <v-window-item
                 v-bind:class="{
-                  inputarea: !$store.getTheme,
-                  'inputarea-dark': $store.getTheme,
+                  inputarea: !store.getTheme,
+                  'inputarea-dark': store.getTheme,
                 }"
                 :value="'biggest-fish-amounts'"
               >
@@ -513,11 +510,13 @@
     </v-container>
   </div>
 </template>
-<script>
+<script setup>
+import { useMainStore } from "@/store";
+import { nextTick, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import CompetitionService from "../services/CompetitionService";
 import ResultService from "../services/ResultService";
 import FishService from "../services/FishService";
-
 import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
 import Stats from "../components/results/Stats.vue";
 import TeamComp from "../components/results/TeamComp.vue";
@@ -528,453 +527,441 @@ import {
   calculateNormalResults,
   calculateBiggestFishes,
   calculateBiggestAmounts,
-  initChartData,
-  saveAllAsPDF,
-  saveAsPDF,
-  saveStatsAsPDF,
-  resizeChartForPDF,
-  formatDateToLocaleDateString,
-  getYear,
-} from "../shared";
+} from "@/utils/results";
+import { initChartData, resizeChartForPDF } from "@/utils/charts";
+import { saveAllAsPDF, saveAsPDF, saveStatsAsPDF } from "@/pdf";
+import { formatDateToLocaleDateString, getYear } from "@/utils/format";
 import NotificationBar from "../components/NotificationBar.vue";
 
-export default {
-  name: "PublicResults",
-  components: {
-    ProgressBarQuery,
-    Stats,
-    TeamComp,
-    NormalComp,
-    BiggestFishes,
-    BiggestAmounts,
-    NotificationBar,
-  },
-  data() {
-    return {
-      pdfDialog: false,
-      pdf: null,
-      isLandscape: false,
-      competitions: [],
-      competition: null,
-      selected_competition: null,
-      loading: false,
-      loading_competition: false,
-      tab: null,
-      signees: [],
-      fish_names: [],
-      fish_amount_names: [],
-      table_fish_names: [],
-      results: [],
-      normal_points: [],
-      normal_weights: [],
-      team_results: [],
-      biggest_fishes: {},
-      biggest_fishes_results: [],
-      selected_biggest_fish: null,
-      biggest_amounts: {},
-      biggest_amounts_results: [],
-      selected_biggest_amount: null,
-      results_found_fishes: "",
-      results_found_amounts: "",
-      isTeamCompetition: false,
-      calculated_total_weights: null,
-      calculated_fish_weights: null,
-      selected_normal: null,
-      fishes_chart: null,
-      signees_chart: null,
-      normal_options: ["fishes", "points", "signees-signed"],
-      headers: [],
-      biggest_fishes_headers: [],
-      biggest_amounts_headers: [],
-      normal_headers: [
-        { text: "placement", value: "placement" },
-        { text: "boat-number", value: "boat_number" },
-        { text: "captain-name", value: "captain_name" },
-        { text: "temp-captain-name", value: "temp_captain_name" },
-        { text: "locality", value: "locality" },
-        { text: "points", value: "total_points" },
-      ],
-      cup_headers: [
-        { text: "placement", value: "placement" },
-        { text: "boat-number", value: "boat_number" },
-        { text: "captain-name", value: "captain_name" },
-        { text: "temp-captain-name", value: "temp_captain_name" },
-        { text: "locality", value: "locality" },
-        { text: "points", value: "total_points" },
-        {
-          text: "cup.normal",
-          value: "cup_points_total",
-        },
-      ],
-      weight_headers: [],
-      signee_headers: [],
-      team_headers: [
-        { text: "placement", value: "placement" },
-        { text: "team", value: "name" },
-        { text: "name", value: "captain_name_1" },
-        { text: "name", value: "captain_name_2" },
-        { text: "name", value: "captain_name_3" },
-        { text: "points", value: "points" },
-      ],
-      search: "",
-      search_team: "",
-      search_fishes: "",
-      search_amounts: "",
-      selected_print: [],
-      dialog: false,
-      signee_chart_data: null,
-      fishes_chart_data: null,
-      fishes_chart_title: null,
-      signee_chart_title: null,
-      snackbar: false,
-      text: "",
+const store = useMainStore();
+defineOptions({ name: "PublicResults" });
+const { t, locale } = useI18n();
 
-      hasGottenFishCount: 0,
-    };
+const pdfDialog = ref(false);
+const pdf = ref(null);
+const isLandscape = ref(false);
+const competitions = ref([]);
+const competition = ref(null);
+const selected_competition = ref(null);
+const loading = ref(false);
+const loading_competition = ref(false);
+const tab = ref(null);
+const signees = ref([]);
+const fish_names = ref([]);
+const fish_amount_names = ref([]);
+const table_fish_names = ref([]);
+const results = ref([]);
+const normal_points = ref([]);
+const normal_weights = ref([]);
+const team_results = ref([]);
+const biggest_fishes = ref({});
+const biggest_fishes_results = ref([]);
+const selected_biggest_fish = ref(null);
+const biggest_amounts = ref({});
+const biggest_amounts_results = ref([]);
+const selected_biggest_amount = ref(null);
+const results_found_fishes = ref("");
+const results_found_amounts = ref("");
+const isTeamCompetition = ref(false);
+const calculated_total_weights = ref(null);
+const calculated_fish_weights = ref(null);
+const selected_normal = ref(null);
+const fishes_chart = ref(null);
+const signees_chart = ref(null);
+const normal_options = ref(["fishes", "points", "signees-signed"]);
+const headers = ref([]);
+const biggest_fishes_headers = ref([]);
+const biggest_amounts_headers = ref([]);
+const normal_headers = ref([
+  { text: "placement", value: "placement" },
+  { text: "boat-number", value: "boat_number" },
+  { text: "captain-name", value: "captain_name" },
+  { text: "temp-captain-name", value: "temp_captain_name" },
+  { text: "locality", value: "locality" },
+  { text: "points", value: "total_points" },
+]);
+const cup_headers = ref([
+  { text: "placement", value: "placement" },
+  { text: "boat-number", value: "boat_number" },
+  { text: "captain-name", value: "captain_name" },
+  { text: "temp-captain-name", value: "temp_captain_name" },
+  { text: "locality", value: "locality" },
+  { text: "points", value: "total_points" },
+  {
+    text: "cup.normal",
+    value: "cup_points_total",
   },
-  created() {},
-  async mounted() {
-    /* eslint-disable no-unused-vars */
-    try {
-      this.loading = true;
-      // Query competitions that are public
-      const query = { isPublic: true };
-      this.competitions = await CompetitionService.getCompetitions(query);
-      if (this.competitions.length) {
-        this.competitions.forEach((competition) => {
-          competition.start_date = new Date(competition.start_date);
-          competition.end_date = new Date(competition.end_date);
-          competition.select = `${
-            competition.name
-          }, ${formatDateToLocaleDateString(competition.start_date)} (${
-            competition.cup_name ? competition.cup_name : ""
-          })`;
-        });
-        // Sort them based on start_date so the oldest competitions are the last
-        this.competitions.sort((a, b) => {
-          return a.start_date < b.start_date;
-        });
-      } else {
-        this.signees = [];
-        this.biggest_fishes = [];
-        this.biggest_amounts = [];
-      }
-    } catch (error) {
-      console.error(error.message);
+]);
+const weight_headers = ref([]);
+const signee_headers = ref([]);
+const team_headers = ref([
+  { text: "placement", value: "placement" },
+  { text: "team", value: "name" },
+  { text: "name", value: "captain_name_1" },
+  { text: "name", value: "captain_name_2" },
+  { text: "name", value: "captain_name_3" },
+  { text: "points", value: "points" },
+]);
+const search = ref("");
+const search_team = ref("");
+const search_fishes = ref("");
+const search_amounts = ref("");
+const selected_print = ref([]);
+const dialog = ref(false);
+const signee_chart_data = ref(null);
+const fishes_chart_data = ref(null);
+const fishes_chart_title = ref(null);
+const signee_chart_title = ref(null);
+const snackbar = ref(false);
+const text = ref("");
+const hasGottenFishCount = ref(0);
+
+function pdfWrapper() {
+  let comp_type = "";
+  let selected = "";
+
+  if (pdf.value === "Tilastoja") {
+    resizeChartForPDF();
+    saveStatsAsPDF(
+      pdf.value,
+      isLandscape.value ? "landscape" : "portrait",
+      competition.value,
+      signees.value,
+      hasGottenFishCount.value,
+    );
+  } else {
+    if (pdf.value === "#normal-table") {
+      comp_type = `${t("normal-results")} (${t(selected_normal.value)})`;
     }
-    this.loading = false;
-  },
+    if (pdf.value === "#team-table") {
+      comp_type = `${t("team-results")}`;
+    }
+    if (pdf.value === "#biggest-fishes-table") {
+      selected =
+        selected_biggest_fish.value === "all" ||
+        selected_biggest_fish.value === "winners"
+          ? t(selected_biggest_fish.value)
+          : selected_biggest_fish.value;
+      comp_type = `${t("biggest-fishes")} (${selected})`;
+    }
+    if (pdf.value === "#biggest-amounts-table") {
+      selected =
+        selected_biggest_amount.value === "all" ||
+        selected_biggest_amount.value === "winners"
+          ? t(selected_biggest_amount.value)
+          : selected_biggest_amount.value;
+      comp_type = `${t("biggest-amounts")} (${selected})`;
+    }
 
-  methods: {
-    getYear: getYear,
-    formatDateToLocaleDateString: formatDateToLocaleDateString,
-    pdfWrapper() {
-      let comp_type = "";
-      let selected = "";
+    saveAsPDF(
+      comp_type,
+      pdf.value,
+      isLandscape.value ? "landscape" : "portrait",
+      competition.value,
+      signees.value,
+      selected_normal.value,
+      selected_biggest_fish.value,
+      selected_biggest_amount.value,
+      normal_points.value,
+      normal_weights.value,
+      biggest_fishes_results.value,
+      biggest_amounts_results.value,
+      team_results.value,
+      table_fish_names.value,
+    );
+  }
+}
 
-      if (this.pdf === "Tilastoja") {
-        resizeChartForPDF();
-        saveStatsAsPDF(
-          this.pdf,
-          this.isLandscape ? "landscape" : "portrait",
-          this.competition,
-          this.signees,
-          this.hasGottenFishCount
-        );
-      } else {
-        if (this.pdf === "#normal-table") {
-          comp_type = `${this.$t("normal-results")} (${this.$t(
-            this.selected_normal
-          )})`;
-        }
-        if (this.pdf === "#team-table") {
-          comp_type = `${this.$t("team-results")}`;
-        }
-        if (this.pdf === "#biggest-fishes-table") {
-          selected =
-            this.selected_biggest_fish === "all" ||
-            this.selected_biggest_fish === "winners"
-              ? this.$t(this.selected_biggest_fish)
-              : this.selected_biggest_fish;
-          comp_type = `${this.$t("biggest-fishes")} (${selected})`;
-        }
-        if (this.pdf === "#biggest-amounts-table") {
-          selected =
-            this.selected_biggest_amount === "all" ||
-            this.selected_biggest_amount === "winners"
-              ? this.$t(this.selected_biggest_amount)
-              : this.selected_biggest_amount;
-          comp_type = `${this.$t("biggest-amounts")} (${selected})`;
-        }
+function choosePrints() {
+  dialog.value = false;
+  if (selected_print.value.length) {
+    let results = saveAllAsPDF(
+      tab.value,
+      isLandscape.value ? "landscape" : "portrait",
+      text.value,
+      snackbar.value,
+      selected_biggest_fish.value,
+      selected_biggest_amount.value,
+      selected_print.value,
+      competition.value,
+      signees.value,
+      hasGottenFishCount.value,
+      biggest_fishes.value,
+      biggest_amounts.value,
+      normal_points.value,
+      normal_weights.value,
+      team_results.value,
+      table_fish_names.value,
+    );
+    tab.value = results.tab;
+    text.value = results.text;
+    snackbar.value = results.snackbar;
+  }
+}
 
-        saveAsPDF(
-          comp_type,
-          this.pdf,
-          this.isLandscape ? "landscape" : "portrait",
-          this.competition,
-          this.signees,
-          this.selected_normal,
-          this.selected_biggest_fish,
-          this.selected_biggest_amount,
-          this.normal_points,
-          this.normal_weights,
-          this.biggest_fishes_results,
-          this.biggest_amounts_results,
-          this.team_results,
-          this.table_fish_names
-        );
-      }
-    },
-    choosePrints() {
-      this.dialog = false;
-      if (this.selected_print.length) {
-        let results = saveAllAsPDF(
-          this.tab,
-          this.isLandscape ? "landscape" : "portrait",
-          this.text,
-          this.snackbar,
-          this.selected_biggest_fish,
-          this.selected_biggest_amount,
-          this.selected_print,
-          this.competition,
-          this.signees,
-          this.hasGottenFishCount,
-          this.biggest_fishes,
-          this.biggest_amounts,
-          this.normal_points,
-          this.normal_weights,
-          this.team_results,
-          this.table_fish_names
-        );
-        this.tab = results.tab;
-        this.text = results.text;
-        this.snackbar = results.snackbar;
-      }
-    },
-    cancelSelection() {
-      this.competition = null;
-      this.selected_competition = null;
-    },
-    // "Wrapper" to calculate all the results at once
-    calculateAll() {
-      let results = calculateNormalResults(this.competition, this.signees);
-      this.signees = results.signees.sort(
-        (a, b) => a.boat_number - b.boat_number
-      );
-      this.normal_points = results.normal_points;
-      this.normal_weights = results.normal_weights;
+function cancelSelection() {
+  competition.value = null;
+  selected_competition.value = null;
+}
 
-      this.switchNormalResults();
-      this.switchBiggestFishes();
-      this.switchBiggestAmounts();
-    },
-    // Switch table headers and columns based on this.selected_normal value (v-select)
-    switchNormalResults() {
-      // If "Pisteet" selected in v-select, update headers and this.results (table data)
-      if (!this.selected_normal) this.selected_normal = "fishes";
-      if (this.selected_normal === "points") {
-        this.results = this.normal_points;
-        if (this.competition.isCupCompetition) {
-          this.headers = this.cup_headers;
-        } else {
-          this.headers = this.normal_headers;
-        }
-      }
-      // If "Kalat" selected in v-select, update headers and this.results (table data)
-      if (this.selected_normal === "fishes") {
-        this.headers = this.weight_headers;
-        this.results = this.normal_weights;
-      }
-      if (this.selected_normal === "signees-signed") {
-        this.headers = this.signee_headers;
-        this.results = this.signees;
-      }
-    },
-    switchBiggestFishes() {
-      let results = calculateBiggestFishes(
-        this.biggest_fishes,
-        this.table_fish_names,
-        this.selected_biggest_fish
-      );
-      this.selected_biggest_fish = results.selected_fish;
-      this.biggest_fishes_headers = results.header;
-      this.biggest_fishes_results = results.results;
-    },
-    switchBiggestAmounts() {
-      let results = calculateBiggestAmounts(
-        this.biggest_amounts,
-        this.selected_biggest_amount,
-        this.table_fish_names
-      );
-      this.selected_biggest_amount = results.selected_amount;
-      this.biggest_amounts_headers = results.header;
-      this.biggest_amounts_results = results.results;
-    },
-    // Fetch competition from database, and update all the arrays
-    async refreshCompetition(reload, comp) {
-      if (comp) {
-        this.loading_competition = true;
-        // Load from database
-        if (reload) {
-          //Get competition from database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
-          // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
-          //TODO make a test for this?
-          this.competition = comp;
-          // Else update and calculate from picked competition
-          this.fish_names = []; // Fish names, including "Voittajat"
-          this.fish_amount_names = [];
-          this.table_fish_names = []; // only fish names
+// "Wrapper" to calculate all the results at once
 
-          this.fish_names.push("Kaikki");
-          this.fish_amount_names.push("Kaikki");
-          this.weight_headers = [
-            { text: "Sijoitus", value: "placement" },
-            { text: "Kilp. numero", value: "boat_number" },
-            { text: "Kippari", value: "captain_name" },
-          ];
-          this.competition.fishes.forEach((fish) => {
-            fish.weights = 0;
-            this.fish_names.push(fish.name);
-            this.fish_amount_names.push(fish.name);
-            this.table_fish_names.push(fish.name);
-            this.weight_headers.push({
-              text: fish.name,
-              value: String(fish.id),
-            });
-          });
-          this.fish_names.push("Voittajat");
-          this.fish_amount_names.push("Voittajat");
-          this.weight_headers.push({ text: "Tulos", value: "total_points" });
+function calculateAll() {
+  let results = calculateNormalResults(competition.value, signees.value);
+  signees.value = results.signees.sort((a, b) => a.boat_number - b.boat_number);
+  normal_points.value = results.normal_points;
+  normal_weights.value = results.normal_weights;
 
-          await FishService.getFishes({ competition_id: this.competition._id })
-            .then((r) => {
-              this.biggest_fishes = r;
-            })
-            .catch((e) => {
-              console.log(e);
-            });
+  switchNormalResults();
+  switchBiggestFishes();
+  switchBiggestAmounts();
+}
 
-          // Get results === signees
-          await ResultService.getResults({
-            competition_id: this.competition._id,
-          })
-            .then((results) => {
-              this.competition.total_weights = 0;
-              this.hasGottenFishCount = 0;
-              results.forEach((result) => {
-                result.total_points = 0;
-                if (result.fishes.length) {
-                  result.fishes.forEach((f) => {
-                    if (f.weights > 0) {
-                      let fish = this.competition.fishes.find(
-                        (cf) => cf.id === f.id
-                      );
-                      result.total_points += f.weights * fish.multiplier;
-                      this.competition.total_weights += f.weights;
-                      fish.weights += f.weights;
-                      if (this.biggest_amounts[fish.name]) {
-                        this.biggest_amounts[fish.name].push({
-                          boat_number: result.boat_number,
-                          captain_name: result.captain_name,
-                          weight: f.weights,
-                        });
-                      } else {
-                        this.biggest_amounts[fish.name] = [
-                          {
-                            boat_number: result.boat_number,
-                            captain_name: result.captain_name,
-                            weight: f.weights,
-                          },
-                        ];
-                      }
-                    }
-                  });
-                } else {
-                  // Fix for pdf
-                  this.competition.fishes.forEach((cf) => {
-                    result.fishes.push({
-                      id: cf.id,
-                      name: cf.name,
-                      weights: "-",
+// Switch table headers and columns based on this.selected_normal value (v-select)
+
+function switchNormalResults() {
+  // If "Pisteet" selected in v-select, update headers and this.results (table data)
+  if (!selected_normal.value) selected_normal.value = "fishes";
+  if (selected_normal.value === "points") {
+    results.value = normal_points.value;
+    if (competition.value.isCupCompetition) {
+      headers.value = cup_headers.value;
+    } else {
+      headers.value = normal_headers.value;
+    }
+  }
+  // If "Kalat" selected in v-select, update headers and this.results (table data)
+  if (selected_normal.value === "fishes") {
+    headers.value = weight_headers.value;
+    results.value = normal_weights.value;
+  }
+  if (selected_normal.value === "signees-signed") {
+    headers.value = signee_headers.value;
+    results.value = signees.value;
+  }
+}
+
+function switchBiggestFishes() {
+  let results = calculateBiggestFishes(
+    biggest_fishes.value,
+    table_fish_names.value,
+    selected_biggest_fish.value,
+  );
+  selected_biggest_fish.value = results.selected_fish;
+  biggest_fishes_headers.value = results.header;
+  biggest_fishes_results.value = results.results;
+}
+
+function switchBiggestAmounts() {
+  let results = calculateBiggestAmounts(
+    biggest_amounts.value,
+    selected_biggest_amount.value,
+    table_fish_names.value,
+  );
+  selected_biggest_amount.value = results.selected_amount;
+  biggest_amounts_headers.value = results.header;
+  biggest_amounts_results.value = results.results;
+}
+
+// Fetch competition from database, and update all the arrays
+
+async function refreshCompetition(reload, comp) {
+  if (comp) {
+    loading_competition.value = true;
+    // Load from database
+    if (reload) {
+      //Get competition from database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
+      // Returns an array, get first result (there shouldn't be more than one in any case, since id's are unique)
+      //TODO make a test for this?
+      competition.value = comp;
+      // Else update and calculate from picked competition
+      fish_names.value = []; // Fish names, including "Voittajat"
+      fish_amount_names.value = [];
+      table_fish_names.value = []; // only fish names
+
+      fish_names.value.push("Kaikki");
+      fish_amount_names.value.push("Kaikki");
+      weight_headers.value = [
+        { text: "Sijoitus", value: "placement" },
+        { text: "Kilp. numero", value: "boat_number" },
+        { text: "Kippari", value: "captain_name" },
+      ];
+      competition.value.fishes.forEach((fish) => {
+        fish.weights = 0;
+        fish_names.value.push(fish.name);
+        fish_amount_names.value.push(fish.name);
+        table_fish_names.value.push(fish.name);
+        weight_headers.value.push({
+          text: fish.name,
+          value: String(fish.id),
+        });
+      });
+      fish_names.value.push("Voittajat");
+      fish_amount_names.value.push("Voittajat");
+      weight_headers.value.push({ text: "Tulos", value: "total_points" });
+
+      await FishService.getFishes({ competition_id: competition.value._id })
+        .then((r) => {
+          biggest_fishes.value = r;
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+
+      // Get results === signees
+      await ResultService.getResults({
+        competition_id: competition.value._id,
+      })
+        .then((results) => {
+          competition.value.total_weights = 0;
+          hasGottenFishCount.value = 0;
+          results.forEach((result) => {
+            result.total_points = 0;
+            if (result.fishes.length) {
+              result.fishes.forEach((f) => {
+                if (f.weights > 0) {
+                  let fish = competition.value.fishes.find(
+                    (cf) => cf.id === f.id,
+                  );
+                  result.total_points += f.weights * fish.multiplier;
+                  competition.value.total_weights += f.weights;
+                  fish.weights += f.weights;
+                  if (biggest_amounts.value[fish.name]) {
+                    biggest_amounts.value[fish.name].push({
+                      boat_number: result.boat_number,
+                      captain_name: result.captain_name,
+                      weight: f.weights,
                     });
-                  });
-                }
-
-                if (result.total_points > 0) {
-                  this.hasGottenFishCount++;
+                  } else {
+                    biggest_amounts.value[fish.name] = [
+                      {
+                        boat_number: result.boat_number,
+                        captain_name: result.captain_name,
+                        weight: f.weights,
+                      },
+                    ];
+                  }
                 }
               });
+            } else {
+              // Fix for pdf
+              competition.value.fishes.forEach((cf) => {
+                result.fishes.push({
+                  id: cf.id,
+                  name: cf.name,
+                  weights: "-",
+                });
+              });
+            }
 
-              this.signees = results;
-              this.calculateAll();
-            })
-            .catch((e) => {
-              console.log(e);
-            });
-        }
-
-        this.selected_print = [];
-        this.signee_headers = [
-          { text: "boat-number", value: "boat_number" },
-          { text: "captain-name", value: "captain_name" },
-          { text: "temp-captain-name", value: "temp_captain_name" },
-          { text: "locality", value: "locality" },
-          { text: "starting-place", value: "starting_place" },
-        ];
-        let placement = 1;
-        try {
-          if (this.competition.isTeamCompetition) {
-            this.signee_headers.push({ text: "team", value: "team" });
-            this.team_results = this.competition.team_results;
-            let last_points = -1;
-            let last_placement = -1;
-            this.team_results.forEach((team) => {
-              if (last_points === team.points) {
-                team.placement = last_placement;
-              } else {
-                team.placement = last_placement = placement;
-                last_points = team.points;
-              }
-              placement++;
-            });
-          }
-
-          if (this.fishes_chart && this.signees_chart) {
-            this.fishes_chart.destroy();
-            this.signees_chart.destroy();
-          }
-          this.$nextTick(() => {
-            let charts = initChartData(
-              this.competition.fishes,
-              this.table_fish_names,
-              this.hasGottenFishCount,
-              this.signees.length,
-              this.$i18n.locale
-            );
-
-            this.fishes_chart_title = charts.fishes_chart.title;
-            this.fishes_chart_data = charts.fishes_chart.data;
-            this.signee_chart_title = charts.signee_chart.title;
-            this.signee_chart_data = charts.signee_chart.data;
+            if (result.total_points > 0) {
+              hasGottenFishCount.value++;
+            }
           });
 
-          if (reload) {
-            this.text = "notification.info-up-to-date";
-            this.snackbar = true;
-          }
-        } catch (err) {
-          console.error(err);
-        }
+          signees.value = results;
+          calculateAll();
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    }
 
-        this.loading_competition = false;
+    selected_print.value = [];
+    signee_headers.value = [
+      { text: "boat-number", value: "boat_number" },
+      { text: "captain-name", value: "captain_name" },
+      { text: "temp-captain-name", value: "temp_captain_name" },
+      { text: "locality", value: "locality" },
+      { text: "starting-place", value: "starting_place" },
+    ];
+    let placement = 1;
+    try {
+      if (competition.value.isTeamCompetition) {
+        signee_headers.value.push({ text: "team", value: "team" });
+        team_results.value = competition.value.team_results;
+        let last_points = -1;
+        let last_placement = -1;
+        team_results.value.forEach((team) => {
+          if (last_points === team.points) {
+            team.placement = last_placement;
+          } else {
+            team.placement = last_placement = placement;
+            last_points = team.points;
+          }
+          placement++;
+        });
       }
-    },
-    pickCompetition() {
-      if (this.selected_competition) {
-        this.competition = this.selected_competition;
-        this.refreshCompetition(true, this.competition);
+
+      if (fishes_chart.value && signees_chart.value) {
+        fishes_chart.value.destroy();
+        signees_chart.value.destroy();
       }
-    },
-  },
-};
+      nextTick(() => {
+        let charts = initChartData(
+          competition.value.fishes,
+          table_fish_names.value,
+          hasGottenFishCount.value,
+          signees.value.length,
+          locale.value,
+        );
+
+        fishes_chart_title.value = charts.fishes_chart.title;
+        fishes_chart_data.value = charts.fishes_chart.data;
+        signee_chart_title.value = charts.signee_chart.title;
+        signee_chart_data.value = charts.signee_chart.data;
+      });
+
+      if (reload) {
+        text.value = "notification.info-up-to-date";
+        snackbar.value = true;
+      }
+    } catch (err) {
+      console.error(err);
+    }
+
+    loading_competition.value = false;
+  }
+}
+
+function pickCompetition() {
+  if (selected_competition.value) {
+    competition.value = selected_competition.value;
+    refreshCompetition(true, competition.value);
+  }
+}
+
+// Runs when the component is created
+
+onMounted(async () => {
+  /* eslint-disable no-unused-vars */
+  try {
+    loading.value = true;
+    // Query competitions that are public
+    const query = { isPublic: true };
+    competitions.value = await CompetitionService.getCompetitions(query);
+    if (competitions.value.length) {
+      competitions.value.forEach((competition) => {
+        competition.start_date = new Date(competition.start_date);
+        competition.end_date = new Date(competition.end_date);
+        competition.select = `${
+          competition.name
+        }, ${formatDateToLocaleDateString(competition.start_date)} (${
+          competition.cup_name ? competition.cup_name : ""
+        })`;
+      });
+      // Sort them based on start_date so the oldest competitions are the last
+      competitions.value.sort((a, b) => {
+        return a.start_date < b.start_date;
+      });
+    } else {
+      signees.value = [];
+      biggest_fishes.value = [];
+      biggest_amounts.value = [];
+    }
+  } catch (error) {
+    console.error(error.message);
+  }
+  loading.value = false;
+});
 </script>

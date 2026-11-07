@@ -27,38 +27,39 @@
   </v-btn-toggle>
 </template>
 
-<script>
-export default {
-  name: "PublicNavigation",
-  props: ["items", "type"],
-  data() {
-    return {
-      selectedItem: 0,
-      snackbar: false,
-      text: "",
-    };
+<script setup>
+import { onMounted, ref, watch } from "vue";
+import { useRouter, useRoute } from "vue-router";
+
+defineOptions({ name: "PublicNavigation" });
+const props = defineProps(["items", "type"]);
+const router = useRouter();
+const route = useRoute();
+
+const selectedItem = ref(0);
+const snackbar = ref(false);
+const text = ref("");
+
+watch(
+  () => route.fullPath,
+  () => {
+    const to = route;
+    selectedItem.value = props.items.findIndex((i) => i.path === to.path);
   },
-  mounted() {
-    this.selectedItem = this.items.findIndex(
-      (i) => i.path === this.$route.path
-    );
-  },
-  watch: {
-    $route(to) {
-      this.selectedItem = this.items.findIndex((i) => i.path === to.path);
-    },
-  },
-  methods: {
-    changePage(route) {
-      if (this.$route.path !== route) {
-        this.$router.push(route);
-      } else {
-        this.text = "errors.already-here";
-        this.snackbar = true;
-      }
-    },
-  },
-};
+);
+
+function changePage(route) {
+  if (route.path !== route) {
+    router.push(route);
+  } else {
+    text.value = "errors.already-here";
+    snackbar.value = true;
+  }
+}
+
+onMounted(() => {
+  selectedItem.value = props.items.findIndex((i) => i.path === route.path);
+});
 </script>
 
 <style scoped></style>

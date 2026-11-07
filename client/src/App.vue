@@ -4,7 +4,7 @@
   <v-app id="app" style="background: rgba(0, 0, 0, 0)">
     <!-- Sizes your content based upon application components -->
     <!-- If using vue-router -->
-    <Header v-if="$store.logged_in" />
+    <Header v-if="store.logged_in" />
     <MainHeader v-else />
 
     <v-main>
@@ -15,100 +15,101 @@
   </v-app>
 </template>
 
-<script>
+<script setup>
+import { onMounted, ref, watch } from "vue";
+import { useMainStore } from "@/store";
+import { useI18n } from "vue-i18n";
+import { useRouter, useRoute } from "vue-router";
+import { useTheme } from "vuetify";
 import Footer from "./components/layout/Footer.vue";
 import UserService from "./services/UserService";
 import Header from "./components/layout/Header.vue";
 import MainHeader from "./components/layout/MainHeader.vue";
 import NotificationBar from "./components/NotificationBar.vue";
-export default {
-  name: "App",
-  data() {
-    return {
-      snackbar: false,
-      text: "errors.session-expired",
-    };
+
+defineOptions({ name: "App" });
+const store = useMainStore();
+const { locale } = useI18n();
+const router = useRouter();
+const route = useRoute();
+const theme = useTheme();
+
+const snackbar = ref(false);
+const text = ref("errors.session-expired");
+
+// Vuetify 3+ switches the theme for the whole app
+
+watch(
+  () => store.isDark,
+  (isDark) => {
+    theme.change(isDark ? "dark" : "light");
   },
-  components: {
-    Footer,
-    Header,
-    MainHeader,
-    NotificationBar,
-  },
-  created() {
-    let preferences = JSON.parse(localStorage.getItem("preferences"));
-    if (!preferences) {
-      localStorage.setItem(
-        "preferences",
-        JSON.stringify({ isDark: false, lang: "en" })
-      );
-    } else {
-      this.$store.isDark = preferences.isDark;
-      this.$i18n.locale = preferences.lang;
-    }
-  },
-  watch: {
-    // Vuetify 3+ switches the theme for the whole app
-    "$store.isDark": {
-      handler(isDark) {
-        this.$vuetify.theme.change(isDark ? "dark" : "light");
-      },
-      immediate: true,
-    },
-  },
-  async mounted() {
-    // Vue Router 4+: the first navigation is async, wait for it before reading $route
-    await this.$router.isReady();
-    const user = JSON.parse(localStorage.getItem("user"));
-    const isAdmin = JSON.parse(localStorage.getItem("auth"));
-    if (user) {
-      const token = localStorage.getItem("jwt");
-      if (token) {
-        const jwtPayload = this.parseJwt(token);
-        if (jwtPayload) {
-          if (jwtPayload.exp < Date.now() / 1000) {
-            // token expired
-            await UserService.logoutUser().then(() => {
-              this.snackbar = true;
-              this.$store.logged_in = false;
-              this.$store.is_admin = false;
-              if (this.$route.meta.requiresAuth) {
-                this.$router.push({ path: "/login" });
-              }
-            });
-          } else {
-            let res = await UserService.refreshToken(user, isAdmin);
-            if (res.success) {
-              this.$store.is_admin = res.is_admin;
-              this.$store.logged_in = true;
+  { immediate: true },
+);
+
+function parseJwt(token) {
+  try {
+    var base64Url = token.split(".")[1];
+    var base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    var jsonPayload = decodeURIComponent(
+      window
+        .atob(base64)
+        .split("")
+        .map(function (c) {
+          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+        })
+        .join(""),
+    );
+
+    return JSON.parse(jsonPayload);
+  } catch {
+    return null;
+  }
+}
+
+// Runs when the component is created
+let preferences = JSON.parse(localStorage.getItem("preferences"));
+if (!preferences) {
+  localStorage.setItem(
+    "preferences",
+    JSON.stringify({ isDark: false, lang: "en" }),
+  );
+} else {
+  store.isDark = preferences.isDark;
+  locale.value = preferences.lang;
+}
+
+onMounted(async () => {
+  // Vue Router 4+: the first navigation is async, wait for it before reading $route
+  await router.isReady();
+  const user = JSON.parse(localStorage.getItem("user"));
+  const isAdmin = JSON.parse(localStorage.getItem("auth"));
+  if (user) {
+    const token = localStorage.getItem("jwt");
+    if (token) {
+      const jwtPayload = parseJwt(token);
+      if (jwtPayload) {
+        if (jwtPayload.exp < Date.now() / 1000) {
+          // token expired
+          await UserService.logoutUser().then(() => {
+            snackbar.value = true;
+            store.logged_in = false;
+            store.is_admin = false;
+            if (route.meta.requiresAuth) {
+              router.push({ path: "/login" });
             }
+          });
+        } else {
+          let res = await UserService.refreshToken(user, isAdmin);
+          if (res.success) {
+            store.is_admin = res.is_admin;
+            store.logged_in = true;
           }
         }
       }
     }
-  },
-  methods: {
-    parseJwt(token) {
-      try {
-        var base64Url = token.split(".")[1];
-        var base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-        var jsonPayload = decodeURIComponent(
-          window
-            .atob(base64)
-            .split("")
-            .map(function (c) {
-              return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
-            })
-            .join("")
-        );
-
-        return JSON.parse(jsonPayload);
-      } catch {
-        return null;
-      }
-    },
-  },
-};
+  }
+});
 </script>
 
 <style>
@@ -160,7 +161,10 @@ body {
 #app h1 {
   -webkit-text-stroke: 1px black;
   color: white;
-  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000,
+  text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
     1px 1px 0 #000;
 }
 .time {
@@ -282,7 +286,10 @@ table.highlight > tr:hover {
 
 .strokeme {
   color: white;
-  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000,
+  text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
     1px 1px 0 #000;
 }
 </style>
