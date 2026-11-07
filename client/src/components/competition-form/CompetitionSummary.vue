@@ -97,5 +97,5 @@ defineProps({
 });
 
 const store = useMainStore();
-const textClass = computed(() => ({ "text-white": store.getTheme }));
+const textClass = computed(() => ({ "text-white": store.isDark }));
 </script>

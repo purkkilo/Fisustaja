@@ -43,7 +43,6 @@
           v-if="editing === item"
           v-model="editing.text"
           autofocus
-          flat
           bg-color="transparent"
           :maxlength="40"
           :rules="rules.text"

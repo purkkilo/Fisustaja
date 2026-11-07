@@ -25,9 +25,8 @@ function addToFishMap(map, fish) {
   map[fish.name].push(entry);
 }
 
-// App-wide state (was Vuex). In components:
-//   const store = useMainStore();
-//   store.getCompetition, store.refreshCompetition(competition)
+// App-wide Pinia store. Prefer state fields directly (store.competition,
+// store.isDark); getters below are derived views.
 export const useMainStore = defineStore("main", {
   state: () => ({
     competition: null,
@@ -41,38 +40,27 @@ export const useMainStore = defineStore("main", {
   }),
 
   getters: {
-    getTheme: (state) => state.isDark,
-    getSigneesCount: (state) => state.competition?.signees?.length ?? 0,
-    getSigneeByBoatNumber: (state) => (boat_number) =>
-      state.competition?.signees?.find(
-        (signee) => Number(signee.boat_number) === Number(boat_number),
-      ),
-    getCompetition: (state) => state.competition,
-    getCompetitionId: (state) => state.competition?._id ?? null,
-    getCompetitionSignees: (state) => state.competition?.signees ?? [],
-    getStillOnWaterSignees: (state) =>
+    sortedSignees: (state) =>
+      [...(state.competition?.signees ?? [])].sort(byBoatNumber),
+    stillOnWaterSignees: (state) =>
       (state.competition?.signees ?? []).filter(
         (signee) => signee.returned == false,
       ),
-    // Sorted copies: getters should not reorder the stored array
-    getSignees: (state) =>
-      [...(state.competition?.signees ?? [])].sort(byBoatNumber),
-    getFinishedSignees: (state) =>
+    finishedSignees: (state) =>
       (state.competition?.signees ?? []).filter(
         (signee) => signee.returned == true,
       ),
-    getResultSignees: (state) =>
+    resultSignees: (state) =>
       [...(state.competition?.signees ?? [])].sort(byPointsDesc),
-    getCompetitionFishes: (state) => state.competition?.fishes ?? [],
-    getBiggestFishes: (state) => state.competition?.biggest_fishes ?? {},
-    getBiggestAmounts: (state) => state.competition?.biggest_amounts ?? {},
-    getTeams: (state) => state.competition?.teams ?? [],
+    signeeByBoatNumber: (state) => (boat_number) =>
+      state.competition?.signees?.find(
+        (signee) => Number(signee.boat_number) === Number(boat_number),
+      ),
     isTeamCompetition: (state) => !!state.competition?.isTeamCompetition,
     isLoggedIn: (state) => state.logged_in,
     isAdmin: (state) => state.is_admin,
   },
 
-  // Former Vuex mutations
   actions: {
     refreshSignees(signees) {
       if (!this.competition) return;

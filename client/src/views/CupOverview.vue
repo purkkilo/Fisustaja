@@ -47,7 +47,7 @@
               <ProgressBarQuery />
             </v-col>
           </v-row>
-          <p v-else-if="!cup" class="flow-text pa-6" :class="textClass">
+          <p v-else-if="!cup" class="text-body-large pa-6" :class="textClass">
             {{ $t("errors.no-cup-selected") }}
           </p>
 
@@ -95,7 +95,7 @@
               <v-col md="10" offset-md="1">
                 <v-card>
                   <v-card-title class="d-flex flex-wrap align-center">
-                    <p class="flow-text" :class="textClass">{{ $t(view) }}</p>
+                    <p class="text-body-large" :class="textClass">{{ $t(view) }}</p>
                     <v-spacer></v-spacer>
                     <v-text-field
                       v-model="search"
@@ -174,7 +174,7 @@
             <v-row style="margin: 10px 0">
               <v-col>
                 <v-btn
-                  tile
+                  rounded="0"
                   color="green-lighten-1"
                   :loading="saving"
                   @click="
@@ -189,7 +189,7 @@
               </v-col>
               <v-col>
                 <v-btn
-                  tile
+                  rounded="0"
                   :color="cup.isPublic ? 'grey-darken-4' : 'green-darken-4'"
                   @click="toggleCupPublic"
                   class="text-white"
@@ -307,7 +307,7 @@ const cupYear = ref("");
 const signeeDialog = ref(false);
 const editedSignee = ref(null);
 
-const textClass = computed(() => ({ "text-white": store.getTheme }));
+const textClass = computed(() => ({ "text-white": store.isDark }));
 const signeeColumns = computed(() => [
   { key: "boat_number", title: t("boat-number") },
   { key: "captain_name", title: t("captain-name") },

@@ -16,9 +16,9 @@ export function useSigning() {
   const competitionId = ref(null);
   const cup = ref(null);
 
-  const competition = computed(() => store.getCompetition);
+  const competition = computed(() => store.competition);
   const signees = computed(() =>
-    competition.value?.signees ? store.getSignees : [],
+    competition.value?.signees ? store.sortedSignees : [],
   );
   const teams = computed(() =>
     (competition.value?.teams ?? []).filter((t) => t && t !== "-"),

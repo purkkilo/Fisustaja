@@ -1,25 +1,25 @@
 import { range } from "./format";
 
 const winner_headers = [
-  { text: "fish", value: "name" },
-  { text: "boat-number", value: "boat_number" },
-  { text: "captain-name", value: "captain_name" },
-  { text: "weight", value: "weight" },
+  { title: "fish", key: "name"},
+  { title: "boat-number", key: "boat_number"},
+  { title: "captain-name", key: "captain_name"},
+  { title: "weight", key: "weight"},
 ];
 
 const all_fishes_headers = [
-  { text: "placement", value: "placement" },
-  { text: "boat-number", value: "boat_number" },
-  { text: "captain-name", value: "captain_name" },
-  { text: "fish", value: "name" },
-  { text: "weight", value: "weight" },
+  { title: "placement", key: "placement"},
+  { title: "boat-number", key: "boat_number"},
+  { title: "captain-name", key: "captain_name"},
+  { title: "fish", key: "name"},
+  { title: "weight", key: "weight"},
 ];
 
 const biggest_headers = [
-  { text: "placement", value: "placement" },
-  { text: "boat-number", value: "boat_number" },
-  { text: "captain-name", value: "captain_name" },
-  { text: "weight", value: "weight" },
+  { title: "placement", key: "placement"},
+  { title: "boat-number", key: "boat_number"},
+  { title: "captain-name", key: "captain_name"},
+  { title: "weight", key: "weight"},
 ];
 
 export const headers = {

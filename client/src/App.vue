@@ -195,12 +195,12 @@ body {
   background: rgb(156, 215, 255);
   border-radius: 2%;
 }
-table.highlight > tbody > tr:hover {
-  background-color: rgb(0, 153, 255) !important;
-  border: 1px solid black;
-  cursor: pointer;
+#app .fish-specs-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
 }
-table.highlight > tr:hover {
+#app .fish-specs-table tbody tr:hover {
   background-color: rgb(0, 153, 255) !important;
   border: 1px solid black;
   cursor: pointer;

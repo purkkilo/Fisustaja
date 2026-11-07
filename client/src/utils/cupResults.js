@@ -133,9 +133,9 @@ export function calculateCupStandings(
  * locality (numbered if repeated) or by competition name.
  */
 export function cupHeaders(competitions, labelBy = "locality") {
-  const fixed = (text, value) => ({
-    text,
-    value,
+  const fixed = (title, key) => ({
+    title,
+    key,
     align: "center",
     translate: true,
     highlight: false,
@@ -149,17 +149,17 @@ export function cupHeaders(competitions, labelBy = "locality") {
   ];
   const seen = {};
   for (const competition of competitions) {
-    let text = competition.name;
+    let title = competition.name;
     if (labelBy === "locality") {
       seen[competition.locality] = (seen[competition.locality] || 0) + 1;
-      text =
+      title =
         seen[competition.locality] > 1
           ? `${competition.locality} #${seen[competition.locality]}`
           : competition.locality;
     }
     headers.push({
-      text,
-      value: `cup_results[${competition.key_name}].points`,
+      title,
+      key: `cup_results[${competition.key_name}].points`,
       align: "center",
       translate: false,
       highlight: true,

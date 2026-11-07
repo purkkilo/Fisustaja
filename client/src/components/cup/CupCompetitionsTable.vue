@@ -80,7 +80,7 @@ const emit = defineEmits(["toggle-finished", "toggle-public", "open"]);
 
 const { t } = useI18n();
 const store = useMainStore();
-const chipVariant = computed(() => (store.getTheme ? "outlined" : "flat"));
+const chipVariant = computed(() => (store.isDark ? "outlined" : "flat"));
 
 const columns = computed(() => [
   { key: "start_date", title: t("date") },

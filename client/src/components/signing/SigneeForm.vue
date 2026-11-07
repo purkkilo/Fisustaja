@@ -63,7 +63,7 @@
 
     <v-row v-if="saving">
       <v-col>
-        <p class="flow-text" :class="{ 'text-white': store.getTheme }">
+        <p class="text-body-large" :class="{ 'text-white': store.isDark }">
           {{ $t("saving") }}...
         </p>
         <ProgressBarQuery />

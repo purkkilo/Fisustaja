@@ -49,7 +49,7 @@
           </v-row>
           <v-row v-else-if="!signees.length">
             <v-col style="padding: 30px">
-              <p class="flow-text" :class="textClass">
+              <p class="text-body-large" :class="textClass">
                 {{ $t("comp-overview.no-signees") }}
               </p>
             </v-col>
@@ -63,12 +63,12 @@
 
             <v-row v-if="!saving" style="margin-top: 20px">
               <v-col
-                :class="store.getTheme ? 'bg-grey-darken-4' : 'input-fields'"
+                :class="store.isDark ? 'bg-grey-darken-4' : 'input-fields'"
                 md="6"
                 offset-md="3"
                 style="padding: 20px"
               >
-                <p class="flow-text" :class="textClass">{{ $t("boat") }}</p>
+                <p class="text-body-large" :class="textClass">{{ $t("boat") }}</p>
                 <BoatPicker
                   :model-value="selectedBoat"
                   :boats="boatsByNumber"
@@ -142,7 +142,7 @@
                   <v-row v-if="!saving">
                     <v-col>
                       <v-btn
-                        tile
+                        rounded="0"
                         color="red"
                         @click="saveCatch({ reset: true })"
                         :loading="refreshing"
@@ -153,7 +153,7 @@
                     </v-col>
                     <v-col>
                       <v-btn
-                        tile
+                        rounded="0"
                         color="green"
                         @click="saveCatch()"
                         :loading="refreshing"
@@ -164,7 +164,7 @@
                   </v-row>
                   <v-row v-else>
                     <v-col>
-                      <p class="flow-text" :class="textClass">
+                      <p class="text-body-large" :class="textClass">
                         {{ $t("updating") }}...
                       </p>
                       <ProgressBarQuery />
@@ -178,7 +178,7 @@
               <v-col>
                 <v-btn
                   id="updatebtn"
-                  tile
+                  rounded="0"
                   color="blue-darken-4"
                   @click="refresh"
                   :loading="refreshing"
@@ -206,7 +206,7 @@
           </v-row>
           <v-row v-else>
             <v-col md="8" offset-md="2" class="my-8">
-              <p class="flow-text" :class="textClass">{{ $t("no-results") }}</p>
+              <p class="text-body-large" :class="textClass">{{ $t("no-results") }}</p>
             </v-col>
           </v-row>
         </v-window-item>
@@ -228,7 +228,7 @@
             <v-col md="8" offset-md="2" class="my-8">
               <v-btn
                 v-if="stillOnWater.length"
-                tile
+                rounded="0"
                 color="grey-darken-4"
                 class="text-white"
                 @click="allReturnedClicked"
@@ -237,7 +237,7 @@
                 ><v-icon>mdi-check-outline</v-icon
                 >{{ $t("button.set-all-finished") }}</v-btn
               >
-              <p v-else class="flow-text" :class="textClass">
+              <p v-else class="text-body-large" :class="textClass">
                 {{ $t("all-finished") }}
               </p>
             </v-col>
@@ -314,9 +314,9 @@ const onWaterColumns = [
 ];
 
 const panelClass = computed(() =>
-  store.getTheme ? "inputarea-dark" : "inputarea",
+  store.isDark ? "inputarea-dark" : "inputarea",
 );
-const textClass = computed(() => ({ "text-white": store.getTheme }));
+const textClass = computed(() => ({ "text-white": store.isDark }));
 
 function notify(message) {
   text.value = message;

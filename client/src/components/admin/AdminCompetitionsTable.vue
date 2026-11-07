@@ -2,7 +2,7 @@
   <!-- Every competition in the database -->
   <v-card>
     <v-card-title class="d-flex flex-wrap align-center">
-      <p class="flow-text">{{ $t("comp.plural") }}</p>
+      <p class="text-body-large">{{ $t("comp.plural") }}</p>
       <v-spacer />
       <v-text-field
         v-model="search"
@@ -28,7 +28,7 @@
         <v-chip
           v-if="item.isCupCompetition"
           :color="getMultiplierColor(item.cup_points_multiplier)"
-          :variant="store.getTheme ? 'outlined' : 'flat'"
+          :variant="store.isDark ? 'outlined' : 'flat'"
           >{{ item.cup_points_multiplier }}x</v-chip
         >
       </template>

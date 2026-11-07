@@ -28,7 +28,7 @@
               <div v-if="competitions.length">
                 <v-card>
                   <v-card-title class="d-flex flex-wrap align-center">
-                    <p class="flow-text">{{ $t("comp.plural") }}</p>
+                    <p class="text-body-large">{{ $t("comp.plural") }}</p>
                     <v-spacer></v-spacer>
                     <v-text-field
                       v-model="search_comp"
@@ -40,16 +40,16 @@
                   </v-card-title>
                   <v-data-table
                     id="normal-table"
-                    :headers="tableHeaders(headers)"
+                    :headers="headers"
                     :items="competitions"
                     :search="search_comp"
                   >
                     <template
                       v-for="h in headers"
-                      :key="h.value"
-                      v-slot:[`header.${h.value}`]="{ column: header }"
+                      :key="h.key"
+                      v-slot:[`header.${h.key}`]="{ column: header }"
                     >
-                      <span> {{ $t(header.text) }}</span>
+                      <span> {{ $t(header.title) }}</span>
                     </template>
 
                     <template v-slot:[`item.start_date`]="{ item }">
@@ -68,7 +68,7 @@
                       <v-chip
                         v-if="item.cup_id"
                         :color="getColor(item.cup_points_multiplier)"
-                        :variant="store.getTheme ? 'outlined' : 'flat'"
+                        :variant="store.isDark ? 'outlined' : 'flat'"
                         >{{ item.cup_points_multiplier }}x</v-chip
                       >
                     </template>
@@ -97,7 +97,7 @@
                     <v-col v-if="cups.length">
                       <h2
                         v-bind:class="{
-                          'text-white': store.getTheme,
+                          'text-white': store.isDark,
                         }"
                       >
                         {{ $t("comp.not-found") }}
@@ -106,14 +106,14 @@
                     <v-col v-else>
                       <h2
                         v-bind:class="{
-                          'text-white': store.getTheme,
+                          'text-white': store.isDark,
                         }"
                       >
                         {{ $t("comp.not-found") }}
                       </h2>
                       <h2
                         v-bind:class="{
-                          'text-white': store.getTheme,
+                          'text-white': store.isDark,
                         }"
                       >
                         {{ $t("cup.not-found") }}
@@ -127,7 +127,7 @@
                 <v-col v-else>
                   <h2
                     v-bind:class="{
-                      'text-white': store.getTheme,
+                      'text-white': store.isDark,
                     }"
                   >
                     {{ $t("loading") }} {{ $t("comp.count") }}...
@@ -144,7 +144,7 @@
               <div v-if="cups.length">
                 <v-card>
                   <v-card-title class="d-flex flex-wrap align-center">
-                    <p class="flow-text">{{ $t("cup.plural") }}</p>
+                    <p class="text-body-large">{{ $t("cup.plural") }}</p>
                     <v-spacer></v-spacer>
                     <v-text-field
                       v-model="search_cup"
@@ -156,17 +156,17 @@
                   </v-card-title>
                   <v-data-table
                     id="normal-table"
-                    :headers="tableHeaders(headers_cup)"
+                    :headers="headers_cup"
                     :items="cups"
                     :search="search_cup"
                     :loading="publishing"
                   >
                     <template
                       v-for="h in headers_cup"
-                      :key="h.value"
-                      v-slot:[`header.${h.value}`]="{ column: header }"
+                      :key="h.key"
+                      v-slot:[`header.${h.key}`]="{ column: header }"
                     >
-                      <span> {{ $t(header.text) }}</span>
+                      <span> {{ $t(header.title) }}</span>
                     </template>
                     <template v-slot:[`item.name`]="{ item }">
                       <v-chip color="primary-darken-3" variant="flat">{{
@@ -176,7 +176,7 @@
                     <template v-slot:[`item.year`]="{ item }">
                       <v-chip
                         color="grey"
-                        :variant="store.getTheme ? 'outlined' : 'flat'"
+                        :variant="store.isDark ? 'outlined' : 'flat'"
                         >{{ item.year }}</v-chip
                       >
                     </template>
@@ -190,7 +190,7 @@
                             "
                             @click="$emit('publish', item)"
                             :disabled="publishing"
-                            :variant="store.getTheme ? 'outlined' : 'flat'"
+                            :variant="store.isDark ? 'outlined' : 'flat'"
                             >{{
                               item.isPublic ? "Julkinen" : "Salainen"
                             }}</v-chip
@@ -225,7 +225,7 @@
                 <v-col v-else>
                   <h2
                     v-bind:class="{
-                      'text-white': store.getTheme,
+                      'text-white': store.isDark,
                     }"
                   >
                     Ladataan Cuppeja...
@@ -242,7 +242,6 @@
 </template>
 
 <script setup>
-import { tableHeaders } from "@/utils/tableHeaders";
 import { onMounted, ref } from "vue";
 import { useMainStore } from "@/store";
 import { useRouter } from "vue-router";
@@ -258,21 +257,21 @@ const router = useRouter();
 
 const tab = ref(null);
 const headers = ref([
-  { text: "date", value: "start_date", groupable: false },
-  { text: "name", value: "name", groupable: false },
-  { text: "cup.normal", value: "cup_name" },
+  { title: "date", key: "start_date", groupable: false },
+  { title: "name", key: "name", groupable: false },
+  { title: "cup.normal", key: "cup_name" },
   {
-    text: "multiplier",
-    value: "cup_points_multiplier",
+    title: "multiplier",
+    key: "cup_points_multiplier",
     groupable: false,
   },
-  { text: "choose", value: "choose", sortable: false, groupable: false },
+  { title: "choose", key: "choose", sortable: false, groupable: false },
 ]);
 const headers_cup = ref([
-  { text: "name", value: "name" },
-  { text: "year", value: "year" },
-  { text: "publicity", value: "isPublic" },
-  { text: "choose", value: "choose", sortable: false },
+  { title: "name", key: "name" },
+  { title: "year", key: "year" },
+  { title: "publicity", key: "isPublic" },
+  { title: "choose", key: "choose", sortable: false },
 ]);
 const error = ref("");
 const competition_input = ref(null);

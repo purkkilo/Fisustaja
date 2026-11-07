@@ -3,13 +3,13 @@
   <v-row>
     <v-col md="6" offset-md="3">
       <template v-if="loading">
-        <h3 :class="{ 'text-white': store.getTheme }">
+        <h3 :class="{ 'text-white': store.isDark }">
           {{ $t("loading") }} {{ label }}...
         </h3>
         <ProgressBarQuery />
       </template>
       <v-card v-else elevation="5" class="pa-2">
-        <p class="flow-text">
+        <p class="text-body-large">
           <v-icon :color="iconColor" class="mr-1">{{ icon }}</v-icon>
           <template v-if="total">
             {{ label }} {{ $t("total") }}: {{ total }}

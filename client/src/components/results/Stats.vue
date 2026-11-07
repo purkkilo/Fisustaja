@@ -75,9 +75,9 @@
         <v-row v-else>
           <v-col md="12">
             <p
-              class="flow-text"
+              class="text-body-large"
               v-bind:class="{
-                'text-white': store.getTheme,
+                'text-white': store.isDark,
               }"
             >
               Ei tuloksia, vielä...

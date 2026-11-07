@@ -34,7 +34,7 @@
         <v-window-item value="signing" :class="areaClass">
           <v-row v-if="loadingSite">
             <v-col>
-              <h2 :class="{ 'text-white': store.getTheme }">
+              <h2 :class="{ 'text-white': store.isDark }">
                 {{ $t("fetching") }}...
               </h2>
               <ProgressBarQuery />
@@ -43,12 +43,12 @@
           <div v-else class="mt-5">
             <v-row v-if="notification">
               <v-col md="8" offset-md="2">
-                <v-alert type="info" class="flow-text">
+                <v-alert type="info" class="text-body-large">
                   {{ $t(notification) }}
                 </v-alert>
               </v-col>
             </v-row>
-            <p class="flow-text" :class="{ 'text-white': store.getTheme }">
+            <p class="text-body-large" :class="{ 'text-white': store.isDark }">
               {{ $t("signees") }} {{ $t("total") }}:
               <b>{{ signees.length }}</b>
             </p>
@@ -70,8 +70,8 @@
 
             <p
               v-if="refreshing"
-              class="flow-text"
-              :class="{ 'text-white': store.getTheme }"
+              class="text-body-large"
+              :class="{ 'text-white': store.isDark }"
             >
               {{ $t("updating") }}...
             </p>
@@ -160,7 +160,7 @@ const snackbar = ref(false);
 const text = ref("");
 
 const areaClass = computed(() =>
-  store.getTheme ? "inputarea-dark" : "inputarea",
+  store.isDark ? "inputarea-dark" : "inputarea",
 );
 
 // confirm() rejects on cancel

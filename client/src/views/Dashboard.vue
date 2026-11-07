@@ -193,7 +193,7 @@
                           <v-row class="justify-center align-center">
                             <v-col>
                               <v-btn
-                                tile
+                                rounded="0"
                                 color="primary"
                                 @click="saveCup"
                                 :loading="loading"

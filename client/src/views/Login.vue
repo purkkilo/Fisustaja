@@ -50,7 +50,7 @@
           <v-col>
             <v-btn
               id="sbtn"
-              tile
+              rounded="0"
               color="white"
               class="text-white"
               @click="handleSubmit"

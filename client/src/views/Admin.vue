@@ -64,7 +64,7 @@
 
       <v-window-item value="users" :class="areaClass">
         <h1>{{ $t("users") }}</h1>
-        <p class="flow-text" :class="{ 'text-white': store.getTheme }">
+        <p class="text-body-large" :class="{ 'text-white': store.isDark }">
           {{ $t("notification.click-name") }}
         </p>
         <v-row v-if="loadingUsers">
@@ -76,12 +76,12 @@
           <v-col
             md="6"
             offset-md="3"
-            :class="{ 'bg-grey-darken-4': store.getTheme }"
+            :class="{ 'bg-grey-darken-4': store.isDark }"
           >
             <UserList :users="users" @copy="copy" />
           </v-col>
         </v-row>
-        <h2 v-else :class="{ 'text-white': store.getTheme }">
+        <h2 v-else :class="{ 'text-white': store.isDark }">
           {{ $t("no-users") }}!
         </h2>
       </v-window-item>
@@ -100,7 +100,7 @@
           @open="openCompetition"
           @delete="confirmDelete"
         />
-        <h2 v-else :class="{ 'text-white': store.getTheme }">
+        <h2 v-else :class="{ 'text-white': store.isDark }">
           {{ $t("no") }} {{ $t("comp.plural") }}!
         </h2>
       </v-window-item>
@@ -145,7 +145,7 @@ const {
 
 const tab = ref("overview");
 const areaClass = computed(() =>
-  store.getTheme ? "inputarea-dark" : "inputarea",
+  store.isDark ? "inputarea-dark" : "inputarea",
 );
 
 async function confirmDelete(competition) {

@@ -1,12 +1,12 @@
 <template>
   <!-- Points multiplier and minimum size for each fish species -->
   <div>
-    <p v-if="!specs.length" class="flow-text">
+    <p v-if="!specs.length" class="text-body-large">
       {{ $t("errors.no-fish-selected") }}
     </p>
     <v-row v-for="(fish, index) in specs" :key="fish.name" class="align-center">
       <v-col>
-        <span class="flow-text" :class="{ 'text-white': store.getTheme }"
+        <span class="text-body-large" :class="{ 'text-white': store.isDark }"
           >{{ index + 1 }}. {{ fish.name }}</span
         >
       </v-col>

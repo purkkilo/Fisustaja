@@ -139,7 +139,7 @@ export function saveCupAsPDF(
     }
 
     headers.forEach((header) => {
-      let columnText = header.text;
+      let columnText = header.title ?? header.text;
       if (header.translate) columnText = t(columnText);
 
       columns.push(columnText);

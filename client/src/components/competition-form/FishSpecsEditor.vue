@@ -1,10 +1,7 @@
 <template>
   <!-- Editable fish species table: drag rows to reorder, add and delete rows -->
   <div>
-    <table
-      class="highlight centered responsive-table table_header"
-      style="width: 100%"
-    >
+    <table class="table_header fish-specs-table">
       <thead>
         <tr>
           <th>{{ $t("fish") }}</th>

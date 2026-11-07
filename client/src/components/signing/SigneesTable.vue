@@ -2,7 +2,7 @@
   <!-- Signed boats; clicking a row opens it in the signing form -->
   <v-card>
     <v-card-title class="d-flex flex-wrap align-center">
-      <p class="flow-text">{{ $t("signees-signed") }}</p>
+      <p class="text-body-large">{{ $t("signees-signed") }}</p>
       <v-tooltip location="bottom">
         <template #activator="{ props }">
           <v-icon v-bind="props" class="ml-1 mb-5"

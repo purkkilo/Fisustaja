@@ -105,7 +105,7 @@
         <v-col>
           <v-card>
             <v-card-title class="d-flex flex-wrap align-center">
-              <p class="flow-text">{{ $t("cup.normal") }} {{ $t("points") }}</p>
+              <p class="text-body-large">{{ $t("cup.normal") }} {{ $t("points") }}</p>
               <v-spacer></v-spacer>
               <v-text-field
                 v-model="search"
@@ -117,15 +117,15 @@
             </v-card-title>
             <v-data-table
               id="normal-table"
-              :headers="tableHeaders(headers)"
+              :headers="headers"
               :items="results"
               :search="search"
               :loading="loading"
             >
               <template
                 v-for="h in headers"
-                :key="h.value"
-                v-slot:[`header.${h.value}`]="{ column: header }"
+                :key="h.key"
+                v-slot:[`header.${h.key}`]="{ column: header }"
               >
                 <v-row class="justify-center align-center">
                   <v-col>
@@ -137,16 +137,16 @@
                         'text-green': header.isFinished,
                       }"
                     >
-                      {{ header.text }}
+                      {{ header.title }}
                     </span>
-                    <span v-else>{{ $t(header.text) }}</span>
+                    <span v-else>{{ $t(header.title) }}</span>
                   </v-col>
                 </v-row>
               </template>
               <template v-slot:[`item.final_placement`]="{ item }">
                 <v-chip
                   :color="getColor(item.final_placement)"
-                  :variant="store.getTheme ? 'outlined' : 'flat'"
+                  :variant="store.isDark ? 'outlined' : 'flat'"
                   >{{ item.final_placement }}.</v-chip
                 >
               </template>
@@ -184,7 +184,7 @@
         <v-col>
           <h2
             v-bind:class="{
-              'text-white': store.getTheme,
+              'text-white': store.isDark,
             }"
           >
             {{ $t("no-results") }}
@@ -194,9 +194,9 @@
       <v-row v-if="competitions.length && cup">
         <v-col v-if="loading">
           <p
-            class="flow-text"
+            class="text-body-large"
             v-bind:class="{
-              'text-white': store.getTheme,
+              'text-white': store.isDark,
             }"
           >
             {{ $t("updating-results") }}...
@@ -207,7 +207,7 @@
         <v-col>
           <v-btn
             id="updatebtn"
-            tile
+            rounded="0"
             :loading="loading"
             :disabled="!isResults"
             color="blue-darken-4"
@@ -223,7 +223,7 @@
         <v-col>
           <h2
             v-bind:class="{
-              'text-white': store.getTheme,
+              'text-white': store.isDark,
             }"
           >
             {{ $t("comp.not-found") }}
@@ -234,7 +234,6 @@
   </v-row>
 </template>
 <script setup>
-import { tableHeaders } from "@/utils/tableHeaders";
 import { useMainStore } from "@/store";
 import { onMounted, ref } from "vue";
 import { getColor } from "@/utils/colors";

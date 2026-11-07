@@ -1,6 +1,6 @@
 <template>
   <!-- Totals for the boat being weighed, before saving -->
-  <v-card tile variant="outlined">
+  <v-card rounded="0" variant="outlined">
     <v-card-title>{{ $t("overview") }}</v-card-title>
     <v-list density="compact">
       <v-list-item prepend-icon="mdi-sail-boat" :subtitle="$t('boat')">

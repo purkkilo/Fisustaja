@@ -15,7 +15,7 @@
           <v-col md="12">
             <v-card>
               <v-card-title class="d-flex flex-wrap align-center">
-                <p class="flow-text">
+                <p class="text-body-large">
                   {{ $t("normal-comp") }} ({{ $t(selected_normal) }})
                 </p>
                 <v-spacer></v-spacer>
@@ -28,24 +28,24 @@
                 ></v-text-field>
               </v-card-title>
               <v-data-table
-                :headers="tableHeaders(headers)"
+                :headers="headers"
                 :items="results"
                 :search="searchText"
               >
                 <template
                   v-for="h in headers"
-                  :key="h.value"
-                  v-slot:[`header.${h.value}`]="{ column: header }"
+                  :key="h.key"
+                  v-slot:[`header.${h.key}`]="{ column: header }"
                 >
-                  <span v-if="fish_names.includes(header.text)">
-                    {{ header.text }}</span
+                  <span v-if="fish_names.includes(header.title)">
+                    {{ header.title }}</span
                   >
-                  <span v-else> {{ $t(header.text) }}</span>
+                  <span v-else> {{ $t(header.title) }}</span>
                 </template>
                 <template v-slot:[`item.placement`]="{ item }">
                   <v-chip
                     :color="getColor(item.placement)"
-                    :variant="store.getTheme ? 'outlined' : 'flat'"
+                    :variant="store.isDark ? 'outlined' : 'flat'"
                     >{{ item.placement }}</v-chip
                   >
                 </template>
@@ -89,9 +89,9 @@
         <v-row v-else>
           <v-col v-if="!loading">
             <p
-              class="flow-text"
+              class="text-body-large"
               v-bind:class="{
-                'text-white': store.getTheme,
+                'text-white': store.isDark,
               }"
             >
               {{ $t("no-results") }}...
@@ -108,7 +108,6 @@
 </template>
 <script setup>
 import ProgressBarQuery from "../layout/ProgressBarQuery.vue";
-import { tableHeaders } from "@/utils/tableHeaders";
 import { useMainStore } from "@/store";
 import { ref } from "vue";
 import { getColorPoints, getColor } from "@/utils/colors";

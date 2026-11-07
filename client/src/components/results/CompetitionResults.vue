@@ -336,7 +336,7 @@ const pdfDialog = ref(false);
 const printDialog = ref(false);
 
 const panelClass = computed(() =>
-  store.getTheme ? "inputarea-dark" : "inputarea",
+  store.isDark ? "inputarea-dark" : "inputarea",
 );
 
 const printOptions = computed(() => {

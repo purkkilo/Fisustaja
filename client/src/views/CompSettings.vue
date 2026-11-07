@@ -18,7 +18,7 @@
           <v-col>
             <v-btn
               :disabled="editing || !competition"
-              tile
+              rounded="0"
               color="grey"
               @click="startEditing"
               size="large"

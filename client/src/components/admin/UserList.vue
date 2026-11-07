@@ -11,7 +11,6 @@
         <v-text-field
           v-model="search"
           clearable
-          flat
           hide-details
           prepend-inner-icon="mdi-magnify"
           :label="$t('search')"
@@ -33,7 +32,7 @@
               v-bind="props"
               :color="user.is_admin ? 'yellow-darken-2' : 'green'"
               size="large"
-              :variant="store.getTheme ? 'outlined' : 'flat'"
+              :variant="store.isDark ? 'outlined' : 'flat'"
             >
               <v-icon start>{{ roleIcon(user) }}</v-icon>
               {{ user.name }}

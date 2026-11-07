@@ -10,13 +10,13 @@
     >
     <v-row v-if="saving" style="margin-top: 20px">
       <v-col>
-        <p class="flow-text" :class="textClass">{{ $t("adding-fish") }}</p>
+        <p class="text-body-large" :class="textClass">{{ $t("adding-fish") }}</p>
         <ProgressBarQuery />
       </v-col>
     </v-row>
     <v-row v-else-if="visible" class="align-center" style="margin-top: 20px">
       <v-col md="3">
-        <p class="flow-text" :class="textClass">{{ $t("biggest-fish") }}?</p>
+        <p class="text-body-large" :class="textClass">{{ $t("biggest-fish") }}?</p>
       </v-col>
       <v-col md="4">
         <v-select
@@ -54,7 +54,7 @@
       <v-col md="2">
         <v-btn
           v-if="fishName && weight"
-          tile
+          rounded="0"
           color="green"
           @click="emit('save')"
           size="large"
@@ -85,7 +85,7 @@ const weight = defineModel("weight", { type: [Number, String], default: null });
 
 const { t } = useI18n();
 const store = useMainStore();
-const textClass = computed(() => ({ "text-white": store.getTheme }));
+const textClass = computed(() => ({ "text-white": store.isDark }));
 const weightRules = [
   (value) => !isNaN(value || "") || t("rules.not-number"),
   (value) => (value || "") >= 0 || t("rules.must-be-positive"),

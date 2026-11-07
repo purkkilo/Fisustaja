@@ -28,9 +28,9 @@
         <v-card>
           <v-card-title class="d-flex flex-wrap align-center">
             <p
-              class="flow-text"
+              class="text-body-large"
               v-bind:class="{
-                'text-white': store.getTheme,
+                'text-white': store.isDark,
               }"
             >
               Tiimikilpailu
@@ -45,14 +45,14 @@
             ></v-text-field>
           </v-card-title>
           <v-data-table
-            :headers="tableHeaders(headers)"
+            :headers="headers"
             :items="team_results"
             :search="searchText"
           >
             <template v-slot:[`item.placement`]="{ item }">
               <v-chip
                 :color="getColor(item.placement)"
-                :variant="store.getTheme ? 'outlined' : 'flat'"
+                :variant="store.isDark ? 'outlined' : 'flat'"
                 >{{ item.placement }}.</v-chip
               >
             </template>
@@ -66,9 +66,9 @@
         <v-col v-if="!loading"> </v-col>
         <p
           v-if="!loading"
-          class="flow-text"
+          class="text-body-large"
           v-bind:class="{
-            'text-white': store.getTheme,
+            'text-white': store.isDark,
           }"
         >
           Ei tuloksia, vielä...
@@ -83,7 +83,6 @@
 </template>
 <script setup>
 import ProgressBarQuery from "../layout/ProgressBarQuery.vue";
-import { tableHeaders } from "@/utils/tableHeaders";
 import { useMainStore } from "@/store";
 import { ref } from "vue";
 import { getColorPoints, getColor } from "@/utils/colors";

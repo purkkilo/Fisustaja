@@ -88,9 +88,9 @@
         <v-row v-if="password && password === password_confirmation">
           <v-col>
             <span
-              class="flow-text"
+              class="text-body-large"
               v-bind:class="{
-                'text-white': store.getTheme,
+                'text-white': store.isDark,
               }"
               >{{ $t("notification.passwords-matching") }}
               <v-icon>mdi-check-outline</v-icon></span
@@ -101,7 +101,7 @@
         <v-row v-else>
           <!-- if both inputs have text, show this-->
           <v-col v-if="password && password_confirmation">
-            <span class="flow-text text-red"
+            <span class="text-body-large text-red"
               >{{ $t("notification.passwords-not-matching") }}
               <v-icon>mdi-alert-circle</v-icon></span
             >
@@ -110,9 +110,9 @@
         <v-row>
           <v-col md="8" offset-md="2" class="input-fields">
             <span
-              class="col s6 flow-text"
+              class="text-body-large"
               v-bind:class="{
-                'text-white': store.getTheme,
+                'text-white': store.isDark,
               }"
               >{{ $t("nav.admin") }}?</span
             >
@@ -128,7 +128,7 @@
           <v-col>
             <v-btn
               id="sbtn"
-              tile
+              rounded="0"
               color="blue-darken-4"
               class="text-white"
               @click="handleSubmit"

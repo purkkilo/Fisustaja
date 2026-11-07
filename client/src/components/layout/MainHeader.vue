@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-app-bar :color="store.getTheme ? 'grey-darken-4' : 'blue-lighten-2'">
+    <v-app-bar :color="store.isDark ? 'grey-darken-4' : 'blue-lighten-2'">
       <v-app-bar-nav-icon @click="drawer = true"></v-app-bar-nav-icon>
 
       <v-toolbar-title>Fisustaja</v-toolbar-title>
@@ -35,7 +35,7 @@
     <v-navigation-drawer
       v-model="drawer"
       temporary
-      :color="store.getTheme ? 'grey-darken-4' : 'blue-lighten-2'"
+      :color="store.isDark ? 'grey-darken-4' : 'blue-lighten-2'"
     >
       <v-list nav class="py-0" density="compact">
         <v-list-item lines="two">
@@ -82,7 +82,7 @@ const route = useRoute();
 
 const user = ref(null);
 const drawer = ref(null);
-const updateSwitch = ref(store.getTheme);
+const updateSwitch = ref(store.isDark);
 const items = ref([
   { title: "nav.home", route: "/", icon: "mdi-home", color: "white" },
   {

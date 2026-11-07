@@ -28,8 +28,8 @@
       <v-window-item
         :value="'cupfishes'"
         v-bind:class="{
-          inputarea: !store.getTheme,
-          'inputarea-dark': store.getTheme,
+          inputarea: !store.isDark,
+          'inputarea-dark': store.isDark,
         }"
       >
         <v-row v-if="total_fishes_chart_data">
@@ -50,24 +50,24 @@
           <v-col>
             <v-card>
               <v-card-title class="d-flex flex-wrap align-center">
-                <p class="flow-text">
+                <p class="text-body-large">
                   {{ $t("biggest-amounts") }} ({{ $t("total-big") }})
                 </p>
                 <v-spacer></v-spacer>
               </v-card-title>
               <v-data-table
                 id="total-amounts-table"
-                :headers="tableHeaders(headers_cup_fishes_total)"
+                :headers="headers_cup_fishes_total"
                 :items="cup_fishes_total"
                 :loading="loading"
                 item-value="index"
               >
                 <template
                   v-for="h in headers_cup_fishes_total"
-                  :key="h.value"
-                  v-slot:[`header.${h.value}`]="{ column: header }"
+                  :key="h.key"
+                  v-slot:[`header.${h.key}`]="{ column: header }"
                 >
-                  <span> {{ $t(header.text) }}</span>
+                  <span> {{ $t(header.title) }}</span>
                 </template>
                 <template v-slot:[`item.weights`]="{ item }">
                   <v-chip
@@ -96,24 +96,24 @@
           <v-col>
             <v-card>
               <v-card-title class="d-flex flex-wrap align-center">
-                <p class="flow-text">
+                <p class="text-body-large">
                   {{ $t("biggest-amounts") }} ({{ $t("comp.by") }})
                 </p>
                 <v-spacer></v-spacer>
               </v-card-title>
               <v-data-table
                 id="comp-amounts-table"
-                :headers="tableHeaders(headers_cup_fishes_competition)"
+                :headers="headers_cup_fishes_competition"
                 :items="cup_fishes_competition"
                 :loading="loading"
                 item-value="index"
               >
                 <template
                   v-for="h in headers_cup_fishes_competition"
-                  :key="h.value"
-                  v-slot:[`header.${h.value}`]="{ column: header }"
+                  :key="h.key"
+                  v-slot:[`header.${h.key}`]="{ column: header }"
                 >
-                  <span> {{ $t(header.text) }}</span>
+                  <span> {{ $t(header.title) }}</span>
                 </template>
                 <template v-slot:[`item.weights`]="{ item }">
                   <v-chip
@@ -128,8 +128,8 @@
       <v-window-item
         :value="'cupbiggestfishes'"
         v-bind:class="{
-          inputarea: !store.getTheme,
-          'inputarea-dark': store.getTheme,
+          inputarea: !store.isDark,
+          'inputarea-dark': store.isDark,
         }"
       >
         <v-row
@@ -156,24 +156,24 @@
           <v-col>
             <v-card>
               <v-card-title>
-                <p class="flow-text">
+                <p class="text-body-large">
                   {{ $t("cup.is") }} {{ $t("biggest-fishes") }}
                 </p>
                 <v-spacer></v-spacer>
               </v-card-title>
               <v-data-table
                 id="normal-table"
-                :headers="tableHeaders(headers_cup_biggest_fishes)"
+                :headers="headers_cup_biggest_fishes"
                 :items="cup_biggest_fishes"
                 :loading="loading"
                 item-value="index"
               >
                 <template
                   v-for="h in headers_cup_biggest_fishes"
-                  :key="h.value"
-                  v-slot:[`header.${h.value}`]="{ column: header }"
+                  :key="h.key"
+                  v-slot:[`header.${h.key}`]="{ column: header }"
                 >
-                  <span> {{ $t(header.text) }}</span>
+                  <span> {{ $t(header.title) }}</span>
                 </template>
                 <template v-slot:[`item.weight`]="{ item }">
                   <v-chip>{{ item.weight.toLocaleString() }} g</v-chip>
@@ -200,24 +200,24 @@
           <v-col>
             <v-card>
               <v-card-title>
-                <p class="flow-text">
+                <p class="text-body-large">
                   {{ $t("cup.is") }} {{ $t("biggest-amounts") }}
                 </p>
                 <v-spacer></v-spacer>
               </v-card-title>
               <v-data-table
                 id="cup-biggest-amounts"
-                :headers="tableHeaders(headers_cup_biggest_amounts)"
+                :headers="headers_cup_biggest_amounts"
                 :items="cup_biggest_amounts"
                 :loading="loading"
                 item-value="index"
               >
                 <template
                   v-for="h in headers_cup_biggest_amounts"
-                  :key="h.value"
-                  v-slot:[`header.${h.value}`]="{ column: header }"
+                  :key="h.key"
+                  v-slot:[`header.${h.key}`]="{ column: header }"
                 >
-                  <span> {{ $t(header.text) }}</span>
+                  <span> {{ $t(header.title) }}</span>
                 </template>
                 <template v-slot:[`item.weight`]="{ item }">
                   <v-chip>{{ item.weight.toLocaleString() }} g</v-chip>
@@ -230,8 +230,8 @@
       <v-window-item
         :value="'cupsignees'"
         v-bind:class="{
-          inputarea: !store.getTheme,
-          'inputarea-dark': store.getTheme,
+          inputarea: !store.isDark,
+          'inputarea-dark': store.isDark,
         }"
       >
         <v-row class="justify-center" v-if="cup" style="margin-top: 10px">
@@ -260,24 +260,24 @@
           <v-col>
             <v-card>
               <v-card-title class="d-flex flex-wrap align-center">
-                <p class="flow-text">
+                <p class="text-body-large">
                   {{ $t("total-signees") }} ({{ $t("comp.by") }})
                 </p>
                 <v-spacer></v-spacer>
               </v-card-title>
               <v-data-table
                 id="competition-signee-amount-table"
-                :headers="tableHeaders(headers_cup_signees)"
+                :headers="headers_cup_signees"
                 :items="cup_signees"
                 :loading="loading"
                 item-value="index"
               >
                 <template
                   v-for="h in headers_cup_signees"
-                  :key="h.value"
-                  v-slot:[`header.${h.value}`]="{ column: header }"
+                  :key="h.key"
+                  v-slot:[`header.${h.key}`]="{ column: header }"
                 >
-                  <span> {{ $t(header.text) }}</span>
+                  <span> {{ $t(header.title) }}</span>
                 </template>
                 <template v-slot:[`item.signees`]="{ item }">
                   <v-chip>{{ item.signees.toLocaleString() }}</v-chip>
@@ -291,7 +291,6 @@
   </div>
 </template>
 <script setup>
-import { tableHeaders } from "@/utils/tableHeaders";
 import { useMainStore } from "@/store";
 import { ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
@@ -314,31 +313,31 @@ const { t } = useI18n();
 const showTables = ref(true);
 const showCharts = ref(true);
 const headers_cup_fishes_total = ref([
-  { text: "fish", value: "name" },
-  { text: "amount", value: "weights" },
+  { title: "fish", key: "name"},
+  { title: "amount", key: "weights"},
 ]);
 const headers_cup_fishes_competition = ref([
-  { text: "fish", value: "name" },
-  { text: "comp.normal", value: "competition_name" },
-  { text: "amount", value: "weights" },
+  { title: "fish", key: "name"},
+  { title: "comp.normal", key: "competition_name"},
+  { title: "amount", key: "weights"},
 ]);
 const headers_cup_signees = ref([
-  { text: "comp.normal", value: "competition_name" },
-  { text: "amount", value: "signees" },
+  { title: "comp.normal", key: "competition_name"},
+  { title: "amount", key: "signees"},
 ]);
 const headers_cup_biggest_fishes = ref([
-  { text: "boat-number", value: "boat_number" },
-  { text: "captain-name", value: "captain_name" },
-  { text: "comp.normal", value: "competition_name" },
-  { text: "fish", value: "fish_name" },
-  { text: "weight", value: "weight" },
+  { title: "boat-number", key: "boat_number"},
+  { title: "captain-name", key: "captain_name"},
+  { title: "comp.normal", key: "competition_name"},
+  { title: "fish", key: "fish_name"},
+  { title: "weight", key: "weight"},
 ]);
 const headers_cup_biggest_amounts = ref([
-  { text: "boat-number", value: "boat_number" },
-  { text: "captain-name", value: "captain_name" },
-  { text: "comp.normal", value: "competition_name" },
-  { text: "fish", value: "fish_name" },
-  { text: "weight", value: "weight" },
+  { title: "boat-number", key: "boat_number"},
+  { title: "captain-name", key: "captain_name"},
+  { title: "comp.normal", key: "competition_name"},
+  { title: "fish", key: "fish_name"},
+  { title: "weight", key: "weight"},
 ]);
 const stats_tab = ref(null);
 const cup_fishes_total = ref([]);

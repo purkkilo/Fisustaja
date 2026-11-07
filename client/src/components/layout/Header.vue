@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-app-bar
-      :color="store.getTheme ? 'grey-darken-4' : 'primary-lighten-1'"
+      :color="store.isDark ? 'grey-darken-4' : 'primary-lighten-1'"
       scroll-behavior="elevate"
     >
       <v-app-bar-nav-icon @click="drawer = true"></v-app-bar-nav-icon>
@@ -32,7 +32,7 @@
     <v-navigation-drawer
       v-model="drawer"
       temporary
-      :color="store.getTheme ? 'grey-darken-4' : 'primary-lighten-1'"
+      :color="store.isDark ? 'grey-darken-4' : 'primary-lighten-1'"
     >
       <v-list nav class="py-0" density="compact">
         <v-list-item lines="two">
@@ -55,7 +55,7 @@
             <v-icon>mdi-ferry</v-icon>
           </template>
 
-          <v-list-item-title>{{ store.getCompetition.name }}</v-list-item-title>
+          <v-list-item-title>{{ store.competition.name }}</v-list-item-title>
         </v-list-item>
 
         <v-list-item
@@ -67,7 +67,7 @@
           </template>
 
           <v-list-item-title>{{
-            store.getCompetition.cup_name
+            store.competition.cup_name
           }}</v-list-item-title>
         </v-list-item>
         <v-divider></v-divider>
@@ -209,7 +209,7 @@ const isAdmin = computed(() => {
 });
 
 const isCompetitionSet = computed(() => {
-  if (store.getCompetition) {
+  if (store.competition) {
     return true;
   } else {
     return false;
@@ -217,7 +217,7 @@ const isCompetitionSet = computed(() => {
 });
 
 const isCupCompetition = computed(
-  () => !!store.getCompetition?.isCupCompetition,
+  () => !!store.competition?.isCupCompetition,
 );
 
 watch(

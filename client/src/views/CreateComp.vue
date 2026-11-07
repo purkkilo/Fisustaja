@@ -104,7 +104,7 @@
                 </v-col>
                 <v-col cols="3" style="margin-top: 20px">
                   <v-btn
-                    tile
+                    rounded="0"
                     color="green-lighten-1"
                     to="/dashboard"
                     size="large"
@@ -116,12 +116,12 @@
               </v-row>
               <v-row v-else>
                 <v-col md="6" offset-md="2" style="margin-top: 20px">
-                  <p class="flow-text" :class="textClass">
+                  <p class="text-body-large" :class="textClass">
                     {{ $t("create-competition.no-cups-created") }}
                   </p>
                 </v-col>
                 <v-col md="2" style="margin-top: 20px">
-                  <v-btn tile color="blue-lighten-1" to="/dashboard"
+                  <v-btn rounded="0" color="blue-lighten-1" to="/dashboard"
                     ><v-icon>mdi-plus-circle</v-icon>{{ $t("create") }}
                     {{ $t("cup.normal") }}!</v-btn
                   >
@@ -207,7 +207,7 @@
         <!-- 3. Multipliers and minimum sizes -->
         <v-window-item :class="panelClass" value="points">
           <v-container>
-            <p class="flow-text" :class="textClass">
+            <p class="text-body-large" :class="textClass">
               {{ $t("create-competition.multiplier-title") }}
             </p>
             <LockedNotice v-if="locked.specs" />
@@ -237,7 +237,7 @@
             <v-row style="margin: 20px 0 10px">
               <v-col md="5" offset-md="1">
                 <v-btn
-                  tile
+                  rounded="0"
                   color="blue-lighten-2"
                   @click="tab = 'points'"
                   size="large"
@@ -245,7 +245,7 @@
                 >
               </v-col>
               <v-col md="5" v-if="canSubmit">
-                <v-btn tile color="green" @click="save" size="large"
+                <v-btn rounded="0" color="green" @click="save" size="large"
                   ><v-icon>mdi-plus-circle</v-icon
                   >{{ $t("create-competition.submit-button") }}</v-btn
                 >
@@ -318,9 +318,9 @@ const {
 } = useCompetitionForm();
 
 const panelClass = computed(() =>
-  store.getTheme ? "inputarea-dark" : "inputarea",
+  store.isDark ? "inputarea-dark" : "inputarea",
 );
-const textClass = computed(() => ({ "text-white": store.getTheme }));
+const textClass = computed(() => ({ "text-white": store.isDark }));
 
 async function save() {
   if (await submit()) router.push({ path: "/dashboard" });

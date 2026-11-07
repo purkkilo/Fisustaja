@@ -2,7 +2,7 @@
   <!-- Clickable table of boats (leaderboard / still on water) -->
   <v-card>
     <v-card-title class="d-flex flex-wrap align-center">
-      <p class="flow-text">{{ title }}</p>
+      <p class="text-body-large">{{ title }}</p>
       <v-tooltip location="bottom">
         <template v-slot:activator="{ props }">
           <v-icon v-bind="props" style="margin: 0 0 20px 5px"
@@ -30,7 +30,7 @@
       <template v-slot:[`item.placement`]="{ item }">
         <v-chip
           :color="placementColor(item.placement)"
-          :variant="store.getTheme ? 'outlined' : 'flat'"
+          :variant="store.isDark ? 'outlined' : 'flat'"
           >{{ item.placement }}.</v-chip
         >
       </template>

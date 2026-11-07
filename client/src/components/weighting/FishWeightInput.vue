@@ -2,7 +2,7 @@
   <!-- Weight of one fish species, with a dialog for adding more to it -->
   <v-row class="justify-center align-center">
     <v-col md="6">
-      <span class="flow-text" :class="textClass">
+      <span class="text-body-large" :class="textClass">
         {{ index + 1 }}. {{ name }}
       </span>
     </v-col>
@@ -102,7 +102,7 @@ const emit = defineEmits(["update:modelValue"]);
 
 const { t } = useI18n();
 const store = useMainStore();
-const textClass = computed(() => ({ "text-white": store.getTheme }));
+const textClass = computed(() => ({ "text-white": store.isDark }));
 
 const weightRules = [
   (value) => !isNaN(value || "") || t("rules.not-number"),

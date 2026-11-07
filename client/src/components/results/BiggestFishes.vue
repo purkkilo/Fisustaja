@@ -5,7 +5,7 @@
         <v-card>
           <v-card-title class="d-flex flex-wrap align-center">
             <p
-              class="flow-text"
+              class="text-body-large"
               v-if="
                 selected_biggest_fish === 'all' ||
                 selected_biggest_fish === 'winners'
@@ -13,7 +13,7 @@
             >
               {{ $t("biggest-fishes") }} ({{ $t(selected_biggest_fish) }})
             </p>
-            <p class="flow-text" v-else>
+            <p class="text-body-large" v-else>
               {{ $t("biggest-fishes") }} ({{ selected_biggest_fish }})
             </p>
             <v-spacer></v-spacer>
@@ -26,21 +26,21 @@
             ></v-text-field>
           </v-card-title>
           <v-data-table
-            :headers="tableHeaders(headers)"
+            :headers="headers"
             :items="biggest_fishes_results"
             :search="searchText"
           >
             <template
               v-for="h in headers"
-              :key="h.value"
-              v-slot:[`header.${h.value}`]="{ column: header }"
+              :key="h.key"
+              v-slot:[`header.${h.key}`]="{ column: header }"
             >
-              <span> {{ $t(header.text) }}</span>
+              <span> {{ $t(header.title) }}</span>
             </template>
             <template v-slot:[`item.placement`]="{ item }">
               <v-chip
                 :color="getColor(item.placement)"
-                :variant="store.getTheme ? 'outlined' : 'flat'"
+                :variant="store.isDark ? 'outlined' : 'flat'"
                 >{{ item.placement }}.</v-chip
               >
             </template>
@@ -57,9 +57,9 @@
     <v-row v-else>
       <v-col v-if="!loading">
         <p
-          class="flow-text"
+          class="text-body-large"
           v-bind:class="{
-            'text-white': store.getTheme,
+            'text-white': store.isDark,
           }"
         >
           {{ $t("no-results") }}
@@ -74,7 +74,6 @@
 </template>
 <script setup>
 import ProgressBarQuery from "../layout/ProgressBarQuery.vue";
-import { tableHeaders } from "@/utils/tableHeaders";
 import { useMainStore } from "@/store";
 import { ref } from "vue";
 import { getColorPoints, getColor } from "@/utils/colors";

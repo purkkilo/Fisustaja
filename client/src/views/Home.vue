@@ -36,7 +36,7 @@
             <v-card
               v-bind="props"
               :key="i"
-              tile
+              rounded="0"
               :elevation="isHovering ? 3 : 2"
               class="card-link"
               variant="outlined"
