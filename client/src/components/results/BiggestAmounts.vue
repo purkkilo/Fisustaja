@@ -59,7 +59,7 @@
       <v-col v-if="!loading">
         <p
           class="text-body-large"
-          v-bind:class="{
+          :class="{
             'text-white': store.isDark,
           }"
         >
@@ -81,14 +81,14 @@ import { getColorPoints, getColor } from "@/utils/colors";
 
 const store = useMainStore();
 defineOptions({ name: "BiggestAmounts" });
-const props = defineProps([
-  "loading",
-  "fish_names",
-  "selected_biggest_amount",
-  "biggest_amounts_results",
-  "search_amounts",
-  "headers",
-]);
+const props = defineProps({
+  loading: { type: Boolean, default: false },
+  fish_names: { type: Array, default: () => [] },
+  selected_biggest_amount: { type: String, default: "" },
+  biggest_amounts_results: { type: Array, default: () => [] },
+  search_amounts: { type: String, default: "" },
+  headers: { type: Array, default: () => [] },
+});
 
 const searchText = ref(props.search_amounts || "");
 

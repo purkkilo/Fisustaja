@@ -2,7 +2,7 @@
   <!-- /dashboard-->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container
-    v-bind:class="{
+    :class="{
       mobile: $vuetify.display.width < 800,
       browser: $vuetify.display.width >= 800,
       wide: $vuetify.display.width >= 1200,

@@ -96,7 +96,7 @@
                   <v-row>
                     <v-col v-if="cups.length">
                       <h2
-                        v-bind:class="{
+                        :class="{
                           'text-white': store.isDark,
                         }"
                       >
@@ -105,14 +105,14 @@
                     </v-col>
                     <v-col v-else>
                       <h2
-                        v-bind:class="{
+                        :class="{
                           'text-white': store.isDark,
                         }"
                       >
                         {{ $t("comp.not-found") }}
                       </h2>
                       <h2
-                        v-bind:class="{
+                        :class="{
                           'text-white': store.isDark,
                         }"
                       >
@@ -126,7 +126,7 @@
                 </v-col>
                 <v-col v-else>
                   <h2
-                    v-bind:class="{
+                    :class="{
                       'text-white': store.isDark,
                     }"
                   >
@@ -224,7 +224,7 @@
                 >
                 <v-col v-else>
                   <h2
-                    v-bind:class="{
+                    :class="{
                       'text-white': store.isDark,
                     }"
                   >
@@ -250,7 +250,12 @@ import CupService from "../services/CupService.js";
 import { formatDateToLocaleDateString } from "@/utils/format";
 
 defineOptions({ name: "ContinueComp" });
-const props = defineProps(["competitions", "cups", "loading", "publishing"]);
+const props = defineProps({
+  competitions: { type: Array, default: () => [] },
+  cups: { type: Array, default: () => [] },
+  loading: { type: Boolean, default: false },
+  publishing: { type: Boolean, default: false },
+});
 defineEmits(["publish"]);
 const store = useMainStore();
 const router = useRouter();

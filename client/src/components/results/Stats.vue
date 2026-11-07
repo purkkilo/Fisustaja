@@ -76,7 +76,7 @@
           <v-col md="12">
             <p
               class="text-body-large"
-              v-bind:class="{
+              :class="{
                 'text-white': store.isDark,
               }"
             >
@@ -240,18 +240,18 @@ import { getMultiplierTextColor } from "@/utils/colors";
 
 const store = useMainStore();
 defineOptions({ name: "Stats" });
-defineProps([
-  "competition",
-  "normal_points",
-  "hasGottenFishCount",
-  "signees",
-  "loading",
-  "biggest_amounts",
-  "fishes_chart_title",
-  "fishes_chart_data",
-  "signee_chart_title",
-  "signee_chart_data",
-]);
+defineProps({
+  competition: { type: Object, default: null },
+  normal_points: { type: Array, default: () => [] },
+  hasGottenFishCount: { type: Number, default: 0 },
+  signees: { type: Array, default: () => [] },
+  loading: { type: Boolean, default: false },
+  biggest_amounts: { type: [Object, Array], default: () => ({}) },
+  fishes_chart_title: { type: String, default: "" },
+  fishes_chart_data: { type: Object, default: null },
+  signee_chart_title: { type: String, default: "" },
+  signee_chart_data: { type: Object, default: null },
+});
 defineEmits(["dialog"]);
 
 // Runs when the component is created

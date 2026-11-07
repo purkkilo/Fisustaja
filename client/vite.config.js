@@ -14,8 +14,6 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
-  // Keep the old VUE_APP_* variables working next to the Vite VITE_* ones
-  envPrefix: ["VITE_", "VUE_APP_"],
   server: {
     port: 8080,
     proxy: {

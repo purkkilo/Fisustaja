@@ -1,6 +1,6 @@
 <template>
   <v-container
-    v-bind:class="{
+    :class="{
       mobile: $vuetify.display.width < 800,
       browser: $vuetify.display.width >= 800,
       wide: $vuetify.display.width >= 1200,

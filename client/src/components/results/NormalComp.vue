@@ -90,7 +90,7 @@
           <v-col v-if="!loading">
             <p
               class="text-body-large"
-              v-bind:class="{
+              :class="{
                 'text-white': store.isDark,
               }"
             >
@@ -114,15 +114,15 @@ import { getColorPoints, getColor } from "@/utils/colors";
 
 const store = useMainStore();
 defineOptions({ name: "NormalComp" });
-const props = defineProps([
-  "loading",
-  "headers",
-  "search",
-  "results",
-  "selected_normal",
-  "normal_points",
-  "fish_names",
-]);
+const props = defineProps({
+  loading: { type: Boolean, default: false },
+  headers: { type: Array, default: () => [] },
+  search: { type: String, default: "" },
+  results: { type: Array, default: () => [] },
+  selected_normal: { type: String, default: "" },
+  normal_points: { type: Array, default: () => [] },
+  fish_names: { type: Array, default: () => [] },
+});
 
 const searchText = ref(props.search || "");
 

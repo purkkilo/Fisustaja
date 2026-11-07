@@ -27,7 +27,7 @@
     <v-window v-model="stats_tab" style="background: rgba(0, 0, 0, 0.4)">
       <v-window-item
         :value="'cupfishes'"
-        v-bind:class="{
+        :class="{
           inputarea: !store.isDark,
           'inputarea-dark': store.isDark,
         }"
@@ -127,7 +127,7 @@
       </v-window-item>
       <v-window-item
         :value="'cupbiggestfishes'"
-        v-bind:class="{
+        :class="{
           inputarea: !store.isDark,
           'inputarea-dark': store.isDark,
         }"
@@ -229,7 +229,7 @@
       </v-window-item>
       <v-window-item
         :value="'cupsignees'"
-        v-bind:class="{
+        :class="{
           inputarea: !store.isDark,
           'inputarea-dark': store.isDark,
         }"
@@ -292,280 +292,39 @@
 </template>
 <script setup>
 import { useMainStore } from "@/store";
-import { ref, watch } from "vue";
-import { useI18n } from "vue-i18n";
+import { useCupStats } from "@/composables/useCupStats";
 import BarChart from "../components/BarChart.vue";
-import { getRandomColors } from "@/utils/colors";
-import { sortBy } from "@/utils/format";
 
 const store = useMainStore();
 defineOptions({ name: "CupStats" });
-const props = defineProps([
-  "competitions",
-  "cup",
-  "all_signees",
-  "biggest_fishes",
-  "biggest_amounts",
-  "loading",
-]);
-const { t } = useI18n();
+const props = defineProps({
+  competitions: { type: Array, default: () => [] },
+  cup: { type: Object, default: null },
+  all_signees: { type: Array, default: () => [] },
+  biggest_fishes: { type: Array, default: () => [] },
+  biggest_amounts: { type: Array, default: () => [] },
+  loading: { type: Boolean, default: false },
+});
 
-const showTables = ref(true);
-const showCharts = ref(true);
-const headers_cup_fishes_total = ref([
-  { title: "fish", key: "name"},
-  { title: "amount", key: "weights"},
-]);
-const headers_cup_fishes_competition = ref([
-  { title: "fish", key: "name"},
-  { title: "comp.normal", key: "competition_name"},
-  { title: "amount", key: "weights"},
-]);
-const headers_cup_signees = ref([
-  { title: "comp.normal", key: "competition_name"},
-  { title: "amount", key: "signees"},
-]);
-const headers_cup_biggest_fishes = ref([
-  { title: "boat-number", key: "boat_number"},
-  { title: "captain-name", key: "captain_name"},
-  { title: "comp.normal", key: "competition_name"},
-  { title: "fish", key: "fish_name"},
-  { title: "weight", key: "weight"},
-]);
-const headers_cup_biggest_amounts = ref([
-  { title: "boat-number", key: "boat_number"},
-  { title: "captain-name", key: "captain_name"},
-  { title: "comp.normal", key: "competition_name"},
-  { title: "fish", key: "fish_name"},
-  { title: "weight", key: "weight"},
-]);
-const stats_tab = ref(null);
-const cup_fishes_total = ref([]);
-const cup_fishes_competition = ref([]);
-const cup_biggest_fishes = ref([]);
-const cup_biggest_amounts = ref([]);
-const cup_signees = ref([]);
-const total_fishes_chart_data = ref(null);
-const competition_fishes_chart_data = ref(null);
-const cup_biggest_fishes_chart_data = ref(null);
-const cup_biggest_amounts_chart_data = ref(null);
-const cup_signees_chart_data = ref(null);
-
-function calculateCupStatistics() {
-  if (!props.competitions?.length) return;
-
-  cup_fishes_competition.value = [];
-  let all_fishes = [];
-  let competition_signees_count = [];
-  let all_signees_labels = [];
-  let all_biggest_fishes = [];
-  let all_biggest_amounts = [];
-  let all_biggest_fishes_labels = [];
-  let all_biggest_amounts_labels = [];
-  let all_biggest_fishes_data = [];
-  let all_biggest_amounts_data = [];
-  let all_signees_data = [];
-  let all_labels = [];
-  let all_data = [];
-  let competition_labels = [];
-  let competition_data = [];
-  let cup_fishes = [];
-  props.competitions.forEach((competition) => {
-    let comp_signees = (props.all_signees ?? []).filter(
-      (s) => s.competition_id === competition._id,
-    );
-    comp_signees.forEach((s) => {
-      (s.fishes ?? []).forEach((fish) => {
-        const fishDef = (competition.fishes ?? []).find(
-          (f) => f.id === fish.id,
-        );
-        if (!fishDef) return;
-        let fish_name = fishDef.name;
-        if (fish.weights > 0) {
-          let found_fish = all_fishes.findIndex(
-            (f) => f.name.toUpperCase() === fish_name.toUpperCase(),
-          );
-          if (found_fish > -1) {
-            all_fishes[found_fish].weights += fish.weights;
-          } else {
-            all_fishes.push({
-              id: found_fish,
-              name: fish_name,
-              weights: fish.weights,
-            });
-          }
-        }
-
-        let comp_fish = cup_fishes_competition.value.find(
-          (f) => f.comp_id === competition._id && f.id === fish.id,
-        );
-        const fish_weight = Number.isInteger(fish.weights) ? fish.weights : 0;
-        if (comp_fish) {
-          comp_fish.weights += fish_weight;
-        } else {
-          cup_fishes_competition.value.push({
-            id: fish.id,
-            name: fish_name,
-            competition_name: competition.name,
-            comp_id: competition._id,
-            weights: fish_weight,
-          });
-        }
-      });
-    });
-
-    competition_signees_count.push({
-      competition_name: competition.name,
-      signees: (props.all_signees ?? []).filter(
-        (c) => c.competition_id === competition._id,
-      ).length,
-    });
-
-    (competition.fishes ?? []).forEach((fish) => {
-      cup_fishes.push(fish.name);
-    });
-  });
-
-  cup_fishes = Array.from(new Set(cup_fishes));
-
-  cup_fishes.forEach((name) => {
-    let fishes = (props.biggest_fishes ?? []).filter((f) => f.name === name);
-
-    if (fishes.length) {
-      if (fishes[0].weight > 0) {
-        let competition = props.competitions.find(
-          (c) => c._id === fishes[0].competition_id,
-        );
-        all_biggest_fishes.push({
-          id: fishes[0].id,
-          boat_number: fishes[0].boat_number,
-          captain_name: fishes[0].captain_name,
-          competition_name: competition?.name ?? "",
-          fish_name: name,
-          weight: fishes[0].weight,
-        });
-      }
-    }
-
-    fishes = (props.biggest_amounts ?? []).filter((f) => f.name === name);
-    if (fishes.length) {
-      if (fishes[0].weight > 0) {
-        all_biggest_amounts.push({
-          boat_number: fishes[0].boat_number,
-          captain_name: fishes[0].captain_name,
-          competition_name: fishes[0].competition_name,
-          fish_name: name,
-          weight: fishes[0].weight,
-        });
-      }
-    }
-  });
-
-  // Data for Kalasaaliit tab
-  cup_fishes_total.value = all_fishes.sort(sortBy("weights", false));
-  cup_fishes_total.value.forEach((fish) => {
-    all_labels.push(fish.name);
-    all_data.push(fish.weights);
-  });
-  total_fishes_chart_data.value = {
-    labels: all_labels,
-    datasets: [
-      {
-        label: "Weights",
-        backgroundColor: getRandomColors(all_data.length), // Green and red
-        data: all_data, // Data
-      },
-    ],
-  };
-
-  cup_fishes_competition.value = cup_fishes_competition.value.sort(
-    sortBy("weights", false),
-  );
-
-  cup_fishes_competition.value.forEach((fish) => {
-    if (fish.weights) {
-      competition_labels.push(`${fish.name} (${fish.competition_name})`);
-      competition_data.push(fish.weights);
-    }
-  });
-  competition_fishes_chart_data.value = {
-    labels: competition_labels,
-    datasets: [
-      {
-        label: "Weights",
-        backgroundColor: getRandomColors(competition_data.length), // Green and red
-        data: competition_data, // Data
-      },
-    ],
-  };
-
-  // Data for Suurimmat kalat tab
-  cup_biggest_fishes.value = all_biggest_fishes.sort(sortBy("weight", false));
-  cup_biggest_fishes.value.forEach((item) => {
-    all_biggest_fishes_labels.push(
-      `${item.fish_name} (${item.boat_number}), ${item.competition_name}`,
-    );
-    all_biggest_fishes_data.push(item.weight);
-  });
-  cup_biggest_fishes_chart_data.value = {
-    labels: all_biggest_fishes_labels,
-    datasets: [
-      {
-        label: "Weights",
-        backgroundColor: getRandomColors(all_biggest_fishes_data.length), // Green and red
-        data: all_biggest_fishes_data, // Data
-      },
-    ],
-  };
-
-  // Data for Suurimmat kalat tab
-  cup_biggest_amounts.value = all_biggest_amounts.sort(sortBy("weight", false));
-
-  cup_biggest_amounts.value.forEach((item) => {
-    all_biggest_amounts_labels.push(
-      `${item.fish_name} (${item.boat_number}), ${item.competition_name}`,
-    );
-    all_biggest_amounts_data.push(item.weight);
-  });
-  cup_biggest_amounts_chart_data.value = {
-    labels: all_biggest_amounts_labels,
-    datasets: [
-      {
-        label: "Weights",
-        backgroundColor: getRandomColors(all_biggest_amounts_data.length), // Green and red
-        data: all_biggest_amounts_data, // Data
-      },
-    ],
-  };
-
-  // Data for Kilpailijat tab
-  cup_signees.value = competition_signees_count.sort(sortBy("signees", false));
-  cup_signees.value.forEach((item) => {
-    all_signees_labels.push(item.competition_name);
-    all_signees_data.push(item.signees);
-  });
-
-  cup_signees_chart_data.value = {
-    labels: all_signees_labels,
-    datasets: [
-      {
-        label: t("amount"),
-        backgroundColor: getRandomColors(all_signees_data.length), // Green and red
-        data: all_signees_data, // Data
-      },
-    ],
-  };
-}
-
-watch(
-  () => [
-    props.competitions,
-    props.all_signees,
-    props.biggest_fishes,
-    props.biggest_amounts,
-  ],
-  () => calculateCupStatistics(),
-  { deep: true, immediate: true },
-);
+const {
+  stats_tab,
+  showTables,
+  showCharts,
+  headers_cup_fishes_total,
+  headers_cup_fishes_competition,
+  headers_cup_signees,
+  headers_cup_biggest_fishes,
+  headers_cup_biggest_amounts,
+  cup_fishes_total,
+  cup_fishes_competition,
+  cup_biggest_fishes,
+  cup_biggest_amounts,
+  cup_signees,
+  total_fishes_chart_data,
+  competition_fishes_chart_data,
+  cup_biggest_fishes_chart_data,
+  cup_biggest_amounts_chart_data,
+  cup_signees_chart_data,
+} = useCupStats(props);
 </script>
 <style scoped></style>

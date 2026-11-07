@@ -132,7 +132,7 @@
                     <span
                       v-if="header.highlight"
                       class="strokeme"
-                      v-bind:class="{
+                      :class="{
                         'text-red': !header.isFinished,
                         'text-green': header.isFinished,
                       }"
@@ -183,7 +183,7 @@
       <v-row v-else>
         <v-col>
           <h2
-            v-bind:class="{
+            :class="{
               'text-white': store.isDark,
             }"
           >
@@ -195,7 +195,7 @@
         <v-col v-if="loading">
           <p
             class="text-body-large"
-            v-bind:class="{
+            :class="{
               'text-white': store.isDark,
             }"
           >
@@ -222,7 +222,7 @@
       <v-row v-else>
         <v-col>
           <h2
-            v-bind:class="{
+            :class="{
               'text-white': store.isDark,
             }"
           >
@@ -240,17 +240,17 @@ import { getColor } from "@/utils/colors";
 
 const store = useMainStore();
 defineOptions({ name: "CupPoints" });
-const props = defineProps([
-  "competitions",
-  "allCompetitions",
-  "results",
-  "cup",
-  "headers",
-  "isResults",
-  "notFinishedCount",
-  "loading",
-  "selectNumbers",
-]);
+const props = defineProps({
+  competitions: { type: Array, default: () => [] },
+  allCompetitions: { type: Array, default: () => [] },
+  results: { type: Array, default: () => [] },
+  cup: { type: Object, default: null },
+  headers: { type: Array, default: () => [] },
+  isResults: { type: Boolean, default: false },
+  notFinishedCount: { type: Number, default: 0 },
+  loading: { type: Boolean, default: false },
+  selectNumbers: { type: Array, default: () => [] },
+});
 defineEmits(["calculate", "change", "refresh", "save", "sort"]);
 
 const headerOptions = ref(["locality", "name"]);
@@ -269,7 +269,7 @@ function resultSlot(c) {
 }
 
 onMounted(() => {
-  if (props.cup.meaningful_competitions > 0)
+  if (props.cup?.meaningful_competitions > 0)
     selectedCompetitions.value = props.cup.meaningful_competitions;
   else selectedCompetitions.value = props.competitions.length;
 });

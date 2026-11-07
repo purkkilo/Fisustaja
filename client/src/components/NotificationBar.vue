@@ -8,7 +8,9 @@
 import { ref } from "vue";
 
 defineOptions({ name: "NotificationBar" });
-defineProps(["text"]);
+defineProps({
+  text: { type: String, default: "" },
+});
 const snackbar = defineModel("snackbar", { type: Boolean, default: false });
 
 const timeout = ref(4000);

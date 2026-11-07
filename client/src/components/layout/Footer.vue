@@ -18,7 +18,7 @@
       <v-col
         class="py-4 text-center text-white"
         cols="12"
-        v-bind:class="{
+        :class="{
           'bg-grey-darken-1': store.isDark,
           'bg-primary-lighten-2': !store.isDark,
         }"

@@ -29,7 +29,7 @@
           <v-card-title class="d-flex flex-wrap align-center">
             <p
               class="text-body-large"
-              v-bind:class="{
+              :class="{
                 'text-white': store.isDark,
               }"
             >
@@ -67,7 +67,7 @@
         <p
           v-if="!loading"
           class="text-body-large"
-          v-bind:class="{
+          :class="{
             'text-white': store.isDark,
           }"
         >
@@ -89,12 +89,12 @@ import { getColorPoints, getColor } from "@/utils/colors";
 
 const store = useMainStore();
 defineOptions({ name: "TeamComp" });
-const props = defineProps([
-  "team_results",
-  "search_team",
-  "loading",
-  "headers",
-]);
+const props = defineProps({
+  team_results: { type: Array, default: () => [] },
+  search_team: { type: String, default: "" },
+  loading: { type: Boolean, default: false },
+  headers: { type: Array, default: () => [] },
+});
 defineEmits(["dialog"]);
 
 const searchText = ref(props.search_team || "");

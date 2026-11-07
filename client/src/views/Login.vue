@@ -1,8 +1,7 @@
 <template>
   <!-- /login -->
-  <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container
-    v-bind:class="{
+    :class="{
       mobile: $vuetify.display.width < 800,
       browser: $vuetify.display.width >= 800,
       wide: $vuetify.display.width >= 1200,
@@ -13,13 +12,12 @@
       elevation="3"
       variant="outlined"
     >
-      <error-list :errors="errors"></error-list>
+      <ErrorList ref="errorList" :errors="errors" />
       <h1 style="margin: 50px">{{ $t("nav.login") }}</h1>
-      <form>
+      <form @submit.prevent="handleSubmit">
         <v-row>
           <v-col md="8" offset-md="2" class="input-fields">
             <v-text-field
-              id="name"
               :label="$t('username')"
               v-model="name"
               maxlength="40"
@@ -32,7 +30,6 @@
           <v-col md="8" offset-md="2" class="input-fields">
             <v-text-field
               :label="$t('password')"
-              id="password"
               v-model="password"
               :type="showPassword ? 'text' : 'password'"
               @click:append-inner="showPassword = !showPassword"
@@ -40,6 +37,7 @@
               :loading="loading"
               :counter="40"
               :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+              @keyup.enter="handleSubmit"
             />
           </v-col>
         </v-row>
@@ -49,11 +47,10 @@
         <v-row v-else>
           <v-col>
             <v-btn
-              id="sbtn"
+              type="submit"
               rounded="0"
               color="white"
               class="text-white"
-              @click="handleSubmit"
               size="large"
               variant="outlined"
             >
@@ -66,7 +63,7 @@
   </v-container>
 </template>
 <script setup>
-import { nextTick, onMounted, ref } from "vue";
+import { nextTick, ref } from "vue";
 import { useMainStore } from "@/store";
 import { useRouter, useRoute } from "vue-router";
 import UserService from "../services/UserService";
@@ -82,20 +79,17 @@ const name = ref(null);
 const password = ref(null);
 const loading = ref(false);
 const showPassword = ref(false);
-
-// Add error to error array and direct user to it
+const errorList = ref(null);
 
 function showError(error) {
   errors.value.push(error);
   nextTick(() => {
-    document.getElementById("error-list").scrollIntoView();
+    errorList.value?.$el?.scrollIntoView?.();
   });
 }
 
-// Submit login credentials and confirm user login
-
 async function handleSubmit(e) {
-  e.preventDefault();
+  e?.preventDefault?.();
   errors.value = [];
   if (!name.value) {
     showError("errors.missing-username");
@@ -103,20 +97,17 @@ async function handleSubmit(e) {
   if (!password.value) {
     showError("errors.missing-password");
   }
-  // If no errors in array, proceed to login
   if (!errors.value.length) {
     loading.value = true;
-    // user object
     const user = {
       name: name.value,
       email: name.value,
       password: password.value,
     };
     try {
-      // Login user  (check 'client\src\UserService.js' and 'server\routes\api\users.js' to see how this works)
       let res = await UserService.loginUser(user);
       if (res.success) {
-        store.is_admin = res.is_admin;
+        store.is_admin = !!JSON.parse(res.is_admin);
         store.logged_in = true;
         const redirect = route.query.redirect;
         if (
@@ -130,30 +121,18 @@ async function handleSubmit(e) {
         }
         loading.value = false;
       } else {
+        loading.value = false;
         if (res.status === 401 || res.status === 404) {
-          loading.value = false;
           showError("errors.details-not-match");
-          return;
         } else {
-          loading.value = false;
           showError("errors.something-wrong");
           console.log(res.error, res.status);
         }
       }
-    } catch (error) {
+    } catch {
+      loading.value = false;
       showError("errors.no-user-found");
-      //this.$router.push({ path: "/login" });
     }
   }
 }
-
-onMounted(() => {
-  var input = document.getElementById("password");
-  input.addEventListener("keyup", function (event) {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      document.getElementById("sbtn").click();
-    }
-  });
-});
 </script>

@@ -9,11 +9,7 @@ class UserService {
   // Get all the users (only admin)
   static async getUsers() {
     const res = await axios.get(url);
-    try {
-      return res.data.users;
-    } catch (err) {
-      return err;
-    }
+    return res.data.users;
   }
 
   // Create user

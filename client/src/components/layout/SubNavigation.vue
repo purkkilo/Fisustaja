@@ -32,7 +32,10 @@ import { onMounted, ref, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 
 defineOptions({ name: "PublicNavigation" });
-const props = defineProps(["items", "type"]);
+const props = defineProps({
+  items: { type: Array, default: () => [] },
+  type: { type: String, default: "public" },
+});
 const router = useRouter();
 const route = useRoute();
 

@@ -1,8 +1,7 @@
 <template>
   <!-- /register -->
-  <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <v-container
-    v-bind:class="{
+    :class="{
       mobile: $vuetify.display.width < 800,
       browser: $vuetify.display.width >= 800,
       wide: $vuetify.display.width >= 1200,
@@ -13,18 +12,17 @@
       elevation="3"
       variant="outlined"
     >
-      <error-list :errors="errors"></error-list>
+      <ErrorList :errors="errors" />
       <v-row>
         <v-col>
           <h1 style="margin: 30px">Register</h1>
         </v-col>
       </v-row>
-      <form>
+      <form @submit.prevent="handleSubmit">
         <v-row>
           <v-col md="8" offset-md="2" class="input-fields">
             <v-text-field
               :label="$t('username')"
-              id="name"
               @paste.prevent
               v-model="name"
               name="name"
@@ -39,7 +37,6 @@
           <v-col md="8" offset-md="2" class="input-fields">
             <v-text-field
               :label="$t('email')"
-              id="email"
               @paste.prevent
               v-model="email"
               name="email"
@@ -54,7 +51,6 @@
           <v-col md="8" offset-md="2" class="input-fields">
             <v-text-field
               :label="$t('password')"
-              id="password"
               @paste.prevent
               v-model="password"
               name="password"
@@ -71,7 +67,6 @@
           <v-col md="8" offset-md="2" class="input-fields">
             <v-text-field
               :label="$t('password') + ' ' + $t('confirmation')"
-              id="password_confirmation"
               @paste.prevent
               v-model="password_confirmation"
               name="password_confirmation"
@@ -81,25 +76,21 @@
               maxlength="40"
               :loading="loading"
               :counter="40"
+              @keyup.enter="handleSubmit"
             />
           </v-col>
         </v-row>
-        <!-- If user has typed at least one letter to password and password confirmation and both are the same-->
         <v-row v-if="password && password === password_confirmation">
           <v-col>
             <span
               class="text-body-large"
-              v-bind:class="{
-                'text-white': store.isDark,
-              }"
+              :class="{ 'text-white': store.isDark }"
               >{{ $t("notification.passwords-matching") }}
               <v-icon>mdi-check-outline</v-icon></span
             >
           </v-col>
         </v-row>
-        <!-- If password and password confirmation differs from each other-->
         <v-row v-else>
-          <!-- if both inputs have text, show this-->
           <v-col v-if="password && password_confirmation">
             <span class="text-body-large text-red"
               >{{ $t("notification.passwords-not-matching") }}
@@ -111,9 +102,7 @@
           <v-col md="8" offset-md="2" class="input-fields">
             <span
               class="text-body-large"
-              v-bind:class="{
-                'text-white': store.isDark,
-              }"
+              :class="{ 'text-white': store.isDark }"
               >{{ $t("nav.admin") }}?</span
             >
             <v-radio-group v-model="is_admin" inline>
@@ -123,15 +112,13 @@
           </v-col>
         </v-row>
         <ProgressBarQuery v-if="loading" style="margin-bottom: 20px" />
-        <!-- Button only active if passwords match  -->
         <v-row v-else>
           <v-col>
             <v-btn
-              id="sbtn"
+              type="submit"
               rounded="0"
               color="blue-darken-4"
               class="text-white"
-              @click="handleSubmit"
               :disabled="
                 password.length === 0 || password !== password_confirmation
               "
@@ -144,12 +131,12 @@
       </form>
     </v-card>
 
-    <notification-bar v-model:snackbar="snackbar" :text="text"></notification-bar>
+    <NotificationBar v-model:snackbar="snackbar" :text="text" />
   </v-container>
 </template>
 <script setup>
 import { useMainStore } from "@/store";
-import { nextTick, onMounted, ref } from "vue";
+import { nextTick, ref } from "vue";
 import { useRouter } from "vue-router";
 import UserService from "../services/UserService";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
@@ -170,22 +157,17 @@ const snackbar = ref(false);
 const text = ref("");
 const showPassword = ref(true);
 
-// Add error to error array and direct user to it
-
 function showError(error) {
   errors.value.push(error);
   nextTick(() => {
-    document.getElementById("error-list").scrollIntoView();
+    document.getElementById("error-list")?.scrollIntoView();
   });
 }
 
-// Submit register credentials and confirm user login
-
 async function handleSubmit(e) {
+  e?.preventDefault?.();
   loading.value = true;
-  e.preventDefault();
   errors.value = [];
-  //TODO check if it's really an email adress
   if (!email.value) {
     showError("errors.missing-email");
   }
@@ -204,25 +186,27 @@ async function handleSubmit(e) {
         name: name.value,
         email: email.value,
         password: password.value,
-        is_admin: is_admin.value === "Yes" ? true : false,
+        is_admin: is_admin.value === "Yes",
       };
-      // Add admin to database (check 'client\src\UserServiceService.js' and 'server\routes\api\users.js' to see how this works)
-      const res = await UserService.insertUser(user);
-      loading.value = false;
-      if (res.success) {
-        router.push({ path: "/login" });
-      } else {
-        if (res.error.msg === "Email is already in use!") {
+      try {
+        const res = await UserService.insertUser(user);
+        loading.value = false;
+        if (res.success) {
+          router.push({ path: "/login" });
+        } else if (res.error?.msg === "Email is already in use!") {
           showError("errors.email-used");
-        } else if (res.error.msg === "Username is already taken!") {
+        } else if (res.error?.msg === "Username is already taken!") {
           showError("errors.name-used");
         } else {
           showError("errors.something-wrong");
           console.log(res.error);
         }
+      } catch (err) {
+        loading.value = false;
+        showError("errors.something-wrong");
+        console.log(err);
       }
     } else {
-      // IF there are errors left
       loading.value = false;
     }
   } else {
@@ -230,15 +214,4 @@ async function handleSubmit(e) {
     showError("notification.passwords-not-matching");
   }
 }
-
-onMounted(() => {
-  // Press button by enter key when focusing password_confirmation input
-  var input = document.getElementById("password_confirmation");
-  input.addEventListener("keyup", function (event) {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      document.getElementById("sbtn").click();
-    }
-  });
-});
 </script>

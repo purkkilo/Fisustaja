@@ -102,7 +102,7 @@ onMounted(async () => {
         } else {
           let res = await UserService.refreshToken(user, isAdmin);
           if (res.success) {
-            store.is_admin = res.is_admin;
+            store.is_admin = !!JSON.parse(res.is_admin);
             store.logged_in = true;
           }
         }
@@ -184,11 +184,13 @@ body {
 }
 
 #app .inputarea {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(var(--v-theme-surface), 0.85);
+  border-radius: 8px;
 }
 
 #app .inputarea-dark {
-  background: rgba(46, 46, 46, 0.856);
+  background: rgba(var(--v-theme-surface), 0.92);
+  border-radius: 8px;
 }
 
 #app .tablearea {
@@ -220,9 +222,10 @@ body {
   background: rgba(88, 103, 129, 0.43);
 }
 #app .input-fields {
-  background: rgba(160, 228, 255, 0.253);
-  border-radius: 2%;
-  border: 1px solid black;
+  background: rgba(var(--v-theme-primary), 0.06);
+  border-radius: 8px;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  padding: 4px 8px;
 }
 #app .title {
   background: rgba(104, 112, 230, 0.212);

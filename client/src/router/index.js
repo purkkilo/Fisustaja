@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { useMainStore } from "@/store";
 import Home from "../views/Home.vue";
 
 const routes = [
@@ -145,8 +146,15 @@ router.beforeEach((to) => {
   ) {
     return { path: "/login", query: { redirect: to.fullPath } };
   }
-  const isAdmin = JSON.parse(localStorage.getItem("auth"));
-  if (to.matched.some((record) => record.meta.is_admin) && !isAdmin) {
+
+  const store = useMainStore();
+  // Hydrate from localStorage until App.vue finishes refreshToken
+  if (!store.logged_in) {
+    store.logged_in = true;
+    store.is_admin = !!JSON.parse(localStorage.getItem("auth") || "false");
+  }
+
+  if (to.matched.some((record) => record.meta.is_admin) && !store.isAdmin) {
     return { name: "404" };
   }
   return true;

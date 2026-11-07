@@ -5,7 +5,7 @@
     <Timedate />
 
     <v-container
-      v-bind:class="{
+      :class="{
         mobile: $vuetify.display.width < 800,
         browser: $vuetify.display.width >= 800,
         wide: $vuetify.display.width >= 1200,
@@ -47,7 +47,7 @@
                   </template>
                   <v-list-item-title>{{ $t("status") }}</v-list-item-title>
                   <v-list-item-subtitle
-                    v-bind:class="{
+                    :class="{
                       'text-green': competition.state === 'finished',
                       'text-blue': competition.state !== 'finished',
                     }"
@@ -62,7 +62,7 @@
                   </template>
                   <v-list-item-title>{{ $t("signees") }}</v-list-item-title>
                   <v-list-item-subtitle
-                    v-bind:class="{
+                    :class="{
                       'text-green': competition.signees.length,
                       'text-red': !competition.signees.length,
                     }"
@@ -80,7 +80,7 @@
                   }}</v-list-item-title>
                   <v-list-item-subtitle
                     v-if="competition.signees.length"
-                    v-bind:class="{
+                    :class="{
                       'text-green': !competition.signees.filter(
                         (s) => !s.returned,
                       ).length,
