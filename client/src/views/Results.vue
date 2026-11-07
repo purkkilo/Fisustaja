@@ -102,7 +102,7 @@
         </v-row>
       </v-card>
     </v-container>
-    <NotificationBar :snackbar="snackbar" :text="text" />
+    <NotificationBar v-model:snackbar="snackbar" :text="text" />
   </div>
 </template>
 

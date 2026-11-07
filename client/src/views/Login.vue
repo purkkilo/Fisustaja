@@ -118,11 +118,14 @@ async function handleSubmit(e) {
       if (res.success) {
         store.is_admin = res.is_admin;
         store.logged_in = true;
-        if (route.params.nextUrl != null) {
-          router.push(route.params.nextUrl);
-        }
-        // if route.params.nextURL not set, redirect to dashboard
-        else {
+        const redirect = route.query.redirect;
+        if (
+          typeof redirect === "string" &&
+          redirect.startsWith("/") &&
+          !redirect.startsWith("//")
+        ) {
+          router.push(redirect);
+        } else {
           router.push({ path: "/dashboard" });
         }
         loading.value = false;

@@ -48,9 +48,9 @@ watch(
   },
 );
 
-function changePage(route) {
-  if (route.path !== route) {
-    router.push(route);
+function changePage(path) {
+  if (route.path !== path) {
+    router.push(path);
   } else {
     text.value = "errors.already-here";
     snackbar.value = true;

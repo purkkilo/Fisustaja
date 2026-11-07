@@ -101,7 +101,7 @@
         <v-row v-else>
           <!-- if both inputs have text, show this-->
           <v-col v-if="password && password_confirmation">
-            <span class="flow-text red-text"
+            <span class="flow-text text-red"
               >{{ $t("notification.passwords-not-matching") }}
               <v-icon>mdi-alert-circle</v-icon></span
             >
@@ -144,7 +144,7 @@
       </form>
     </v-card>
 
-    <notification-bar :snackbar="snackbar" :text="text"></notification-bar>
+    <notification-bar v-model:snackbar="snackbar" :text="text"></notification-bar>
   </v-container>
 </template>
 <script setup>
@@ -157,7 +157,6 @@ import NotificationBar from "../components/NotificationBar.vue";
 import ErrorList from "../components/ErrorList.vue";
 
 const store = useMainStore();
-defineProps(["nextUrl"]);
 const router = useRouter();
 
 const errors = ref([]);

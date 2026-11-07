@@ -52,10 +52,13 @@
             variant="outlined"
           >
             <template v-slot:item="{ item, props }">
-              <v-list-item v-bind="props" :title="$t(item)" />
+              <v-list-item
+                v-bind="props"
+                :title="$t(item.raw ?? item.value ?? item)"
+              />
             </template>
             <template v-slot:selection="{ item }">
-              <span>{{ $t(item) }}</span>
+              <span>{{ $t(item.raw ?? item.value ?? item) }}</span>
             </template></v-select
           >
         </v-col>
@@ -120,10 +123,11 @@
               :loading="loading"
             >
               <template
-                v-for="(h, index) in headers"
+                v-for="h in headers"
+                :key="h.value"
                 v-slot:[`header.${h.value}`]="{ column: header }"
               >
-                <v-row class="justify-center align-center" :key="index">
+                <v-row class="justify-center align-center">
                   <v-col>
                     <span
                       v-if="header.highlight"
@@ -135,7 +139,7 @@
                     >
                       {{ header.text }}
                     </span>
-                    <span v-else :key="h.value">{{ $t(header.text) }}</span>
+                    <span v-else>{{ $t(header.text) }}</span>
                   </v-col>
                 </v-row>
               </template>
@@ -222,7 +226,7 @@
               'text-white': store.getTheme,
             }"
           >
-            Ei kilpailuja rekisteröitynä!
+            {{ $t("comp.not-found") }}
           </h2>
         </v-col>
       </v-row>

@@ -143,7 +143,7 @@ router.beforeEach((to) => {
     localStorage.getItem("jwt") == null ||
     localStorage.getItem("user") == null
   ) {
-    return { path: "/login" };
+    return { path: "/login", query: { redirect: to.fullPath } };
   }
   const isAdmin = JSON.parse(localStorage.getItem("auth"));
   if (to.matched.some((record) => record.meta.is_admin) && !isAdmin) {

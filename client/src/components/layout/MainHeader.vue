@@ -62,7 +62,7 @@
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
-    <notification-bar :snackbar="snackbar" :text="text"></notification-bar>
+    <notification-bar v-model:snackbar="snackbar" :text="text"></notification-bar>
   </div>
 </template>
 
@@ -141,11 +141,10 @@ watch(
 );
 
 watch(updateSwitch, (newValue) => {
-  //called whenever isDark switch changes
   store.isDark = newValue;
   localStorage.setItem(
     "preferences",
-    JSON.stringify({ isDark: newValue, lang: "fi" }),
+    JSON.stringify({ isDark: newValue, lang: locale.value }),
   );
 });
 
@@ -153,9 +152,9 @@ function openDrawer() {
   drawer.value = !drawer.value;
 }
 
-function changePage(route) {
-  if (route.path !== route) {
-    router.push(route);
+function changePage(path) {
+  if (route.path !== path) {
+    router.push(path);
     drawer.value = !drawer.value;
   } else {
     text.value = "errors.already-here";

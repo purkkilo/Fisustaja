@@ -270,7 +270,7 @@
         }
       "
     ></comp-cup-table>
-    <notification-bar :snackbar="snackbar" :text="text"></notification-bar>
+    <notification-bar v-model:snackbar="snackbar" :text="text"></notification-bar>
   </v-container>
 </template>
 

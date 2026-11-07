@@ -108,9 +108,7 @@
                       <v-list-item-title>{{ fish.name }}</v-list-item-title>
                       <v-divider vertical></v-divider>
                       <v-list-item-subtitle
-                        :class="
-                          getMultiplierTextColor(fish.multiplier) + '--text'
-                        "
+                        :class="'text-' + getMultiplierTextColor(fish.multiplier)"
                       >
                         <b> x {{ fish.multiplier }}</b>
                       </v-list-item-subtitle>
@@ -184,9 +182,10 @@
                     <v-divider vertical></v-divider>
                     <v-list-item-subtitle
                       :class="
+                        'text-' +
                         getMultiplierTextColor(
                           competition.cup_points_multiplier,
-                        ) + '--text'
+                        )
                       "
                     >
                       <b>x {{ competition.cup_points_multiplier }}</b>
@@ -220,7 +219,7 @@
                         }}% ({{ hasGottenFishCount }} / {{ signees.length }})</b
                       >
                     </v-list-item-subtitle>
-                    <v-list-item-subtitle class="red-text" v-else
+                    <v-list-item-subtitle class="text-red" v-else
                       ><b>0% (0/0)</b></v-list-item-subtitle
                     >
                   </v-list-item>

@@ -91,6 +91,9 @@ const options = ref({
         },
       },
     },
+    legend: {
+      display: true,
+    },
     datalabels: {
       labels: {
         value: {
@@ -106,10 +109,6 @@ const options = ref({
   },
   maintainAspectRatio: false,
   responsive: true,
-
-  legend: {
-    display: true,
-  },
 });
 
 const containerStyles = computed(() => {

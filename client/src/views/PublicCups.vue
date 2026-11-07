@@ -113,7 +113,7 @@
           </v-btn>
         </v-col>
       </v-row>
-      <NotificationBar :snackbar="snackbar" :text="text" />
+      <NotificationBar v-model:snackbar="snackbar" :text="text" />
     </v-card>
   </v-container>
 </template>
@@ -156,7 +156,7 @@ const selectedCup = ref(null);
 const loadingList = ref(false);
 const tab = ref("points");
 
-watch(selectedCup, (c) => (c ? load(c) : clear()));
+watch(selectedCup, (c) => (c ? load(c._id) : clear()));
 
 onMounted(async () => {
   loadingList.value = true;

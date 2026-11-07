@@ -33,7 +33,8 @@
                 :search="searchText"
               >
                 <template
-                  v-for="(h, index) in headers"
+                  v-for="h in headers"
+                  :key="h.value"
                   v-slot:[`header.${h.value}`]="{ column: header }"
                 >
                   <span v-if="fish_names.includes(header.text)">

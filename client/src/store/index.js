@@ -42,27 +42,32 @@ export const useMainStore = defineStore("main", {
 
   getters: {
     getTheme: (state) => state.isDark,
-    getSigneesCount: (state) => state.competition.signees.length,
+    getSigneesCount: (state) => state.competition?.signees?.length ?? 0,
     getSigneeByBoatNumber: (state) => (boat_number) =>
-      state.competition.signees.find(
+      state.competition?.signees?.find(
         (signee) => Number(signee.boat_number) === Number(boat_number),
       ),
     getCompetition: (state) => state.competition,
-    getCompetitionId: (state) => state.competition._id,
-    getCompetitionSignees: (state) => state.competition.signees,
+    getCompetitionId: (state) => state.competition?._id ?? null,
+    getCompetitionSignees: (state) => state.competition?.signees ?? [],
     getStillOnWaterSignees: (state) =>
-      state.competition.signees.filter((signee) => signee.returned == false),
+      (state.competition?.signees ?? []).filter(
+        (signee) => signee.returned == false,
+      ),
     // Sorted copies: getters should not reorder the stored array
-    getSignees: (state) => [...state.competition.signees].sort(byBoatNumber),
+    getSignees: (state) =>
+      [...(state.competition?.signees ?? [])].sort(byBoatNumber),
     getFinishedSignees: (state) =>
-      state.competition.signees.filter((signee) => signee.returned == true),
+      (state.competition?.signees ?? []).filter(
+        (signee) => signee.returned == true,
+      ),
     getResultSignees: (state) =>
-      [...state.competition.signees].sort(byPointsDesc),
-    getCompetitionFishes: (state) => state.competition.fishes,
-    getBiggestFishes: (state) => state.competition.biggest_fishes,
-    getBiggestAmounts: (state) => state.competition.biggest_amounts,
-    getTeams: (state) => state.competition.teams,
-    isTeamCompetition: (state) => state.competition.isTeamCompetition,
+      [...(state.competition?.signees ?? [])].sort(byPointsDesc),
+    getCompetitionFishes: (state) => state.competition?.fishes ?? [],
+    getBiggestFishes: (state) => state.competition?.biggest_fishes ?? {},
+    getBiggestAmounts: (state) => state.competition?.biggest_amounts ?? {},
+    getTeams: (state) => state.competition?.teams ?? [],
+    isTeamCompetition: (state) => !!state.competition?.isTeamCompetition,
     isLoggedIn: (state) => state.logged_in,
     isAdmin: (state) => state.is_admin,
   },
@@ -70,15 +75,19 @@ export const useMainStore = defineStore("main", {
   // Former Vuex mutations
   actions: {
     refreshSignees(signees) {
+      if (!this.competition) return;
       this.competition.signees = [...signees];
     },
     sortSigneesByNumber(signees) {
+      if (!this.competition) return;
       this.competition.signees = [...signees].sort(byBoatNumber);
     },
     addSignee(signee) {
+      if (!this.competition) return;
       this.competition.signees.push(signee);
     },
     removeSignee(signee) {
+      if (!this.competition?.signees) return;
       const index = this.competition.signees.findIndex(
         (item) => item === signee || (signee._id && item._id === signee._id),
       );
@@ -87,21 +96,25 @@ export const useMainStore = defineStore("main", {
       }
     },
     addBiggestFish(fish) {
+      if (!this.competition) return;
       if (!this.competition.biggest_fishes) {
         this.competition.biggest_fishes = {};
       }
       addToFishMap(this.competition.biggest_fishes, fish);
     },
     addBiggestAmount(fish) {
+      if (!this.competition) return;
       if (!this.competition.biggest_amounts) {
         this.competition.biggest_amounts = {};
       }
       addToFishMap(this.competition.biggest_amounts, fish);
     },
     setTeams(teams) {
+      if (!this.competition) return;
       this.competition.teams = [...teams];
     },
     replaceSignee(found_signee) {
+      if (!this.competition?.signees) return;
       // results have a Mongo `_id`; an `id` match was never found, so the
       // last signee used to be replaced instead
       const index = this.competition.signees.findIndex(

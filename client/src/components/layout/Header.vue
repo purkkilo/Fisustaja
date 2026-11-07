@@ -101,7 +101,7 @@
       </v-list>
     </v-navigation-drawer>
 
-    <notification-bar :snackbar="snackbar" :text="text"></notification-bar>
+    <notification-bar v-model:snackbar="snackbar" :text="text"></notification-bar>
   </div>
 </template>
 
@@ -216,13 +216,9 @@ const isCompetitionSet = computed(() => {
   }
 });
 
-const isCupCompetition = computed(() => {
-  if (store.getCompetition.isCupCompetition) {
-    return true;
-  } else {
-    return false;
-  }
-});
+const isCupCompetition = computed(
+  () => !!store.getCompetition?.isCupCompetition,
+);
 
 watch(
   () => route.fullPath,
@@ -233,11 +229,10 @@ watch(
 );
 
 watch(isDark, (newValue) => {
-  //called whenever isDark switch changes
   store.isDark = newValue;
   localStorage.setItem(
     "preferences",
-    JSON.stringify({ isDark: newValue, lang: "fi" }),
+    JSON.stringify({ isDark: newValue, lang: locale.value }),
   );
 });
 
@@ -263,9 +258,9 @@ function setSubNavigation(route) {
   }
 }
 
-function changePage(route) {
-  if (route.path !== route) {
-    router.push(route);
+function changePage(path) {
+  if (route.path !== path) {
+    router.push(path);
     drawer.value = !drawer.value;
   } else {
     text.value = "errors.already-here";

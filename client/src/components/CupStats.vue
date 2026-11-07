@@ -19,7 +19,7 @@
           center-active
         >
           <v-tab value="cupfishes">{{ $t("fishes") }}</v-tab>
-          <v-tab value="cupbiggestfishes">{{ $t("fishes") }}</v-tab>
+          <v-tab value="cupbiggestfishes">{{ $t("biggest-fishes") }}</v-tab>
           <v-tab value="cupsignees">{{ $t("signees-signed") }}</v-tab>
         </v-tabs>
       </v-col>
@@ -63,7 +63,8 @@
                 item-value="index"
               >
                 <template
-                  v-for="(h, index) in headers_cup_fishes_total"
+                  v-for="h in headers_cup_fishes_total"
+                  :key="h.value"
                   v-slot:[`header.${h.value}`]="{ column: header }"
                 >
                   <span> {{ $t(header.text) }}</span>
@@ -108,7 +109,8 @@
                 item-value="index"
               >
                 <template
-                  v-for="(h, index) in headers_cup_fishes_competition"
+                  v-for="h in headers_cup_fishes_competition"
+                  :key="h.value"
                   v-slot:[`header.${h.value}`]="{ column: header }"
                 >
                   <span> {{ $t(header.text) }}</span>
@@ -167,7 +169,8 @@
                 item-value="index"
               >
                 <template
-                  v-for="(h, index) in headers_cup_biggest_fishes"
+                  v-for="h in headers_cup_biggest_fishes"
+                  :key="h.value"
                   v-slot:[`header.${h.value}`]="{ column: header }"
                 >
                   <span> {{ $t(header.text) }}</span>
@@ -210,7 +213,8 @@
                 item-value="index"
               >
                 <template
-                  v-for="(h, index) in headers_cup_biggest_amounts"
+                  v-for="h in headers_cup_biggest_amounts"
+                  :key="h.value"
                   v-slot:[`header.${h.value}`]="{ column: header }"
                 >
                   <span> {{ $t(header.text) }}</span>
@@ -269,7 +273,8 @@
                 item-value="index"
               >
                 <template
-                  v-for="(h, index) in headers_cup_signees"
+                  v-for="h in headers_cup_signees"
+                  :key="h.value"
                   v-slot:[`header.${h.value}`]="{ column: header }"
                 >
                   <span> {{ $t(header.text) }}</span>
@@ -288,7 +293,7 @@
 <script setup>
 import { tableHeaders } from "@/utils/tableHeaders";
 import { useMainStore } from "@/store";
-import { onMounted, ref } from "vue";
+import { ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import BarChart from "../components/BarChart.vue";
 import { getRandomColors } from "@/utils/colors";
@@ -348,6 +353,9 @@ const cup_biggest_amounts_chart_data = ref(null);
 const cup_signees_chart_data = ref(null);
 
 function calculateCupStatistics() {
+  if (!props.competitions?.length) return;
+
+  cup_fishes_competition.value = [];
   let all_fishes = [];
   let competition_signees_count = [];
   let all_signees_labels = [];
@@ -364,12 +372,16 @@ function calculateCupStatistics() {
   let competition_data = [];
   let cup_fishes = [];
   props.competitions.forEach((competition) => {
-    let comp_signees = props.all_signees.filter(
+    let comp_signees = (props.all_signees ?? []).filter(
       (s) => s.competition_id === competition._id,
     );
     comp_signees.forEach((s) => {
-      s.fishes.forEach((fish) => {
-        let fish_name = competition.fishes.find((f) => f.id === fish.id).name;
+      (s.fishes ?? []).forEach((fish) => {
+        const fishDef = (competition.fishes ?? []).find(
+          (f) => f.id === fish.id,
+        );
+        if (!fishDef) return;
+        let fish_name = fishDef.name;
         if (fish.weights > 0) {
           let found_fish = all_fishes.findIndex(
             (f) => f.name.toUpperCase() === fish_name.toUpperCase(),
@@ -405,12 +417,12 @@ function calculateCupStatistics() {
 
     competition_signees_count.push({
       competition_name: competition.name,
-      signees: props.all_signees.filter(
+      signees: (props.all_signees ?? []).filter(
         (c) => c.competition_id === competition._id,
       ).length,
     });
 
-    competition.fishes.forEach((fish) => {
+    (competition.fishes ?? []).forEach((fish) => {
       cup_fishes.push(fish.name);
     });
   });
@@ -418,7 +430,7 @@ function calculateCupStatistics() {
   cup_fishes = Array.from(new Set(cup_fishes));
 
   cup_fishes.forEach((name) => {
-    let fishes = props.biggest_fishes.filter((f) => f.name === name);
+    let fishes = (props.biggest_fishes ?? []).filter((f) => f.name === name);
 
     if (fishes.length) {
       if (fishes[0].weight > 0) {
@@ -436,7 +448,7 @@ function calculateCupStatistics() {
       }
     }
 
-    fishes = props.biggest_amounts.filter((f) => f.name === name);
+    fishes = (props.biggest_amounts ?? []).filter((f) => f.name === name);
     if (fishes.length) {
       if (fishes[0].weight > 0) {
         all_biggest_amounts.push({
@@ -546,8 +558,15 @@ function calculateCupStatistics() {
   };
 }
 
-onMounted(() => {
-  calculateCupStatistics();
-});
+watch(
+  () => [
+    props.competitions,
+    props.all_signees,
+    props.biggest_fishes,
+    props.biggest_amounts,
+  ],
+  () => calculateCupStatistics(),
+  { deep: true, immediate: true },
+);
 </script>
 <style scoped></style>

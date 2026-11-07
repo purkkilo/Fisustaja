@@ -107,7 +107,7 @@
         </v-window-item>
       </v-window>
     </v-container>
-    <NotificationBar :snackbar="snackbar" :text="text" />
+    <NotificationBar v-model:snackbar="snackbar" :text="text" />
   </div>
 </template>
 

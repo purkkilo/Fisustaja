@@ -1,22 +1,15 @@
 <template>
-  <v-snackbar v-model="show" :timeout="timeout">
+  <v-snackbar v-model="snackbar" :timeout="timeout">
     {{ $t(text) }}
   </v-snackbar>
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref } from "vue";
 
 defineOptions({ name: "NotificationBar" });
-const props = defineProps(["text", "snackbar"]);
+defineProps(["text"]);
+const snackbar = defineModel("snackbar", { type: Boolean, default: false });
 
 const timeout = ref(4000);
-const show = ref(false);
-
-watch(
-  () => props.snackbar,
-  (newVal) => {
-    show.value = newVal;
-  },
-);
 </script>

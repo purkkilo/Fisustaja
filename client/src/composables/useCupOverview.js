@@ -39,7 +39,8 @@ export function useCupOverview() {
   }
 
   async function toggleCupPublic() {
-    cup.value.isPublic = !cup.value.isPublic;
+    const previous = cup.value.isPublic;
+    cup.value.isPublic = !previous;
     saving.value = true;
     try {
       store.refreshCup(cup.value);
@@ -48,35 +49,56 @@ export function useCupOverview() {
       });
     } catch (err) {
       console.error(err.message);
+      cup.value.isPublic = previous;
+      store.refreshCup(cup.value);
+      notify("errors.in-saving");
     } finally {
       saving.value = false;
     }
   }
 
   // ---- competitions ----
-  async function updateCompetition(competition, values) {
+  async function updateCompetition(competition, values, rollback) {
     updating.value = true;
     try {
       await CompetitionService.updateValues(competition._id, { $set: values });
     } catch (err) {
       console.error(err.message);
+      if (rollback) rollback();
+      notify("errors.in-saving");
     } finally {
       updating.value = false;
     }
   }
 
   function toggleCompetitionPublic(competition) {
-    competition.isPublic = !competition.isPublic;
-    return updateCompetition(competition, { isPublic: competition.isPublic });
+    const previous = competition.isPublic;
+    competition.isPublic = !previous;
+    return updateCompetition(
+      competition,
+      { isPublic: competition.isPublic },
+      () => {
+        competition.isPublic = previous;
+      },
+    );
   }
 
   function toggleCompetitionFinished(competition) {
-    competition.isFinished = !competition.isFinished;
+    const previousFinished = competition.isFinished;
+    const previousState = competition.state;
+    competition.isFinished = !previousFinished;
     competition.state = competition.isFinished ? "ended" : "not-finished";
-    return updateCompetition(competition, {
-      isFinished: competition.isFinished,
-      state: competition.state,
-    });
+    return updateCompetition(
+      competition,
+      {
+        isFinished: competition.isFinished,
+        state: competition.state,
+      },
+      () => {
+        competition.isFinished = previousFinished;
+        competition.state = previousState;
+      },
+    );
   }
 
   // ---- signees ----
@@ -146,7 +168,7 @@ export function useCupOverview() {
     };
     const ok = await saveSignees(
       signees.value.map((s) =>
-        s.boat_number === signee.boat_number ? updated : s,
+        Number(s.boat_number) === Number(signee.boat_number) ? updated : s,
       ),
     );
     if (ok) standings.setCompetitionData();
@@ -155,7 +177,9 @@ export function useCupOverview() {
 
   async function deleteSignee(signee) {
     const ok = await saveSignees(
-      signees.value.filter((s) => s.boat_number !== signee.boat_number),
+      signees.value.filter(
+        (s) => Number(s.boat_number) !== Number(signee.boat_number),
+      ),
     );
     if (ok) standings.setCompetitionData();
     return ok;

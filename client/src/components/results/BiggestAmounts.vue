@@ -32,7 +32,8 @@
             :loading="loading"
           >
             <template
-              v-for="(h, index) in headers"
+              v-for="h in headers"
+              :key="h.value"
               v-slot:[`header.${h.value}`]="{ column: header }"
             >
               <span> {{ $t(header.text) }}</span>

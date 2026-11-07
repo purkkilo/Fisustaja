@@ -45,7 +45,8 @@
                     :search="search_comp"
                   >
                     <template
-                      v-for="(h, index) in headers"
+                      v-for="h in headers"
+                      :key="h.value"
                       v-slot:[`header.${h.value}`]="{ column: header }"
                     >
                       <span> {{ $t(header.text) }}</span>
@@ -161,7 +162,8 @@
                     :loading="publishing"
                   >
                     <template
-                      v-for="(h, index) in headers_cup"
+                      v-for="h in headers_cup"
+                      :key="h.value"
                       v-slot:[`header.${h.value}`]="{ column: header }"
                     >
                       <span> {{ $t(header.text) }}</span>

@@ -104,6 +104,9 @@ const options = ref({
         },
       },
     },
+    legend: {
+      display: true,
+    },
     datalabels: {
       labels: {
         value: {
@@ -121,19 +124,14 @@ const options = ref({
   responsive: true,
   scales: {
     y: {
+      beginAtZero: true,
       ticks: {
-        beginAtZero: true,
-        // Include a dollar sign in the ticks
         callback(value) {
           let output = value < 1000 ? value : value / 1000 + "kg";
           return output;
         },
       },
     },
-  },
-
-  legend: {
-    display: true,
   },
 });
 

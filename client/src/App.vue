@@ -10,7 +10,7 @@
     <v-main>
       <router-view></router-view>
     </v-main>
-    <notification-bar :snackbar="snackbar" :text="text"></notification-bar>
+    <notification-bar v-model:snackbar="snackbar" :text="text"></notification-bar>
     <Footer />
   </v-app>
 </template>

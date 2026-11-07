@@ -239,7 +239,7 @@
           />
         </v-window-item>
       </v-window>
-      <NotificationBar :snackbar="snackbar" :text="text" />
+      <NotificationBar v-model:snackbar="snackbar" :text="text" />
     </v-card>
   </v-container>
 </template>
