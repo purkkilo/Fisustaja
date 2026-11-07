@@ -413,3 +413,20 @@ export function calculateBiggestAmounts(
   }
   return { results, header, selected_amount };
 }
+
+/**
+ * Copies of the signees sorted by total_points (highest first), each with a
+ * `placement`. Equal points share a placement: 1, 2, 2, 4...
+ */
+export function rankByPoints(signees) {
+  const sorted = [...signees].sort((a, b) => b.total_points - a.total_points);
+  let lastPoints = null;
+  let lastPlacement = 0;
+  return sorted.map((s, index) => {
+    if (s.total_points !== lastPoints) {
+      lastPlacement = index + 1;
+      lastPoints = s.total_points;
+    }
+    return { ...s, placement: lastPlacement };
+  });
+}
