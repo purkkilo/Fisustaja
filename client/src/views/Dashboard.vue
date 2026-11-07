@@ -444,66 +444,34 @@ async function saveCup() {
   meaningful_competitions.value = 1;
 }
 
-// Runs when the component is created
 (async () => {
   loading.value = true;
-  const query = { user_id: store.user?._id };
-
-  await CompetitionService.getCompetitions(query)
-    .then((response) => {
-      competitions.value = response;
-      competitionsAmount.value = competitions.value.length;
-      // Convert dates
-      competitions.value.forEach((competition) => {
-        competition.start_date = new Date(competition.start_date);
-        competition.end_date = new Date(competition.end_date);
-      });
-      // Sort them based on start_date so the oldest competitions are the last
-      competitions.value.sort(
-        (a, b) => new Date(b.start_date) - new Date(a.start_date),
-      );
-    })
-    .catch((err) => {
-      if (err.response) {
-        if (err.response.status === 408) {
-          loading.value = false;
-          return console.log(err);
-        } else {
-          loading.value = false;
-          return console.log(err);
-        }
-      } else {
-        return console.log(err);
-      }
+  try {
+    const comps = await CompetitionService.list({
+      user_id: store.user?._id,
     });
-
-  await CupService.getCups({
-    user_id: store.user?._id,
-  })
-    .then((response) => {
-      cups.value = response;
-      cupsAmount.value = cups.value.length;
-      cups.value.sort((a, b) => {
-        return parseInt(b.year) - parseInt(a.year);
-      });
-    })
-    .catch((err) => {
-      if (err.response) {
-        if (err.response.status === 400) {
-          console.log(err);
-          return showError("error.bad-request");
-        }
-        if (err.response.status === 408) {
-          return showError("error.timeout");
-        } else {
-          return console.log(err);
-        }
-      } else {
-        return console.log(err);
-      }
+    competitions.value = comps;
+    competitionsAmount.value = comps.length;
+    comps.forEach((competition) => {
+      competition.start_date = new Date(competition.start_date);
+      competition.end_date = new Date(competition.end_date);
     });
+    competitions.value.sort(
+      (a, b) => new Date(b.start_date) - new Date(a.start_date),
+    );
 
-  loading.value = false;
+    const cupList = await CupService.list({
+      user_id: store.user?._id,
+    });
+    cups.value = cupList;
+    cupsAmount.value = cupList.length;
+    cups.value.sort((a, b) => parseInt(b.year) - parseInt(a.year));
+  } catch (err) {
+    showError(err.response?.data?.error || "errors.something-wrong");
+    console.error(err);
+  } finally {
+    loading.value = false;
+  }
 })();
 
 onMounted(() => {

@@ -1,152 +1,202 @@
 const express = require("express");
-const mongodb = require("mongodb");
 const { pickQuery, parseObjectId } = require("../../utils/query");
 const { publicScope } = require("../../utils/publicScope");
+const { ok, created, mutated, fail } = require("../../utils/responses");
+const { requireParentCompetitionAccess } = require("../../utils/ownership");
 const router = express.Router();
 const Result = require("../../models/Result");
 const { requireAuth, optionalAuth } = require("../../middleware/auth");
 
-// Query fields the client may filter by
 const FIELDS = ["competition_id", "cup_id", "boat_number"];
+
+async function loadResult(id) {
+  const oid = parseObjectId(id);
+  if (!oid) return { error: "invalid" };
+  const result = await Result.findById(oid);
+  if (!result) return { error: "missing" };
+  return { result };
+}
+
+async function requireResultAccess(req, res, id) {
+  const loaded = await loadResult(id);
+  if (loaded.error === "invalid") {
+    fail(res, 400, "Invalid id");
+    return null;
+  }
+  if (loaded.error === "missing") {
+    fail(res, 404, "Not found");
+    return null;
+  }
+  const competition = await requireParentCompetitionAccess(
+    req,
+    res,
+    loaded.result.competition_id,
+  );
+  if (!competition) return null;
+  return loaded.result;
+}
 
 router.get("/", optionalAuth, async (req, res, next) => {
   try {
     const filter = pickQuery(req.query, FIELDS);
     if (!req.user) {
-      // Without a login, only data of public competitions/cups
       if (req.query.isPublic !== "true") {
-        return res
-          .status(401)
-          .json({ error: "Unauthorized access", success: false });
+        return fail(res, 401, "Unauthorized access");
       }
       const scope = await publicScope(filter);
-      if (!scope) return res.status(404).json({ msg: "Not found" });
+      if (!scope) return fail(res, 404, "Not found");
       Object.assign(filter, scope);
     }
+
     if (req.query._id !== undefined) {
       const id = parseObjectId(req.query._id);
-      if (!id) return res.status(400).json({ msg: "Invalid id" });
-      return res.status(200).send(await Result.findOne({ ...filter, _id: id }));
+      if (!id) return fail(res, 400, "Invalid id");
+      const doc = await Result.findOne({ ...filter, _id: id });
+      if (!doc) return fail(res, 404, "Not found");
+      return ok(res, doc);
     }
-    return res.status(200).send(await Result.find(filter));
+    return ok(res, await Result.find(filter));
   } catch (err) {
     return next(err);
   }
 });
 
-// Add results
-router.post("/", requireAuth, async (req, res) => {
+router.post("/", requireAuth, async (req, res, next) => {
   try {
-    let newResult = {};
-    if (!req.body.length) {
-      res.status(400).send("No results in request");
-      return;
+    if (!Array.isArray(req.body) || !req.body.length) {
+      return fail(res, 400, "No results in request");
+    }
+
+    for (const item of req.body) {
+      const parent = await requireParentCompetitionAccess(
+        req,
+        res,
+        item.competition_id,
+      );
+      if (!parent) return;
     }
 
     if (req.body.length === 1) {
-      newResult = new Result(req.body[0]);
-      await newResult.save().catch((err) => {
-        console.log(err);
-      });
-    } else {
-      await Result.insertMany(req.body).catch((err) => {
-        console.log(err);
+      const saved = await new Result(req.body[0]).save();
+      return created(res, saved);
+    }
+    const saved = await Result.insertMany(req.body);
+    return created(res, saved);
+  } catch (err) {
+    return next(err);
+  }
+});
+
+router.put("/:id/update", requireAuth, async (req, res, next) => {
+  try {
+    const result = await requireResultAccess(req, res, req.params.id);
+    if (!result) return;
+
+    if (req.body.competition_id !== undefined) {
+      const parent = await requireParentCompetitionAccess(
+        req,
+        res,
+        req.body.competition_id,
+      );
+      if (!parent) return;
+    }
+
+    const updateResult = await Result.updateOne({ _id: result._id }, req.body);
+    if (updateResult.matchedCount === 0) return fail(res, 404, "Not found");
+    return mutated(res);
+  } catch (err) {
+    return next(err);
+  }
+});
+
+router.put("/update-many", requireAuth, async (req, res, next) => {
+  try {
+    const ids = req.body?.ids;
+    if (!Array.isArray(ids) || !ids.length) {
+      return fail(res, 400, "No results in request");
+    }
+
+    for (const id of ids) {
+      const result = await requireResultAccess(req, res, id);
+      if (!result) return;
+    }
+
+    await Result.updateMany({ _id: { $in: ids } }, req.body.valueToSet);
+    return mutated(res);
+  } catch (err) {
+    return next(err);
+  }
+});
+
+router.put("/:id/replace", requireAuth, async (req, res, next) => {
+  try {
+    const result = await requireResultAccess(req, res, req.params.id);
+    if (!result) return;
+
+    const competitionId = req.body.competition_id || result.competition_id;
+    const parent = await requireParentCompetitionAccess(req, res, competitionId);
+    if (!parent) return;
+
+    const replacement = { ...req.body };
+    delete replacement._id;
+    replacement.competition_id = competitionId;
+
+    const updateResult = await Result.replaceOne(
+      { _id: result._id },
+      replacement,
+    );
+    if (updateResult.matchedCount === 0) return fail(res, 404, "Not found");
+    return mutated(res);
+  } catch (err) {
+    return next(err);
+  }
+});
+
+router.put("/replace-many", requireAuth, async (req, res, next) => {
+  try {
+    if (!Array.isArray(req.body) || !req.body.length) {
+      return fail(res, 400, "No results in request");
+    }
+
+    const ops = [];
+    for (const item of req.body) {
+      const existing = await requireResultAccess(req, res, item._id);
+      if (!existing) return;
+      const competitionId = item.competition_id || existing.competition_id;
+      const parent = await requireParentCompetitionAccess(
+        req,
+        res,
+        competitionId,
+      );
+      if (!parent) return;
+      const replacement = { ...item };
+      delete replacement._id;
+      replacement.competition_id = competitionId;
+      ops.push({
+        replaceOne: {
+          filter: { _id: existing._id },
+          replacement,
+        },
       });
     }
 
-    res.status(201).json({
-      success: true,
-      msg: "Results saved",
-      id: newResult._id,
-    });
-  } catch (error) {
-    res.status(400).send(error);
+    await Result.bulkWrite(ops);
+    return mutated(res);
+  } catch (err) {
+    return next(err);
   }
 });
 
-// Update one result
-router.put("/:id/update", requireAuth, async (req, res) => {
+router.delete("/:id", requireAuth, async (req, res, next) => {
   try {
-    await Result.updateOne(
-      { _id: mongodb.ObjectId.createFromHexString(req.params.id) },
-      req.body,
-    ).catch((err) => {
-      console.log(err);
-    });
-    res.status(204).send();
-  } catch (error) {
-    res.status(400).send(error);
-  }
-});
+    const result = await requireResultAccess(req, res, req.params.id);
+    if (!result) return;
 
-// Update many results
-router.put("/update-many", requireAuth, async (req, res) => {
-  try {
-    await Result.updateMany(
-      {
-        _id: {
-          $in: req.body.ids,
-        },
-      },
-      req.body.valueToSet,
-    ).catch((err) => {
-      console.log(err);
-    });
-    res.status(204).send();
-  } catch (error) {
-    res.status(400).send(error);
-  }
-});
-
-// Replace one result
-router.put("/:id/replace", requireAuth, async (req, res) => {
-  try {
-    await Result.replaceOne(
-      { _id: mongodb.ObjectId.createFromHexString(req.params.id) },
-      req.body,
-    ).catch((err) => {
-      console.log(err);
-    });
-    res.status(204).send();
-  } catch (error) {
-    res.status(400).send(error);
-  }
-});
-
-// Replace many results
-router.put("/replace-many", requireAuth, async (req, res) => {
-  try {
-    const bulkData = req.body.map((item) => ({
-      replaceOne: {
-        upsert: true,
-        filter: {
-          _id: item._id,
-        },
-        replacement: item,
-      },
-    }));
-
-    await Result.bulkWrite(bulkData).catch((err) => {
-      console.log(err);
-    });
-
-    res.status(204).send();
-  } catch (error) {
-    res.status(400).send(error);
-  }
-});
-
-// Delete results
-router.delete("/:id", requireAuth, async (req, res) => {
-  try {
-    await Result.deleteOne({
-      _id: mongodb.ObjectId.createFromHexString(req.params.id),
-    }).catch((err) => {
-      console.log(err);
-    });
-    res.status(200).send();
-  } catch (error) {
-    res.status(400).send(error);
+    const deleteResult = await Result.deleteOne({ _id: result._id });
+    if (deleteResult.deletedCount === 0) return fail(res, 404, "Not found");
+    return mutated(res);
+  } catch (err) {
+    return next(err);
   }
 });
 

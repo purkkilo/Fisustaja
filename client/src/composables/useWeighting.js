@@ -73,15 +73,9 @@ export function useWeighting() {
   async function load(competitionId) {
     refreshing.value = true;
     try {
-      const found = await CompetitionService.getCompetitions({
-        _id: competitionId,
-      });
-      if (!found) {
-        console.log("No competition found on database...");
-        return;
-      }
+      const found = await CompetitionService.getById(competitionId);
       competition.value = found;
-      const results = await ResultService.getResults({
+      const results = await ResultService.list({
         competition_id: found._id,
       });
       for (const s of results) s.total_points = pointsOf(s);
@@ -93,7 +87,7 @@ export function useWeighting() {
         value: null,
       }));
     } catch (err) {
-      console.log(err);
+      console.error(err.response?.data?.error || err.message);
     } finally {
       loadingSite.value = false;
       refreshing.value = false;
@@ -135,12 +129,12 @@ export function useWeighting() {
     );
     savingFish.value = true;
     try {
-      const existing = await FishService.getFishes({
+      const existing = await FishService.list({
         boat_number: boat.boat_number,
         competition_id: boat.competition_id,
         fish_id: compFish.id,
       });
-      if (existing?.length) {
+      if (existing.length) {
         await FishService.updateFish(existing[0]._id, {
           ...existing[0],
           weight: biggestFishWeight.value,

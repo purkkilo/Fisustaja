@@ -1,6 +1,12 @@
 const express = require("express");
-const mongodb = require("mongodb");
 const { pickQuery, parseObjectId, parseBoolean } = require("../../utils/query");
+const { ok, created, mutated, fail } = require("../../utils/responses");
+const {
+  isAdmin,
+  scopeOwnerFilter,
+  requireCompetitionAccess,
+  withOwner,
+} = require("../../utils/ownership");
 const router = express.Router();
 const Competition = require("../../models/Competition");
 const {
@@ -8,112 +14,128 @@ const {
   requireAuthUnlessPublic,
 } = require("../../middleware/auth");
 
-// Query fields the client may filter by
 const FIELDS = ["cup_id", "user_id", "state"];
 
 router.get("/", requireAuthUnlessPublic, async (req, res, next) => {
   try {
     const isPublic = parseBoolean(req.query.isPublic);
     const visibility = isPublic === undefined ? {} : { isPublic };
+
     if (req.query._id !== undefined) {
       const id = parseObjectId(req.query._id);
-      if (!id) return res.status(400).json({ msg: "Invalid id" });
-      return res
-        .status(200)
-        .send(await Competition.findOne({ _id: id, ...visibility }));
+      if (!id) return fail(res, 400, "Invalid id");
+      const filter = { _id: id, ...visibility };
+      if (isPublic !== true && req.user && !isAdmin(req.user)) {
+        scopeOwnerFilter(req, filter);
+      }
+      const doc = await Competition.findOne(filter);
+      if (!doc) return fail(res, 404, "Not found");
+      return ok(res, doc);
     }
+
     const filter = { ...pickQuery(req.query, FIELDS), ...visibility };
-    return res.status(200).send(await Competition.find(filter));
+    if (isPublic !== true && req.user && !isAdmin(req.user)) {
+      scopeOwnerFilter(req, filter);
+    }
+    return ok(res, await Competition.find(filter));
   } catch (err) {
     return next(err);
   }
 });
 
-router.post("/", requireAuth, async (req, res) => {
+router.post("/", requireAuth, async (req, res, next) => {
   try {
-    if (!req.body.length) {
-      res.status(400).send("No results in request");
-      return;
+    if (!Array.isArray(req.body) || !req.body.length) {
+      return fail(res, 400, "No competitions in request");
     }
-    if (req.body.length === 1) {
-      let newComp = new Competition(req.body[0]);
-      await newComp.save().catch((err) => {
-        console.log(err);
-      });
-    } else {
-      await Competition.insertMany(req.body);
+    const docs = req.body.map((item) => withOwner(req.user, item));
+    if (docs.length === 1) {
+      const saved = await new Competition(docs[0]).save();
+      return created(res, saved);
+    }
+    const saved = await Competition.insertMany(docs);
+    return created(res, saved);
+  } catch (err) {
+    return next(err);
+  }
+});
+
+router.put("/:id/update", requireAuth, async (req, res, next) => {
+  try {
+    const competition = await requireCompetitionAccess(req, res, req.params.id);
+    if (!competition) return;
+
+    // Do not let clients reassign ownership
+    if (req.body.user_id !== undefined) delete req.body.user_id;
+    if (req.body.$set?.user_id !== undefined) delete req.body.$set.user_id;
+
+    const result = await Competition.updateOne({ _id: competition._id }, req.body);
+    if (result.matchedCount === 0) return fail(res, 404, "Not found");
+    return mutated(res);
+  } catch (err) {
+    return next(err);
+  }
+});
+
+router.put("/:id/replace", requireAuth, async (req, res, next) => {
+  try {
+    const competition = await requireCompetitionAccess(req, res, req.params.id);
+    if (!competition) return;
+
+    const replacement = withOwner(req.user, { ...req.body });
+    // Keep original owner unless admin is replacing (still force session user per plan)
+    delete replacement._id;
+    replacement.user_id = competition.user_id;
+
+    const result = await Competition.replaceOne(
+      { _id: competition._id },
+      replacement,
+    );
+    if (result.matchedCount === 0) return fail(res, 404, "Not found");
+    return mutated(res);
+  } catch (err) {
+    return next(err);
+  }
+});
+
+router.put("/replace-many", requireAuth, async (req, res, next) => {
+  try {
+    if (!Array.isArray(req.body) || !req.body.length) {
+      return fail(res, 400, "No competitions in request");
     }
 
-    res.status(201).json({
-      success: true,
-      msg: "Competitions saved",
-    });
-  } catch (error) {
-    res.status(400).send(error);
-  }
-});
-
-router.put("/:id/update", requireAuth, async (req, res) => {
-  try {
-    await Competition.updateOne(
-      { _id: mongodb.ObjectId.createFromHexString(req.params.id) },
-      req.body,
-    ).catch((err) => {
-      console.log(err);
-    });
-    res.status(204).send();
-  } catch (error) {
-    res.status(400).send(error);
-  }
-});
-
-router.put("/:id/replace", requireAuth, async (req, res) => {
-  try {
-    delete req.body._id;
-    await Competition.replaceOne(
-      { _id: mongodb.ObjectId.createFromHexString(req.params.id) },
-      req.body,
-    ).catch((err) => {
-      console.log(err);
-    });
-    res.status(204).send();
-  } catch (error) {
-    res.status(400).send(error);
-  }
-});
-
-router.put("/replace-many", requireAuth, async (req, res) => {
-  try {
-    const bulkData = req.body.map((item) => ({
-      replaceOne: {
-        upsert: true,
-        filter: {
-          _id: item._id,
+    const ops = [];
+    for (const item of req.body) {
+      const competition = await requireCompetitionAccess(req, res, item._id);
+      if (!competition) return;
+      const replacement = { ...item };
+      delete replacement._id;
+      replacement.user_id = competition.user_id;
+      ops.push({
+        replaceOne: {
+          filter: { _id: competition._id },
+          replacement,
         },
-        replacement: item,
-      },
-    }));
+      });
+    }
 
-    await Competition.bulkWrite(bulkData).catch((err) => {
-      console.log(err);
-    });
-
-    res.status(204).send();
-  } catch (error) {
-    res.status(400).send(error);
+    await Competition.bulkWrite(ops);
+    return mutated(res);
+  } catch (err) {
+    return next(err);
   }
 });
 
-router.delete("/:id", requireAuth, async (req, res) => {
+router.delete("/:id", requireAuth, async (req, res, next) => {
   try {
-    await Competition.deleteOne({
-      _id: mongodb.ObjectId.createFromHexString(req.params.id),
-    }).catch((err) => {
-      console.log(err);
-    });
-    res.status(200).send();
-  } catch (error) {
-    res.status(400).send(error);
+    const competition = await requireCompetitionAccess(req, res, req.params.id);
+    if (!competition) return;
+
+    const result = await Competition.deleteOne({ _id: competition._id });
+    if (result.deletedCount === 0) return fail(res, 404, "Not found");
+    return mutated(res);
+  } catch (err) {
+    return next(err);
   }
 });
 

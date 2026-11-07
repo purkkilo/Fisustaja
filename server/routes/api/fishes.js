@@ -1,108 +1,145 @@
 const express = require("express");
-const mongodb = require("mongodb");
 const { pickQuery, parseObjectId } = require("../../utils/query");
 const { publicScope } = require("../../utils/publicScope");
+const { ok, created, mutated, fail } = require("../../utils/responses");
+const { requireParentCompetitionAccess } = require("../../utils/ownership");
 const router = express.Router();
 const Fish = require("../../models/Fish");
 const { requireAuth, optionalAuth } = require("../../middleware/auth");
 
-// Query fields the client may filter by
 const FIELDS = ["competition_id", "cup_id", "boat_number", "fish_id"];
+
+async function loadFish(id) {
+  const oid = parseObjectId(id);
+  if (!oid) return { error: "invalid" };
+  const fish = await Fish.findById(oid);
+  if (!fish) return { error: "missing" };
+  return { fish };
+}
+
+async function requireFishAccess(req, res, id) {
+  const loaded = await loadFish(id);
+  if (loaded.error === "invalid") {
+    fail(res, 400, "Invalid id");
+    return null;
+  }
+  if (loaded.error === "missing") {
+    fail(res, 404, "Not found");
+    return null;
+  }
+  const competition = await requireParentCompetitionAccess(
+    req,
+    res,
+    loaded.fish.competition_id,
+  );
+  if (!competition) return null;
+  return loaded.fish;
+}
 
 router.get("/", optionalAuth, async (req, res, next) => {
   try {
     const filter = pickQuery(req.query, FIELDS);
     if (!req.user) {
-      // Without a login, only data of public competitions/cups
       if (req.query.isPublic !== "true") {
-        return res
-          .status(401)
-          .json({ error: "Unauthorized access", success: false });
+        return fail(res, 401, "Unauthorized access");
       }
       const scope = await publicScope(filter);
-      if (!scope) return res.status(404).json({ msg: "Not found" });
+      if (!scope) return fail(res, 404, "Not found");
       Object.assign(filter, scope);
     }
+
     if (req.query._id !== undefined) {
       const id = parseObjectId(req.query._id);
-      if (!id) return res.status(400).json({ msg: "Invalid id" });
-      return res.status(200).send(await Fish.findOne({ ...filter, _id: id }));
+      if (!id) return fail(res, 400, "Invalid id");
+      const doc = await Fish.findOne({ ...filter, _id: id });
+      if (!doc) return fail(res, 404, "Not found");
+      return ok(res, doc);
     }
-    return res.status(200).send(await Fish.find(filter));
+    return ok(res, await Fish.find(filter));
   } catch (err) {
     return next(err);
   }
 });
 
-// Add fishes
-router.post("/", requireAuth, async (req, res) => {
+router.post("/", requireAuth, async (req, res, next) => {
   try {
-    if (!req.body.length) {
-      res.status(400).send("No fishes in request");
-      return;
+    if (!Array.isArray(req.body) || !req.body.length) {
+      return fail(res, 400, "No fishes in request");
+    }
+
+    for (const item of req.body) {
+      const parent = await requireParentCompetitionAccess(
+        req,
+        res,
+        item.competition_id,
+      );
+      if (!parent) return;
     }
 
     if (req.body.length === 1) {
-      let newFish = new Fish(req.body[0]);
-      await newFish.save().catch((err) => {
-        console.log(err);
-      });
-    } else {
-      await Fish.insertMany(req.body).catch((err) => {
-        console.log(err);
-      });
+      const saved = await new Fish(req.body[0]).save();
+      return created(res, saved);
+    }
+    const saved = await Fish.insertMany(req.body);
+    return created(res, saved);
+  } catch (err) {
+    return next(err);
+  }
+});
+
+router.put("/:id/update", requireAuth, async (req, res, next) => {
+  try {
+    const fish = await requireFishAccess(req, res, req.params.id);
+    if (!fish) return;
+
+    if (req.body.competition_id !== undefined) {
+      const parent = await requireParentCompetitionAccess(
+        req,
+        res,
+        req.body.competition_id,
+      );
+      if (!parent) return;
     }
 
-    res.status(201).json({
-      success: true,
-      msg: "Results saved",
-    });
-  } catch (error) {
-    res.status(400).send(error);
+    const result = await Fish.updateOne({ _id: fish._id }, req.body);
+    if (result.matchedCount === 0) return fail(res, 404, "Not found");
+    return mutated(res);
+  } catch (err) {
+    return next(err);
   }
 });
 
-// Update one fish
-router.put("/:id/update", requireAuth, async (req, res) => {
+router.put("/:id/replace", requireAuth, async (req, res, next) => {
   try {
-    await Fish.updateOne(
-      { _id: mongodb.ObjectId.createFromHexString(req.params.id) },
-      req.body,
-    ).catch((err) => {
-      console.log(err);
-    });
-    res.status(204).send();
-  } catch (error) {
-    res.status(400).send(error);
+    const fish = await requireFishAccess(req, res, req.params.id);
+    if (!fish) return;
+
+    const competitionId = req.body.competition_id || fish.competition_id;
+    const parent = await requireParentCompetitionAccess(req, res, competitionId);
+    if (!parent) return;
+
+    const replacement = { ...req.body };
+    delete replacement._id;
+    replacement.competition_id = competitionId;
+
+    const result = await Fish.replaceOne({ _id: fish._id }, replacement);
+    if (result.matchedCount === 0) return fail(res, 404, "Not found");
+    return mutated(res);
+  } catch (err) {
+    return next(err);
   }
 });
 
-// Replace one fish
-router.put("/:id/replace", requireAuth, async (req, res) => {
+router.delete("/:id", requireAuth, async (req, res, next) => {
   try {
-    await Fish.replaceOne(
-      { _id: mongodb.ObjectId.createFromHexString(req.params.id) },
-      req.body,
-    ).catch((err) => {
-      console.log(err);
-    });
-    res.status(204).send();
-  } catch (error) {
-    res.status(400).send(error);
-  }
-});
+    const fish = await requireFishAccess(req, res, req.params.id);
+    if (!fish) return;
 
-// Delete fishes
-router.delete("/:id", requireAuth, async (req, res) => {
-  try {
-    await Fish.deleteOne({
-      _id: mongodb.ObjectId.createFromHexString(req.params.id),
-    }).catch((err) => {
-      console.log(err);
-    });
-    res.status(200).send();
-  } catch (error) {
-    res.status(400).send(error);
+    const result = await Fish.deleteOne({ _id: fish._id });
+    if (result.deletedCount === 0) return fail(res, 404, "Not found");
+    return mutated(res);
+  } catch (err) {
+    return next(err);
   }
 });
 

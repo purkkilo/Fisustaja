@@ -54,19 +54,13 @@ export function useCompetitionSettings() {
   async function load(competitionId) {
     loading.value = true;
     try {
-      const found = await CompetitionService.getCompetitions({
-        _id: competitionId,
-      });
-      if (!found) {
-        console.log("No competition found on database...");
-        return;
-      }
+      const found = await CompetitionService.getById(competitionId);
       competition.value = found;
       store.refreshCompetition(found);
       resetForm();
       if (!cups.value.length) await loadCups();
     } catch (err) {
-      console.error(err.message);
+      console.error(err.response?.data?.error || err.message);
     } finally {
       loading.value = false;
     }
@@ -74,7 +68,7 @@ export function useCompetitionSettings() {
 
   async function loadCups() {
     try {
-      const list = await CupService.getCups({ user_id: store.user?._id });
+      const list = await CupService.list({ user_id: store.user?._id });
       for (const c of list) c.select = `${c.name} (${c.year})`;
       cups.value = list.sort((a, b) => String(a.name).localeCompare(b.name));
       cup.value =

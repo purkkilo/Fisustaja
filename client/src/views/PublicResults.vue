@@ -123,7 +123,7 @@ const resultsView = ref(null);
 onMounted(async () => {
   loadingList.value = true;
   try {
-    const list = await CompetitionService.getCompetitions({ isPublic: true });
+    const list = await CompetitionService.list({ isPublic: true });
     for (const c of list) {
       c.start_date = new Date(c.start_date);
       c.end_date = new Date(c.end_date);

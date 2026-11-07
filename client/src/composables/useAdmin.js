@@ -57,14 +57,14 @@ export function useAdmin() {
       }));
       loadingUsers.value = false;
 
-      cups.value = (await CupService.getCups())
+      cups.value = (await CupService.list())
         .map((c) => ({ ...c, select: `${c.name} (${c.year})` }))
         .sort((a, b) => a.select.localeCompare(b.select));
       loadingCups.value = false;
 
       const cupNames = new Map(cups.value.map((c) => [c._id, c.select]));
       const userNames = new Map(users.value.map((u) => [u._id, u.name]));
-      competitions.value = (await CompetitionService.getCompetitions())
+      competitions.value = (await CompetitionService.list())
         .map((c) => ({
           ...c,
           // the cup or user may have been deleted since

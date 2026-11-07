@@ -63,7 +63,7 @@ export function useCompetitionForm() {
   async function loadCups(preferredCupId) {
     loading.value = true;
     try {
-      const list = await CupService.getCups({ user_id: store.user?._id });
+      const list = await CupService.list({ user_id: store.user?._id });
       for (const c of list) c.select = `${c.name} (${c.year})`;
       cups.value = list.sort((a, b) => String(a.name).localeCompare(b.name));
       cup.value =

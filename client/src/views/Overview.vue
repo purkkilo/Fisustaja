@@ -195,64 +195,52 @@ async function refreshCompetition(competition_id) {
   loading.value = true;
   errors.value = [];
   try {
-    //Get competition from database (check 'client\src\CompetitionService.js' and 'server\routes\api\competition.js' to see how this works)
-    let _competition = await CompetitionService.getCompetitions({
-      _id: competition_id,
+    const _competition = await CompetitionService.getById(competition_id);
+    competition.value = _competition;
+
+    const r = await ResultService.list({
+      competition_id: _competition._id,
     });
-    // IF competition found from database
-    if (_competition) {
-      competition.value = _competition;
-
-      // Get results === signees
-      await ResultService.getResults({ competition_id: _competition._id })
-        .then((r) => {
-          competition.value.total_weights = 0;
-          r.forEach((s) => {
-            s.fishes.forEach((f) => {
-              competition.value.total_weights += f.weights;
-            });
-          });
-          competition.value.signees = r;
-        })
-        .catch((e) => {
-          console.log(e);
-        });
-      // Update to vuex, Assing variables from vuex (see client/store/index.js)
-      store.refreshCompetition(competition.value);
-      localStorage.setItem("cup", competition.value.cup_id);
-      let start_date = new Date(competition.value.start_date);
-      let end_date = new Date(competition.value.end_date);
-      formatted_start_date.value = `${start_date.getDate()}.${
-        start_date.getMonth() + 1
-      }.${start_date.getFullYear()}`;
-      formatted_end_date.value = `${end_date.getDate()}.${
-        end_date.getMonth() + 1
-      }.${end_date.getFullYear()}`;
-
-      hasNotReturnedPercentage.value =
-        Math.round(
-          (competition.value.signees.filter((s) => !s.returned).length /
-            competition.value.signees.length) *
-            100 *
-            100,
-        ) / 100;
-
-      // Check how many signees have gotten fish
-      competition.value.signees.forEach((signee) => {
-        if (signee.fishes.length) hasGottenFishCount.value++;
+    competition.value.total_weights = 0;
+    r.forEach((s) => {
+      s.fishes.forEach((f) => {
+        competition.value.total_weights += f.weights;
       });
+    });
+    competition.value.signees = r;
+    store.refreshCompetition(competition.value);
+    localStorage.setItem("cup", competition.value.cup_id);
+    const start_date = new Date(competition.value.start_date);
+    const end_date = new Date(competition.value.end_date);
+    formatted_start_date.value = `${start_date.getDate()}.${
+      start_date.getMonth() + 1
+    }.${start_date.getFullYear()}`;
+    formatted_end_date.value = `${end_date.getDate()}.${
+      end_date.getMonth() + 1
+    }.${end_date.getFullYear()}`;
 
-      hasGottenFishPercentage.value =
-        Math.round(
-          (hasGottenFishCount.value / competition.value.signees.length) *
-            100 *
-            100,
-        ) / 100;
-    } else {
-      competition.value = { name: "Kilpailua ei löytynyt tietokannasta..." };
-    }
+    hasNotReturnedPercentage.value =
+      Math.round(
+        (competition.value.signees.filter((s) => !s.returned).length /
+          competition.value.signees.length) *
+          100 *
+          100,
+      ) / 100;
+
+    hasGottenFishCount.value = 0;
+    competition.value.signees.forEach((signee) => {
+      if (signee.fishes.length) hasGottenFishCount.value++;
+    });
+
+    hasGottenFishPercentage.value =
+      Math.round(
+        (hasGottenFishCount.value / competition.value.signees.length) *
+          100 *
+          100,
+      ) / 100;
   } catch (err) {
-    console.log(err);
+    competition.value = { name: "Kilpailua ei löytynyt tietokannasta..." };
+    console.error(err.response?.data?.error || err.message);
   }
   loading.value = false;
 }

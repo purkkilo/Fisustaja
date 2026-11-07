@@ -47,12 +47,11 @@ export function useCupStandings({ publicOnly = false } = {}) {
     try {
       const found =
         typeof cupOrId === "string"
-          ? await CupService.getCups({
-              _id: cupOrId,
-              ...(publicOnly ? { isPublic: true } : {}),
-            })
+          ? await CupService.getById(
+              cupOrId,
+              publicOnly ? { isPublic: true } : {},
+            )
           : cupOrId;
-      if (!found) return;
       cup.value = found;
       store.refreshCup(found);
 
@@ -61,9 +60,9 @@ export function useCupStandings({ publicOnly = false } = {}) {
         ...(publicOnly ? { isPublic: true } : {}),
       };
       const [comps, fishes, results] = await Promise.all([
-        CompetitionService.getCompetitions(query),
-        FishService.getFishes(query),
-        ResultService.getResults(query),
+        CompetitionService.list(query),
+        FishService.list(query),
+        ResultService.list(query),
       ]);
       allCompetitions.value = comps
         .map((c) => ({
@@ -73,17 +72,16 @@ export function useCupStandings({ publicOnly = false } = {}) {
         }))
         .sort((a, b) => a.start_date - b.start_date)
         .map((c, i) => ({ ...c, key_name: i + 1 }));
-      biggestFishes.value = [...(fishes || [])].sort(
-        (a, b) => b.weight - a.weight,
-      );
-      allResults.value = (results || []).filter((r) =>
+      biggestFishes.value = [...fishes].sort((a, b) => b.weight - a.weight);
+      allResults.value = results.filter((r) =>
         allCompetitions.value.some((c) => c._id === r.competition_id),
       );
       biggestAmounts.value = collectAmounts(allResults.value);
       setCompetitionData();
       notify("notification.info-up-to-date");
     } catch (err) {
-      console.error(err);
+      cup.value = null;
+      console.error(err.response?.data?.error || err.message);
     } finally {
       loading.value = false;
     }

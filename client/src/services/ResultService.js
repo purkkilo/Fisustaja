@@ -1,50 +1,66 @@
-import axios from "axios";
+import axios from "./http";
 
 const url = "api/results/";
 
+function mapDates(result) {
+  return {
+    ...result,
+    createdAt: result.createdAt
+      ? new Date(result.createdAt)
+      : result.createdAt,
+  };
+}
+
 class ResultService {
-  static async getResults(query) {
-    const res = await axios.get(`${url}`, { params: query });
-    let result = res.data;
-    if (Array.isArray(result)) {
-      result = dataToResult(result);
+  /** List results matching query. Always returns an array. */
+  static async list(query) {
+    const res = await axios.get(url, { params: query });
+    return (res.data || []).map(mapDates);
+  }
+
+  /** Fetch one result by id. Throws on 404. */
+  static async getById(id, extra = {}) {
+    const res = await axios.get(url, { params: { _id: id, ...extra } });
+    return mapDates(res.data);
+  }
+
+  /** @deprecated Prefer list() or getById() */
+  static async getResults(query = {}) {
+    if (query._id) {
+      const { _id, ...extra } = query;
+      return this.getById(_id, extra);
     }
-    return result;
+    return this.list(query);
   }
 
-  static insertResults(results) {
-    return axios.post(url, results);
+  /** Create results; returns created doc or array. */
+  static async insertResults(results) {
+    const res = await axios.post(url, results);
+    return res.data.data;
   }
 
-  static updateResult(id, result) {
-    return axios.put(`${url}${id}/replace`, result);
+  static async updateResult(id, result) {
+    await axios.put(`${url}${id}/replace`, result);
   }
 
-  static updateManyResults(ids, valueToSet) {
-    return axios.put(`${url}update-many`, {
-      ids: ids,
-      valueToSet: valueToSet,
+  static async updateManyResults(ids, valueToSet) {
+    await axios.put(`${url}update-many`, {
+      ids,
+      valueToSet,
     });
   }
 
-  static replaceManyResults(results) {
-    return axios.put(`${url}replace-many`, results);
+  static async replaceManyResults(results) {
+    await axios.put(`${url}replace-many`, results);
   }
 
-  static updateValues(id, newvalues) {
-    return axios.put(`${url}${id}/update`, newvalues);
+  static async updateValues(id, newvalues) {
+    await axios.put(`${url}${id}/update`, newvalues);
   }
 
-  static deleteResult(id) {
-    return axios.delete(`${url}${id}`);
+  static async deleteResult(id) {
+    await axios.delete(`${url}${id}`);
   }
-}
-
-function dataToResult(data) {
-  return data.map((result) => ({
-    ...result,
-    createdAt: new Date(result.createdAt),
-  }));
 }
 
 export default ResultService;

@@ -179,27 +179,20 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
     try {
       // Logged-out visitors may only read public competitions
       const visibility = publicOnly ? { isPublic: true } : {};
-      const found = await CompetitionService.getCompetitions({
-        _id: competitionId,
-        ...visibility,
-      });
-      if (!found) {
-        competition.value = null;
-        signees.value = [];
-        biggest_fishes.value = [];
-        biggest_amounts.value = {};
-        return;
-      }
+      const found = await CompetitionService.getById(
+        competitionId,
+        visibility,
+      );
       competition.value = found;
       found.fishes.forEach((fish) => (fish.weights = 0));
       resetFishLists(found.fishes);
 
       const [rawResults, fishes] = await Promise.all([
-        ResultService.getResults({ competition_id: found._id, ...visibility }),
-        FishService.getFishes({ competition_id: found._id, ...visibility }),
+        ResultService.list({ competition_id: found._id, ...visibility }),
+        FishService.list({ competition_id: found._id, ...visibility }),
       ]);
-      processResults(rawResults || []);
-      biggest_fishes.value = fishes || [];
+      processResults(rawResults);
+      biggest_fishes.value = fishes;
 
       signee_headers.value = found.isTeamCompetition
         ? [...SIGNEE_HEADERS, { title: "team", key: "team" }]
@@ -227,7 +220,11 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
 
       if (notifyWhenDone) notify("notification.info-up-to-date");
     } catch (err) {
-      console.error(err);
+      competition.value = null;
+      signees.value = [];
+      biggest_fishes.value = [];
+      biggest_amounts.value = {};
+      console.error(err.response?.data?.error || err.message);
     } finally {
       loading.value = false;
     }

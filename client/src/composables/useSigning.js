@@ -34,18 +34,14 @@ export function useSigning() {
     competitionId.value = id;
     refreshing.value = true;
     try {
-      const comp = await CompetitionService.getCompetitions({ _id: id });
-      if (!comp) {
-        console.warn("No competition found in the database");
-        return;
-      }
-      const results = await ResultService.getResults({
+      const comp = await CompetitionService.getById(id);
+      const results = await ResultService.list({
         competition_id: comp._id,
       });
-      comp.signees = Array.isArray(results) ? results : [];
+      comp.signees = results;
       store.refreshCompetition(comp);
       cup.value = comp.isCupCompetition
-        ? await CupService.getCups({ _id: comp.cup_id })
+        ? await CupService.getById(comp.cup_id)
         : null;
     } catch (err) {
       console.error(err.message);
@@ -119,8 +115,8 @@ export function useSigning() {
         await ResultService.updateResult(existing._id, signee);
         store.replaceSignee(signee);
       } else {
-        const res = await ResultService.insertResults([signee]);
-        signee._id = res.data.id;
+        const created = await ResultService.insertResults([signee]);
+        signee._id = created._id;
         store.addSignee(signee);
       }
       rememberTeam(signee.team);

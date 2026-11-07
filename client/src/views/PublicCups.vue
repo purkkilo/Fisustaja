@@ -161,7 +161,7 @@ watch(selectedCup, (c) => (c ? load(c._id) : clear()));
 onMounted(async () => {
   loadingList.value = true;
   try {
-    const list = await CupService.getCups({ isPublic: true });
+    const list = await CupService.list({ isPublic: true });
     for (const c of list) c.select = `${c.name} (${c.year})`;
     cups.value = list;
   } catch (err) {
