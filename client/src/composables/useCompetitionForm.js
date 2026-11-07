@@ -3,18 +3,14 @@ import { useI18n } from "vue-i18n";
 import CompetitionService from "@/services/CompetitionService";
 import CupService from "@/services/CupService";
 import { getRandomColors } from "@/utils/colors";
-import { validateTime } from "@/utils/format";
+import {
+  combineDateTime,
+  competitionFieldErrors,
+  cupFields,
+} from "@/utils/competition";
 import constants from "@/data/constants";
 
 const copy = (value) => JSON.parse(JSON.stringify(value));
-
-/** Date + "HH:mm" -> Date */
-function combine(date, time) {
-  const d = new Date(date);
-  const [h, m] = time.split(":").map(Number);
-  d.setHours(h, m, 0, 0);
-  return d;
-}
 
 /**
  * The "create competition" wizard: basic info -> fish species ->
@@ -87,58 +83,36 @@ export function useCompetitionForm() {
   // ---- step 1 ----
   function validateBasicInfo() {
     errors.value = [];
-    if (!name.value) showError("errors.missing-comp-name");
-    if (!locality.value) showError("errors.missing-comp-locality");
-    if (isCupCompetition.value) {
-      if (!cup.value?._id) showError("errors.cup-not-selected");
-      if (!placementPoints.value.length)
-        showError("errors.missing-placement-points");
-      if (participationPoints.value === "" || participationPoints.value == null)
-        showError("errors.missing-participation-points");
-      if (!pointsMultiplier.value) showError("errors.missing-multiplier");
-      else if (pointsMultiplier.value < 0.1)
-        showError("errors.invalid-multiplier");
-    }
-    if (!startTime.value) showError("errors.missing-start-time");
-    else if (!validateTime(startTime.value)) showError("errors.invalid-time");
-    if (!endTime.value) showError("errors.missing-end-time");
-    else if (!validateTime(endTime.value)) showError("errors.invalid-time");
-    if (!startDate.value || isNaN(new Date(startDate.value)))
-      showError("errors.missing-start-date");
-    if (!endDate.value || isNaN(new Date(endDate.value)))
-      showError("errors.missing-end-date");
+    const fields = {
+      name: name.value,
+      locality: locality.value,
+      isCupCompetition: isCupCompetition.value,
+      cup: cup.value,
+      placementPoints: placementPoints.value,
+      participationPoints: participationPoints.value,
+      pointsMultiplier: pointsMultiplier.value,
+      startDate: startDate.value,
+      endDate: endDate.value,
+      startTime: startTime.value,
+      endTime: endTime.value,
+    };
+    competitionFieldErrors(fields).forEach(showError);
     if (errors.value.length) return;
-
-    const start = combine(startDate.value, startTime.value);
-    const end = combine(endDate.value, endTime.value);
-    if (end < start) {
-      showError("errors.invalid-times");
-      return;
-    }
 
     basicInfo.value = {
       name: name.value,
       locality: locality.value,
       isTeamCompetition: isTeamCompetition.value,
       isCupCompetition: isCupCompetition.value,
-      start_date: start.toISOString(),
-      end_date: end.toISOString(),
+      start_date: combineDateTime(
+        startDate.value,
+        startTime.value,
+      ).toISOString(),
+      end_date: combineDateTime(endDate.value, endTime.value).toISOString(),
       start_time: startTime.value,
       end_time: endTime.value,
+      ...(isCupCompetition.value ? cupFields(fields) : {}),
     };
-    if (isCupCompetition.value) {
-      const multiplier = Number(pointsMultiplier.value);
-      Object.assign(basicInfo.value, {
-        cup_id: cup.value._id,
-        cup_name: cup.value.name,
-        cup_participation_points: Number(participationPoints.value),
-        cup_placement_points: placementPoints.value.map((p, i) => ({
-          placement: i + 1,
-          points: Number(p.points) * multiplier,
-        })),
-        cup_points_multiplier: multiplier,
-      });
-    }
     locked.value.basic = true;
     tab.value = "fishes";
   }
