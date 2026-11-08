@@ -1,117 +1,48 @@
 <template>
-  <!-- /signing: sign boats into the competition -->
-  <div>
-
-    <v-container
-      :class="{
-        mobile: $vuetify.display.width < 800,
-        browser: $vuetify.display.width >= 800,
-        wide: $vuetify.display.width >= 1200,
-      }"
-    >
-      <ErrorList :errors="errors" />
-      <v-card style="background: transparent" elevation="3" variant="outlined">
-        <h1 class="ma-8">{{ $t("signing") }}</h1>
-      </v-card>
-
-      <v-tabs
-        v-model="tab"
-        slider-color="blue-darken-4"
-        bg-color="blue-lighten-2"
-        color="blue-darken-4"
-        grow
-        show-arrows
-        next-icon="mdi-arrow-right-bold-box-outline"
-        prev-icon="mdi-arrow-left-bold-box-outline"
-        center-active
-      >
-        <v-tab value="signing">{{ $t("signing") }}</v-tab>
-        <v-tab value="signees">{{ $t("signees-signed") }}</v-tab>
-      </v-tabs>
-
-      <v-window v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
-        <v-window-item value="signing" :class="areaClass">
-          <v-row v-if="loadingSite">
-            <v-col>
-              <h2 :class="{ 'text-white': store.isDark }">
-                {{ $t("fetching") }}...
-              </h2>
-              <ProgressBarQuery />
-            </v-col>
-          </v-row>
-          <div v-else class="mt-5">
-            <v-row v-if="notification">
-              <v-col md="8" offset-md="2">
-                <v-alert type="info" class="text-body-large">
-                  {{ $t(notification) }}
-                </v-alert>
-              </v-col>
-            </v-row>
-            <p class="text-body-large" :class="{ 'text-white': store.isDark }">
-              {{ $t("signees") }} {{ $t("total") }}:
-              <b>{{ signees.length }}</b>
-            </p>
-
-            <SigneeForm
-              v-model:form="form"
-              :teams="teams"
-              :is-team-competition="isTeamCompetition"
-              :has-cup="!!cup"
-              :can-delete="!!selectedId"
-              :saving="saving"
-              :refreshing="refreshing"
-              @search="searchSignees"
-              @search-cup="searchCup"
-              @clear="resetForm"
-              @save="save"
-              @delete="remove"
-            />
-
-            <p
-              v-if="refreshing"
-              class="text-body-large"
-              :class="{ 'text-white': store.isDark }"
-            >
-              {{ $t("updating") }}...
-            </p>
-            <v-row class="mb-5">
-              <v-col md="4" offset-md="4">
-                <v-btn
-                  v-if="competitionId"
-                  id="updatebtn"
-                  block
-                  color="blue-darken-4"
-                  class="text-white"
-                  size="large"
-                  :loading="refreshing"
-                  @click="refresh"
-                >
-                  <v-icon start>mdi-update</v-icon>{{ $t("button.update") }}
-                </v-btn>
-              </v-col>
-            </v-row>
-          </div>
-        </v-window-item>
-
-        <v-window-item value="signees" :class="areaClass">
-          <v-row class="my-2">
-            <v-col md="10" offset-md="1">
-              <SigneesTable
-                :signees="signees"
-                :loading="refreshing"
-                @select="selectSignee"
-              />
-            </v-col>
-          </v-row>
-        </v-window-item>
-      </v-window>
-    </v-container>
+  <!-- /signing: the boat list and the add/edit form side by side -->
+  <div class="fs-page">
+    <ErrorList :errors="errors" />
+    <v-skeleton-loader v-if="loadingSite" type="table" class="fs-panel" />
+    <div v-else class="signing">
+      <SigneesTable
+        class="signing__list"
+        :signees="signees"
+        :loading="refreshing"
+        :is-team-competition="isTeamCompetition"
+        :selected-id="selectedId"
+        :clash-number="clashState.clash?.boat_number ?? null"
+        @select="selectSignee"
+        @export="exportCsv"
+        @refresh="refresh"
+      />
+      <SigneeForm
+        v-model:form="form"
+        class="signing__form"
+        :editing="editing"
+        :next-number="nextNumber()"
+        :clash="clashState"
+        :replacing="!!replaceTarget"
+        :notification="notification"
+        :recent="recent"
+        :teams="teams"
+        :is-team-competition="isTeamCompetition"
+        :has-cup="!!cup"
+        :saving="saving"
+        @save="save"
+        @clear="resetForm"
+        @delete="remove"
+        @search-cup="searchCup"
+        @use-next="form.boat_number = nextNumber()"
+        @replace="replaceTarget = clashState.clash"
+        @edit-existing="fillForm(clashState.clash, null)"
+      />
+    </div>
     <NotificationBar v-model:snackbar="snackbar" :text="text" />
   </div>
 </template>
 
 <script setup>
-import { computed, nextTick, onMounted, ref } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { useMainStore } from "@/store";
 import { confirm } from "@/plugins/alerts";
 import { t } from "@/i18n";
@@ -122,7 +53,7 @@ import {
   normalizeSignee,
   signeeToForm,
 } from "@/utils/signees";
-import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
+import { downloadCsv, toCsv } from "@/utils/csv";
 import NotificationBar from "../components/NotificationBar.vue";
 import ErrorList from "../components/ErrorList.vue";
 import SigneeForm from "../components/signing/SigneeForm.vue";
@@ -135,7 +66,6 @@ const {
   loadingSite,
   refreshing,
   saving,
-  competitionId,
   cup,
   signees,
   teams,
@@ -149,17 +79,31 @@ const {
   deleteSignee,
 } = useSigning();
 
-const tab = ref("signing");
 const form = ref(emptySigneeForm());
 // _id of the signee being edited, null when adding a new one
 const selectedId = ref(null);
+// set when the user chose to overwrite the boat that has the typed number
+const replaceTarget = ref(null);
 const errors = ref([]);
 const notification = ref(null);
 const snackbar = ref(false);
 const text = ref("");
 
-const areaClass = computed(() =>
-  store.isDark ? "inputarea-dark" : "inputarea",
+const editing = computed(() =>
+  selectedId.value ? findById(selectedId.value) : null,
+);
+const clashState = computed(() =>
+  boatNumberClash(signees.value, form.value.boat_number, selectedId.value),
+);
+// newest first (the store keeps boats in the order they were added)
+const recent = computed(() =>
+  [...(store.competition?.signees ?? [])].reverse().slice(0, 3),
+);
+
+// a different number cancels a pending "replace"
+watch(
+  () => form.value.boat_number,
+  () => (replaceTarget.value = null),
 );
 
 // confirm() rejects on cancel
@@ -173,7 +117,7 @@ function notify(message) {
 }
 
 function showErrors(keys) {
-  errors.value = keys.map((key) => t(key));
+  errors.value = keys;
   nextTick(() =>
     document.getElementById("error-list")?.scrollIntoView({
       behavior: "smooth",
@@ -181,35 +125,25 @@ function showErrors(keys) {
   );
 }
 
+function focusNumber() {
+  nextTick(() => document.getElementById("boat-number")?.focus());
+}
+
 function resetForm() {
   form.value = { ...emptySigneeForm(), boat_number: nextNumber() };
   selectedId.value = null;
+  replaceTarget.value = null;
   errors.value = [];
   notification.value = null;
+  focusNumber();
 }
 
 function fillForm(signee, message) {
   form.value = signeeToForm(signee);
   selectedId.value = signee._id ?? null;
+  replaceTarget.value = null;
   errors.value = [];
   notification.value = message;
-}
-
-// Keep the typed boat number, clear the rest
-function notFound() {
-  form.value = { ...emptySigneeForm(), boat_number: form.value.boat_number };
-  selectedId.value = null;
-  notification.value = "notification.no-signee-found";
-}
-
-function searchSignees() {
-  if (!form.value.boat_number) {
-    notification.value = "notification.empty-boat-number";
-    return;
-  }
-  const signee = findByBoatNumber(form.value.boat_number);
-  if (signee) fillForm(signee, "notification.boat-found");
-  else notFound();
 }
 
 function searchCup() {
@@ -218,7 +152,10 @@ function searchCup() {
     return;
   }
   const fromCup = findFromCup(form.value.boat_number);
-  if (!fromCup) return notFound();
+  if (!fromCup) {
+    notification.value = "notification.no-signee-found";
+    return;
+  }
   // Already signed into this competition: edit that signee
   const signed = findByBoatNumber(form.value.boat_number);
   fillForm(
@@ -228,8 +165,8 @@ function searchCup() {
 }
 
 function selectSignee(signee) {
-  fillForm(signee, "notification.boat-found");
-  tab.value = "signing";
+  fillForm(signee, null);
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 async function save() {
@@ -238,40 +175,23 @@ async function save() {
     form.value.team = signee.team;
     return showErrors(invalid);
   }
+  if (clashState.value.status === "blocked") {
+    return showErrors(["errors.number-used"]);
+  }
+  if (clashState.value.status === "confirm-replace" && !replaceTarget.value) {
+    return;
+  }
   errors.value = [];
 
-  let existing = selectedId.value ? findById(selectedId.value) : null;
-  const { status, clash } = boatNumberClash(
-    signees.value,
-    signee.boat_number,
-    existing?._id ?? null,
-  );
-  if (status === "blocked") return showErrors(["errors.number-used"]);
-  if (status === "confirm-replace") {
-    const replace = await ask(
-      t("signing-replace-confirm", {
-        number: clash.boat_number,
-        name: clash.captain_name,
-      }),
-      t("signee"),
-    );
-    if (!replace) {
-      form.value.boat_number = nextNumber();
-      notification.value = "notification.boat-number-moved";
-      return;
-    }
-    existing = clash;
-  }
-
+  const existing = replaceTarget.value ?? editing.value;
   const saved = await saveSignee(signee, existing);
   if (!saved) return showErrors(["errors.in-saving"]);
   notify(existing ? "boat-updated" : "boat-added");
   resetForm();
-  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 async function remove() {
-  const signee = selectedId.value && findById(selectedId.value);
+  const signee = editing.value;
   if (!signee) return showErrors(["errors.no-boat-selected"]);
   const ok = await ask(
     `${t("signing-delete-confirm")}: (${signee.boat_number}) ${signee.captain_name}?`,
@@ -284,6 +204,22 @@ async function remove() {
   } else {
     showErrors(["errors.something-wrong"]);
   }
+}
+
+function exportCsv() {
+  const columns = [
+    { key: "boat_number", title: t("boat-number") },
+    { key: "captain_name", title: t("captain-name") },
+    { key: "temp_captain_name", title: t("temp-captain-name") },
+    { key: "locality", title: t("locality-team") },
+    { key: "starting_place", title: t("starting-place") },
+  ];
+  if (isTeamCompetition.value) columns.push({ key: "team", title: t("team") });
+  const name = (store.competition?.name || "kilpailu").replace(
+    /[^\p{L}\p{N}]+/gu,
+    "-",
+  );
+  downloadCsv(`${name}-${t("signees")}.csv`, toCsv(signees.value, columns));
 }
 
 async function refresh() {
@@ -299,3 +235,20 @@ onMounted(async () => {
   resetForm();
 });
 </script>
+
+<style scoped>
+.signing {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-start;
+}
+.signing__list {
+  flex: 2 1 560px;
+  min-width: 0;
+}
+.signing__form {
+  flex: 1 1 360px;
+  min-width: 0;
+}
+</style>

@@ -26,9 +26,10 @@ export function useWeighting() {
   const weights = ref([]); // [{ id, name, multiplier, value }]
 
   // biggest single fish of the boat
-  const biggestFishVisible = ref(false);
   const biggestFishName = ref(null);
   const biggestFishWeight = ref(null);
+  // biggest single fishes saved so far in this competition
+  const biggestFishes = ref([]);
 
   // ---- derived ----
   const boatsByNumber = computed(() =>
@@ -41,6 +42,39 @@ export function useWeighting() {
   const stillOnWater = computed(() => signees.value.filter((s) => !s.returned));
   const returned = computed(() => signees.value.filter((s) => s.returned));
   const allReturned = computed(() => stillOnWater.value.length === 0);
+
+  /** Heaviest saved single fish per species name. */
+  const biggestByName = computed(() => {
+    const best = {};
+    for (const f of biggestFishes.value) {
+      const w = Number(f.weight) || 0;
+      if (!best[f.name] || w > best[f.name].weight) {
+        best[f.name] = { weight: w, boat_number: f.boat_number };
+      }
+    }
+    return best;
+  });
+  // the typed biggest fish beats the current leader of its species
+  const isNewBiggest = computed(() => {
+    const w = parseInt(biggestFishWeight.value) || 0;
+    if (!biggestFishName.value || !w) return false;
+    return w > (biggestByName.value[biggestFishName.value]?.weight ?? 0);
+  });
+
+  /**
+   * Standings of the boats that have come back, with the boat being weighed
+   * placed where its typed weights would put it (marked preview: true).
+   */
+  const liveStandings = computed(() => {
+    const current = selectedBoat.value;
+    const rows = signees.value
+      .filter((s) => s.returned && s._id !== current?._id)
+      .map((s) => ({ ...s, preview: false }));
+    if (current && totalPoints.value > 0) {
+      rows.push({ ...current, total_points: totalPoints.value, preview: true });
+    }
+    return rankByPoints(rows);
+  });
 
   const totalWeight = computed(() =>
     weights.value.reduce((sum, w) => sum + (parseInt(w.value) || 0), 0),
@@ -80,12 +114,20 @@ export function useWeighting() {
       });
       for (const s of results) s.total_points = pointsOf(s);
       signees.value = results;
+      // one object shared with the store (also after state changes), so the
+      // competition header's boat counts stay live
+      found.signees = results;
+      store.refreshCompetition(found);
       weights.value = found.fishes.map((fish) => ({
         id: fish.id,
         name: fish.name,
         multiplier: fish.multiplier,
+        minsize: fish.minsize,
         value: null,
       }));
+      biggestFishes.value = await FishService.list({
+        competition_id: found._id,
+      });
     } catch (err) {
       console.error(err.response?.data?.error || err.message);
     } finally {
@@ -153,6 +195,18 @@ export function useWeighting() {
         ]);
       }
       notification.value = "notification.updated";
+      biggestFishes.value = [
+        ...biggestFishes.value.filter(
+          (f) =>
+            !(f.boat_number === boat.boat_number && f.fish_id === compFish.id),
+        ),
+        {
+          fish_id: compFish.id,
+          name: compFish.name,
+          boat_number: boat.boat_number,
+          weight: biggestFishWeight.value,
+        },
+      ];
       biggestFishName.value = null;
       biggestFishWeight.value = null;
       return true;
@@ -169,7 +223,9 @@ export function useWeighting() {
     const boat = selectedBoat.value;
     if (!boat) return;
     // a biggest fish typed in but not saved yet is saved too
-    if (biggestFishVisible.value) await saveBiggestFish();
+    if (biggestFishName.value && biggestFishWeight.value) {
+      await saveBiggestFish();
+    }
 
     const fishes = reset
       ? []
@@ -198,6 +254,20 @@ export function useWeighting() {
     } finally {
       saving.value = false;
     }
+  }
+
+  function selectBoatByNumber(number) {
+    const boat = signees.value.find(
+      (s) => Number(s.boat_number) === Number(number),
+    );
+    if (boat) selectBoat(boat);
+    return !!boat;
+  }
+
+  // The boat came back without fish: returned, no catch
+  function returnWithoutCatch() {
+    for (const w of weights.value) w.value = null;
+    return saveCatch();
   }
 
   // "Set all boats as returned"
@@ -230,9 +300,12 @@ export function useWeighting() {
     selectedBoat,
     searched,
     weights,
-    biggestFishVisible,
     biggestFishName,
     biggestFishWeight,
+    biggestFishes,
+    biggestByName,
+    isNewBiggest,
+    liveStandings,
     boatsByNumber,
     leaderboard,
     placements,
@@ -244,6 +317,8 @@ export function useWeighting() {
     previewPlacement,
     load,
     selectBoat,
+    selectBoatByNumber,
+    returnWithoutCatch,
     clear,
     saveBiggestFish,
     saveCatch,

@@ -1,320 +1,175 @@
 <template>
-  <!-- /weighting: weigh in the boats' catches -->
-  <div>
+  <!-- /weighting: queue | the boat on the scale | live standings -->
+  <div class="fs-page">
+    <v-skeleton-loader v-if="loadingSite" type="table" class="fs-panel" />
+    <p v-else-if="!signees.length" class="fs-panel pa-8 fs-muted">
+      {{ $t("comp-overview.no-signees") }}
+    </p>
+    <div v-else class="weighing">
+      <WeighQueue
+        class="weighing__queue"
+        :on-water="onWaterSorted"
+        :returned="returnedSorted"
+        :selected-id="selectedBoat?._id ?? null"
+        :saving="saving"
+        @select="pick"
+        @select-number="pickNumber"
+        @all-returned="allReturnedClicked"
+      />
 
-    <v-container
-      :class="{
-        mobile: $vuetify.display.width < 800,
-        browser: $vuetify.display.width >= 800,
-        wide: $vuetify.display.width >= 1200,
-      }"
-    >
-      <v-card style="background: transparent" elevation="3" variant="outlined">
-        <h1 style="margin: 30px">{{ $t("weighting") }}</h1>
-        <h2
-          v-if="allReturned && signees.length"
-          style="margin: 10px; color: chartreuse"
-        >
-          {{ $t("all-finished") }}
-        </h2>
-      </v-card>
+      <section aria-labelledby="boat-title" class="fs-panel weighing__boat">
+        <template v-if="selectedBoat">
+          <div class="boat__head">
+            <span class="boat__tile fs-display fs-num">{{
+              selectedBoat.boat_number
+            }}</span>
+            <div class="boat__who">
+              <h2 id="boat-title">{{ selectedBoat.captain_name }}</h2>
+              <span>{{ boatMeta }}</span>
+            </div>
+            <div class="boat__points">
+              <span class="fs-eyebrow">{{ $t("points") }}</span>
+              <span class="fs-display fs-num boat__total">{{
+                format(totalPoints)
+              }}</span>
+            </div>
+          </div>
 
-      <v-tabs
-        slider-color="blue-darken-4"
-        v-model="tab"
-        bg-color="blue-lighten-2"
-        color="blue-darken-4"
-        grow
-        show-arrows
-        next-icon="mdi-arrow-right-bold-box-outline"
-        prev-icon="mdi-arrow-left-bold-box-outline"
-        center-active
-      >
-        <v-tab value="weighting">{{ $t("weighting") }}</v-tab>
-        <v-tab value="situation">{{ $t("leaderboard") }}</v-tab>
-        <v-tab v-if="!allReturned" value="onwater">{{
-          $t("comp-overview.still-on-water")
-        }}</v-tab>
-      </v-tabs>
-
-      <v-window v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
-        <!-- Weighing -->
-        <v-window-item :class="panelClass" value="weighting">
-          <v-row v-if="loadingSite">
-            <v-col>
-              <h2 :class="textClass">{{ $t("fetching") }}...</h2>
-              <ProgressBarQuery />
-            </v-col>
-          </v-row>
-          <v-row v-else-if="!signees.length">
-            <v-col style="padding: 30px">
-              <p class="text-body-large" :class="textClass">
-                {{ $t("comp-overview.no-signees") }}
-              </p>
-            </v-col>
-          </v-row>
-          <template v-else>
-            <v-row v-if="notification" style="margin-top: 20px">
-              <v-col>
-                <v-alert type="success">{{ $t(notification) }}</v-alert>
-              </v-col>
-            </v-row>
-
-            <v-row v-if="!saving" style="margin-top: 20px">
-              <v-col
-                :class="store.isDark ? 'bg-grey-darken-4' : 'input-fields'"
-                md="6"
-                offset-md="3"
-                style="padding: 20px"
-              >
-                <p class="text-body-large" :class="textClass">{{ $t("boat") }}</p>
-                <BoatPicker
-                  :model-value="selectedBoat"
-                  :boats="boatsByNumber"
-                  :placements="placements"
-                  :disabled="loadingSite"
-                  @update:model-value="selectBoat"
-                  @clear="clear"
-                />
-              </v-col>
-            </v-row>
-
-            <v-row v-if="!selectedBoat">
-              <v-col>
-                <v-alert v-if="!searched" type="warning">
-                  {{ $t("errors.no-boat-selected") }}
-                </v-alert>
-                <v-alert v-else type="error">
-                  {{ $t("errors.no-boat-found") }}
-                </v-alert>
-              </v-col>
-            </v-row>
-
-            <template v-else>
-              <v-row v-if="!saving" style="margin-top: 30px">
-                <v-col offset="4" cols="4">
-                  <v-btn block color="yellow" @click="clear" size="large"
-                    ><v-icon>mdi-backspace-reverse-outline</v-icon
-                    >{{ $t("cancel") }}</v-btn
-                  >
-                </v-col>
-              </v-row>
-              <v-divider color="black" class="my-3"></v-divider>
-
-              <v-row>
-                <v-col md="10" offset-md="1">
-                  <BiggestFishForm
-                    v-model:visible="biggestFishVisible"
-                    v-model:fish-name="biggestFishName"
-                    v-model:weight="biggestFishWeight"
-                    :fishes="competition.fishes"
-                    :saving="savingFish"
-                    :disabled="saving"
-                    class="pa-2 mb-2"
-                    @save="saveBiggestFish"
-                  />
-
-                  <div v-for="(w, index) in weights" :key="w.id" class="py-3">
-                    <v-divider color="black" class="mb-3"></v-divider>
-                    <FishWeightInput
-                      v-model="w.value"
-                      :name="w.name"
-                      :index="index"
-                      :loading="savingFish"
-                      :disabled="saving || savingFish"
-                    />
-                  </div>
-                  <v-divider color="black" class="my-3"></v-divider>
-
-                  <v-row v-if="!saving" class="justify-center align-center">
-                    <v-col cols="8">
-                      <CatchSummary
-                        :boat="selectedBoat"
-                        :total-weight="totalWeight"
-                        :total-points="totalPoints"
-                        :placement="previewPlacement"
-                      />
-                    </v-col>
-                  </v-row>
-                  <v-divider color="black" class="my-3"></v-divider>
-
-                  <v-row v-if="!saving">
-                    <v-col>
-                      <v-btn
-                        rounded="0"
-                        color="red"
-                        @click="saveCatch({ reset: true })"
-                        :loading="refreshing"
-                        size="large"
-                        ><v-icon>mdi-delete</v-icon
-                        >{{ $t("button.clear-signee") }}</v-btn
-                      >
-                    </v-col>
-                    <v-col>
-                      <v-btn
-                        rounded="0"
-                        color="green"
-                        @click="saveCatch()"
-                        :loading="refreshing"
-                        size="large"
-                        ><v-icon>mdi-check</v-icon>{{ $t("save") }}</v-btn
-                      >
-                    </v-col>
-                  </v-row>
-                  <v-row v-else>
-                    <v-col>
-                      <p class="text-body-large" :class="textClass">
-                        {{ $t("updating") }}...
-                      </p>
-                      <ProgressBarQuery />
-                    </v-col>
-                  </v-row>
-                </v-col>
-              </v-row>
-            </template>
-
-            <v-row v-if="!saving" style="margin-bottom: 20px">
-              <v-col>
-                <v-btn
-                  id="updatebtn"
-                  rounded="0"
-                  color="blue-darken-4"
-                  @click="refresh"
-                  :loading="refreshing"
-                  class="text-white"
-                  size="large"
-                >
-                  <v-icon>mdi-update</v-icon>{{ $t("button.update") }}
-                </v-btn>
-              </v-col>
-            </v-row>
-          </template>
-        </v-window-item>
-
-        <!-- Leaderboard -->
-        <v-window-item :class="panelClass" value="situation">
-          <v-row v-if="returned.length">
-            <v-col md="8" offset-md="2" style="margin-top: 20px">
-              <BoatTable
-                :title="$t('leaderboard')"
-                :items="leaderboard"
-                :columns="leaderboardColumns"
-                @select="pickFromTable"
+          <form class="boat__body" @submit.prevent="saveAndNext">
+            <v-alert
+              v-if="selectedBoat.returned"
+              type="info"
+              variant="tonal"
+              density="compact"
+              >{{ $t("weighing-page.already-weighed") }}</v-alert
+            >
+            <div class="boat__rows">
+              <div class="boat__labels fs-muted">
+                <span>{{ $t("fish") }}</span>
+                <span>{{ $t("multiplier") }}</span>
+                <span>{{ $t("weight-grams") }}</span>
+                <span class="text-right">{{ $t("points") }}</span>
+              </div>
+              <FishWeightInput
+                v-for="(w, i) in weights"
+                :key="w.id"
+                v-model="w.value"
+                :name="w.name"
+                :multiplier="w.multiplier"
+                :minsize="w.minsize"
+                :input-id="i === 0 ? 'first-weight' : undefined"
+                :disabled="saving"
               />
-            </v-col>
-          </v-row>
-          <v-row v-else>
-            <v-col md="8" offset-md="2" class="my-8">
-              <p class="text-body-large" :class="textClass">{{ $t("no-results") }}</p>
-            </v-col>
-          </v-row>
-        </v-window-item>
+            </div>
 
-        <!-- Still on the water -->
-        <v-window-item :class="panelClass" value="onwater">
-          <v-row v-if="stillOnWater.length">
-            <v-col md="8" offset-md="2">
-              <BoatTable
-                :title="$t('comp-overview.still-on-water')"
-                :items="stillOnWater"
-                :columns="onWaterColumns"
-                :loading="saving"
-                @select="pickFromTable"
-              />
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col md="8" offset-md="2" class="my-8">
+            <BiggestFishForm
+              v-model:fish-name="biggestFishName"
+              v-model:weight="biggestFishWeight"
+              :fishes="competition?.fishes ?? []"
+              :best-by-name="biggestByName"
+              :is-new="isNewBiggest"
+              :disabled="saving || savingFish"
+            />
+
+            <div class="d-flex flex-wrap ga-2">
               <v-btn
-                v-if="stillOnWater.length"
-                rounded="0"
-                color="grey-darken-4"
-                class="text-white"
-                @click="allReturnedClicked"
+                type="submit"
+                color="weighing"
+                size="x-large"
+                class="flex-grow-1"
                 :loading="saving"
-                size="large"
-                ><v-icon>mdi-check-outline</v-icon
-                >{{ $t("button.set-all-finished") }}</v-btn
               >
-              <p v-else class="text-body-large" :class="textClass">
-                {{ $t("all-finished") }}
-              </p>
-            </v-col>
-          </v-row>
-        </v-window-item>
-      </v-window>
-    </v-container>
+                {{ $t("weighing-page.save-next") }}
+                <kbd class="boat__kbd">Enter</kbd>
+              </v-btn>
+              <v-btn
+                variant="outlined"
+                size="x-large"
+                :disabled="saving"
+                @click="noCatch"
+                >{{ $t("weighing-page.no-catch") }}</v-btn
+              >
+            </div>
+            <div class="d-flex flex-wrap ga-2">
+              <v-btn variant="text" @click="clear">{{ $t("cancel") }}</v-btn>
+              <v-btn
+                v-if="selectedBoat.returned"
+                variant="text"
+                color="error"
+                :disabled="saving"
+                @click="backOnWater"
+                >{{ $t("weighing-page.back-on-water") }}</v-btn
+              >
+            </div>
+          </form>
+        </template>
+        <div v-else class="boat__empty">
+          <v-icon icon="mdi-scale" size="48" color="weighing" />
+          <h2 id="boat-title">{{ $t("weighing-page.pick-boat") }}</h2>
+          <p class="fs-muted">{{ $t("weighing-page.pick-boat-help") }}</p>
+          <p v-if="notification" class="text-signing font-weight-bold">
+            {{ $t(notification) }}
+          </p>
+        </div>
+      </section>
+
+      <LiveStandings class="weighing__live" :rows="liveStandings" />
+    </div>
     <NotificationBar v-model:snackbar="snackbar" :text="text" />
   </div>
 </template>
 
 <script setup>
 import { computed, nextTick, ref } from "vue";
-import { useMainStore } from "@/store";
+import { confirm } from "@/plugins/alerts";
+import { t } from "@/i18n";
 import { useWeighting } from "@/composables/useWeighting";
-import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
 import NotificationBar from "../components/NotificationBar.vue";
-import BoatPicker from "../components/weighting/BoatPicker.vue";
+import WeighQueue from "../components/weighting/WeighQueue.vue";
 import BiggestFishForm from "../components/weighting/BiggestFishForm.vue";
 import FishWeightInput from "../components/weighting/FishWeightInput.vue";
-import CatchSummary from "../components/weighting/CatchSummary.vue";
-import BoatTable from "../components/weighting/BoatTable.vue";
+import LiveStandings from "../components/weighting/LiveStandings.vue";
 
 defineOptions({ name: "Weighting" });
 
-const store = useMainStore();
 const {
   competition,
   signees,
   loadingSite,
-  refreshing,
   saving,
   savingFish,
   notification,
   selectedBoat,
-  searched,
   weights,
-  biggestFishVisible,
   biggestFishName,
   biggestFishWeight,
-  boatsByNumber,
-  leaderboard,
-  placements,
+  biggestByName,
+  isNewBiggest,
+  liveStandings,
   stillOnWater,
   returned,
-  allReturned,
-  totalWeight,
   totalPoints,
-  previewPlacement,
   load,
   selectBoat,
+  selectBoatByNumber,
+  returnWithoutCatch,
   clear,
-  saveBiggestFish,
   saveCatch,
   markAllReturned,
 } = useWeighting();
 
-const tab = ref("weighting");
 const snackbar = ref(false);
 const text = ref("");
 
-const leaderboardColumns = [
-  { key: "placement", title: "placement" },
-  { key: "boat_number", title: "boat-number" },
-  { key: "captain_name", title: "captain-name" },
-  { key: "total_points", title: "points" },
-];
-const onWaterColumns = [
-  { key: "boat_number", title: "boat-number" },
-  { key: "captain_name", title: "captain-name" },
-  { key: "temp_captain_name", title: "temp-captain-name" },
-  { key: "starting_place", title: "starting-place" },
-];
-
-const panelClass = computed(() =>
-  store.isDark ? "inputarea-dark" : "inputarea",
+const byNumber = (a, b) => Number(a.boat_number) - Number(b.boat_number);
+const onWaterSorted = computed(() => [...stillOnWater.value].sort(byNumber));
+const returnedSorted = computed(() => [...returned.value].sort(byNumber));
+const boatMeta = computed(() =>
+  [selectedBoat.value?.locality, selectedBoat.value?.starting_place]
+    .filter((v) => v && v !== "-")
+    .join(" · "),
 );
-const textClass = computed(() => ({ "text-white": store.isDark }));
+const format = (n) => Number(n).toLocaleString("fi-FI");
 
 function notify(message) {
   text.value = message;
@@ -322,26 +177,158 @@ function notify(message) {
   nextTick(() => (snackbar.value = true));
 }
 
-// A row clicked in either table opens that boat on the weighing tab
-function pickFromTable(boat) {
-  tab.value = "weighting";
+function focus(id) {
+  nextTick(() => document.getElementById(id)?.focus());
+}
+
+function pick(boat) {
   selectBoat(boat);
+  focus("first-weight");
+}
+
+function pickNumber(number, done) {
+  const found = selectBoatByNumber(number);
+  done?.(found);
+  if (found) focus("first-weight");
+}
+
+async function saveAndNext() {
+  await saveCatch();
+  if (!selectedBoat.value) {
+    notify("notification.updated");
+    focus("weigh-number");
+  }
+}
+
+async function noCatch() {
+  await returnWithoutCatch();
+  notify("notification.updated");
+  focus("weigh-number");
+}
+
+async function backOnWater() {
+  const ok = await confirm(
+    t("weighing-page.back-on-water-confirm", {
+      n: selectedBoat.value.boat_number,
+    }),
+    t("weighing-page.back-on-water"),
+    "question",
+  ).catch(() => false);
+  if (ok) await saveCatch({ reset: true });
 }
 
 async function allReturnedClicked() {
-  if (await markAllReturned()) notify("all-finished");
+  const ok = await confirm(
+    t("weighing-page.all-returned-confirm", { n: stillOnWater.value.length }),
+    t("weighing-page.all-returned"),
+    "question",
+  ).catch(() => false);
+  if (ok && (await markAllReturned())) notify("all-finished");
 }
 
 // The competition being run is remembered in localStorage
 const stored = JSON.parse(localStorage.getItem("competition") || "null");
-function refresh() {
-  if (stored?._id) load(stored._id);
-}
-
 if (stored?._id) {
-  refresh();
+  load(stored._id);
 } else {
   loadingSite.value = false;
-  console.log("No competition in localstorage!");
 }
 </script>
+
+<style scoped>
+.weighing {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-start;
+}
+.weighing__queue {
+  flex: 1 1 250px;
+  min-width: 0;
+}
+.weighing__boat {
+  flex: 2.4 1 520px;
+  min-width: 0;
+  overflow: hidden;
+}
+.weighing__live {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+.boat__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
+  padding: 22px 24px;
+  background: rgb(var(--v-theme-weighing-soft));
+}
+.boat__tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  background: rgb(var(--v-theme-weighing));
+  color: #ffffff;
+  font-size: 36px;
+}
+.boat__who {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 200px;
+}
+.boat__who h2 {
+  margin: 0;
+  font-size: 26px;
+}
+.boat__points {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.boat__total {
+  font-size: 46px;
+  line-height: 1.05;
+}
+.boat__body {
+  padding: 8px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.boat__labels {
+  display: grid;
+  grid-template-columns: minmax(110px, 1.2fr) 70px minmax(200px, 2fr) 90px;
+  gap: 12px;
+  padding: 12px 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+@media (max-width: 700px) {
+  .boat__labels {
+    display: none;
+  }
+}
+.boat__kbd {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.2);
+  font: inherit;
+  font-size: 12px;
+}
+.boat__empty {
+  padding: 56px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+.boat__empty h2 {
+  margin: 0;
+  font-size: 24px;
+}
+</style>

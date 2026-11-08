@@ -1,104 +1,40 @@
 <template>
-  <div>
-    <v-row v-if="team_results.length">
-      <v-col style="padding-top: 50px" md="3" offset-md="8">
-        <v-btn
-          color="red-lighten-2"
-          :loading="loading"
-          @click="
-            $emit('dialog', {
-              pdf: '#team-table',
-              pdfDialog: true,
-            })
-          "
-          size="large"
-          variant="outlined"
-        >
-          <v-icon color="red">mdi-file-pdf-box</v-icon> Lataa pdf
-        </v-btn>
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col
-        md="10"
-        offset-md="1"
-        style="padding-bottom: 20px"
-        v-if="team_results.length"
-      >
-        <v-card>
-          <v-card-title class="d-flex flex-wrap align-center">
-            <p
-              class="text-body-large"
-              :class="{
-                'text-white': store.isDark,
-              }"
-            >
-              Tiimikilpailu
-            </p>
-            <v-spacer></v-spacer>
-            <v-text-field
-              v-model="searchText"
-              append-inner-icon="mdi-magnify"
-              :label="$t('search-boat')"
-              single-line
-              hide-details
-            ></v-text-field>
-          </v-card-title>
-          <v-data-table
-            :headers="headers"
-            :items="team_results"
-            :search="searchText"
-          >
-            <template v-slot:[`item.placement`]="{ item }">
-              <v-chip
-                :color="getColor(item.placement)"
-                :variant="store.isDark ? 'outlined' : 'flat'"
-                >{{ item.placement }}.</v-chip
-              >
-            </template>
-            <template v-slot:[`item.points`]="{ item }">
-              <v-chip>{{ item.points.toLocaleString() }} p</v-chip>
-            </template>
-          </v-data-table>
-        </v-card>
-      </v-col>
-      <v-col v-else>
-        <v-col v-if="!loading"> </v-col>
-        <p
-          v-if="!loading"
-          class="text-body-large"
-          :class="{
-            'text-white': store.isDark,
-          }"
-        >
-          Ei tuloksia, vielä...
-        </p>
-        <v-col v-else>
-          <h2 class="text-white">Päivitetään tuloksia tietokannasta...</h2>
-          <ProgressBarQuery />
-        </v-col>
-      </v-col>
-    </v-row>
-  </div>
+  <v-data-table
+    :headers="columns"
+    :items="team_results"
+    :search="search"
+    :loading="loading"
+    density="comfortable"
+  >
+    <template #[`item.placement`]="{ item }">
+      <PlacementBadge :placement="item.placement" />
+    </template>
+    <template #[`item.name`]="{ item }">
+      <span class="font-weight-bold">{{ item.name }}</span>
+    </template>
+    <template #[`item.points`]="{ item }">
+      <span class="font-weight-bold fs-num">{{ item.points }} p</span>
+    </template>
+    <template #no-data>
+      <span class="fs-muted">{{ $t("no-results") }}</span>
+    </template>
+  </v-data-table>
 </template>
-<script setup>
-import ProgressBarQuery from "../layout/ProgressBarQuery.vue";
-import { useMainStore } from "@/store";
-import { ref } from "vue";
-import { getColorPoints, getColor } from "@/utils/colors";
 
-const store = useMainStore();
+<script setup>
+import { computed } from "vue";
+import { useI18n } from "vue-i18n";
+import PlacementBadge from "./PlacementBadge.vue";
+
 defineOptions({ name: "TeamComp" });
 const props = defineProps({
-  team_results: { type: Array, default: () => [] },
-  search_team: { type: String, default: "" },
-  loading: { type: Boolean, default: false },
+  loading: Boolean,
   headers: { type: Array, default: () => [] },
+  search: { type: String, default: "" },
+  team_results: { type: Array, default: () => [] },
 });
-defineEmits(["dialog"]);
-
-const searchText = ref(props.search_team || "");
-
-// Runs when the component is created
+const { t } = useI18n();
+const columns = computed(() =>
+  props.headers.map((h) => ({ ...h, title: t(h.title) })),
+);
 </script>
-<style scoped></style>

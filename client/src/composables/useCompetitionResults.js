@@ -72,7 +72,7 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
   const competition = ref(null);
   const signees = ref([]);
   const hasGottenFishCount = ref(0);
-  const tab = ref("stats");
+  const tab = ref("normal-competition");
 
   // select options: fish names plus "all"/"winners"
   const fish_names = ref([]);
@@ -179,10 +179,7 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
     try {
       // Logged-out visitors may only read public competitions
       const visibility = publicOnly ? { isPublic: true } : {};
-      const found = await CompetitionService.getById(
-        competitionId,
-        visibility,
-      );
+      const found = await CompetitionService.getById(competitionId, visibility);
       competition.value = found;
       found.fishes.forEach((fish) => (fish.weights = 0));
       resetFishLists(found.fishes);
@@ -241,7 +238,7 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
     biggest_fishes_results.value = [];
     biggest_amounts.value = {};
     biggest_amounts_results.value = [];
-    tab.value = "stats";
+    tab.value = "normal-competition";
   }
 
   function calculateAll() {

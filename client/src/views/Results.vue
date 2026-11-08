@@ -1,106 +1,57 @@
 <template>
-  <!-- /results: live results of the competition being run -->
-  <div>
-
-    <v-container
-      :class="{
-        mobile: $vuetify.display.width < 800,
-        browser: $vuetify.display.width >= 800,
-        wide: $vuetify.display.width >= 1200,
-      }"
+  <!-- /results: results of the competition being run, with publishing -->
+  <div class="fs-page">
+    <CompetitionResults
+      ref="resultsView"
+      :competition-id="competitionId"
+      @loaded="(c) => (competition = c)"
     >
-      <v-card style="background: transparent" elevation="3" variant="outlined">
-        <v-row class="justify-center">
-          <v-col>
-            <h1 style="margin: 30px">{{ $t("results") }}</h1>
-          </v-col>
-        </v-row>
-        <v-row class="justify-center align-center">
-          <v-col cols="4">
-            <v-switch
-              :loading="resultsView?.loading"
-              v-model="autoRefresh"
-              color="orange-darken-3"
-              :label="$t('button.auto-download')"
-            ></v-switch>
-          </v-col>
-        </v-row>
-      </v-card>
-
-      <CompetitionResults
-        ref="resultsView"
-        :competition-id="competitionId"
-        @loaded="(c) => (competition = c)"
-      />
-
-      <v-card
-        v-if="competition"
-        style="background: transparent"
-        elevation="3"
-        variant="outlined"
-      >
-        <v-row
-          v-if="!resultsView?.loading"
-          style="margin-top: 20px; margin-bottom: 10px"
-        >
-          <v-col>
-            <v-btn
-              rounded
-              :color="competition.isPublic ? 'grey-darken-4' : 'green-darken-4'"
-              @click="togglePublic"
-              class="text-white"
-              :loading="updating"
-              size="large"
-            >
-              <template v-if="competition.isPublic">
-                <v-icon>mdi-incognito</v-icon>{{ $t("button.set-private") }}
-              </template>
-              <template v-else>
-                <v-icon color="green">mdi-publish</v-icon
-                >{{ $t("button.set-public") }}
-              </template>
-            </v-btn>
-          </v-col>
-          <v-col>
-            <v-btn
-              rounded
-              :color="competition.isFinished ? 'yellow' : 'green-darken-3'"
-              @click="toggleFinished"
-              :loading="updating"
-              size="large"
-            >
-              <span v-if="competition.isFinished" class="text-black">
-                <v-icon color="red-darken-2">mdi-cancel</v-icon
-                >{{ $t("button.set-not-complete") }}
-              </span>
-              <span v-else>
-                <v-icon color="yellow">mdi-trophy</v-icon
-                >{{ $t("button.set-complete") }}
-              </span>
-            </v-btn>
-          </v-col>
-          <v-col>
-            <v-btn
-              id="updatebtn"
-              rounded
-              color="blue-darken-4"
-              @click="resultsView.refresh()"
-              class="text-white"
-              :loading="updating"
-              size="large"
-            >
-              <v-icon>mdi-update</v-icon>{{ $t("button.update") }}
-            </v-btn>
-          </v-col>
-        </v-row>
-        <v-row v-else>
-          <v-col>
-            <h2 class="text-white">{{ $t("refreshing") }}</h2>
-            <ProgressBarQuery />
-          </v-col>
-        </v-row>
-      </v-card>
-    </v-container>
+      <template #actions>
+        <template v-if="competition">
+          <v-switch
+            v-model="autoRefresh"
+            :label="$t('results-page.auto-refresh')"
+            color="results"
+            density="compact"
+            hide-details
+            inset
+          />
+          <v-btn
+            :variant="competition.isPublic ? 'flat' : 'outlined'"
+            color="results"
+            :prepend-icon="competition.isPublic ? 'mdi-earth' : 'mdi-earth-off'"
+            :loading="updating"
+            @click="togglePublic"
+            >{{
+              competition.isPublic
+                ? $t("results-page.public-on")
+                : $t("results-page.public-off")
+            }}</v-btn
+          >
+          <v-btn
+            :variant="competition.isFinished ? 'flat' : 'outlined'"
+            :color="competition.isFinished ? 'signing' : undefined"
+            :prepend-icon="
+              competition.isFinished ? 'mdi-trophy' : 'mdi-trophy-outline'
+            "
+            :loading="updating"
+            @click="toggleFinished"
+            >{{
+              competition.isFinished
+                ? $t("button.set-not-complete")
+                : $t("button.set-complete")
+            }}</v-btn
+          >
+          <v-btn
+            variant="text"
+            icon="mdi-refresh"
+            :loading="resultsView?.loading"
+            :aria-label="$t('button.update')"
+            @click="resultsView.refresh()"
+          />
+        </template>
+      </template>
+    </CompetitionResults>
     <NotificationBar v-model:snackbar="snackbar" :text="text" />
   </div>
 </template>
@@ -109,7 +60,6 @@
 import { nextTick, onBeforeUnmount, ref, watch } from "vue";
 import { useMainStore } from "@/store";
 import CompetitionService from "../services/CompetitionService";
-import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
 import NotificationBar from "../components/NotificationBar.vue";
 import CompetitionResults from "../components/results/CompetitionResults.vue";
 
@@ -147,29 +97,36 @@ watch(autoRefresh, (enabled) => {
 });
 onBeforeUnmount(() => clearInterval(timer));
 
-async function saveValues(values) {
+async function saveValues(values, rollback) {
   updating.value = true;
   try {
-    store.refreshCompetition(competition.value);
     await CompetitionService.updateValues(competition.value._id, {
       $set: values,
     });
+    store.refreshCompetition({ ...store.competition, ...competition.value });
   } catch (err) {
     console.error(err.message);
+    rollback();
+    notify("errors.in-saving");
   } finally {
     updating.value = false;
   }
 }
 
 function togglePublic() {
-  competition.value.isPublic = !competition.value.isPublic;
-  saveValues({ isPublic: competition.value.isPublic });
+  const c = competition.value;
+  const previous = c.isPublic;
+  c.isPublic = !previous;
+  saveValues({ isPublic: c.isPublic }, () => (c.isPublic = previous));
 }
 
 function toggleFinished() {
   const c = competition.value;
+  const previous = { isFinished: c.isFinished, state: c.state };
   c.isFinished = !c.isFinished;
   c.state = c.isFinished ? "ended" : "not-finished";
-  saveValues({ isFinished: c.isFinished, state: c.state });
+  saveValues({ isFinished: c.isFinished, state: c.state }, () =>
+    Object.assign(c, previous),
+  );
 }
 </script>

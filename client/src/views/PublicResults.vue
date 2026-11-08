@@ -1,117 +1,58 @@
 <template>
   <!-- /public-results: results of any public competition -->
-  <v-container
-    :class="{
-      mobile: $vuetify.display.width < 800,
-      browser: $vuetify.display.width >= 800,
-      wide: $vuetify.display.width >= 1200,
-    }"
-  >
-    <v-card style="background: transparent" elevation="3" variant="outlined">
-      <v-row>
-        <v-col md="6" offset-md="3">
-          <h1>{{ $t("home.comp") }}</h1>
-        </v-col>
-      </v-row>
-
-      <v-row v-if="loadingList">
-        <v-col>
-          <h2 class="text-white">{{ $t("loading") }}...</h2>
-          <ProgressBarQuery />
-        </v-col>
-      </v-row>
-      <v-row v-else-if="competitions.length" class="scroll_table">
-        <v-col md="6" offset-md="3">
-          <v-autocomplete
-            v-model="selected"
-            :items="competitions"
-            item-title="select"
-            item-value="_id"
-            :label="$t('choose-comp')"
-            return-object
-            single-line
-            variant="outlined"
-          >
-            <template v-slot:item="{ item, props }">
-              <v-list-item v-bind="props" :title="undefined">
-                <template v-slot:prepend>
-                  <v-icon :color="item.isFinished ? 'green' : 'yellow'"
-                    >mdi-trophy</v-icon
-                  >
-                </template>
-                <v-list-item-title
-                  >{{ item.name }}, {{ item.locality }}</v-list-item-title
-                >
-                <v-list-item-subtitle
-                  v-if="item.isCupCompetition"
-                  class="text-green"
-                  >{{ item.cup_name }} ({{
-                    getYear(item.start_date)
-                  }})</v-list-item-subtitle
-                >
-                <v-list-item-subtitle class="text-blue">{{
-                  formatDateToLocaleDateString(item.start_date)
-                }}</v-list-item-subtitle>
-                <v-list-item-subtitle v-if="!item.isFinished"
-                  >{{ $t("not-finished") }}!</v-list-item-subtitle
-                >
-              </v-list-item>
-            </template>
-          </v-autocomplete>
-        </v-col>
-      </v-row>
-      <v-row v-else>
-        <v-col>
-          <h2 class="text-white">{{ $t("no") }} {{ $t("comp.plural") }}</h2>
-        </v-col>
-      </v-row>
-
-      <v-row
-        v-if="selected"
-        class="justify-center align-center"
-        style="margin-bottom: 20px"
+  <div class="fs-page public">
+    <header class="public__head">
+      <div>
+        <span class="fs-eyebrow text-results">{{ $t("shell.public") }}</span>
+        <h1>{{ $t("shell.public-comps") }}</h1>
+      </div>
+      <v-autocomplete
+        v-model="selected"
+        :items="competitions"
+        item-title="select"
+        item-value="_id"
+        :label="$t('choose-comp')"
+        :loading="loadingList"
+        :no-data-text="$t('no') + ' ' + $t('comp.plural')"
+        return-object
+        hide-details
+        prepend-inner-icon="mdi-magnify"
+        class="public__select"
       >
-        <v-col>
-          <v-btn
-            color="yellow"
-            @click="selected = null"
-            class="text-black"
-            size="large"
-            variant="outlined"
-          >
-            <v-icon>mdi-cancel</v-icon>{{ $t("cancel") }}
-          </v-btn>
-        </v-col>
-        <v-col>
-          <v-btn
-            id="updatebtn"
-            color="blue-darken-4"
-            @click="resultsView.refresh()"
-            :loading="resultsView?.loading"
-            class="text-white"
-            size="large"
-          >
-            <v-icon>mdi-update</v-icon>{{ $t("button.update") }}
-          </v-btn>
-        </v-col>
-      </v-row>
+        <template #item="{ item, props }">
+          <v-list-item v-bind="props">
+            <template #prepend>
+              <v-icon
+                :color="item.isFinished ? 'results' : 'weighing'"
+                :icon="item.isFinished ? 'mdi-trophy' : 'mdi-timer-sand'"
+              />
+            </template>
+          </v-list-item>
+        </template>
+      </v-autocomplete>
+    </header>
 
-      <CompetitionResults
-        v-if="selected"
-        ref="resultsView"
-        :competition-id="selected._id"
-        public-only
-      />
-    </v-card>
-  </v-container>
+    <div v-if="selected" class="public__title">
+      <h2>{{ selected.name }}</h2>
+      <span class="fs-muted">{{ selectedMeta }}</span>
+    </div>
+    <CompetitionResults
+      v-if="selected"
+      ref="resultsView"
+      :competition-id="selected._id"
+      public-only
+    />
+    <p v-else-if="!loadingList" class="fs-panel pa-8 fs-muted">
+      {{ $t("results-page.pick-public") }}
+    </p>
+  </div>
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import CompetitionService from "../services/CompetitionService";
-import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
 import CompetitionResults from "../components/results/CompetitionResults.vue";
-import { formatDateToLocaleDateString, getYear } from "@/utils/format";
+import { formatDateToLocaleDateString } from "@/utils/format";
 
 defineOptions({ name: "PublicResults" });
 
@@ -120,6 +61,16 @@ const selected = ref(null);
 const loadingList = ref(false);
 const resultsView = ref(null);
 
+const selectedMeta = computed(() =>
+  [
+    selected.value?.locality,
+    selected.value && formatDateToLocaleDateString(selected.value.start_date),
+    selected.value?.cup_name,
+  ]
+    .filter(Boolean)
+    .join(" · "),
+);
+
 onMounted(async () => {
   loadingList.value = true;
   try {
@@ -127,9 +78,13 @@ onMounted(async () => {
     for (const c of list) {
       c.start_date = new Date(c.start_date);
       c.end_date = new Date(c.end_date);
-      c.select = `${c.name}, ${formatDateToLocaleDateString(c.start_date)} (${
-        c.cup_name || ""
-      })`;
+      c.select = [
+        c.name,
+        formatDateToLocaleDateString(c.start_date),
+        c.cup_name,
+      ]
+        .filter(Boolean)
+        .join(" · ");
     }
     // Newest first
     competitions.value = list.sort((a, b) => b.start_date - a.start_date);
@@ -140,3 +95,31 @@ onMounted(async () => {
   }
 });
 </script>
+
+<style scoped>
+.public {
+  max-width: 1320px;
+  margin: 0 auto;
+}
+.public__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+}
+.public__head h1 {
+  margin: 0;
+  font-size: 30px;
+}
+.public__head > div {
+  flex: 1 1 260px;
+}
+.public__select {
+  flex: 0 1 460px;
+  min-width: 260px;
+}
+.public__title h2 {
+  margin: 0;
+  font-size: 26px;
+}
+</style>

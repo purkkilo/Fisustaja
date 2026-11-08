@@ -108,7 +108,9 @@
                       <v-list-item-title>{{ fish.name }}</v-list-item-title>
                       <v-divider vertical></v-divider>
                       <v-list-item-subtitle
-                        :class="'text-' + getMultiplierTextColor(fish.multiplier)"
+                        :class="
+                          'text-' + getMultiplierTextColor(fish.multiplier)
+                        "
                       >
                         <b> x {{ fish.multiplier }}</b>
                       </v-list-item-subtitle>

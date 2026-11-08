@@ -35,6 +35,7 @@ const routes = [
     component: () => import("../views/PublicResults.vue"),
     meta: {
       requiresAuth: false,
+      redesigned: true,
     },
   },
   {
@@ -85,6 +86,7 @@ const routes = [
     component: () => import("../views/Weighting.vue"),
     meta: {
       requiresAuth: true,
+      redesigned: true,
       competition: true,
     },
   },
@@ -112,6 +114,7 @@ const routes = [
     component: () => import("../views/Results.vue"),
     meta: {
       requiresAuth: true,
+      redesigned: true,
       competition: true,
     },
   },
@@ -121,6 +124,7 @@ const routes = [
     component: () => import("../views/Signing.vue"),
     meta: {
       requiresAuth: true,
+      redesigned: true,
       competition: true,
     },
   },
