@@ -13,7 +13,6 @@
     hide-selected
     multiple
     clearable
-    variant="solo"
   >
     <template v-slot:no-data>
       <v-list-item>
@@ -46,7 +45,9 @@
           bg-color="transparent"
           :maxlength="40"
           :rules="rules.text"
-          variant="solo"
+          variant="underlined"
+          density="compact"
+          hide-details
           @click.stop
           @keyup.enter="toggleEdit(index, item)"
         ></v-text-field>

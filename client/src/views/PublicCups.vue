@@ -1,133 +1,88 @@
 <template>
   <!-- /public-cups: standings and statistics of public cups -->
-  <v-container
-    :class="{
-      mobile: $vuetify.display.width < 800,
-      browser: $vuetify.display.width >= 800,
-      wide: $vuetify.display.width >= 1200,
-    }"
-  >
-    <v-card style="background: transparent" elevation="3" variant="outlined">
-      <v-row>
-        <v-col md="6" offset-md="3">
-          <h1>{{ $t("home.cup") }}</h1>
-        </v-col>
-      </v-row>
+  <div class="fs-page public">
+    <header class="public__head">
+      <div>
+        <span class="fs-eyebrow text-results">{{ $t("shell.public") }}</span>
+        <h1>{{ $t("shell.public-cups") }}</h1>
+      </div>
+      <v-autocomplete
+        v-model="selectedCup"
+        :items="cups"
+        item-title="select"
+        item-value="_id"
+        :label="`${$t('choose')} ${$t('cup.normal')}`"
+        :loading="loadingList"
+        :no-data-text="`${$t('cup.not-found')} ${$t('available')}`"
+        return-object
+        hide-details
+        clearable
+        prepend-inner-icon="mdi-magnify"
+        class="public__select"
+      />
+    </header>
 
-      <v-row v-if="loadingList">
-        <v-col>
-          <h2 class="text-white">{{ $t("loading") }}...</h2>
-          <ProgressBarQuery />
-        </v-col>
-      </v-row>
-      <v-row v-else-if="cups.length" class="scroll_table">
-        <v-col md="4" offset-md="4">
-          <v-autocomplete
-            v-model="selectedCup"
-            :items="cups"
-            item-title="select"
-            item-value="_id"
-            :label="$t('choose') + ' ' + $t('cup.normal')"
-            return-object
-            single-line
-            variant="outlined"
-          ></v-autocomplete>
-        </v-col>
-      </v-row>
-      <v-row v-else>
-        <v-col>
-          <h2 class="text-white">
-            {{ $t("cup.not-found") }} {{ $t("available") }}
-          </h2>
-        </v-col>
-      </v-row>
-
-      <v-row v-if="loading" style="margin: 20px">
-        <v-col>
-          <h2 class="text-white">{{ $t("loading") }}...</h2>
-          <ProgressBarQuery />
-        </v-col>
-      </v-row>
-
-      <template v-else-if="selectedCup && cup">
-        <h1 class="my-4">{{ cup.name }}, {{ cup.year }}</h1>
-        <v-tabs
-          slider-color="blue-darken-4"
-          v-model="tab"
-          bg-color="blue-lighten-2"
-          color="blue-darken-4"
-          grow
-          show-arrows
-          next-icon="mdi-arrow-right-bold-box-outline"
-          prev-icon="mdi-arrow-left-bold-box-outline"
-          center-active
-        >
-          <v-tab :disabled="!competitions.length" value="points">{{
-            $t("point-status")
-          }}</v-tab>
-          <v-tab :disabled="!competitions.length" value="stats">{{
-            $t("general-statistics")
-          }}</v-tab>
-        </v-tabs>
-        <v-window v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
-          <v-window-item value="points">
-            <CupPoints
-              :competitions="competitions"
-              :allCompetitions="allCompetitions"
-              :headers="headers"
-              :cup="cup"
-              :isResults="isResults"
-              :loading="loading"
-              :results="standings"
-              :selectNumbers="selectNumbers"
-              @change="setHeaderLabel"
-              @refresh="() => load(selectedCup)"
-              @calculate="recalculate"
-              @save="(options) => savePdf('Tulokset', options)"
-              @sort="setShowUnfinished"
-            />
-          </v-window-item>
-          <v-window-item value="stats">
-            <CupStats
-              :competitions="competitions"
-              :cup="cup"
-              :all_signees="allResults"
-              :biggest_fishes="biggestFishes"
-              :biggest_amounts="biggestAmounts"
-              :loading="loading"
-            />
-          </v-window-item>
-        </v-window>
-      </template>
-
-      <v-row>
-        <v-col>
-          <v-btn
-            color="yellow"
-            @click="selectedCup = null"
-            :disabled="!selectedCup"
-            size="large"
-            variant="outlined"
-          >
-            <v-icon>mdi-cancel</v-icon>{{ $t("cancel") }}
-          </v-btn>
-        </v-col>
-      </v-row>
-      <NotificationBar v-model:snackbar="snackbar" :text="text" />
-    </v-card>
-  </v-container>
+    <v-skeleton-loader
+      v-if="loading && !cup"
+      type="heading, table"
+      class="fs-panel"
+    />
+    <template v-else-if="selectedCup && cup">
+      <div class="public__title">
+        <h2>{{ cup.name }} {{ cup.year }}</h2>
+        <span class="fs-muted">{{
+          $t("dashboard.cup-progress", {
+            done: allCompetitions.filter((c) => c.isFinished).length,
+            total: allCompetitions.length,
+          })
+        }}</span>
+      </div>
+      <PillTabs v-model="tab" :items="tabs" :label="$t('cup-page.views')" />
+      <CupPoints
+        v-if="tab === 'points'"
+        :competitions="competitions"
+        :all-competitions="allCompetitions"
+        :headers="headers"
+        :cup="cup"
+        :is-results="isResults"
+        :loading="loading"
+        :results="standings"
+        :select-numbers="selectNumbers"
+        @change="setHeaderLabel"
+        @refresh="() => load(selectedCup._id)"
+        @calculate="recalculate"
+        @save="(options) => savePdf('Tulokset', options)"
+        @sort="setShowUnfinished"
+      />
+      <CupStats
+        v-else-if="tab === 'stats'"
+        :competitions="competitions"
+        :cup="cup"
+        :all_signees="allResults"
+        :biggest_fishes="biggestFishes"
+        :biggest_amounts="biggestAmounts"
+        :loading="loading"
+      />
+    </template>
+    <p v-else-if="!loadingList" class="fs-panel pa-8 fs-muted">
+      {{ $t("cup-page.pick-public") }}
+    </p>
+    <NotificationBar v-model:snackbar="snackbar" :text="text" />
+  </div>
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import CupService from "../services/CupService";
 import { useCupStandings } from "@/composables/useCupStandings";
-import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
 import NotificationBar from "../components/NotificationBar.vue";
 import CupPoints from "../components/CupPoints.vue";
 import CupStats from "../components/CupStats.vue";
+import PillTabs from "../components/ui/PillTabs.vue";
 
 defineOptions({ name: "PublicCups" });
+const { t } = useI18n();
 
 const {
   loading,
@@ -156,14 +111,28 @@ const selectedCup = ref(null);
 const loadingList = ref(false);
 const tab = ref("points");
 
-watch(selectedCup, (c) => (c ? load(c._id) : clear()));
+const tabs = computed(() => [
+  { value: "points", label: t("point-status"), icon: "mdi-podium" },
+  {
+    value: "stats",
+    label: t("general-statistics"),
+    icon: "mdi-chart-bar",
+    disabled: !competitions.value.length,
+  },
+]);
+
+watch(selectedCup, (c) => {
+  tab.value = "points";
+  return c ? load(c._id) : clear();
+});
 
 onMounted(async () => {
   loadingList.value = true;
   try {
     const list = await CupService.list({ isPublic: true });
     for (const c of list) c.select = `${c.name} (${c.year})`;
-    cups.value = list;
+    // newest first
+    cups.value = list.sort((a, b) => Number(b.year) - Number(a.year));
   } catch (err) {
     console.error(err.message);
   } finally {
@@ -173,10 +142,29 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.isFinished {
-  background-color: rgb(117, 23, 0);
+.public {
+  max-width: 1400px;
+  margin: 0 auto;
 }
-tbody tr :hover {
-  background-color: rgba(0, 0, 0, 0.5);
+.public__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+}
+.public__head h1 {
+  margin: 0;
+  font-size: 30px;
+}
+.public__head > div {
+  flex: 1 1 260px;
+}
+.public__select {
+  flex: 0 1 420px;
+  min-width: 260px;
+}
+.public__title h2 {
+  margin: 0;
+  font-size: 26px;
 }
 </style>

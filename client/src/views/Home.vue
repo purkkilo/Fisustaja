@@ -1,174 +1,174 @@
 <template>
   <!-- Starting page, / -->
-  <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <v-container
-    :class="{
-      mobile: $vuetify.display.width < 800,
-      browser: $vuetify.display.width >= 800,
-      wide: $vuetify.display.width >= 1200,
-    }"
-  >
-    <v-row>
-      <v-col
-        class="align-self-center"
-        :cols="$vuetify.display.width < 800 ? 12 : 6"
+  <div class="fs-page home">
+    <section class="home__hero">
+      <FishLogo :size="72" />
+      <div>
+        <h1 class="fs-display">Fisustaja</h1>
+        <p class="home__lead">{{ $t("home-page.lead") }}</p>
+      </div>
+    </section>
+
+    <nav :aria-label="$t('shell.menu')" class="home__links">
+      <router-link
+        v-for="link in links"
+        :key="link.path"
+        :to="link.path"
+        class="home__link"
+        :class="`home__link--${link.tone}`"
       >
-        <v-row class="slideRight align-center">
-          <v-col>
-            <v-avatar
-              :size="$vuetify.display.width < 800 ? 150 : 200"
-              class="logo"
-            >
-              <v-img alt="user" src="https://i.imgur.com/2WcI49A.png" />
-            </v-avatar>
-          </v-col>
-        </v-row>
-        <v-row class="slideRight align-center">
-          <v-col>
-            <h1 class="ml-3 logo-text">Fisustaja</h1>
-          </v-col>
-        </v-row>
-      </v-col>
-
-      <v-col :cols="$vuetify.display.width < 800 ? 12 : 6">
-        <div v-for="(link, i) in links" :key="i">
-          <v-hover v-slot="{ isHovering, props }">
-            <v-card
-              v-bind="props"
-              :key="i"
-              rounded="0"
-              :elevation="isHovering ? 3 : 2"
-              class="card-link"
-              variant="outlined"
-            >
-              <v-card-title>
-                {{ $t(link.text) }}
-              </v-card-title>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <router-link :to="link.path">
-                  <v-chip class="ma-2" :color="link.color" variant="outlined">
-                    {{ $t("go-to") }}
-                    <v-icon end>
-                      {{ link.icon }}
-                    </v-icon>
-                  </v-chip>
-                </router-link>
-                <v-spacer></v-spacer>
-              </v-card-actions>
-            </v-card>
-          </v-hover>
-        </div>
-      </v-col>
-    </v-row>
-  </v-container>
+        <span aria-hidden="true" class="home__icon">
+          <v-icon :icon="link.icon" size="26" />
+        </span>
+        <span class="home__text">
+          <strong>{{ $t(link.title) }}</strong>
+          <span class="fs-muted">{{ $t(link.text) }}</span>
+        </span>
+        <v-icon icon="mdi-arrow-right" class="home__go" aria-hidden="true" />
+      </router-link>
+    </nav>
+  </div>
 </template>
+
 <script setup>
-import { onMounted, ref, watch } from "vue";
+import { computed } from "vue";
 import { useMainStore } from "@/store";
+import FishLogo from "../components/layout/FishLogo.vue";
 
 defineOptions({ name: "Home" });
 const store = useMainStore();
 
-const items = ref([
+const links = computed(() => [
+  store.logged_in
+    ? {
+        path: "/dashboard",
+        icon: "mdi-view-dashboard-outline",
+        title: "nav.dashboard",
+        text: "home-page.dashboard",
+        tone: "signing",
+      }
+    : {
+        path: "/login",
+        icon: "mdi-login",
+        title: "nav.login",
+        text: "home-page.login",
+        tone: "signing",
+      },
   {
-    text: "home.comp",
-    icon: "mdi-seal",
     path: "/public-results",
-    color: "yellow-darken-2",
+    icon: "mdi-trophy-outline",
+    title: "home.comp",
+    text: "home-page.results",
+    tone: "results",
   },
   {
-    text: "home.cup",
-    icon: "mdi-trophy",
     path: "/public-cups",
-    color: "yellow-darken-1",
+    icon: "mdi-medal-outline",
+    title: "home.cup",
+    text: "home-page.cups",
+    tone: "weighing",
   },
 ]);
-const links = ref([]);
-const logged_in = ref(false);
-const disabled = ref(false);
-
-watch(
-  () => store.logged_in,
-  (newValue) => {
-    if (newValue) {
-      links.value = [
-        {
-          text: "nav.dashboard",
-          icon: "mdi-view-dashboard",
-          path: "/dashboard",
-          color: "yellow-darken-2",
-        },
-        ...items.value,
-      ];
-    } else {
-      links.value = items.value;
-    }
-  },
-);
-
-onMounted(async () => {
-  links.value = items.value;
-  if (store.logged_in) {
-    links.value = [
-      {
-        text: "nav.dashboard",
-        icon: "mdi-view-dashboard",
-        path: "/dashboard",
-        color: "yellow-darken-2",
-      },
-      ...items.value,
-    ];
-  }
-});
 </script>
+
 <style scoped>
-.slideRight {
-  animation: 1.5s ease-out 0s 1 slideInFromLeft;
+.home {
+  max-width: 980px;
+  margin: 0 auto;
+  padding-top: 64px;
+  gap: 40px;
 }
-
-.card-link {
-  background: transparent;
-  margin-top: 100px;
-  animation: 1.5s ease-out 0s 1 slideInFromUp;
+.home__hero {
+  display: flex;
+  align-items: center;
+  gap: 24px;
 }
-
-.logo:hover {
-  animation: spin 1s linear infinite;
+.home__hero h1 {
+  margin: 0;
+  font-size: 52px;
+  line-height: 1.05;
 }
-
-@keyframes slideInFromUp {
-  0% {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
+.home__lead {
+  margin: 6px 0 0;
+  font-size: 18px;
+  color: rgb(var(--v-theme-muted));
+  max-width: 560px;
 }
-
-@keyframes slideInFromLeft {
-  0% {
-    transform: translateX(-200%) rotate(0deg);
-    opacity: 0;
-  }
-  50% {
-    transform: translateX(-50%) rotate(360deg);
-    opacity: 0.2;
-  }
-  100% {
-    transform: translateX(0) rotate(720deg);
-    opacity: 1;
-  }
+.home__links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
 }
-
-@keyframes spin {
-  100% {
-    -webkit-transform: rotate(360deg);
-    transform: rotate(360deg);
+.home__link {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 22px;
+  border-radius: 18px;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  background: rgb(var(--v-theme-surface));
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 0.15s,
+    transform 0.15s;
+}
+.home__link:hover {
+  transform: translateY(-2px);
+}
+.home__link:focus-visible {
+  outline: 3px solid rgb(var(--v-theme-primary));
+  outline-offset: 2px;
+}
+.home__link--signing:hover {
+  border-color: rgb(var(--v-theme-signing));
+}
+.home__link--results:hover {
+  border-color: rgb(var(--v-theme-results));
+}
+.home__link--weighing:hover {
+  border-color: rgb(var(--v-theme-weighing));
+}
+.home__icon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+}
+.home__link--signing .home__icon {
+  background: rgb(var(--v-theme-signing-soft));
+  color: rgb(var(--v-theme-signing));
+}
+.home__link--results .home__icon {
+  background: rgb(var(--v-theme-results-soft));
+  color: rgb(var(--v-theme-results));
+}
+.home__link--weighing .home__icon {
+  background: rgb(var(--v-theme-weighing-soft));
+  color: rgb(var(--v-theme-weighing));
+}
+.home__text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.35;
+}
+.home__text strong {
+  font-size: 17px;
+}
+.home__go {
+  opacity: 0.6;
+}
+@media (max-width: 600px) {
+  .home {
+    padding-top: 24px;
+  }
+  .home__hero h1 {
+    font-size: 38px;
   }
 }
 </style>

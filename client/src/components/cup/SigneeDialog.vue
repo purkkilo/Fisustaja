@@ -1,62 +1,61 @@
 <template>
   <!-- Add a cup signee, or edit one (pass `signee`) -->
-  <v-dialog v-model="open" persistent max-width="600px">
+  <v-dialog v-model="open" persistent max-width="560px">
     <v-card>
-      <v-card-title>
-        <span class="text-headline-small" v-if="signee"
-          >{{ $t("modify") }} ({{ $t("boat-number-short") }}
-          {{ signee.boat_number }})</span
-        >
-        <span class="text-headline-small" v-else
-          >{{ $t("add") }} {{ $t("signee") }}</span
-        >
-      </v-card-title>
-      <v-card-text>
-        <v-alert v-if="error" type="error" class="mb-4">{{
-          $t(error)
-        }}</v-alert>
-        <NumberStepper
-          v-if="!signee"
-          v-model="form.boat_number"
-          :label="$t('boat-number')"
-          :min="1"
-          :maxlength="6"
-        />
-        <v-text-field
-          v-model="form.captain_name"
-          :label="$t('captain-name') + '*'"
-          maxlength="40"
-          counter="40"
-        />
-        <v-text-field
-          v-model="form.temp_captain_name"
-          :label="$t('temp-captain-name')"
-          maxlength="40"
-          counter="40"
-        />
-        <v-text-field
-          v-model="form.locality"
-          :label="$t('locality-team') + (signee ? '*' : '')"
-          maxlength="40"
-          counter="40"
-        />
-        <small>*{{ $t("must-fields") }}</small>
-      </v-card-text>
-      <v-card-actions>
-        <v-btn
-          color="yellow-darken-2"
-          :disabled="saving"
-          @click="open = false"
-          >{{ $t("cancel") }}</v-btn
-        >
-        <v-spacer></v-spacer>
-        <v-btn
-          color="green-darken-2"
-          :loading="saving"
-          @click="emit('save', { ...form })"
-          >{{ signee ? $t("save") : $t("add") }}</v-btn
-        >
-      </v-card-actions>
+      <form @submit.prevent="emit('save', { ...form })">
+        <v-card-title class="signee-dialog__title">
+          <span v-if="signee"
+            >{{ $t("modify") }} · {{ $t("boat-number-short") }}
+            {{ signee.boat_number }}</span
+          >
+          <span v-else>{{ $t("add") }} {{ $t("signee") }}</span>
+        </v-card-title>
+        <v-card-text class="d-flex flex-column ga-3">
+          <v-alert v-if="error" type="error" variant="tonal">{{
+            $t(error)
+          }}</v-alert>
+          <NumberStepper
+            v-if="!signee"
+            v-model="form.boat_number"
+            :label="$t('boat-number')"
+            :min="1"
+            :maxlength="6"
+          />
+          <v-text-field
+            v-model="form.captain_name"
+            :label="$t('captain-name') + ' *'"
+            maxlength="40"
+            hide-details="auto"
+            autofocus
+          />
+          <v-text-field
+            v-model="form.temp_captain_name"
+            :label="$t('temp-captain-name')"
+            maxlength="40"
+            hide-details="auto"
+          />
+          <v-text-field
+            v-model="form.locality"
+            :label="$t('locality-team') + (signee ? ' *' : '')"
+            maxlength="40"
+            hide-details="auto"
+          />
+          <small class="fs-muted">* {{ $t("must-fields") }}</small>
+        </v-card-text>
+        <v-card-actions class="pa-4">
+          <v-spacer />
+          <v-btn variant="text" :disabled="saving" @click="open = false">{{
+            $t("cancel")
+          }}</v-btn>
+          <v-btn
+            type="submit"
+            color="signing"
+            variant="flat"
+            :loading="saving"
+            >{{ signee ? $t("save") : $t("add") }}</v-btn
+          >
+        </v-card-actions>
+      </form>
     </v-card>
   </v-dialog>
 </template>
@@ -94,3 +93,11 @@ watch(open, (isOpen) => {
   form.locality = s && s.locality !== "-" ? s.locality : "";
 });
 </script>
+
+<style scoped>
+.signee-dialog__title {
+  padding: 20px 24px 8px;
+  font-family: var(--fs-display);
+  font-weight: 700;
+}
+</style>

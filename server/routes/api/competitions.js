@@ -11,6 +11,8 @@ const {
 } = require("../../utils/ownership");
 const router = express.Router();
 const Competition = require("../../models/Competition");
+const Result = require("../../models/Result");
+const Fish = require("../../models/Fish");
 const {
   requireAuth,
   requireAuthUnlessPublic,
@@ -143,6 +145,11 @@ router.delete("/:id", requireAuth, async (req, res, next) => {
     const competition = await requireCompetitionAccess(req, res, req.params.id);
     if (!competition) return;
 
+    const competitionId = String(competition._id);
+    await Promise.all([
+      Result.deleteMany({ competition_id: competitionId }),
+      Fish.deleteMany({ competition_id: competitionId }),
+    ]);
     const result = await Competition.deleteOne({ _id: competition._id });
     if (result.deletedCount === 0) return fail(res, 404, "Not found");
     return mutated(res);

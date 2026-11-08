@@ -7,7 +7,7 @@
       @menu="drawer = !drawer"
     />
 
-    <v-main :class="{ 'legacy-view': !route.meta.redesigned }">
+    <v-main>
       <CompetitionHeader v-if="store.logged_in && inCompetition" />
       <router-view />
       <footer class="fs-footer">

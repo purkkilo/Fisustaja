@@ -16,6 +16,7 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { Doughnut } from "vue-chartjs";
+import { useChartColors } from "@/composables/useChartColors";
 import {
   Chart as ChartJS,
   Title,
@@ -121,9 +122,14 @@ const options = ref({
     },
   },
 
+  // No entrance animation — PDF capture must never grab a half-drawn pie
+  animation: false,
   maintainAspectRatio: false,
   responsive: true,
 });
+
+// legend and axis text follow the light/dark theme
+useChartColors(options);
 
 const containerStyles = computed(() => {
   return { position: "relative", height: `${props.height}px`, ...props.styles };

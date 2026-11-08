@@ -1,28 +1,3 @@
-import { range } from "./format";
-
-export function getColor(placement) {
-  if (placement === 1) return "yellow";
-  else if (placement > 1 && placement <= 10) return "green";
-  else return "orange";
-}
-
-export function getMultiplierColor(multiplier) {
-  if (multiplier > 1) return "red";
-  if (multiplier === 1) return "green";
-  else return "grey";
-}
-
-export function getColorPoints(points) {
-  if (points > 5) return "primary-darken-2";
-  else return "red";
-}
-
-export function getMultiplierTextColor(multiplier) {
-  if (multiplier === 1) return "green";
-  else if (multiplier > 1 && multiplier < 25) return "orange";
-  else return "red";
-}
-
 /**
  * HSV to RGB color conversion
  *

@@ -1,214 +1,197 @@
 <template>
   <!-- /comp-settings: view and edit the current competition's settings -->
-  <div>
-
-    <v-container
-      :class="{
-        mobile: $vuetify.display.width < 800,
-        browser: $vuetify.display.width >= 800,
-        wide: $vuetify.display.width >= 1200,
-      }"
+  <div class="fs-page settings">
+    <PageHead
+      :title="editing ? $t('modify-settings') : $t('settings-page.title')"
+      :eyebrow="$t('steps.settings')"
+      tone="muted"
     >
-      <v-card style="background: transparent" elevation="3" variant="outlined">
-        <v-row class="align-center">
-          <v-col>
-            <h1 style="margin: 30px">{{ $t("settings") }}</h1>
-          </v-col>
-          <v-col>
-            <v-btn
-              :disabled="editing || !competition"
-              rounded="0"
-              color="grey"
-              @click="startEditing"
-              size="large"
-              ><v-icon>mdi-cog-transfer</v-icon>{{ $t("modify-info") }}</v-btn
-            >
-          </v-col>
-        </v-row>
-      </v-card>
+      <template #actions>
+        <v-btn
+          v-if="!editing"
+          :disabled="!competition"
+          variant="outlined"
+          prepend-icon="mdi-pencil"
+          @click="startEditing"
+          >{{ $t("modify-info") }}</v-btn
+        >
+      </template>
+    </PageHead>
 
-      <v-card style="background: transparent" elevation="3" variant="outlined">
-        <v-row v-if="loading" class="justify-center align-center">
-          <v-col>
-            <h2 class="text-white">{{ $t("loading") }}...</h2>
-            <ProgressBarQuery />
-          </v-col>
-        </v-row>
+    <v-alert v-if="!competitionId" type="info" variant="tonal">
+      {{ $t("overview-page.not-selected") }}
+    </v-alert>
+    <v-skeleton-loader
+      v-else-if="loading && !competition"
+      type="heading, list-item-three-line, list-item-three-line"
+      class="fs-panel"
+    />
 
-        <!-- Saved settings -->
-        <template v-else-if="competition && !editing">
-          <v-row style="margin-top: 20px">
-            <v-col md="10" offset-md="1">
-              <CompetitionSummary
-                :info="competition"
-                :fishes="competition.fishes || []"
-              />
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col style="margin-top: 20px">
-              <v-btn
-                rounded
-                :color="
-                  competition.isPublic ? 'grey-darken-4' : 'green-darken-4'
-                "
-                @click="togglePublic"
-                class="text-white"
-                :loading="updating"
-                size="large"
-              >
-                <template v-if="competition.isPublic">
-                  <v-icon>mdi-incognito</v-icon>{{ $t("button.set-private") }}
-                </template>
-                <template v-else>
-                  <v-icon color="green">mdi-publish</v-icon
-                  >{{ $t("button.set-public") }}
-                </template>
-              </v-btn>
-            </v-col>
-            <v-col style="margin-top: 20px">
-              <v-btn
-                rounded
-                :color="competition.isFinished ? 'yellow' : 'green-darken-3'"
-                @click="toggleFinished"
-                :loading="updating"
-                size="large"
-              >
-                <span v-if="competition.isFinished" class="text-black">
-                  <v-icon color="red-darken-2">mdi-cancel</v-icon>
-                  {{ $t("button.set-not-complete") }}
-                </span>
-                <span v-else>
-                  <v-icon color="yellow">mdi-trophy</v-icon>
-                  {{ $t("button.set-complete") }}
-                </span>
-              </v-btn>
-            </v-col>
-          </v-row>
-          <v-row style="margin-bottom: 20px">
-            <v-col md="3" offset-md="4" style="margin-top: 20px">
-              <v-btn
-                block
-                color="red-darken-4"
-                class="text-white"
-                :loading="updating"
-                @click="askDelete"
-                ><v-icon color="white">mdi-delete-forever</v-icon
-                >{{ $t("button.delete-comp") }}</v-btn
-              >
-            </v-col>
-          </v-row>
+    <!-- Saved settings -->
+    <div v-else-if="competition && !editing" class="settings__grid">
+      <FsSection
+        class="settings__main"
+        icon="mdi-information-outline"
+        :title="$t('settings-page.info')"
+      >
+        <CompetitionSummary
+          :info="competition"
+          :fishes="competition.fishes || []"
+        />
+      </FsSection>
+
+      <div class="settings__side">
+        <FsSection
+          icon="mdi-earth"
+          tone="results"
+          :title="$t('settings-page.publishing')"
+        >
+          <div class="toggle">
+            <v-switch
+              :model-value="!!competition.isPublic"
+              :label="$t('settings-page.public-label')"
+              :loading="updating"
+              :disabled="updating"
+              color="signing"
+              inset
+              hide-details
+              @update:model-value="togglePublic"
+            />
+            <span class="fs-muted">{{ $t("settings-page.public-help") }}</span>
+          </div>
+          <div class="toggle">
+            <v-switch
+              :model-value="!!competition.isFinished"
+              :label="$t('settings-page.finished-label')"
+              :loading="updating"
+              :disabled="updating"
+              color="results"
+              inset
+              hide-details
+              @update:model-value="toggleFinished"
+            />
+            <span class="fs-muted">{{
+              $t("settings-page.finished-help")
+            }}</span>
+          </div>
+        </FsSection>
+
+        <FsSection
+          icon="mdi-alert-outline"
+          tone="danger"
+          :title="$t('button.delete-comp')"
+        >
+          <span class="fs-muted">{{ $t("settings-page.delete-help") }}</span>
+          <v-btn
+            color="error"
+            variant="outlined"
+            prepend-icon="mdi-delete-forever-outline"
+            :loading="updating"
+            @click="askDelete"
+            >{{ $t("button.delete-comp") }}</v-btn
+          >
+        </FsSection>
+      </div>
+    </div>
+
+    <!-- Edit form -->
+    <form
+      v-else-if="competition && editing"
+      class="settings__form"
+      @submit.prevent="saveSettings"
+    >
+      <ErrorList :errors="errors" />
+
+      <FsSection
+        icon="mdi-card-text-outline"
+        tone="signing"
+        :title="$t('basic-info')"
+      >
+        <div class="pair">
+          <v-text-field
+            v-model="name"
+            :label="$t('comp.is') + ' ' + $t('name')"
+            :maxlength="40"
+            :counter="40"
+            :rules="rules.text"
+          />
+          <v-text-field
+            v-model="locality"
+            :label="$t('locality')"
+            :maxlength="40"
+            :counter="40"
+            :rules="rules.text"
+          />
+        </div>
+        <YesNoField
+          v-model="isTeamCompetition"
+          :label="`${$t('is-there')} ${$t('comp.is-team')}?`"
+        />
+      </FsSection>
+
+      <FsSection icon="mdi-clock-outline" :title="$t('settings-page.time')">
+        <DateTimeFields
+          v-model:start-date="startDate"
+          v-model:end-date="endDate"
+          v-model:start-time="startTime"
+          v-model:end-time="endTime"
+        />
+      </FsSection>
+
+      <FsSection icon="mdi-medal-outline" :title="$t('cup.normal')">
+        <YesNoField
+          v-model="isCupCompetition"
+          :label="$t('does-it-belong') + '?'"
+        />
+        <template v-if="isCupCompetition">
+          <v-select
+            v-model="cup"
+            :items="cups"
+            item-title="select"
+            item-value="_id"
+            :label="`${$t('choose')} ${$t('cup.normal')}`"
+            return-object
+            hide-details="auto"
+          />
+          <div class="pair">
+            <NumberStepper
+              v-model="participationPoints"
+              :label="$t('participation-points')"
+              :maxlength="6"
+            />
+            <NumberStepper
+              v-model="pointsMultiplier"
+              :label="$t('overview-page.cup-multiplier')"
+              :step="0.5"
+              :min="1"
+              :maxlength="3"
+              decimal
+            />
+          </div>
+          <PlacementPointsEditor v-model="placementPoints" />
         </template>
+      </FsSection>
 
-        <!-- Edit form -->
-        <template v-else-if="competition && editing">
-          <ErrorList :errors="errors" />
-          <h1>{{ $t("modify-settings") }}</h1>
+      <FsSection icon="mdi-fish" :title="$t('fish-species')">
+        <FishSpecsEditor v-model="fishes" @add="addFish" @remove="removeFish" />
+      </FsSection>
 
-          <v-row class="justify-center">
-            <v-col cols="6" class="input-fields">
-              <v-text-field
-                :label="$t('comp.is') + ' ' + $t('name')"
-                v-model="name"
-                :maxlength="40"
-                :counter="40"
-                :rules="rules.text"
-              />
-              <v-text-field
-                :label="$t('locality')"
-                v-model="locality"
-                :maxlength="40"
-                :counter="40"
-                :rules="rules.text"
-              />
-            </v-col>
-          </v-row>
+      <div class="settings__bar">
+        <v-btn variant="text" size="large" @click="cancelEditing">{{
+          $t("cancel")
+        }}</v-btn>
+        <v-btn
+          type="submit"
+          color="signing"
+          size="large"
+          prepend-icon="mdi-check"
+          :loading="loading"
+          >{{ $t("save") }}</v-btn
+        >
+      </div>
+    </form>
 
-          <YesNoField
-            v-model="isCupCompetition"
-            :label="$t('does-it-belong') + '?'"
-          />
-          <template v-if="isCupCompetition">
-            <v-row class="justify-center">
-              <v-col cols="6" class="input-fields">
-                <v-list-subheader class="text-white"
-                  >{{ $t("choose") }} {{ $t("cup.normal") }}</v-list-subheader
-                >
-                <v-select
-                  v-model="cup"
-                  :items="cups"
-                  item-title="select"
-                  item-value="_id"
-                  return-object
-                  single-line
-                  variant="outlined"
-                ></v-select>
-              </v-col>
-            </v-row>
-            <PlacementPointsEditor v-model="placementPoints" />
-            <v-row class="justify-center">
-              <v-col cols="6" class="input-fields">
-                <NumberStepper
-                  v-model="participationPoints"
-                  :label="$t('cup.normal') + ' ' + $t('participation-points')"
-                  :maxlength="6"
-                />
-                <NumberStepper
-                  v-model="pointsMultiplier"
-                  :label="$t('cup.normal') + ' ' + $t('multiplier')"
-                  :step="0.5"
-                  :min="1"
-                  :maxlength="3"
-                  decimal
-                />
-              </v-col>
-            </v-row>
-          </template>
-
-          <YesNoField
-            v-model="isTeamCompetition"
-            :label="`${$t('is-there')} ${$t('comp.is-team')}?`"
-          />
-
-          <DateTimeFields
-            v-model:start-date="startDate"
-            v-model:end-date="endDate"
-            v-model:start-time="startTime"
-            v-model:end-time="endTime"
-          />
-
-          <v-row class="justify-center align-center">
-            <v-col cols="12" md="10">
-              <FishSpecsEditor
-                v-model="fishes"
-                @add="addFish"
-                @remove="removeFish"
-              />
-            </v-col>
-          </v-row>
-
-          <v-row style="margin-bottom: 20px">
-            <v-col md="6">
-              <v-btn
-                color="yellow"
-                class="text-black"
-                @click="cancelEditing"
-                size="large"
-                ><v-icon color="red-darken-2">mdi-cancel</v-icon
-                >{{ $t("cancel") }}</v-btn
-              >
-            </v-col>
-            <v-col md="6">
-              <v-btn color="green" @click="saveSettings" size="large"
-                ><v-icon color="green-darken-4">mdi-check-outline</v-icon>
-                {{ $t("save") }}</v-btn
-              >
-            </v-col>
-          </v-row>
-        </template>
-      </v-card>
-      <NotificationBar v-model:snackbar="snackbar" :text="text" />
-    </v-container>
+    <NotificationBar v-model:snackbar="snackbar" :text="text" />
   </div>
 </template>
 
@@ -219,9 +202,10 @@ import { useRouter } from "vue-router";
 import { confirm } from "@/plugins/alerts";
 import { useRules } from "@/composables/useRules";
 import { useCompetitionSettings } from "@/composables/useCompetitionSettings";
-import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
 import NotificationBar from "../components/NotificationBar.vue";
 import ErrorList from "../components/ErrorList.vue";
+import PageHead from "../components/ui/PageHead.vue";
+import FsSection from "../components/ui/FsSection.vue";
 import CompetitionSummary from "../components/competition-form/CompetitionSummary.vue";
 import YesNoField from "../components/competition-form/YesNoField.vue";
 import NumberStepper from "../components/competition-form/NumberStepper.vue";
@@ -288,6 +272,71 @@ function askDelete() {
 
 // The competition being edited is remembered in localStorage
 const stored = JSON.parse(localStorage.getItem("competition") || "null");
-if (stored?._id) load(stored._id);
-else console.log("No competition in localstorage!");
+const competitionId = stored?._id ?? null;
+if (competitionId) load(competitionId);
 </script>
+
+<style scoped>
+.settings {
+  max-width: 1240px;
+}
+.settings__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-start;
+}
+.settings__main {
+  flex: 2 1 520px;
+}
+.settings__side {
+  flex: 1 1 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+.toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.toggle .fs-muted {
+  font-size: 14px;
+  padding-left: 4px;
+}
+.toggle :deep(.v-label) {
+  opacity: 1;
+  font-weight: 600;
+}
+.settings__form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 960px;
+}
+.pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+@media (max-width: 600px) {
+  .pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* Save / cancel stay in view while scrolling a long form */
+.settings__bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 14px 24px;
+  border-radius: 16px;
+  background: rgb(var(--v-theme-surface));
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.06);
+}
+</style>

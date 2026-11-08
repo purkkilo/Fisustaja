@@ -150,11 +150,7 @@
           </template>
         </ResultsPanel>
 
-        <ResultsPanel
-          v-else-if="tab === 'stats'"
-          class="cresults__table"
-          :title="$t('statistics')"
-        >
+        <div v-else-if="tab === 'stats'" class="cresults__table">
           <Stats
             :competition="competition"
             :normal_points="normal_points"
@@ -168,7 +164,7 @@
             :signee_chart_data="signee_chart_data"
             @dialog="openPdfDialog"
           />
-        </ResultsPanel>
+        </div>
 
         <aside
           v-if="tab === 'normal-competition' && biggestPerSpecies.length"

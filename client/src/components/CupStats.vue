@@ -1,301 +1,220 @@
 <template>
-  <div>
-    <v-row style="margin-top: 10px">
-      <v-col
-        ><h1>{{ $t("general-statistics") }}</h1></v-col
-      >
-    </v-row>
-    <v-row>
-      <v-col>
-        <v-tabs
-          slider-color="green-darken-4"
-          v-model="stats_tab"
-          bg-color="blue-lighten-3"
-          color="blue-darken-4"
-          grow
-          show-arrows
-          next-icon="mdi-arrow-right-bold-box-outline"
-          prev-icon="mdi-arrow-left-bold-box-outline"
-          center-active
+  <!-- Cup statistics: catch, biggest fishes and signees, as charts and tables -->
+  <div class="cstats">
+    <PillTabs
+      v-model="view"
+      :items="views"
+      :label="$t('general-statistics')"
+      tone="results"
+    />
+
+    <!-- Catch totals -->
+    <template v-if="view === 'fishes'">
+      <div class="cstats__grid">
+        <FsSection
+          v-if="total_fishes_chart_data"
+          :title="`${$t('biggest-amounts')} (${$t('total-big')})`"
+          icon="mdi-chart-bar"
         >
-          <v-tab value="cupfishes">{{ $t("fishes") }}</v-tab>
-          <v-tab value="cupbiggestfishes">{{ $t("biggest-fishes") }}</v-tab>
-          <v-tab value="cupsignees">{{ $t("signees-signed") }}</v-tab>
-        </v-tabs>
-      </v-col>
-    </v-row>
-    <v-window v-model="stats_tab" style="background: rgba(0, 0, 0, 0.4)">
-      <v-window-item
-        :value="'cupfishes'"
-        :class="{
-          inputarea: !store.isDark,
-          'inputarea-dark': store.isDark,
-        }"
-      >
-        <v-row v-if="total_fishes_chart_data">
-          <v-col>
-            <v-card>
-              <v-card-title>
-                {{ $t("biggest-amounts") }} ({{ $t("total-big") }})
-              </v-card-title>
-              <bar-chart
-                :chart-data="total_fishes_chart_data"
-                chart-id="total_fishes_signee_chart"
-                :title="$t('biggest-amounts') + ' (' + $t('total-big') + ')'"
-              />
-            </v-card>
-          </v-col>
-        </v-row>
-        <v-row v-if="cup_fishes_total.length && showTables">
-          <v-col>
-            <v-card>
-              <v-card-title class="d-flex flex-wrap align-center">
-                <p class="text-body-large">
-                  {{ $t("biggest-amounts") }} ({{ $t("total-big") }})
-                </p>
-                <v-spacer></v-spacer>
-              </v-card-title>
-              <v-data-table
-                id="total-amounts-table"
-                :headers="headers_cup_fishes_total"
-                :items="cup_fishes_total"
-                :loading="loading"
-                item-value="index"
-              >
-                <template
-                  v-for="h in headers_cup_fishes_total"
-                  :key="h.key"
-                  v-slot:[`header.${h.key}`]="{ column: header }"
-                >
-                  <span> {{ $t(header.title) }}</span>
-                </template>
-                <template v-slot:[`item.weights`]="{ item }">
-                  <v-chip
-                    >{{ (item.weights / 1000).toLocaleString() }} kg</v-chip
-                  >
-                </template>
-              </v-data-table>
-            </v-card>
-          </v-col>
-        </v-row>
-        <v-row v-if="competition_fishes_chart_data">
-          <v-col>
-            <v-card>
-              <v-card-title>
-                {{ $t("biggest-amounts") }} ({{ $t("comp.by") }})
-              </v-card-title>
-              <bar-chart
-                :chart-data="competition_fishes_chart_data"
-                chart-id="competition_fishes_signee_chart"
-                :title="$t('biggest-amounts') + ' (' + $t('comp.by') + ')'"
-              />
-            </v-card>
-          </v-col>
-        </v-row>
-        <v-row v-if="cup_fishes_competition.length && showTables">
-          <v-col>
-            <v-card>
-              <v-card-title class="d-flex flex-wrap align-center">
-                <p class="text-body-large">
-                  {{ $t("biggest-amounts") }} ({{ $t("comp.by") }})
-                </p>
-                <v-spacer></v-spacer>
-              </v-card-title>
-              <v-data-table
-                id="comp-amounts-table"
-                :headers="headers_cup_fishes_competition"
-                :items="cup_fishes_competition"
-                :loading="loading"
-                item-value="index"
-              >
-                <template
-                  v-for="h in headers_cup_fishes_competition"
-                  :key="h.key"
-                  v-slot:[`header.${h.key}`]="{ column: header }"
-                >
-                  <span> {{ $t(header.title) }}</span>
-                </template>
-                <template v-slot:[`item.weights`]="{ item }">
-                  <v-chip
-                    >{{ (item.weights / 1000).toLocaleString() }} kg</v-chip
-                  >
-                </template>
-              </v-data-table>
-            </v-card>
-          </v-col>
-        </v-row>
-      </v-window-item>
-      <v-window-item
-        :value="'cupbiggestfishes'"
-        :class="{
-          inputarea: !store.isDark,
-          'inputarea-dark': store.isDark,
-        }"
-      >
-        <v-row
-          v-if="
-            cup_biggest_fishes.length &&
-            competition_fishes_chart_data &&
-            showCharts
-          "
+          <bar-chart
+            :chart-data="total_fishes_chart_data"
+            chart-id="total_fishes_signee_chart"
+            :title="$t('biggest-amounts') + ' (' + $t('total-big') + ')'"
+            :height="320"
+          />
+        </FsSection>
+        <FsSection
+          v-if="cup_fishes_total.length && showTables"
+          :title="`${$t('biggest-amounts')} (${$t('total-big')})`"
+          icon="mdi-table"
+          flush
         >
-          <v-col>
-            <v-card>
-              <v-card-title class="d-flex flex-wrap align-center"
-                >{{ $t("cup.is") }} {{ $t("biggest-fishes") }}</v-card-title
+          <v-data-table
+            :headers="translated(headers_cup_fishes_total)"
+            :items="cup_fishes_total"
+            :loading="loading"
+            item-value="index"
+            density="comfortable"
+          >
+            <template #[`item.weights`]="{ item }">
+              <span class="fs-num font-weight-bold"
+                >{{ (item.weights / 1000).toLocaleString() }} kg</span
               >
-              <bar-chart
-                :chart-data="cup_biggest_fishes_chart_data"
-                chart-id="cup_biggest_fishes_chart"
-                v-bind:title="$t('cup.is') + ' ' + $t('biggest-fishes')"
-              />
-            </v-card>
-          </v-col>
-        </v-row>
-        <v-row v-if="cup_biggest_fishes.length && showTables">
-          <v-col>
-            <v-card>
-              <v-card-title>
-                <p class="text-body-large">
-                  {{ $t("cup.is") }} {{ $t("biggest-fishes") }}
-                </p>
-                <v-spacer></v-spacer>
-              </v-card-title>
-              <v-data-table
-                id="normal-table"
-                :headers="headers_cup_biggest_fishes"
-                :items="cup_biggest_fishes"
-                :loading="loading"
-                item-value="index"
+            </template>
+          </v-data-table>
+        </FsSection>
+      </div>
+      <div class="cstats__grid">
+        <FsSection
+          v-if="competition_fishes_chart_data"
+          :title="`${$t('biggest-amounts')} (${$t('comp.by')})`"
+          icon="mdi-chart-bar"
+        >
+          <bar-chart
+            :chart-data="competition_fishes_chart_data"
+            chart-id="competition_fishes_signee_chart"
+            :title="$t('biggest-amounts') + ' (' + $t('comp.by') + ')'"
+            :height="320"
+          />
+        </FsSection>
+        <FsSection
+          v-if="cup_fishes_competition.length && showTables"
+          :title="`${$t('biggest-amounts')} (${$t('comp.by')})`"
+          icon="mdi-table"
+          flush
+        >
+          <v-data-table
+            :headers="translated(headers_cup_fishes_competition)"
+            :items="cup_fishes_competition"
+            :loading="loading"
+            item-value="index"
+            density="comfortable"
+          >
+            <template #[`item.weights`]="{ item }">
+              <span class="fs-num font-weight-bold"
+                >{{ (item.weights / 1000).toLocaleString() }} kg</span
               >
-                <template
-                  v-for="h in headers_cup_biggest_fishes"
-                  :key="h.key"
-                  v-slot:[`header.${h.key}`]="{ column: header }"
-                >
-                  <span> {{ $t(header.title) }}</span>
-                </template>
-                <template v-slot:[`item.weight`]="{ item }">
-                  <v-chip>{{ item.weight.toLocaleString() }} g</v-chip>
-                </template>
-              </v-data-table>
-            </v-card>
-          </v-col>
-        </v-row>
-        <v-row v-if="competition_fishes_chart_data && showCharts">
-          <v-col>
-            <v-card>
-              <v-card-title class="d-flex flex-wrap align-center"
-                >{{ $t("cup.is") }} {{ $t("biggest-amounts") }}</v-card-title
+            </template>
+          </v-data-table>
+        </FsSection>
+      </div>
+    </template>
+
+    <!-- Biggest fishes and amounts -->
+    <template v-else-if="view === 'biggest'">
+      <div class="cstats__grid">
+        <FsSection
+          v-if="cup_biggest_fishes_chart_data && showCharts"
+          :title="`${$t('cup.is')} ${$t('biggest-fishes')}`"
+          icon="mdi-chart-bar"
+        >
+          <bar-chart
+            :chart-data="cup_biggest_fishes_chart_data"
+            chart-id="cup_biggest_fishes_chart"
+            :title="$t('cup.is') + ' ' + $t('biggest-fishes')"
+            :height="320"
+          />
+        </FsSection>
+        <FsSection
+          v-if="cup_biggest_fishes.length && showTables"
+          :title="`${$t('cup.is')} ${$t('biggest-fishes')}`"
+          icon="mdi-table"
+          flush
+        >
+          <v-data-table
+            :headers="translated(headers_cup_biggest_fishes)"
+            :items="cup_biggest_fishes"
+            :loading="loading"
+            item-value="index"
+            density="comfortable"
+          >
+            <template #[`item.weight`]="{ item }">
+              <span class="fs-num font-weight-bold"
+                >{{ item.weight.toLocaleString() }} g</span
               >
-              <bar-chart
-                :chart-data="cup_biggest_amounts_chart_data"
-                chart-id="cup_biggest_amounts_chart"
-                v-bind:title="$t('cup.is') + ' ' + $t('biggest-amounts')"
-              />
-            </v-card>
-          </v-col>
-        </v-row>
-        <v-row v-if="cup_biggest_amounts.length && showTables">
-          <v-col>
-            <v-card>
-              <v-card-title>
-                <p class="text-body-large">
-                  {{ $t("cup.is") }} {{ $t("biggest-amounts") }}
-                </p>
-                <v-spacer></v-spacer>
-              </v-card-title>
-              <v-data-table
-                id="cup-biggest-amounts"
-                :headers="headers_cup_biggest_amounts"
-                :items="cup_biggest_amounts"
-                :loading="loading"
-                item-value="index"
+            </template>
+          </v-data-table>
+        </FsSection>
+      </div>
+      <div class="cstats__grid">
+        <FsSection
+          v-if="cup_biggest_amounts_chart_data && showCharts"
+          :title="`${$t('cup.is')} ${$t('biggest-amounts')}`"
+          icon="mdi-chart-bar"
+        >
+          <bar-chart
+            :chart-data="cup_biggest_amounts_chart_data"
+            chart-id="cup_biggest_amounts_chart"
+            :title="$t('cup.is') + ' ' + $t('biggest-amounts')"
+            :height="320"
+          />
+        </FsSection>
+        <FsSection
+          v-if="cup_biggest_amounts.length && showTables"
+          :title="`${$t('cup.is')} ${$t('biggest-amounts')}`"
+          icon="mdi-table"
+          flush
+        >
+          <v-data-table
+            :headers="translated(headers_cup_biggest_amounts)"
+            :items="cup_biggest_amounts"
+            :loading="loading"
+            item-value="index"
+            density="comfortable"
+          >
+            <template #[`item.weight`]="{ item }">
+              <span class="fs-num font-weight-bold"
+                >{{ item.weight.toLocaleString() }} g</span
               >
-                <template
-                  v-for="h in headers_cup_biggest_amounts"
-                  :key="h.key"
-                  v-slot:[`header.${h.key}`]="{ column: header }"
-                >
-                  <span> {{ $t(header.title) }}</span>
-                </template>
-                <template v-slot:[`item.weight`]="{ item }">
-                  <v-chip>{{ item.weight.toLocaleString() }} g</v-chip>
-                </template>
-              </v-data-table>
-            </v-card>
-          </v-col>
-        </v-row>
-      </v-window-item>
-      <v-window-item
-        :value="'cupsignees'"
-        :class="{
-          inputarea: !store.isDark,
-          'inputarea-dark': store.isDark,
-        }"
+            </template>
+          </v-data-table>
+        </FsSection>
+      </div>
+      <p
+        v-if="!cup_biggest_fishes.length && !cup_biggest_amounts.length"
+        class="fs-muted"
       >
-        <v-row class="justify-center" v-if="cup" style="margin-top: 10px">
-          <v-card>
-            <v-card-title v-if="cup.signees">
-              <v-icon color="blue-darken-2">mdi-account-group</v-icon>
-              {{ $t("total-signees") }}: {{ cup.signees.length }}
-            </v-card-title>
-          </v-card>
-        </v-row>
-        <v-row v-if="cup_signees_chart_data && showCharts">
-          <v-col>
-            <v-card>
-              <v-card-title>
-                {{ $t("total-signees") }} ({{ $t("comp.by") }})
-              </v-card-title>
-              <bar-chart
-                :chart-data="cup_signees_chart_data"
-                chart-id="cup_signees_chart"
-                v-bind:title="$t('total-signees') + ' (' + $t('comp.by') + ')'"
-              />
-            </v-card>
-          </v-col>
-        </v-row>
-        <v-row v-if="cup_signees.length && showTables">
-          <v-col>
-            <v-card>
-              <v-card-title class="d-flex flex-wrap align-center">
-                <p class="text-body-large">
-                  {{ $t("total-signees") }} ({{ $t("comp.by") }})
-                </p>
-                <v-spacer></v-spacer>
-              </v-card-title>
-              <v-data-table
-                id="competition-signee-amount-table"
-                :headers="headers_cup_signees"
-                :items="cup_signees"
-                :loading="loading"
-                item-value="index"
-              >
-                <template
-                  v-for="h in headers_cup_signees"
-                  :key="h.key"
-                  v-slot:[`header.${h.key}`]="{ column: header }"
-                >
-                  <span> {{ $t(header.title) }}</span>
-                </template>
-                <template v-slot:[`item.signees`]="{ item }">
-                  <v-chip>{{ item.signees.toLocaleString() }}</v-chip>
-                </template>
-              </v-data-table>
-            </v-card>
-          </v-col>
-        </v-row>
-      </v-window-item>
-    </v-window>
+        {{ $t("no-results") }}
+      </p>
+    </template>
+
+    <!-- Signees -->
+    <template v-else-if="view === 'signees'">
+      <div v-if="cup?.signees" class="cstats__tiles">
+        <StatTile
+          tone="signing"
+          icon="mdi-account-group"
+          :label="$t('total-signees')"
+          :value="cup.signees.length"
+        />
+      </div>
+      <div class="cstats__grid">
+        <FsSection
+          v-if="cup_signees_chart_data && showCharts"
+          :title="`${$t('total-signees')} (${$t('comp.by')})`"
+          icon="mdi-chart-bar"
+        >
+          <bar-chart
+            :chart-data="cup_signees_chart_data"
+            chart-id="cup_signees_chart"
+            :title="$t('total-signees') + ' (' + $t('comp.by') + ')'"
+            :height="320"
+          />
+        </FsSection>
+        <FsSection
+          v-if="cup_signees.length && showTables"
+          :title="`${$t('total-signees')} (${$t('comp.by')})`"
+          icon="mdi-table"
+          flush
+        >
+          <v-data-table
+            :headers="translated(headers_cup_signees)"
+            :items="cup_signees"
+            :loading="loading"
+            item-value="index"
+            density="comfortable"
+          >
+            <template #[`item.signees`]="{ item }">
+              <span class="fs-num font-weight-bold">{{
+                item.signees.toLocaleString()
+              }}</span>
+            </template>
+          </v-data-table>
+        </FsSection>
+      </div>
+    </template>
   </div>
 </template>
+
 <script setup>
-import { useMainStore } from "@/store";
+import { computed, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useCupStats } from "@/composables/useCupStats";
 import BarChart from "../components/BarChart.vue";
+import FsSection from "./ui/FsSection.vue";
+import PillTabs from "./ui/PillTabs.vue";
+import StatTile from "./ui/StatTile.vue";
 
-const store = useMainStore();
 defineOptions({ name: "CupStats" });
 const props = defineProps({
   competitions: { type: Array, default: () => [] },
@@ -305,9 +224,9 @@ const props = defineProps({
   biggest_amounts: { type: Array, default: () => [] },
   loading: { type: Boolean, default: false },
 });
+const { t } = useI18n();
 
 const {
-  stats_tab,
   showTables,
   showCharts,
   headers_cup_fishes_total,
@@ -326,5 +245,43 @@ const {
   cup_biggest_amounts_chart_data,
   cup_signees_chart_data,
 } = useCupStats(props);
+
+const view = ref("fishes");
+const views = computed(() => [
+  { value: "fishes", label: t("fishes"), icon: "mdi-fish" },
+  { value: "biggest", label: t("biggest-fishes"), icon: "mdi-trophy-outline" },
+  {
+    value: "signees",
+    label: t("signees-signed"),
+    icon: "mdi-account-group-outline",
+  },
+]);
+
+// the composable's header titles are translation keys
+const translated = (headers) =>
+  headers.map((h) => ({ ...h, title: t(h.title) }));
 </script>
-<style scoped></style>
+
+<style scoped>
+.cstats {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.cstats__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 520px) {
+  .cstats__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.cstats__tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+</style>

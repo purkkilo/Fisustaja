@@ -4,17 +4,38 @@
     :label="label"
     :model-value="modelValue"
     :maxlength="maxlength"
-    :counter="maxlength"
     :rules="rules.number"
     :disabled="disabled"
-    prepend-icon="mdi-minus"
-    append-icon="mdi-plus"
+    inputmode="decimal"
+    hide-details="auto"
+    class="stepper"
     @update:model-value="(v) => emit('update:modelValue', v)"
-    @click:prepend="change(-step)"
-    @click:append="change(step)"
     @keypress="onlyNumbers"
     @paste.prevent
-  />
+  >
+    <template #prepend-inner>
+      <v-btn
+        icon="mdi-minus"
+        size="small"
+        variant="text"
+        density="comfortable"
+        :aria-label="`${label} −${step}`"
+        :disabled="disabled"
+        @click="change(-step)"
+      />
+    </template>
+    <template #append-inner>
+      <v-btn
+        icon="mdi-plus"
+        size="small"
+        variant="text"
+        density="comfortable"
+        :aria-label="`${label} +${step}`"
+        :disabled="disabled"
+        @click="change(step)"
+      />
+    </template>
+  </v-text-field>
 </template>
 
 <script setup>
@@ -46,3 +67,10 @@ function onlyNumbers(event) {
   if (char.length === 1) event.preventDefault();
 }
 </script>
+
+<style scoped>
+.stepper :deep(input) {
+  text-align: center;
+  font-weight: 700;
+}
+</style>

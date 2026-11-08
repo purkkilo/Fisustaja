@@ -167,7 +167,7 @@
   "errors": {
     "already-here": "Already on correct page!",
     "bad-request": "Bad request!",
-    "charts-missing": "Charts not found on the screen, trying again!",
+    "charts-missing": "Charts were not ready; PDF was saved without them.",
     "check-basic-info": "Check competitions general information!",
     "check-fish-info": "Check fishes' information!",
     "check-multiplier": "Check multipliers and minsizes!",
@@ -479,5 +479,71 @@
     "public-on": "Public",
     "public-off": "Not public",
     "pick-public": "Pick a competition to see its results."
+  },
+  "overview-page": {
+    "catch": "Catch by species",
+    "with-fish": "{pct}% of boats caught fish ({n}/{total})",
+    "no-catch": "No fish weighed yet.",
+    "min-size": "min. size {cm} cm",
+    "details": "Details",
+    "when": "Time",
+    "where": "Place",
+    "no-cup": "Not in a cup",
+    "cup-multiplier": "Cup points multiplier",
+    "team": "Team competition",
+    "edit-settings": "Edit settings",
+    "signed-up": "Boats signed up",
+    "not-selected": "No competition selected. Pick one on the home page.",
+    "load-failed": "Couldn't load the competition."
+  },
+  "settings-page": {
+    "title": "Competition settings",
+    "info": "Competition details",
+    "publishing": "Publishing",
+    "public-label": "Results are public",
+    "public-help": "Anyone can see the results on the public competitions page.",
+    "finished-label": "Competition has finished",
+    "finished-help": "Only finished competitions count in the cup standings.",
+    "delete-help": "Deletes the competition permanently. This can't be undone.",
+    "time": "Time"
+  },
+  "create-page": {
+    "steps": "Steps of creating a competition",
+    "specs": "Multipliers and minimum sizes",
+    "done": "Done",
+    "current": "In progress"
+  },
+  "cup-page": {
+    "views": "Cup views",
+    "boats": "Cup boats",
+    "details": "Cup details",
+    "finished": "Finished competitions",
+    "counted": "Competitions counted",
+    "no-finished": "None of the cup's competitions has finished yet.",
+    "pick-public": "Pick a cup to see its standings."
+  },
+  "admin-page": {
+    "eyebrow": "Administration",
+    "own": "{n} of your own"
+  },
+  "auth-page": {
+    "tagline": "Fishing competitions from signing up to results.",
+    "to-public": "To public results"
+  },
+  "register-page": {
+    "new-user": "New user",
+    "is-admin": "Administrator (sees everyone's competitions)"
+  },
+  "home-page": {
+    "lead": "Signing up, weighing and results of fishing competitions in one place.",
+    "dashboard": "Your competitions and cups",
+    "login": "For organizers",
+    "results": "Public competition results",
+    "cups": "Public cup standings"
+  },
+  "notfound-page": {
+    "title": "Page not found",
+    "text": "The address is wrong or the page has been removed.",
+    "home": "To the home page"
   }
 }

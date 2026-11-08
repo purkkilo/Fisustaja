@@ -1,6 +1,10 @@
 <template>
   <!-- Shown on a wizard step after it has been validated -->
-  <p class="bg-yellow-lighten-1 text-black pa-2 my-2">
-    {{ $t("create-competition.information-locked") }}
-  </p>
+  <v-alert
+    type="info"
+    variant="tonal"
+    density="compact"
+    icon="mdi-lock-outline"
+    >{{ $t("create-competition.information-locked") }}</v-alert
+  >
 </template>

@@ -1,23 +1,21 @@
 <template>
   <!-- PDF orientation before downloading -->
-  <v-dialog v-model="open" width="500">
-    <v-card>
-      <v-card-title>Pdf {{ $t("settings") }}</v-card-title>
+  <v-dialog v-model="open" max-width="440">
+    <v-card :title="$t('pdf-settings')">
       <v-card-text>
         <v-checkbox
-          :label="$t('pdf-landscape')"
           v-model="landscape"
-        ></v-checkbox>
+          :label="$t('pdf-landscape')"
+          hide-details
+        />
       </v-card-text>
-      <v-divider></v-divider>
       <v-card-actions>
-        <v-btn color="yellow" variant="text" @click="open = false">{{
-          $t("cancel")
-        }}</v-btn>
-        <v-spacer></v-spacer>
+        <v-spacer />
+        <v-btn variant="text" @click="open = false">{{ $t("cancel") }}</v-btn>
         <v-btn
-          color="primary"
-          variant="text"
+          color="results"
+          variant="flat"
+          prepend-icon="mdi-download"
           @click="
             open = false;
             emit('download');

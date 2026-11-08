@@ -1,17 +1,16 @@
 <template>
-  <!-- if there are errors, show this div -->
-  <v-card id="error-list" elevation="5" v-if="errors.length">
-    <v-alert type="error"> {{ $t("errors.fix-text") }}: </v-alert>
-    <v-list>
-      <v-list-item v-for="(error, index) in errors" :key="index">
-        <template v-slot:prepend>
-          <v-icon color="red">mdi-alert-circle</v-icon>
-        </template>
-
-        <v-list-item-title>{{ $t(error) }}</v-list-item-title>
-      </v-list-item>
-    </v-list>
-  </v-card>
+  <!-- Problems to fix before saving -->
+  <v-alert
+    v-if="errors.length"
+    id="error-list"
+    type="error"
+    variant="tonal"
+    :title="$t('errors.fix-text')"
+  >
+    <ul class="error-list">
+      <li v-for="(error, index) in errors" :key="index">{{ $t(error) }}</li>
+    </ul>
+  </v-alert>
 </template>
 
 <script setup>
@@ -20,4 +19,10 @@ defineProps({
   errors: { type: Array, default: () => [] },
 });
 </script>
-<style scoped></style>
+
+<style scoped>
+.error-list {
+  margin: 4px 0 0;
+  padding-left: 18px;
+}
+</style>

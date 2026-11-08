@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  activeStep,
   competitionClock,
   competitionPhase,
   competitionStatus,
@@ -123,5 +124,15 @@ describe("competitionClock", () => {
     });
     expect(competitionClock(comp(), now).text).toBe("1:42");
     expect(competitionClock(comp(), new Date(2026, 5, 13, 15)).text).toBe("");
+  });
+});
+
+describe("activeStep", () => {
+  it("maps a status to the step that needs attention", () => {
+    expect(activeStep("upcoming")).toBe("signing");
+    expect(activeStep("running")).toBe("weighing");
+    expect(activeStep("all-returned")).toBe("weighing");
+    expect(activeStep("unfinished")).toBe("weighing");
+    expect(activeStep("finished")).toBe("results");
   });
 });

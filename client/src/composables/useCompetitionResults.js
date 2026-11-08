@@ -4,10 +4,12 @@ import CompetitionService from "@/services/CompetitionService";
 import ResultService from "@/services/ResultService";
 import FishService from "@/services/FishService";
 import { useMainStore } from "@/store";
+import { useTheme } from "vuetify";
 import {
+  applyChartThemeColors,
   changeChartLanguage,
   initChartData,
-  resizeChartForPDF,
+  setChartsResponsive,
 } from "@/utils/charts";
 import {
   calculateBiggestAmounts,
@@ -67,6 +69,7 @@ function assignPlacements(items, key) {
 export function useCompetitionResults({ publicOnly = false } = {}) {
   const store = useMainStore();
   const { t, locale } = useI18n();
+  const theme = useTheme();
 
   const loading = ref(false);
   const competition = ref(null);
@@ -302,9 +305,36 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
   const selected_print = ref([]);
   const orientation = () => (isLandscape.value ? "landscape" : "portrait");
 
-  function savePdf() {
+  function restoreChartsAfterPdf() {
+    applyChartThemeColors(theme.current.value.dark);
+    setChartsResponsive();
+  }
+
+  /** Mount the stats tab and wait until Chart.js canvases exist. */
+  async function ensureStatsChartsMounted() {
+    const previous = tab.value;
+    if (previous !== "stats") {
+      tab.value = "stats";
+      await nextTick();
+    }
+    // Wait until both canvases are registered with Chart.js (or time out)
+    const deadline = Date.now() + 2000;
+    while (Date.now() < deadline) {
+      const fishes = document.getElementById("fishes_chart");
+      const signeesEl = document.getElementById("signee_chart");
+      if (fishes && signeesEl) break;
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+    // One more paint so Chart.js finishes its first layout
+    await new Promise((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(resolve)),
+    );
+    return previous;
+  }
+
+  async function savePdf() {
     if (pdf.value === "Tilastoja") {
-      resizeChartForPDF();
+      const previous = await ensureStatsChartsMounted();
       saveStatsAsPDF(
         pdf.value,
         orientation(),
@@ -312,6 +342,8 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
         signees.value,
         hasGottenFishCount.value,
       );
+      restoreChartsAfterPdf();
+      tab.value = previous;
       return;
     }
     const titles = {
@@ -341,10 +373,14 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
     );
   }
 
-  function saveSelectedPdfs() {
+  async function saveSelectedPdfs() {
     if (!selected_print.value.length) return;
+    const previous = selected_print.value.includes("stats")
+      ? await ensureStatsChartsMounted()
+      : tab.value;
+
     const r = saveAllAsPDF(
-      tab.value,
+      previous,
       orientation(),
       text.value,
       snackbar.value,
@@ -361,7 +397,8 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
       team_results.value,
       table_fish_names.value,
     );
-    tab.value = r.tab;
+    restoreChartsAfterPdf();
+    tab.value = r.tab || previous;
     text.value = r.text;
     snackbar.value = r.snackbar;
   }

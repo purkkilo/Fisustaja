@@ -1,63 +1,68 @@
 <template>
   <!-- Start/end date and start/end time of a competition -->
-  <div>
-    <v-row class="justify-center align-center" style="padding: 20px">
-      <v-col cols="12" md="6">
-        <h2 class="text-white">{{ $t("starting-date") }}</h2>
-        <v-date-picker
-          v-model="startDate"
-          style="height: 480px"
-          elevation="4"
-          class="mt-4"
-          first-day-of-week="1"
-          :disabled="disabled"
-          width="100%"
-        ></v-date-picker>
-      </v-col>
-      <v-col cols="12" md="6">
-        <h2 class="text-white">{{ $t("ending-date") }}</h2>
-        <v-date-picker
-          v-model="endDate"
-          style="height: 480px"
-          elevation="4"
-          class="mt-4"
-          first-day-of-week="1"
-          :disabled="disabled"
-          width="100%"
-        ></v-date-picker>
-      </v-col>
-    </v-row>
-    <v-row class="justify-center align-center" style="padding: 20px">
-      <v-col cols="12" md="6">
-        <h2 class="text-white">{{ $t("starting-time") }}</h2>
-        <v-time-picker
-          v-model="startTime"
-          format="24hr"
-          scrollable
-          elevation="4"
-          :disabled="disabled"
-          width="100%"
-        ></v-time-picker>
-      </v-col>
-      <v-col cols="12" md="6">
-        <h2 class="text-white">{{ $t("ending-time") }}</h2>
-        <v-time-picker
-          v-model="endTime"
-          format="24hr"
-          scrollable
-          elevation="4"
-          :disabled="disabled"
-          width="100%"
-        ></v-time-picker>
-      </v-col>
-    </v-row>
+  <div class="dt-fields">
+    <v-text-field
+      type="date"
+      :label="$t('starting-date')"
+      :model-value="toDateInput(startDate)"
+      :disabled="disabled"
+      prepend-inner-icon="mdi-calendar-start"
+      hide-details="auto"
+      @update:model-value="(v) => (startDate = fromDateInput(v))"
+    />
+    <v-text-field
+      type="time"
+      :label="$t('starting-time')"
+      :model-value="padTime(startTime)"
+      :disabled="disabled"
+      prepend-inner-icon="mdi-clock-start"
+      hide-details="auto"
+      @update:model-value="(v) => (startTime = v || null)"
+    />
+    <v-text-field
+      type="date"
+      :label="$t('ending-date')"
+      :model-value="toDateInput(endDate)"
+      :disabled="disabled"
+      prepend-inner-icon="mdi-calendar-end"
+      hide-details="auto"
+      @update:model-value="(v) => (endDate = fromDateInput(v))"
+    />
+    <v-text-field
+      type="time"
+      :label="$t('ending-time')"
+      :model-value="padTime(endTime)"
+      :disabled="disabled"
+      prepend-inner-icon="mdi-clock-end"
+      hide-details="auto"
+      @update:model-value="(v) => (endTime = v || null)"
+    />
   </div>
 </template>
 
 <script setup>
+import { fromDateInput, toDateInput } from "@/utils/competition";
+
 const startDate = defineModel("startDate");
 const endDate = defineModel("endDate");
 const startTime = defineModel("startTime");
 const endTime = defineModel("endTime");
 defineProps({ disabled: { type: Boolean, default: false } });
+
+// <input type="time"> wants "08:00"; older competitions may have "8:00"
+const padTime = (time) =>
+  typeof time === "string" && /^\d:\d\d$/.test(time) ? `0${time}` : time;
 </script>
+
+<style scoped>
+.dt-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+@media (max-width: 600px) {
+  .dt-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+</style>

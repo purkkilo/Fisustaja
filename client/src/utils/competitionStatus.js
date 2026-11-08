@@ -34,6 +34,13 @@ export function competitionStatus(competition, now = new Date()) {
   return status("upcoming", "signing");
 }
 
+/** The race-day step that needs attention for a status key from competitionStatus. */
+export function activeStep(statusKey) {
+  if (statusKey === "finished") return "results";
+  if (statusKey === "upcoming") return "signing";
+  return "weighing";
+}
+
 const sameDay = (a, b) =>
   a.getFullYear() === b.getFullYear() &&
   a.getMonth() === b.getMonth() &&

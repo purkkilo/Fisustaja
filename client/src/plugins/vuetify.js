@@ -42,12 +42,6 @@ export default createVuetify({
   },
   theme: {
     defaultTheme: preferences.isDark ? "dark" : "light",
-    // older screens still use e.g. "primary-darken-2"
-    variations: {
-      colors: ["primary", "secondary", "accent"],
-      lighten: 3,
-      darken: 3,
-    },
     themes: {
       light: {
         dark: false,

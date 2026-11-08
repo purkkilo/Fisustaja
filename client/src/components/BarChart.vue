@@ -16,6 +16,7 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { Bar } from "vue-chartjs";
+import { useChartColors } from "@/composables/useChartColors";
 import {
   Chart as ChartJS,
   Title,
@@ -123,6 +124,7 @@ const options = ref({
   maintainAspectRatio: false,
   responsive: true,
   scales: {
+    x: {},
     y: {
       beginAtZero: true,
       ticks: {
@@ -134,6 +136,9 @@ const options = ref({
     },
   },
 });
+
+// legend and axis text follow the light/dark theme
+useChartColors(options);
 
 const containerStyles = computed(() => {
   return { position: "relative", height: `${props.height}px`, ...props.styles };

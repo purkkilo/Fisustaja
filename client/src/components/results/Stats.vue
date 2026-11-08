@@ -1,248 +1,127 @@
 <template>
-  <div>
-    <!-- Save as pdf button, is disabled if there are no results -->
-    <v-row style="padding-top: 50px">
-      <v-col md="3" offset-md="8">
+  <!-- Statistics view of the results: key numbers, charts, fish specs -->
+  <div v-if="competition" class="stats">
+    <div class="stats__tiles">
+      <StatTile
+        tone="signing"
+        icon="mdi-sail-boat"
+        :label="$t('total-signees')"
+        :value="signees.length"
+      />
+      <StatTile
+        tone="weighing"
+        icon="mdi-fish"
+        :label="$t('comp-overview.gotten-fish')"
+        :value="gotFishPct"
+        unit="%"
+        :progress="gotFishPct"
+        :note="`${hasGottenFishCount} / ${signees.length}`"
+      />
+      <StatTile
+        tone="results"
+        icon="mdi-weight-kilogram"
+        :label="$t('total-amount')"
+        :value="kg(competition.total_weights)"
+        unit="kg"
+      />
+      <StatTile
+        v-if="competition.isCupCompetition"
+        icon="mdi-medal-outline"
+        :label="$t('overview-page.cup-multiplier')"
+        :value="`× ${competition.cup_points_multiplier}`"
+      />
+    </div>
+
+    <div v-if="normal_points.length" class="stats__charts">
+      <FsSection
+        v-if="fishes_chart_data"
+        icon="mdi-chart-donut"
+        :title="$t(fishes_chart_title)"
+      >
+        <doughnut-chart
+          :chart-data="fishes_chart_data"
+          chart-id="fishes_chart"
+          :title="$t(fishes_chart_title)"
+          :height="320"
+        />
+      </FsSection>
+      <FsSection
+        v-if="signee_chart_data"
+        icon="mdi-chart-pie"
+        :title="$t(signee_chart_title)"
+      >
+        <pie-chart
+          :chart-data="signee_chart_data"
+          chart-id="signee_chart"
+          :title="$t(signee_chart_title)"
+          :height="320"
+        />
+      </FsSection>
+    </div>
+    <p v-else class="fs-muted">{{ $t("no-results") }}</p>
+
+    <FsSection icon="mdi-fish" :title="$t('fish-specs')" flush>
+      <template #actions>
         <v-btn
-          color="red-lighten-2"
-          :loading="loading"
-          @click="
-            $emit('dialog', {
-              pdf: 'Tilastoja',
-              pdfDialog: true,
-            })
-          "
-          :disabled="!biggest_amounts.length"
-          style="margin-bottom: 20px"
-          size="large"
           variant="outlined"
+          color="results"
+          prepend-icon="mdi-file-pdf-box"
+          :loading="loading"
+          :disabled="!biggest_amounts.length"
+          @click="emit('dialog', { pdf: 'Tilastoja', pdfDialog: true })"
+          >PDF</v-btn
         >
-          <v-icon color="red">mdi-file-pdf-box</v-icon>
-          {{ $t("download") }} pdf</v-btn
-        >
-      </v-col>
-    </v-row>
-    <v-row v-if="competition && normal_points">
-      <v-col>
-        <v-row style="min-height: 400px" v-if="normal_points.length">
-          <v-col sm="12" md="5" offset-md="1" style="margin-bottom: 50px">
-            <div v-if="fishes_chart_data">
-              <v-hover v-slot="{ isHovering, props }">
-                <v-card
-                  v-bind="props"
-                  :elevation="isHovering ? 5 : 2"
-                  :class="{ 'on-hover': isHovering }"
-                  style="padding: 20px"
-                >
-                  <v-card-title
-                    ><h4 class="text-headline-small mb-1">
-                      {{ $t(fishes_chart_title) }}
-                    </h4></v-card-title
-                  >
-                  <doughnut-chart
-                    :chart-data="fishes_chart_data"
-                    chart-id="fishes_chart"
-                    v-bind:title="$t(fishes_chart_title)"
-                  />
-                </v-card>
-              </v-hover>
-            </div>
-          </v-col>
-          <v-col sm="12" md="5">
-            <div v-if="signee_chart_data">
-              <v-hover v-slot="{ isHovering, props }">
-                <v-card
-                  v-bind="props"
-                  :elevation="isHovering ? 5 : 2"
-                  :class="{ 'on-hover': isHovering }"
-                  style="padding: 20px"
-                >
-                  <v-card-title
-                    ><h4 class="text-headline-small mb-1">
-                      {{ $t(signee_chart_title) }}
-                    </h4></v-card-title
-                  >
-                  <pie-chart
-                    :chart-data="signee_chart_data"
-                    chart-id="signee_chart"
-                    v-bind:title="$t(signee_chart_title)"
-                  />
-                </v-card>
-              </v-hover>
-            </div>
-          </v-col>
-        </v-row>
-        <v-row v-else>
-          <v-col md="12">
-            <p
-              class="text-body-large"
-              :class="{
-                'text-white': store.isDark,
-              }"
-            >
-              Ei tuloksia, vielä...
-            </p>
-          </v-col>
-        </v-row>
-      </v-col>
-    </v-row>
-    <v-row v-if="competition">
-      <v-col md="8" offset-md="2">
-        <v-row>
-          <v-col>
-            <v-hover v-slot="{ isHovering, props }">
-              <v-card
-                v-bind="props"
-                :elevation="isHovering ? 5 : 2"
-                :class="{ 'on-hover': isHovering }"
-                style="padding: 20px"
-              >
-                <v-card-title class="text-center"
-                  ><p class="text-headline-large">
-                    {{ $t("fish-specs") }}
-                  </p></v-card-title
-                >
-                <v-list border>
-                  <div v-for="(fish, index) in competition.fishes" :key="index">
-                    <v-list-item>
-                      <v-list-item-title>{{ fish.name }}</v-list-item-title>
-                      <v-divider vertical></v-divider>
-                      <v-list-item-subtitle
-                        :class="
-                          'text-' + getMultiplierTextColor(fish.multiplier)
-                        "
-                      >
-                        <b> x {{ fish.multiplier }}</b>
-                      </v-list-item-subtitle>
-                      <v-divider vertical></v-divider>
-                      <v-list-item-subtitle class="text-blue">
-                        <span
-                          ><b>{{ fish.minsize }} cm</b></span
-                        >
-                      </v-list-item-subtitle>
-                      <v-divider vertical></v-divider>
-                      <v-list-item-subtitle class="text-green">
-                        <b>
-                          {{
-                            fish.weights
-                              ? Math.round(
-                                  (fish.weights / 1000 + Number.EPSILON) * 100,
-                                ) / 100
-                              : 0
-                          }}
-                          kg
-                        </b>
-                      </v-list-item-subtitle>
-                    </v-list-item>
-                    <v-divider></v-divider>
-                  </div>
-                  <v-list-item>
-                    <v-list-item-title>{{
-                      $t("total-amount")
-                    }}</v-list-item-title>
-                    <v-list-item-subtitle>
-                      <h4 class="text-green">
-                        <b
-                          >{{
-                            Math.round(
-                              (competition.total_weights / 1000 +
-                                Number.EPSILON) *
-                                100,
-                            ) / 100
-                          }}
-                          kg</b
-                        >
-                      </h4></v-list-item-subtitle
-                    >
-                  </v-list-item>
-                </v-list>
-              </v-card>
-            </v-hover>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col>
-            <v-hover v-slot="{ isHovering, props }">
-              <v-card
-                v-bind="props"
-                :elevation="isHovering ? 5 : 2"
-                :class="{ 'on-hover': isHovering }"
-                style="padding: 20px; margin-bottom: 20px"
-              >
-                <v-card-title class="text-center"
-                  ><p class="text-headline-large">
-                    {{ $t("general-statistics") }}
-                  </p></v-card-title
-                >
-                <v-list border>
-                  <v-list-item>
-                    <v-list-item-title
-                      ><b
-                        >{{ $t("cup.normal") }} {{ $t("multiplier") }}</b
-                      ></v-list-item-title
-                    >
-                    <v-divider vertical></v-divider>
-                    <v-list-item-subtitle
-                      :class="
-                        'text-' +
-                        getMultiplierTextColor(
-                          competition.cup_points_multiplier,
-                        )
-                      "
-                    >
-                      <b>x {{ competition.cup_points_multiplier }}</b>
-                    </v-list-item-subtitle>
-                  </v-list-item>
-                  <v-divider></v-divider>
-                  <v-list-item>
-                    <v-list-item-title>
-                      <b>{{ $t("total-signees") }}</b>
-                    </v-list-item-title>
-                    <v-divider vertical></v-divider>
-                    <v-list-item-subtitle class="text-green">
-                      <b>{{ signees.length }} </b>
-                    </v-list-item-subtitle>
-                  </v-list-item>
-                  <v-divider></v-divider>
-                  <v-list-item>
-                    <v-list-item-title>
-                      <b>{{ $t("comp-overview.gotten-fish") }}</b>
-                    </v-list-item-title>
-                    <v-divider vertical></v-divider>
-                    <v-list-item-subtitle
-                      v-if="hasGottenFishCount"
-                      class="text-green"
-                    >
-                      <b
-                        >{{
-                          Math.round(
-                            (hasGottenFishCount / signees.length) * 100 * 100,
-                          ) / 100
-                        }}% ({{ hasGottenFishCount }} / {{ signees.length }})</b
-                      >
-                    </v-list-item-subtitle>
-                    <v-list-item-subtitle class="text-red" v-else
-                      ><b>0% (0/0)</b></v-list-item-subtitle
-                    >
-                  </v-list-item>
-                </v-list>
-              </v-card>
-            </v-hover>
-          </v-col>
-        </v-row>
-      </v-col>
-    </v-row>
+      </template>
+      <v-table density="comfortable">
+        <thead>
+          <tr>
+            <th>{{ $t("fish") }}</th>
+            <th class="text-end">{{ $t("multiplier") }}</th>
+            <th class="text-end">{{ $t("min-size") }}</th>
+            <th class="text-end">{{ $t("amount") }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(fish, index) in competition.fishes" :key="index">
+            <td>
+              <span class="d-inline-flex align-center ga-2">
+                <span
+                  aria-hidden="true"
+                  class="stats__dot"
+                  :style="{ background: fish.color || 'currentColor' }"
+                ></span>
+                <strong>{{ fish.name }}</strong>
+              </span>
+            </td>
+            <td class="text-end fs-num">× {{ fish.multiplier }}</td>
+            <td class="text-end fs-num">{{ fish.minsize }} cm</td>
+            <td class="text-end fs-num font-weight-bold">
+              {{ kg(fish.weights) }} kg
+            </td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <th colspan="3">{{ $t("total-amount") }}</th>
+            <th class="text-end fs-num">
+              {{ kg(competition.total_weights) }} kg
+            </th>
+          </tr>
+        </tfoot>
+      </v-table>
+    </FsSection>
   </div>
 </template>
+
 <script setup>
-import { useMainStore } from "@/store";
+import { computed } from "vue";
 import PieChart from "../PieChart.vue";
 import DoughnutChart from "../DoughnutChart.vue";
-import { getMultiplierTextColor } from "@/utils/colors";
+import FsSection from "../ui/FsSection.vue";
+import StatTile from "../ui/StatTile.vue";
 
-const store = useMainStore();
 defineOptions({ name: "Stats" });
-defineProps({
+const props = defineProps({
   competition: { type: Object, default: null },
   normal_points: { type: Array, default: () => [] },
   hasGottenFishCount: { type: Number, default: 0 },
@@ -254,8 +133,37 @@ defineProps({
   signee_chart_title: { type: String, default: "" },
   signee_chart_data: { type: Object, default: null },
 });
-defineEmits(["dialog"]);
+const emit = defineEmits(["dialog"]);
 
-// Runs when the component is created
+const kg = (grams) =>
+  grams ? Math.round((grams / 1000 + Number.EPSILON) * 100) / 100 : 0;
+
+const gotFishPct = computed(() =>
+  props.signees.length
+    ? Math.round((props.hasGottenFishCount / props.signees.length) * 100)
+    : 0,
+);
 </script>
-<style scoped></style>
+
+<style scoped>
+.stats {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.stats__tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+}
+.stats__charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+.stats__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+</style>

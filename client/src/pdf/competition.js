@@ -1,7 +1,7 @@
 import { jsPDF } from "jspdf";
 import { t } from "../i18n";
 import {
-  resizeChartForPDF,
+  captureChartsForPDF,
   setChartsResponsive,
   initChartData,
 } from "../utils/charts";
@@ -317,7 +317,6 @@ export function saveStatsAsPDF(
   signees,
   hasGottenFishCount,
 ) {
-  resizeChartForPDF();
   // Format dates for easier reding
   let temp_start_date = formatDateToLocaleDateString(competition.start_date);
   let temp_end_date = formatDateToLocaleDateString(competition.end_date);
@@ -336,21 +335,19 @@ export function saveStatsAsPDF(
   addTitle(doc, title, competition.cup_name, time);
   doc.setFontSize(18);
 
-  // "Tilastot"
-  // Resize charts to be better looking on a pdf
-  var fishesImg = document
-    .getElementById("fishes_chart")
-    .toDataURL("image/png", 1.0);
-  var signeeImg = document
-    .getElementById("signee_chart")
-    .toDataURL("image/png", 1.0);
+  // "Tilastot" — snap + capture in one sync step
+  const statsCharts = captureChartsForPDF(["fishes_chart", "signee_chart"]);
+  const fishesImg = statsCharts.fishes_chart;
+  const signeeImg = statsCharts.signee_chart;
 
-  if (orientation === "landscape") {
-    doc.addImage(fishesImg, "PNG", 50, 40, 90, 90);
-    doc.addImage(signeeImg, "PNG", 160, 40, 90, 90);
-  } else {
-    doc.addImage(fishesImg, "PNG", 10, 40, 90, 90);
-    doc.addImage(signeeImg, "PNG", 110, 40, 90, 90);
+  if (fishesImg && signeeImg) {
+    if (orientation === "landscape") {
+      doc.addImage(fishesImg, "PNG", 50, 40, 90, 90);
+      doc.addImage(signeeImg, "PNG", 160, 40, 90, 90);
+    } else {
+      doc.addImage(fishesImg, "PNG", 10, 40, 90, 90);
+      doc.addImage(signeeImg, "PNG", 110, 40, 90, 90);
+    }
   }
 
   doc.text(t("fish-specs"), doc.internal.pageSize.getWidth() / 2, 145, {
@@ -1097,30 +1094,20 @@ export function saveAllAsPDF(
     ) {
       doc.addPage();
     }
-    resizeChartForPDF();
     addTitle(doc, title, competition.cup_name, time);
     doc.setFontSize(18);
-    // "Tilastot"
-    // Resize charts to be better looking on a pdf
-    var fishesImg = document
-      .getElementById("fishes_chart")
-      .toDataURL("image/png", 1.0);
-    var signeeImg = document
-      .getElementById("signee_chart")
-      .toDataURL("image/png", 1.0);
-    try {
-      if (orientation === "landscape") {
-        doc.addImage(fishesImg, "PNG", 50, 40, 90, 90);
-        doc.addImage(signeeImg, "PNG", 160, 40, 90, 90);
-      } else {
-        doc.addImage(fishesImg, "PNG", 10, 40, 90, 90);
-        doc.addImage(signeeImg, "PNG", 110, 40, 90, 90);
-      }
-    } catch {
+    // Snap + capture in one sync step (charts must already be mounted)
+    const statsCharts = captureChartsForPDF(["fishes_chart", "signee_chart"]);
+    const fishesImg = statsCharts.fishes_chart;
+    const signeeImg = statsCharts.signee_chart;
+    if (!fishesImg || !signeeImg) {
       charts_loaded = false;
-      tab = "stats";
-      // Try again after 1 sec
-      setTimeout(() => saveAllAsPDF(current_tab), 1000);
+    } else if (orientation === "landscape") {
+      doc.addImage(fishesImg, "PNG", 50, 40, 90, 90);
+      doc.addImage(signeeImg, "PNG", 160, 40, 90, 90);
+    } else {
+      doc.addImage(fishesImg, "PNG", 10, 40, 90, 90);
+      doc.addImage(signeeImg, "PNG", 110, 40, 90, 90);
     }
     doc.text(t("fish-specs"), doc.internal.pageSize.getWidth() / 2, 165, {
       align: "center",
@@ -1218,14 +1205,13 @@ export function saveAllAsPDF(
     signees.length,
   );
 
-  // Save to pdf
-  if (charts_loaded) {
-    tab = current_tab;
-    const fileName = `${year}_${replaceAll(competition.name, " ", "")}${t(
-      "results",
-    )}.pdf`;
-    openPdfOnNewTab(doc, fileName);
-  } else {
+  // Always open the PDF (tables are useful even if chart canvases were missing)
+  tab = current_tab;
+  const fileName = `${year}_${replaceAll(competition.name, " ", "")}${t(
+    "results",
+  )}.pdf`;
+  openPdfOnNewTab(doc, fileName);
+  if (!charts_loaded) {
     text = t("errors.charts-missing");
     snackbar = true;
   }

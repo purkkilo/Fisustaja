@@ -215,30 +215,40 @@ export function useCompetitionSettings() {
     }
   }
 
-  async function saveValues(values) {
+  // Saves single fields; `rollback` puts the old values back if saving fails
+  async function saveValues(values, rollback) {
     updating.value = true;
     try {
       store.refreshCompetition(competition.value);
       await CompetitionService.updateValues(competition.value._id, {
         $set: values,
       });
+      return true;
     } catch (err) {
       console.error(err.message);
+      rollback();
+      store.refreshCompetition(competition.value);
+      return false;
     } finally {
       updating.value = false;
     }
   }
 
   function togglePublic() {
-    competition.value.isPublic = !competition.value.isPublic;
-    return saveValues({ isPublic: competition.value.isPublic });
+    const c = competition.value;
+    const previous = c.isPublic;
+    c.isPublic = !previous;
+    return saveValues({ isPublic: c.isPublic }, () => (c.isPublic = previous));
   }
 
   function toggleFinished() {
     const c = competition.value;
+    const previous = { isFinished: c.isFinished, state: c.state };
     c.isFinished = !c.isFinished;
     c.state = c.isFinished ? "ended" : "not-finished";
-    return saveValues({ isFinished: c.isFinished, state: c.state });
+    return saveValues({ isFinished: c.isFinished, state: c.state }, () =>
+      Object.assign(c, previous),
+    );
   }
 
   async function remove() {

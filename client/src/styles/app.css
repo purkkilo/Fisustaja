@@ -48,7 +48,7 @@ body {
   color: rgb(var(--v-theme-muted));
 }
 
-/* Page content width and spacing for redesigned screens */
+/* Page content width and spacing */
 .fs-page {
   padding: 28px 40px 48px;
   display: flex;
@@ -74,47 +74,4 @@ body {
 .v-application .v-data-table thead th {
   font-weight: 700 !important;
   color: rgb(var(--v-theme-muted));
-}
-
-/* ---- Screens not redesigned yet ---------------------------------------
-   These class names come from the old gradient look. They now render as
-   plain panels so the older screens stay readable until they're redone. */
-.legacy-view {
-  text-align: center;
-}
-.legacy-view .v-window {
-  background: transparent !important;
-}
-#app .inputarea,
-#app .inputarea-dark,
-#app .container-transparent,
-#app .container-transparent-dark {
-  background: rgb(var(--v-theme-surface));
-  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  border-radius: 16px;
-}
-#app .input-fields {
-  background: transparent;
-  border: 0;
-  padding: 0;
-}
-#app .scroll_table {
-  max-height: 500px;
-  overflow: auto;
-}
-#app .fish-specs-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: center;
-}
-#app .fish-specs-table tbody tr:hover {
-  background-color: rgb(var(--v-theme-weighing-soft)) !important;
-  cursor: pointer;
-}
-#app .selected {
-  background-color: rgb(var(--v-theme-signing)) !important;
-  color: #ffffff;
-}
-.strokeme {
-  color: inherit;
 }

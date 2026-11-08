@@ -1,19 +1,15 @@
 <template>
-  <!-- Yes / no question as radio buttons -->
-  <v-row class="justify-center align-center">
-    <v-col cols="6" class="input-fields">
-      <span class="text-white">{{ label }}</span>
-      <v-radio-group
-        v-model="value"
-        :disabled="disabled"
-        inline
-        class="justify-center"
-      >
-        <v-radio :label="$t('yes')" :value="true"></v-radio>
-        <v-radio :label="$t('no')" :value="false"></v-radio>
-      </v-radio-group>
-    </v-col>
-  </v-row>
+  <!-- Yes / no question as a switch -->
+  <v-switch
+    v-model="value"
+    :label="label"
+    :disabled="disabled"
+    color="signing"
+    inset
+    hide-details
+    density="comfortable"
+    class="yes-no"
+  />
 </template>
 
 <script setup>
@@ -23,3 +19,10 @@ defineProps({
   disabled: { type: Boolean, default: false },
 });
 </script>
+
+<style scoped>
+.yes-no :deep(.v-label) {
+  opacity: 1;
+  font-weight: 600;
+}
+</style>

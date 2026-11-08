@@ -3,6 +3,8 @@ import {
   combineDateTime,
   competitionFieldErrors,
   cupFields,
+  fromDateInput,
+  toDateInput,
 } from "./competition";
 
 const valid = {
@@ -76,5 +78,27 @@ describe("cupFields", () => {
       ],
       cup_points_multiplier: 1.5,
     });
+  });
+});
+
+describe("date input helpers", () => {
+  it("formats a Date as a local YYYY-MM-DD", () => {
+    expect(toDateInput(new Date(2026, 5, 1, 23, 30))).toBe("2026-06-01");
+    expect(toDateInput(null)).toBe("");
+    expect(toDateInput("nonsense")).toBe("");
+  });
+
+  it("parses YYYY-MM-DD to local midnight", () => {
+    const d = fromDateInput("2026-06-01");
+    expect(d.getFullYear()).toBe(2026);
+    expect(d.getMonth()).toBe(5);
+    expect(d.getDate()).toBe(1);
+    expect(d.getHours()).toBe(0);
+    expect(fromDateInput("")).toBeNull();
+    expect(fromDateInput("1.6.2026")).toBeNull();
+  });
+
+  it("round-trips", () => {
+    expect(toDateInput(fromDateInput("2026-12-31"))).toBe("2026-12-31");
   });
 });

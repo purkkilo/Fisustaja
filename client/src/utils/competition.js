@@ -8,6 +8,22 @@ export function combineDateTime(date, time) {
   return d;
 }
 
+/** Date -> "YYYY-MM-DD" in local time, for <input type="date"> */
+export function toDateInput(date) {
+  if (!date) return "";
+  const d = new Date(date);
+  if (isNaN(d)) return "";
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+/** "YYYY-MM-DD" -> Date at local midnight (null when empty or invalid) */
+export function fromDateInput(text) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(text || "");
+  if (!match) return null;
+  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+}
+
 /**
  * Checks the basic fields shared by "create competition" and "competition
  * settings". Returns translation keys of the problems found (empty = valid).

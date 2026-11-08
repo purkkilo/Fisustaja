@@ -167,7 +167,7 @@
   "errors": {
     "already-here": "Olet jo tällä sivulla!",
     "bad-request": "Huono internet request!",
-    "charts-missing": "Kaaviot ei ruudulla, yritetään uudelleen",
+    "charts-missing": "Kaavioita ei saatu mukaan; PDF tallennettiin ilman niitä.",
     "check-basic-info": "Tarkista kilpailun perustiedot!",
     "check-fish-info": "Tarkista kalojen tiedot!",
     "check-multiplier": "Tarkista kalojen pistekertoimet ja alamitat!",
@@ -215,7 +215,9 @@
     "something-wrong": "Jokin meni vikaan, yritä uudestaan!",
     "timeout": "Yhteyttä tietokantaan ei saatu... Yritä uudelleen päivittämällä sivu (Connection timed out)",
     "team-too-long": "Valitse tiimin nimeksi enintään 40 merkkiä pitkä nimi (nimi lyhennetty 40 merkkiin)!",
-    "too-many-attempts": "Liian monta kirjautumisyritystä. Yritä uudelleen 15 minuutin päästä."
+    "too-many-attempts": "Liian monta kirjautumisyritystä. Yritä uudelleen 15 minuutin päästä.",
+    "email-used": "Sähköposti on jo käytössä!",
+    "name-used": "Käyttäjänimi on jo varattu!"
   },
   "fetching": "Haetaan",
   "finished": "Päättynyt",
@@ -477,5 +479,71 @@
     "public-on": "Julkinen",
     "public-off": "Ei julkinen",
     "pick-public": "Valitse kilpailu nähdäksesi tulokset."
+  },
+  "overview-page": {
+    "catch": "Saalis lajeittain",
+    "with-fish": "{pct} % veneistä sai kalaa ({n}/{total})",
+    "no-catch": "Kaloja ei ole vielä punnittu.",
+    "min-size": "alamitta {cm} cm",
+    "details": "Tiedot",
+    "when": "Aika",
+    "where": "Paikka",
+    "no-cup": "Ei cupissa",
+    "cup-multiplier": "Cup-pisteiden kerroin",
+    "team": "Joukkuekilpailu",
+    "edit-settings": "Muokkaa asetuksia",
+    "signed-up": "Ilmoittautuneet veneet",
+    "not-selected": "Kilpailua ei ole valittu. Valitse kilpailu etusivulta.",
+    "load-failed": "Kilpailun lataaminen epäonnistui."
+  },
+  "settings-page": {
+    "title": "Kilpailun asetukset",
+    "info": "Kilpailun tiedot",
+    "publishing": "Julkaisu",
+    "public-label": "Tulokset ovat julkisia",
+    "public-help": "Kuka tahansa näkee tulokset julkisten kilpailujen sivulla.",
+    "finished-label": "Kilpailu on päättynyt",
+    "finished-help": "Vain päättyneet kilpailut lasketaan cupin pistetilanteeseen.",
+    "delete-help": "Poistaa kilpailun pysyvästi. Tätä ei voi perua.",
+    "time": "Aika"
+  },
+  "create-page": {
+    "steps": "Kilpailun luonnin vaiheet",
+    "specs": "Kertoimet ja alamitat",
+    "done": "Valmis",
+    "current": "Työn alla"
+  },
+  "cup-page": {
+    "views": "Cupin näkymät",
+    "boats": "Cupin veneet",
+    "details": "Cupin tiedot",
+    "finished": "Päättyneet kilpailut",
+    "counted": "Laskettavat kilpailut",
+    "no-finished": "Yksikään cupin kilpailu ei ole vielä päättynyt.",
+    "pick-public": "Valitse cup nähdäksesi sen pistetilanteen."
+  },
+  "admin-page": {
+    "eyebrow": "Ylläpito",
+    "own": "Omia {n}"
+  },
+  "auth-page": {
+    "tagline": "Kalastuskilpailut ilmoittautumisesta tuloksiin.",
+    "to-public": "Julkisiin tuloksiin"
+  },
+  "register-page": {
+    "new-user": "Uusi käyttäjä",
+    "is-admin": "Ylläpitäjä (näkee kaikkien kilpailut)"
+  },
+  "home-page": {
+    "lead": "Kalastuskilpailujen ilmoittautuminen, punnitus ja tulokset yhdessä paikassa.",
+    "dashboard": "Omat kilpailut ja cupit",
+    "login": "Järjestäjille",
+    "results": "Julkiset kilpailujen tulokset",
+    "cups": "Julkiset cupien pistetilanteet"
+  },
+  "notfound-page": {
+    "title": "Sivua ei löytynyt",
+    "text": "Osoite on väärä tai sivu on poistettu.",
+    "home": "Etusivulle"
   }
 }

@@ -116,7 +116,7 @@ import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import StatusChip from "../StatusChip.vue";
 import { useCompetitionClock } from "@/composables/useCompetitionClock";
-import { competitionStatus } from "@/utils/competitionStatus";
+import { activeStep, competitionStatus } from "@/utils/competitionStatus";
 
 const props = defineProps({
   competition: { type: Object, required: true },
@@ -141,12 +141,7 @@ const progress = computed(() =>
 );
 
 /** The step that needs attention now. */
-const step = computed(() => {
-  const key = status.value.key;
-  if (key === "finished") return "results";
-  if (key === "upcoming") return "signing";
-  return "weighing";
-});
+const step = computed(() => activeStep(status.value.key));
 
 const next = computed(
   () =>

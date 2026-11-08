@@ -1,129 +1,114 @@
 <template>
   <!-- /admin: users, cups and competitions of everyone -->
-  <v-container
-    :class="{
-      mobile: $vuetify.display.width < 800,
-      browser: $vuetify.display.width >= 800,
-      wide: $vuetify.display.width >= 1200,
-    }"
-  >
-    <v-row v-if="prevRoute?.name">
-      <v-col>
-        <v-btn
-          rounded
-          color="yellow"
-          size="large"
-          prepend-icon="mdi-keyboard-return"
-          @click="$router.push({ path: prevRoute.path })"
-          >{{ $t("button.return-back") }}</v-btn
-        >
-      </v-col>
-    </v-row>
-
-    <v-tabs
-      v-model="tab"
-      slider-color="blue-darken-4"
-      bg-color="blue-lighten-2"
-      color="blue-darken-4"
-      grow
-      show-arrows
-      next-icon="mdi-arrow-right-bold-box-outline"
-      prev-icon="mdi-arrow-left-bold-box-outline"
-      center-active
+  <div class="fs-page admin">
+    <PageHead
+      :title="$t('shell.admin')"
+      :eyebrow="$t('admin-page.eyebrow')"
+      tone="muted"
     >
-      <v-tab value="overview">{{ $t("general") }}</v-tab>
-      <v-tab value="users">{{ $t("users") }}</v-tab>
-      <v-tab value="competitions">{{ $t("comp.plural") }}</v-tab>
-    </v-tabs>
+      <template #actions>
+        <v-btn to="/register" color="signing" prepend-icon="mdi-account-plus">{{
+          $t("shell.register-user")
+        }}</v-btn>
+      </template>
+    </PageHead>
 
-    <v-window v-model="tab" style="background: rgba(0, 0, 0, 0.4)">
-      <v-window-item value="overview" :class="areaClass">
-        <h1>{{ $t("general") }}</h1>
-        <StatCard
-          icon="mdi-account-circle"
-          :label="$t('users-plural')"
-          :total="users.length"
-          :loading="loadingUsers"
-        />
-        <StatCard
-          icon="mdi-ferry"
-          :label="$t('comp.plural')"
-          :total="competitions.length"
-          :own="ownCompetitions.length"
-          :loading="loadingCompetitions"
-        />
-        <StatCard
-          icon="mdi-medal"
-          icon-color="yellow-darken-1"
-          :label="$t('cup.plural')"
-          :total="cups.length"
-          :own="ownCups.length"
-          :loading="loadingCups"
-        />
-      </v-window-item>
+    <div class="admin__tiles">
+      <StatTile
+        icon="mdi-account-circle-outline"
+        :label="$t('users-plural')"
+        :value="users.length"
+        :loading="loadingUsers"
+      />
+      <StatTile
+        tone="weighing"
+        icon="mdi-ferry"
+        :label="$t('comp.plural')"
+        :value="competitions.length"
+        :note="$t('admin-page.own', { n: ownCompetitions.length })"
+        :loading="loadingCompetitions"
+      />
+      <StatTile
+        tone="results"
+        icon="mdi-medal-outline"
+        :label="$t('cup.plural')"
+        :value="cups.length"
+        :note="$t('admin-page.own', { n: ownCups.length })"
+        :loading="loadingCups"
+      />
+    </div>
 
-      <v-window-item value="users" :class="areaClass">
-        <h1>{{ $t("users") }}</h1>
-        <p class="text-body-large" :class="{ 'text-white': store.isDark }">
-          {{ $t("notification.click-name") }}
-        </p>
-        <v-row v-if="loadingUsers">
-          <v-col md="10" offset-md="1">
-            <v-skeleton-loader class="mx-auto" type="card" />
-          </v-col>
-        </v-row>
-        <v-row v-else-if="users.length">
-          <v-col
-            md="6"
-            offset-md="3"
-            :class="{ 'bg-grey-darken-4': store.isDark }"
-          >
-            <UserList :users="users" @copy="copy" />
-          </v-col>
-        </v-row>
-        <h2 v-else :class="{ 'text-white': store.isDark }">
-          {{ $t("no-users") }}!
-        </h2>
-      </v-window-item>
+    <div class="admin__grid">
+      <FsSection
+        class="admin__users"
+        icon="mdi-account-multiple-outline"
+        :title="$t('users')"
+      >
+        <template #actions>
+          <v-text-field
+            v-model="userSearch"
+            :label="$t('search')"
+            prepend-inner-icon="mdi-magnify"
+            density="compact"
+            hide-details
+            clearable
+            class="admin__search"
+          />
+        </template>
+        <v-skeleton-loader v-if="loadingUsers" type="list-item-avatar@4" />
+        <UserList
+          v-else-if="users.length"
+          :users="users"
+          :search="userSearch || ''"
+          @copy="copy"
+        />
+        <p v-else class="fs-muted">{{ $t("no-users") }}</p>
+      </FsSection>
 
-      <v-window-item value="competitions" :class="areaClass">
-        <v-row v-if="loadingCompetitions && !competitions.length">
-          <v-col md="10" offset-md="1">
-            <v-skeleton-loader class="mx-auto" type="card" />
-          </v-col>
-        </v-row>
+      <FsSection
+        class="admin__comps"
+        icon="mdi-calendar-multiple"
+        :title="$t('comp.plural')"
+        flush
+      >
+        <template #actions>
+          <v-text-field
+            v-model="compSearch"
+            :label="$t('search')"
+            prepend-inner-icon="mdi-magnify"
+            density="compact"
+            hide-details
+            clearable
+            class="admin__search"
+          />
+        </template>
         <AdminCompetitionsTable
-          v-else-if="competitions.length"
           :competitions="competitions"
+          :search="compSearch || ''"
           :loading="loadingCompetitions"
           :deleting="deleting"
           @open="openCompetition"
           @delete="confirmDelete"
         />
-        <h2 v-else :class="{ 'text-white': store.isDark }">
-          {{ $t("no") }} {{ $t("comp.plural") }}!
-        </h2>
-      </v-window-item>
-    </v-window>
+      </FsSection>
+    </div>
     <NotificationBar v-model:snackbar="snackbar" :text="text" />
-  </v-container>
+  </div>
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue";
-import { useMainStore } from "@/store";
+import { onMounted, ref } from "vue";
 import { t } from "@/i18n";
 import { confirm } from "@/plugins/alerts";
-import { usePreviousRoute } from "@/composables/usePreviousRoute";
 import { useAdmin } from "@/composables/useAdmin";
 import NotificationBar from "../components/NotificationBar.vue";
-import StatCard from "../components/admin/StatCard.vue";
 import UserList from "../components/admin/UserList.vue";
 import AdminCompetitionsTable from "../components/admin/AdminCompetitionsTable.vue";
+import PageHead from "../components/ui/PageHead.vue";
+import FsSection from "../components/ui/FsSection.vue";
+import StatTile from "../components/ui/StatTile.vue";
 
 defineOptions({ name: "Admin" });
-const store = useMainStore();
-const prevRoute = usePreviousRoute();
 
 const {
   users,
@@ -143,10 +128,8 @@ const {
   copy,
 } = useAdmin();
 
-const tab = ref("overview");
-const areaClass = computed(() =>
-  store.isDark ? "inputarea-dark" : "inputarea",
-);
+const userSearch = ref("");
+const compSearch = ref("");
 
 async function confirmDelete(competition) {
   const ok = await confirm(
@@ -161,8 +144,27 @@ onMounted(load);
 </script>
 
 <style scoped>
-h1,
-h2 {
-  font-weight: normal;
+.admin {
+  max-width: 1400px;
+}
+.admin__tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+.admin__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-start;
+}
+.admin__users {
+  flex: 1 1 320px;
+}
+.admin__comps {
+  flex: 2 1 560px;
+}
+.admin__search {
+  width: 200px;
 }
 </style>
