@@ -3,24 +3,12 @@
        view switch + actions, provisional banner, podium and the tables. -->
   <div class="cresults">
     <div class="cresults__bar">
-      <div
-        role="group"
-        :aria-label="$t('results-page.views')"
-        class="cresults__views"
-      >
-        <button
-          v-for="view in views"
-          :key="view.value"
-          type="button"
-          class="cresults__view"
-          :class="{ 'cresults__view--on': tab === view.value }"
-          :aria-pressed="tab === view.value"
-          :disabled="loading && !competition"
-          @click="tab = view.value"
-        >
-          {{ view.label }}
-        </button>
-      </div>
+      <PillTabs
+        v-model="tab"
+        :items="views"
+        :label="$t('results-page.views')"
+        tone="results"
+      />
       <div class="cresults__actions">
         <slot name="actions" :competition="competition" :loading="loading" />
         <v-btn
@@ -199,6 +187,11 @@
             :label="$t('pdf-landscape')"
             hide-details
           />
+          <v-checkbox
+            v-model="inkSaver"
+            :label="$t('pdf-ink-saver')"
+            hide-details
+          />
         </v-card-text>
         <v-card-actions class="pa-4">
           <v-spacer />
@@ -225,6 +218,11 @@
           <v-checkbox
             v-model="isLandscape"
             :label="$t('pdf-landscape')"
+            hide-details
+          />
+          <v-checkbox
+            v-model="inkSaver"
+            :label="$t('pdf-ink-saver')"
             hide-details
           />
           <v-divider class="my-2" />
@@ -275,6 +273,7 @@ import BiggestFishes from "./BiggestFishes.vue";
 import BiggestAmounts from "./BiggestAmounts.vue";
 import ResultsPanel from "./ResultsPanel.vue";
 import ResultsPodium from "./ResultsPodium.vue";
+import PillTabs from "@/components/ui/PillTabs.vue";
 
 const props = defineProps({
   // _id of the competition to show; changing it loads the new competition
@@ -318,6 +317,7 @@ const {
   text,
   pdf,
   isLandscape,
+  inkSaver,
   selected_print,
   load,
   clear,
@@ -438,30 +438,6 @@ defineExpose({ refresh, competition, loading });
   flex-wrap: wrap;
   align-items: center;
   gap: 12px;
-}
-.cresults__views {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  padding: 4px;
-  border-radius: 12px;
-  background: rgba(var(--v-border-color), 0.08);
-}
-.cresults__view {
-  height: 42px;
-  padding: 0 18px;
-  border: 0;
-  border-radius: 9px;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-.cresults__view--on {
-  background: rgb(var(--v-theme-amber));
-  color: #3b2604;
-  font-weight: 700;
 }
 .cresults__actions {
   margin-left: auto;

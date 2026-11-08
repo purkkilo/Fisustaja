@@ -1,26 +1,28 @@
 <template>
   <!-- /public-cups: standings and statistics of public cups -->
   <div class="fs-page public">
-    <header class="public__head">
-      <div>
-        <span class="fs-eyebrow text-results">{{ $t("shell.public") }}</span>
-        <h1>{{ $t("shell.public-cups") }}</h1>
-      </div>
-      <v-autocomplete
-        v-model="selectedCup"
-        :items="cups"
-        item-title="select"
-        item-value="_id"
-        :label="`${$t('choose')} ${$t('cup.normal')}`"
-        :loading="loadingList"
-        :no-data-text="`${$t('cup.not-found')} ${$t('available')}`"
-        return-object
-        hide-details
-        clearable
-        prepend-inner-icon="mdi-magnify"
-        class="public__select"
-      />
-    </header>
+    <PageHead
+      :title="$t('shell.public-cups')"
+      :eyebrow="$t('shell.public')"
+      tone="results"
+    >
+      <template #actions>
+        <v-autocomplete
+          v-model="selectedCup"
+          :items="cups"
+          item-title="select"
+          item-value="_id"
+          :label="`${$t('choose')} ${$t('cup.normal')}`"
+          :loading="loadingList"
+          :no-data-text="`${$t('cup.not-found')} ${$t('available')}`"
+          return-object
+          hide-details
+          clearable
+          prepend-inner-icon="mdi-magnify"
+          class="public__select"
+        />
+      </template>
+    </PageHead>
 
     <v-skeleton-loader
       v-if="loading && !cup"
@@ -28,15 +30,16 @@
       class="fs-panel"
     />
     <template v-else-if="selectedCup && cup">
-      <div class="public__title">
-        <h2>{{ cup.name }} {{ cup.year }}</h2>
-        <span class="fs-muted">{{
-          $t("dashboard.cup-progress", {
+      <PageHead
+        :title="`${cup.name} ${cup.year}`"
+        :subtitle="
+          $t('dashboard.cup-progress', {
             done: allCompetitions.filter((c) => c.isFinished).length,
             total: allCompetitions.length,
           })
-        }}</span>
-      </div>
+        "
+        tone="results"
+      />
       <PillTabs v-model="tab" :items="tabs" :label="$t('cup-page.views')" />
       <CupPoints
         v-if="tab === 'points'"
@@ -80,6 +83,7 @@ import NotificationBar from "../components/NotificationBar.vue";
 import CupPoints from "../components/CupPoints.vue";
 import CupStats from "../components/CupStats.vue";
 import PillTabs from "../components/ui/PillTabs.vue";
+import PageHead from "../components/ui/PageHead.vue";
 
 defineOptions({ name: "PublicCups" });
 const { t } = useI18n();
@@ -146,25 +150,8 @@ onMounted(async () => {
   max-width: 1400px;
   margin: 0 auto;
 }
-.public__head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 16px;
-}
-.public__head h1 {
-  margin: 0;
-  font-size: 30px;
-}
-.public__head > div {
-  flex: 1 1 260px;
-}
 .public__select {
   flex: 0 1 420px;
   min-width: 260px;
-}
-.public__title h2 {
-  margin: 0;
-  font-size: 26px;
 }
 </style>

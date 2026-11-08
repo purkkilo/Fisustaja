@@ -16,7 +16,13 @@ import {
   calculateBiggestFishes,
   calculateNormalResults,
 } from "@/utils/results";
-import { saveAllAsPDF, saveAsPDF, saveStatsAsPDF } from "@/pdf";
+import {
+  getPdfInkSaver,
+  saveAllAsPDF,
+  saveAsPDF,
+  saveStatsAsPDF,
+  setPdfInkSaver,
+} from "@/pdf";
 
 const NORMAL_HEADERS = [
   { title: "placement", key: "placement" },
@@ -302,8 +308,11 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
   // ---- PDF ----
   const pdf = ref(null); // which table to export
   const isLandscape = ref(false);
+  const inkSaver = ref(getPdfInkSaver());
   const selected_print = ref([]);
   const orientation = () => (isLandscape.value ? "landscape" : "portrait");
+
+  watch(inkSaver, (value) => setPdfInkSaver(value));
 
   function restoreChartsAfterPdf() {
     applyChartThemeColors(theme.current.value.dark);
@@ -333,9 +342,10 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
   }
 
   async function savePdf() {
+    setPdfInkSaver(inkSaver.value);
     if (pdf.value === "Tilastoja") {
       const previous = await ensureStatsChartsMounted();
-      saveStatsAsPDF(
+      await saveStatsAsPDF(
         pdf.value,
         orientation(),
         competition.value,
@@ -355,7 +365,7 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
       "#biggest-amounts-table": () =>
         `${t("biggest-amounts")} (${optionLabel(selected_biggest_amount.value)})`,
     };
-    saveAsPDF(
+    await saveAsPDF(
       titles[pdf.value]?.() ?? "",
       pdf.value,
       orientation(),
@@ -375,11 +385,12 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
 
   async function saveSelectedPdfs() {
     if (!selected_print.value.length) return;
+    setPdfInkSaver(inkSaver.value);
     const previous = selected_print.value.includes("stats")
       ? await ensureStatsChartsMounted()
       : tab.value;
 
-    const r = saveAllAsPDF(
+    const r = await saveAllAsPDF(
       previous,
       orientation(),
       text.value,
@@ -462,6 +473,7 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
     text,
     pdf,
     isLandscape,
+    inkSaver,
     selected_print,
     // actions
     load,

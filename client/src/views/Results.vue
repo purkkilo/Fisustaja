@@ -1,57 +1,63 @@
 <template>
   <!-- /results: results of the competition being run, with publishing -->
   <div class="fs-page">
+    <PageHead
+      v-if="competition"
+      :title="competition.name"
+      :eyebrow="$t('steps.results')"
+      :subtitle="competition.cup_name || competition.locality"
+      tone="results"
+    >
+      <template #actions>
+        <v-switch
+          v-model="autoRefresh"
+          :label="$t('results-page.auto-refresh')"
+          color="results"
+          density="compact"
+          hide-details
+          inset
+        />
+        <v-btn
+          :variant="competition.isPublic ? 'flat' : 'outlined'"
+          color="results"
+          :prepend-icon="competition.isPublic ? 'mdi-earth' : 'mdi-earth-off'"
+          :loading="updating"
+          @click="togglePublic"
+          >{{
+            competition.isPublic
+              ? $t("results-page.public-on")
+              : $t("results-page.public-off")
+          }}</v-btn
+        >
+        <v-btn
+          :variant="competition.isFinished ? 'flat' : 'outlined'"
+          :color="competition.isFinished ? 'signing' : undefined"
+          :prepend-icon="
+            competition.isFinished ? 'mdi-trophy' : 'mdi-trophy-outline'
+          "
+          :loading="updating"
+          @click="toggleFinished"
+          >{{
+            competition.isFinished
+              ? $t("button.set-not-complete")
+              : $t("button.set-complete")
+          }}</v-btn
+        >
+        <v-btn
+          variant="text"
+          icon="mdi-refresh"
+          :loading="resultsView?.loading"
+          :aria-label="$t('button.update')"
+          @click="resultsView.refresh()"
+        />
+      </template>
+    </PageHead>
+
     <CompetitionResults
       ref="resultsView"
       :competition-id="competitionId"
       @loaded="(c) => (competition = c)"
-    >
-      <template #actions>
-        <template v-if="competition">
-          <v-switch
-            v-model="autoRefresh"
-            :label="$t('results-page.auto-refresh')"
-            color="results"
-            density="compact"
-            hide-details
-            inset
-          />
-          <v-btn
-            :variant="competition.isPublic ? 'flat' : 'outlined'"
-            color="results"
-            :prepend-icon="competition.isPublic ? 'mdi-earth' : 'mdi-earth-off'"
-            :loading="updating"
-            @click="togglePublic"
-            >{{
-              competition.isPublic
-                ? $t("results-page.public-on")
-                : $t("results-page.public-off")
-            }}</v-btn
-          >
-          <v-btn
-            :variant="competition.isFinished ? 'flat' : 'outlined'"
-            :color="competition.isFinished ? 'signing' : undefined"
-            :prepend-icon="
-              competition.isFinished ? 'mdi-trophy' : 'mdi-trophy-outline'
-            "
-            :loading="updating"
-            @click="toggleFinished"
-            >{{
-              competition.isFinished
-                ? $t("button.set-not-complete")
-                : $t("button.set-complete")
-            }}</v-btn
-          >
-          <v-btn
-            variant="text"
-            icon="mdi-refresh"
-            :loading="resultsView?.loading"
-            :aria-label="$t('button.update')"
-            @click="resultsView.refresh()"
-          />
-        </template>
-      </template>
-    </CompetitionResults>
+    />
     <NotificationBar v-model:snackbar="snackbar" :text="text" />
   </div>
 </template>
@@ -62,6 +68,7 @@ import { useMainStore } from "@/store";
 import CompetitionService from "../services/CompetitionService";
 import NotificationBar from "../components/NotificationBar.vue";
 import CompetitionResults from "../components/results/CompetitionResults.vue";
+import PageHead from "@/components/ui/PageHead.vue";
 
 defineOptions({ name: "Results" });
 

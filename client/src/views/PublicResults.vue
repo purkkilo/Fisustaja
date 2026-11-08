@@ -1,41 +1,45 @@
 <template>
   <!-- /public-results: results of any public competition -->
   <div class="fs-page public">
-    <header class="public__head">
-      <div>
-        <span class="fs-eyebrow text-results">{{ $t("shell.public") }}</span>
-        <h1>{{ $t("shell.public-comps") }}</h1>
-      </div>
-      <v-autocomplete
-        v-model="selected"
-        :items="competitions"
-        item-title="select"
-        item-value="_id"
-        :label="$t('choose-comp')"
-        :loading="loadingList"
-        :no-data-text="$t('no') + ' ' + $t('comp.plural')"
-        return-object
-        hide-details
-        prepend-inner-icon="mdi-magnify"
-        class="public__select"
-      >
-        <template #item="{ item, props }">
-          <v-list-item v-bind="props">
-            <template #prepend>
-              <v-icon
-                :color="item.isFinished ? 'results' : 'weighing'"
-                :icon="item.isFinished ? 'mdi-trophy' : 'mdi-timer-sand'"
-              />
-            </template>
-          </v-list-item>
-        </template>
-      </v-autocomplete>
-    </header>
+    <PageHead
+      :title="$t('shell.public-comps')"
+      :eyebrow="$t('shell.public')"
+      tone="results"
+    >
+      <template #actions>
+        <v-autocomplete
+          v-model="selected"
+          :items="competitions"
+          item-title="select"
+          item-value="_id"
+          :label="$t('choose-comp')"
+          :loading="loadingList"
+          :no-data-text="$t('no') + ' ' + $t('comp.plural')"
+          return-object
+          hide-details
+          prepend-inner-icon="mdi-magnify"
+          class="public__select"
+        >
+          <template #item="{ item, props }">
+            <v-list-item v-bind="props">
+              <template #prepend>
+                <v-icon
+                  :color="item.isFinished ? 'results' : 'weighing'"
+                  :icon="item.isFinished ? 'mdi-trophy' : 'mdi-timer-sand'"
+                />
+              </template>
+            </v-list-item>
+          </template>
+        </v-autocomplete>
+      </template>
+    </PageHead>
 
-    <div v-if="selected" class="public__title">
-      <h2>{{ selected.name }}</h2>
-      <span class="fs-muted">{{ selectedMeta }}</span>
-    </div>
+    <PageHead
+      v-if="selected"
+      :title="selected.name"
+      :subtitle="selectedMeta"
+      tone="results"
+    />
     <CompetitionResults
       v-if="selected"
       ref="resultsView"
@@ -52,6 +56,7 @@
 import { computed, onMounted, ref } from "vue";
 import CompetitionService from "../services/CompetitionService";
 import CompetitionResults from "../components/results/CompetitionResults.vue";
+import PageHead from "@/components/ui/PageHead.vue";
 import { formatDateToLocaleDateString } from "@/utils/format";
 
 defineOptions({ name: "PublicResults" });
@@ -86,7 +91,6 @@ onMounted(async () => {
         .filter(Boolean)
         .join(" · ");
     }
-    // Newest first
     competitions.value = list.sort((a, b) => b.start_date - a.start_date);
   } catch (error) {
     console.error(error.message);
@@ -101,25 +105,8 @@ onMounted(async () => {
   max-width: 1320px;
   margin: 0 auto;
 }
-.public__head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 16px;
-}
-.public__head h1 {
-  margin: 0;
-  font-size: 30px;
-}
-.public__head > div {
-  flex: 1 1 260px;
-}
 .public__select {
   flex: 0 1 460px;
   min-width: 260px;
-}
-.public__title h2 {
-  margin: 0;
-  font-size: 26px;
 }
 </style>

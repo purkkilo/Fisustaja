@@ -12,6 +12,25 @@
     }}</v-alert>
 
     <template v-if="competition">
+      <PageHead
+        :title="competition.name"
+        :eyebrow="$t('overview')"
+        :subtitle="when"
+        tone="weighing"
+      >
+        <template #badges>
+          <StatusChip :status="status" />
+        </template>
+        <template #actions>
+          <v-btn
+            to="/comp-settings"
+            variant="outlined"
+            prepend-icon="mdi-cog-outline"
+            >{{ $t("overview-page.edit-settings") }}</v-btn
+          >
+        </template>
+      </PageHead>
+
       <div class="overview__steps">
         <StatTile
           tone="signing"
@@ -190,6 +209,7 @@ import ResultService from "../services/ResultService.js";
 import { competitionSummary, formatKg } from "@/utils/overview";
 import { activeStep, competitionStatus } from "@/utils/competitionStatus";
 import FsSection from "../components/ui/FsSection.vue";
+import PageHead from "../components/ui/PageHead.vue";
 import StatTile from "../components/ui/StatTile.vue";
 import StatusChip from "../components/StatusChip.vue";
 

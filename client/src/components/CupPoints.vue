@@ -136,6 +136,11 @@
             hide-details
           />
           <v-checkbox
+            v-model="inkSaver"
+            :label="$t('pdf-ink-saver')"
+            hide-details
+          />
+          <v-checkbox
             v-model="showInfoInPdf"
             :label="$t('cup.show-important-amount')"
             hide-details
@@ -162,6 +167,7 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { getPdfInkSaver, setPdfInkSaver } from "@/pdf";
 import FsSection from "./ui/FsSection.vue";
 import PlacementBadge from "./results/PlacementBadge.vue";
 
@@ -189,6 +195,7 @@ const search = ref("");
 const showInfoInPdf = ref(false);
 const showUnfinishedCompetitions = ref(false);
 const isLandscape = ref(false);
+const inkSaver = ref(getPdfInkSaver());
 const dialog = ref(false);
 
 const unfinishedCount = computed(
@@ -202,6 +209,7 @@ function resultSlot(c) {
 
 function download() {
   dialog.value = false;
+  setPdfInkSaver(inkSaver.value);
   emit("save", {
     selectedCompetitions: selectedCompetitions.value,
     isLandscape: isLandscape.value,

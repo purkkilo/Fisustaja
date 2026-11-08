@@ -154,11 +154,11 @@ export function useCupStandings({ publicOnly = false } = {}) {
   }
 
   // tableTitle "Tulokset" = standings, anything else = signee list
-  function savePdf(
+  async function savePdf(
     tableTitle,
     { isLandscape = false, showInfoInPdf = false } = {},
   ) {
-    saveCupAsPDF(
+    await saveCupAsPDF(
       tableTitle,
       isLandscape,
       cup.value,
