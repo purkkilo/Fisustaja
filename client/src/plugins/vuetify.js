@@ -1,6 +1,7 @@
 import "@mdi/font/css/materialdesignicons.css";
 import "vuetify/styles";
 import "../styles/vuetify-compat.css";
+import "../styles/app.css";
 
 import { createVuetify } from "vuetify";
 import { aliases, mdi } from "vuetify/iconsets/mdi";
@@ -16,8 +17,10 @@ i18n.global.mergeLocaleMessage("fi", { $vuetify: fi });
 
 const preferences = JSON.parse(localStorage.getItem("preferences") || "{}");
 
-// Vuetify 2 defaults that the app was designed around
-const field = { variant: "underlined", color: "primary" };
+// Redesign (design canvas "Fisustaja redesign"): lake palette with one
+// colour per race-day step: signing = reed green, weighing = lake blue,
+// results = amber.
+const field = { variant: "outlined", color: "primary", rounded: "lg" };
 
 export default createVuetify({
   locale: {
@@ -39,6 +42,7 @@ export default createVuetify({
   },
   theme: {
     defaultTheme: preferences.isDark ? "dark" : "light",
+    // older screens still use e.g. "primary-darken-2"
     variations: {
       colors: ["primary", "secondary", "accent"],
       lighten: 3,
@@ -46,26 +50,56 @@ export default createVuetify({
     },
     themes: {
       light: {
+        dark: false,
         colors: {
-          // Vuetify 2 default palette
-          primary: "#1976D2",
-          secondary: "#424242",
-          accent: "#82B1FF",
-          error: "#FF5252",
-          info: "#2196F3",
-          success: "#4CAF50",
-          warning: "#FFC107",
+          background: "#F6F8F7",
+          surface: "#FFFFFF",
+          primary: "#2A74A0",
+          secondary: "#13344A",
+          accent: "#4F7A42",
+          error: "#B3261E",
+          info: "#2A74A0",
+          success: "#4F7A42",
+          warning: "#C98A1E",
+          // race-day steps
+          signing: "#4F7A42",
+          "signing-soft": "#E3EEDD",
+          weighing: "#2A74A0",
+          "weighing-soft": "#DCEAF2",
+          results: "#A5561A",
+          "results-soft": "#FBF0DC",
+          amber: "#F2C46D",
+          lake: "#13344A",
+          sidebar: "#0F2A3C",
+          muted: "#55656E",
+        },
+        variables: {
+          "border-color": "#13344A",
+          "border-opacity": 0.14,
         },
       },
       dark: {
+        dark: true,
         colors: {
-          primary: "#2196F3",
-          secondary: "#424242",
-          accent: "#FF4081",
-          error: "#FF5252",
-          info: "#2196F3",
-          success: "#4CAF50",
-          warning: "#FB8C00",
+          background: "#0E1A22",
+          surface: "#15252F",
+          primary: "#5AA7D6",
+          secondary: "#9FC3DA",
+          accent: "#8BC27A",
+          error: "#F2B8B5",
+          info: "#5AA7D6",
+          success: "#8BC27A",
+          warning: "#F2C46D",
+          signing: "#8BC27A",
+          "signing-soft": "#22351E",
+          weighing: "#5AA7D6",
+          "weighing-soft": "#16344A",
+          results: "#F2C46D",
+          "results-soft": "#3A2B12",
+          amber: "#F2C46D",
+          lake: "#0B1C26",
+          sidebar: "#091620",
+          muted: "#9FB4C1",
         },
       },
     },
@@ -76,6 +110,10 @@ export default createVuetify({
     VAutocomplete: field,
     VCombobox: field,
     VTextarea: field,
+    VBtn: { rounded: "lg", class: "text-none font-weight-bold" },
+    VCard: { rounded: "xl", elevation: 0, border: true },
+    VChip: { rounded: "pill" },
     VDataTable: { hover: true },
+    VDialog: { maxWidth: 640 },
   },
 });

@@ -1,7 +1,6 @@
 <template>
   <!-- /signing: sign boats into the competition -->
   <div>
-    <Timedate />
 
     <v-container
       :class="{
@@ -118,11 +117,11 @@ import { confirm } from "@/plugins/alerts";
 import { t } from "@/i18n";
 import { useSigning } from "@/composables/useSigning";
 import {
+  boatNumberClash,
   emptySigneeForm,
   normalizeSignee,
   signeeToForm,
 } from "@/utils/signees";
-import Timedate from "../components/layout/Timedate.vue";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
 import NotificationBar from "../components/NotificationBar.vue";
 import ErrorList from "../components/ErrorList.vue";
@@ -242,10 +241,13 @@ async function save() {
   errors.value = [];
 
   let existing = selectedId.value ? findById(selectedId.value) : null;
-  const clash = findByBoatNumber(signee.boat_number, existing?._id ?? null);
-  if (clash) {
-    // Editing a boat onto another boat's number is never allowed
-    if (existing) return showErrors(["errors.number-used"]);
+  const { status, clash } = boatNumberClash(
+    signees.value,
+    signee.boat_number,
+    existing?._id ?? null,
+  );
+  if (status === "blocked") return showErrors(["errors.number-used"]);
+  if (status === "confirm-replace") {
     const replace = await ask(
       t("signing-replace-confirm", {
         number: clash.boat_number,

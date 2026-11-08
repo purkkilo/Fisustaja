@@ -1,12 +1,14 @@
 const express = require("express");
 const { pickQuery, parseObjectId } = require("../../utils/query");
-const { publicScope } = require("../../utils/publicScope");
+const { publicScope, userScope } = require("../../utils/publicScope");
+const { sanitizeUpdate } = require("../../utils/updates");
 const { ok, created, mutated, fail } = require("../../utils/responses");
 const { requireParentCompetitionAccess } = require("../../utils/ownership");
 const router = express.Router();
 const Result = require("../../models/Result");
 const { requireAuth, optionalAuth } = require("../../middleware/auth");
 
+const PROTECTED = ["competition_id", "cup_id"];
 const FIELDS = ["competition_id", "cup_id", "boat_number"];
 
 async function loadResult(id) {
@@ -46,6 +48,9 @@ router.get("/", optionalAuth, async (req, res, next) => {
       const scope = await publicScope(filter);
       if (!scope) return fail(res, 404, "Not found");
       Object.assign(filter, scope);
+    } else {
+      // Own competitions and public ones (admins: everything)
+      Object.assign(filter, await userScope(req.user, filter));
     }
 
     if (req.query._id !== undefined) {
@@ -92,16 +97,12 @@ router.put("/:id/update", requireAuth, async (req, res, next) => {
     const result = await requireResultAccess(req, res, req.params.id);
     if (!result) return;
 
-    if (req.body.competition_id !== undefined) {
-      const parent = await requireParentCompetitionAccess(
-        req,
-        res,
-        req.body.competition_id,
-      );
-      if (!parent) return;
-    }
+    // Moving a row to another competition isn't an update; use replace
+    const { update, error } = sanitizeUpdate(req.body, PROTECTED);
+    if (error) return fail(res, 400, error);
+    if (!Object.keys(update).length) return mutated(res);
 
-    const updateResult = await Result.updateOne({ _id: result._id }, req.body);
+    const updateResult = await Result.updateOne({ _id: result._id }, update);
     if (updateResult.matchedCount === 0) return fail(res, 404, "Not found");
     return mutated(res);
   } catch (err) {
@@ -116,12 +117,19 @@ router.put("/update-many", requireAuth, async (req, res, next) => {
       return fail(res, 400, "No results in request");
     }
 
+    const { update, error } = sanitizeUpdate(req.body.valueToSet, PROTECTED);
+    if (error) return fail(res, 400, error);
+
+    const objectIds = [];
     for (const id of ids) {
       const result = await requireResultAccess(req, res, id);
       if (!result) return;
+      objectIds.push(result._id);
     }
 
-    await Result.updateMany({ _id: { $in: ids } }, req.body.valueToSet);
+    if (Object.keys(update).length) {
+      await Result.updateMany({ _id: { $in: objectIds } }, update);
+    }
     return mutated(res);
   } catch (err) {
     return next(err);
@@ -134,7 +142,11 @@ router.put("/:id/replace", requireAuth, async (req, res, next) => {
     if (!result) return;
 
     const competitionId = req.body.competition_id || result.competition_id;
-    const parent = await requireParentCompetitionAccess(req, res, competitionId);
+    const parent = await requireParentCompetitionAccess(
+      req,
+      res,
+      competitionId,
+    );
     if (!parent) return;
 
     const replacement = { ...req.body };

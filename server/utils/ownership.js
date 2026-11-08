@@ -89,6 +89,18 @@ async function requireParentCompetitionAccess(req, res, competitionId) {
   return requireCompetitionAccess(req, res, competitionId);
 }
 
+/**
+ * A competition may only be linked to a cup the user can access, so nobody
+ * can add competitions to someone else's cup standings. Empty or "-" means
+ * no cup. Sends the response on failure and returns false.
+ */
+async function checkCupLink(req, res, cupId) {
+  if (cupId === undefined || cupId === null || cupId === "" || cupId === "-") {
+    return true;
+  }
+  return !!(await requireCupAccess(req, res, cupId));
+}
+
 /** Force user_id on create payloads to the session user. */
 function withOwner(user, doc) {
   return { ...doc, user_id: String(user._id) };
@@ -104,5 +116,6 @@ module.exports = {
   requireCupAccess,
   requireCompetitionAccess,
   requireParentCompetitionAccess,
+  checkCupLink,
   withOwner,
 };

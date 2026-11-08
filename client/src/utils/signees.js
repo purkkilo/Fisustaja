@@ -55,6 +55,25 @@ export function signeeToForm(signee) {
   return form;
 }
 
+/**
+ * What saving `boatNumber` means when `editingId` is the signee being edited
+ * (null when adding a new boat):
+ * - "free": no other boat has the number
+ * - "blocked": editing a boat onto another boat's number (never allowed)
+ * - "confirm-replace": adding a boat whose number is taken; ask whether to
+ *   overwrite the existing boat's details
+ * @returns {{ status: "free" | "blocked" | "confirm-replace", clash: object | null }}
+ */
+export function boatNumberClash(signees, boatNumber, editingId = null) {
+  const clash =
+    (signees || []).find(
+      (s) =>
+        Number(s.boat_number) === Number(boatNumber) && s._id !== editingId,
+    ) ?? null;
+  if (!clash) return { status: "free", clash: null };
+  return { status: editingId ? "blocked" : "confirm-replace", clash };
+}
+
 /** First free boat number after the highest one in use. */
 export function nextBoatNumber(signees) {
   const numbers = (signees || []).map((s) => Number(s.boat_number) || 0);

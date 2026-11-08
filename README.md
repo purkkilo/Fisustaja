@@ -60,3 +60,9 @@ If I would start this project from 0 right now, I would probably use Go for the 
   - "npm run server" (in root directory)
   - "npm run dev" (in client directory, Vite dev server on http://localhost:8080)
 - Node.js 20.19+ or 22.12+ is required by Vite
+
+### Tests
+
+- "npm test" in root directory runs both suites:
+  - server: "npm run test:server" (Node's built-in test runner; the API routes run against in-memory stand-ins for the database, so no MongoDB is needed)
+  - client: "npm test" in client directory (Vitest; scoring, cup standings, signing and form validation helpers)

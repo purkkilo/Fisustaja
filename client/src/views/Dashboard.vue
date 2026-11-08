@@ -1,489 +1,234 @@
 <template>
-  <!-- /dashboard-->
-  <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
-  <v-container
-    :class="{
-      mobile: $vuetify.display.width < 800,
-      browser: $vuetify.display.width >= 800,
-      wide: $vuetify.display.width >= 1200,
-    }"
-  >
-    <error-list :errors="errors"></error-list>
-    <v-card
-      style="background: transparent; padding: 20px"
-      elevation="3"
-      variant="outlined"
-    >
-      <v-row>
-        <v-col>
-          <v-row>
-            <v-col>
-              <h1>Dashboard</h1>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col>
-              <!-- if user is found on localstorage (this.user is not null/false) -->
-              <v-card
-                style="background: transparent"
-                v-if="user"
-                variant="outlined"
-              >
-                <v-card-title
-                  ><v-icon size="x-large">mdi-account-circle</v-icon> &nbsp;{{
-                    $t("dashboard.user-details")
-                  }}</v-card-title
-                >
-                <v-list style="background: transparent" lines="two" border>
-                  <v-list-item>
-                    <template v-slot:prepend
-                      ><v-avatar>
-                        <v-icon> mdi-account-box </v-icon>
-                      </v-avatar></template
-                    >
+  <!-- /dashboard: today's competition first, then all competitions and cups -->
+  <div class="fs-page dash">
+    <header class="dash__head">
+      <div class="dash__greeting">
+        <span class="fs-muted">{{ todayText }}</span>
+        <h1>{{ greeting }}</h1>
+      </div>
+      <v-text-field
+        v-model="search"
+        :label="$t('dashboard.search')"
+        prepend-inner-icon="mdi-magnify"
+        density="comfortable"
+        hide-details
+        clearable
+        class="dash__search"
+      />
+      <v-btn
+        to="/register-comp"
+        color="signing"
+        size="large"
+        prepend-icon="mdi-plus"
+        >{{ $t("dashboard.new-competition") }}</v-btn
+      >
+    </header>
 
-                    <v-list-item-title>{{ user.name }}</v-list-item-title>
+    <v-alert v-if="error" type="error" variant="tonal">{{ $t(error) }}</v-alert>
 
-                    <v-list-item-subtitle>{{
-                      $t("name")
-                    }}</v-list-item-subtitle>
-                  </v-list-item>
-                  <v-divider></v-divider>
-                  <v-list-item>
-                    <template v-slot:prepend
-                      ><v-avatar>
-                        <v-icon> mdi-email </v-icon>
-                      </v-avatar></template
-                    >
+    <v-skeleton-loader
+      v-if="loading && !competitions.length"
+      type="article"
+      class="fs-panel"
+    />
+    <TodayCard
+      v-else-if="today"
+      :competition="today"
+      :signees="todaySignees"
+      @open="(path) => openCompetition(today, path)"
+    />
+    <section v-else class="fs-panel dash__empty">
+      <div>
+        <span class="fs-eyebrow text-signing">{{ $t("dashboard.today") }}</span>
+        <h2>{{ $t("dashboard.no-today") }}</h2>
+        <span v-if="upcoming" class="fs-muted">
+          {{ $t("dashboard.next") }}: <strong>{{ upcoming.name }}</strong
+          >,
+          {{ formatDate(upcoming.start_date) }}
+        </span>
+      </div>
+      <v-btn
+        v-if="upcoming"
+        color="weighing"
+        variant="outlined"
+        @click="openCompetition(upcoming)"
+        >{{ $t("dashboard.open") }}</v-btn
+      >
+    </section>
 
-                    <v-list-item-title>{{ user.email }}</v-list-item-title>
+    <div class="dash__grid">
+      <CompetitionsTable
+        class="dash__comps"
+        :competitions="competitions"
+        :search="search || ''"
+        :loading="loading"
+        @open="(c) => openCompetition(c)"
+      />
 
-                    <v-list-item-subtitle>{{
-                      $t("email")
-                    }}</v-list-item-subtitle>
-                  </v-list-item>
-                  <v-divider></v-divider>
-                  <v-list-item>
-                    <template v-slot:prepend
-                      ><v-avatar>
-                        <v-icon> mdi-calendar </v-icon>
-                      </v-avatar></template
-                    >
+      <section aria-labelledby="cups-title" class="dash__cups">
+        <div class="d-flex align-center justify-space-between ga-3">
+          <h2 id="cups-title">{{ $t("dashboard.cups") }}</h2>
+          <v-btn
+            variant="text"
+            color="signing"
+            prepend-icon="mdi-plus"
+            @click="cupDialog = true"
+            >{{ $t("dashboard.new-cup") }}</v-btn
+          >
+        </div>
+        <CupCard
+          v-for="cup in cups"
+          :key="cup._id"
+          :cup="cup"
+          :progress="cupProgress[cup._id]"
+          @open="openCup"
+        />
+        <p v-if="!loading && !cups.length" class="fs-muted">
+          {{ $t("dashboard.no-cups") }}
+        </p>
+      </section>
+    </div>
 
-                    <v-list-item-title>{{ created }}</v-list-item-title>
-
-                    <v-list-item-subtitle>{{
-                      $t("created")
-                    }}</v-list-item-subtitle>
-                  </v-list-item>
-                </v-list>
-              </v-card>
-            </v-col>
-            <v-col>
-              <!-- if user is found on localstorage (this.user is not null/false) -->
-              <v-card
-                style="background: transparent"
-                v-if="user"
-                variant="outlined"
-              >
-                <v-card-title
-                  ><v-icon size="x-large">mdi-gauge</v-icon> &nbsp;{{
-                    $t("dashboard.functions")
-                  }}</v-card-title
-                >
-                <v-list style="background: transparent" border>
-                  <v-list-item>
-                    <v-list-item-title>{{
-                      $t("comp.create")
-                    }}</v-list-item-title>
-                    <v-list-item-action>
-                      <router-link to="/register-comp">
-                        <v-btn
-                          icon
-                          :loading="loading || publishing"
-                          :disabled="loading || publishing"
-                          variant="outlined"
-                          ><v-icon>mdi-plus</v-icon></v-btn
-                        >
-                      </router-link>
-                    </v-list-item-action>
-                  </v-list-item>
-                  <v-divider></v-divider>
-                  <v-list-item>
-                    <v-list-item-title>{{
-                      $t("cup.create")
-                    }}</v-list-item-title>
-                    <v-list-item-action>
-                      <v-dialog
-                        v-model="createCupDialog"
-                        width="700"
-                        persistent
-                      >
-                        <template v-slot:activator="{ props }">
-                          <v-btn
-                            icon
-                            v-bind="props"
-                            :loading="loading || publishing"
-                            :disabled="loading || publishing"
-                            variant="outlined"
-                          >
-                            <v-icon>mdi-plus</v-icon>
-                          </v-btn>
-                        </template>
-
-                        <v-card>
-                          <v-card-title>
-                            {{ $t("cup.create") }}
-                          </v-card-title>
-
-                          <v-row class="justify-center align-center">
-                            <v-col cols="8" class="input-fields">
-                              <v-text-field
-                                :label="$t('cup.normal') + ' ' + $t('name')"
-                                v-model="name"
-                                :maxlength="40"
-                                :loading="loading"
-                                :counter="40"
-                              />
-                            </v-col>
-                          </v-row>
-                          <v-row class="justify-center align-center">
-                            <v-col cols="6" class="input-fields">
-                              <!-- Vuetify 2 used a year-mode date picker here -->
-                              <v-select
-                                v-model="year"
-                                :items="yearOptions"
-                                :label="$t('year')"
-                                prepend-icon="mdi-calendar"
-                              ></v-select>
-                            </v-col>
-                          </v-row>
-                          <v-row class="justify-center align-center">
-                            <v-col cols="6" class="input-fields">
-                              <v-checkbox
-                                v-model="isThereCompetitionLimit"
-                                :label="
-                                  $t('dashboard.set') +
-                                  ' ' +
-                                  $t('dashboard.meaningfull-comps')
-                                "
-                              ></v-checkbox>
-                            </v-col>
-                          </v-row>
-                          <v-row
-                            class="justify-center align-center"
-                            v-if="isThereCompetitionLimit"
-                          >
-                            <v-col cols="6" class="input-fields">
-                              <v-text-field
-                                v-model="meaningful_competitions"
-                                :label="$t('dashboard.meaningfull-comps')"
-                                maxlength="3"
-                                type="number"
-                                @paste.prevent
-                                counter="3"
-                                min="1"
-                                max="100"
-                                @keypress="isNumber($event, true)"
-                                :rules="number_rules"
-                                :loading="loading"
-                              />
-                            </v-col>
-                          </v-row>
-                          <v-row class="justify-center align-center">
-                            <v-col>
-                              <v-btn
-                                rounded="0"
-                                color="primary"
-                                @click="saveCup"
-                                :loading="loading"
-                                ><v-icon>mdi-check</v-icon>
-                                {{ $t("cup.create") }}</v-btn
-                              >
-                            </v-col>
-                          </v-row>
-                          <v-card-actions>
-                            <v-spacer></v-spacer>
-                            <v-btn
-                              color="primary"
-                              @click="createCupDialog = false"
-                              variant="text"
-                            >
-                              Peruuta
-                            </v-btn>
-                          </v-card-actions>
-                        </v-card>
-                      </v-dialog>
-                    </v-list-item-action>
-                  </v-list-item>
-                </v-list>
-              </v-card>
-              <v-row>
-                <v-col>
-                  <!-- if user is found on localstorage (this.user is not null/false) -->
-                  <v-card
-                    style="background: transparent; margin-top: 6px"
-                    v-if="user"
-                    variant="outlined"
-                  >
-                    <v-list style="background: transparent" border>
-                      <v-list-item>
-                        <v-spacer></v-spacer>
-                        <v-list-item-title
-                          ><h2>
-                            {{ tweenedCompetitions.toFixed(0) }}
-                          </h2></v-list-item-title
-                        >
-
-                        <v-list-item-subtitle>{{
-                          $t("comp.plural")
-                        }}</v-list-item-subtitle>
-                        <v-spacer></v-spacer>
-                        <v-list-item-title
-                          ><h2>
-                            {{ tweenedCups.toFixed(0) }}
-                          </h2></v-list-item-title
-                        >
-
-                        <v-list-item-subtitle>{{
-                          $t("cup.plural")
-                        }}</v-list-item-subtitle>
-                        <v-spacer></v-spacer>
-                      </v-list-item>
-                    </v-list>
-                  </v-card>
-                </v-col>
-              </v-row>
-            </v-col>
-          </v-row>
-        </v-col>
-      </v-row>
-    </v-card>
-    <comp-cup-table
-      :competitions="competitions"
-      :cups="cups"
-      :loading="loading"
-      :publishing="publishing"
-      @publish="
-        (cup) => {
-          publishCup(cup);
-        }
-      "
-    ></comp-cup-table>
-    <notification-bar v-model:snackbar="snackbar" :text="text"></notification-bar>
-  </v-container>
+    <CreateCupDialog v-model="cupDialog" :saving="savingCup" @save="saveCup" />
+    <NotificationBar v-model:snackbar="snackbar" :text="text" />
+  </div>
 </template>
 
 <script setup>
-import { computed, nextTick, onMounted, reactive, ref, watch } from "vue";
+import { computed, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useMainStore } from "@/store";
-import CompCupTable from "../components/CompCupTable.vue";
-import CompetitionService from "../services/CompetitionService";
-import CupService from "../services/CupService";
-import gsap from "gsap";
+import { useDashboard } from "@/composables/useDashboard";
+import TodayCard from "../components/dashboard/TodayCard.vue";
+import CompetitionsTable from "../components/dashboard/CompetitionsTable.vue";
+import CupCard from "../components/dashboard/CupCard.vue";
+import CreateCupDialog from "../components/dashboard/CreateCupDialog.vue";
 import NotificationBar from "../components/NotificationBar.vue";
-import ErrorList from "../components/ErrorList.vue";
 
-defineOptions({ name: "Home" });
+defineOptions({ name: "Dashboard" });
 const store = useMainStore();
+const { t, locale } = useI18n();
 
-const user = computed(() => store.user);
-const created = ref(null);
-const createCupDialog = ref(false);
-const loading = ref(false);
-const publishing = ref(false);
-const name = ref(null);
-const year = ref(null);
-const meaningful_competitions = ref(1);
-const isThereCompetitionLimit = ref(false);
-const competitions = ref([]);
-const cups = ref([]);
-const errors = ref([]);
-const number_rules = ref([
-  (value) => !!value || "Kenttä ei voi jäädä tyhjäksi!",
-  (value) => !isNaN(value || "") || "Ei ole numero!",
-]);
+const {
+  loading,
+  savingCup,
+  error,
+  competitions,
+  cups,
+  today,
+  upcoming,
+  todaySignees,
+  cupProgress,
+  load,
+  openCompetition,
+  openCup,
+  createCup,
+} = useDashboard();
+
+const search = ref("");
+const cupDialog = ref(false);
 const snackbar = ref(false);
 const text = ref("");
-const cupsAmount = ref(0);
-const competitionsAmount = ref(0);
-// GSAP animates these numbers for the count-up effect
-const tweened = reactive({ cups: 0, competitions: 0 });
-const tweenedCups = computed(() => tweened.cups);
-const tweenedCompetitions = computed(() => tweened.competitions);
-const animationLength = ref(1.5);
-const tab = ref(null);
 
-const yearOptions = computed(() => {
-  const years = [];
-  for (let y = new Date().getFullYear() + 1; y >= 2000; y--) {
-    years.push(String(y));
-  }
-  return years;
+const lang = computed(() => (locale.value === "fi" ? "fi-FI" : "en-GB"));
+const formatDate = (d) => new Date(d).toLocaleDateString(lang.value);
+const todayText = computed(() =>
+  new Date().toLocaleDateString(lang.value, {
+    weekday: "long",
+    day: "numeric",
+    month: "numeric",
+    year: "numeric",
+  }),
+);
+const greeting = computed(() => {
+  const hour = new Date().getHours();
+  const key =
+    hour < 10
+      ? "dashboard.greeting-morning"
+      : hour < 18
+        ? "dashboard.greeting-day"
+        : "dashboard.greeting-evening";
+  const first = (store.user?.name || "").split(/\s+/)[0];
+  return first ? `${t(key)}, ${first}` : t(key);
 });
 
-watch(cupsAmount, (n) => {
-  gsap.to(tweened, {
-    duration: animationLength.value,
-    cups: Number(n) || 0,
-  });
-});
-
-watch(competitionsAmount, (n) => {
-  gsap.to(tweened, {
-    duration: animationLength.value,
-    competitions: Number(n) || 0,
-  });
-});
-
-//filter other characters out for number inputs
-
-function isNumber(evt, isDate) {
-  var charToCheckCode = 46; // --> .
-  var charToCheck = ".";
-
-  if (!isDate) {
-    charToCheckCode = 58; // --> :
-    charToCheck = ":";
-  }
-
-  evt = evt ? evt : window.event;
-  var charCode = evt.which ? evt.which : evt.keyCode;
-  if (
-    charCode > 31 &&
-    (charCode < 48 || charCode > 57) &&
-    charCode !== charToCheckCode
-  ) {
-    evt.preventDefault();
-  } else {
-    if (charCode == charToCheckCode) {
-      if (evt.target.value.indexOf(charToCheck) >= 0) {
-        evt.preventDefault();
-      } else {
-        return true;
-      }
-    } else {
-      return true;
-    }
-  }
+async function saveCup(form) {
+  const created = await createCup(form);
+  if (!created) return;
+  cupDialog.value = false;
+  text.value = "dashboard.cup-created";
+  snackbar.value = false;
+  requestAnimationFrame(() => (snackbar.value = true));
 }
-
-async function publishCup(cup) {
-  cup.isPublic = !cup.isPublic;
-  try {
-    //TODO update only this one variable (competition.normal_points) to database, not the whole competition
-    publishing.value = true;
-    const newValues = {
-      $set: { isPublic: cup.isPublic },
-    };
-    await CupService.updateValues(cup._id, newValues);
-  } catch (err) {
-    console.error(err.message);
-  }
-
-  publishing.value = false;
-}
-
-// Add error to error array and direct user to it
-// Add error to error array and direct user to it
-
-function showError(error) {
-  errors.value.push(error);
-  nextTick(() => {
-    document.getElementById("error-list").scrollIntoView();
-  });
-}
-
-//TODO dropdown to select current year as highlighted when opened
-
-async function saveCup() {
-  errors.value = [];
-  loading.value = true;
-
-  if (!name.value) {
-    showError("errors.missing-cup-name");
-  }
-  if (!year.value) {
-    showError("errors.missing-cup-year");
-  }
-
-  if (isThereCompetitionLimit.value && !meaningful_competitions.value) {
-    showError("errors.missing-meaningfull-comps");
-  }
-
-  if (!errors.value.length) {
-    const cup = {
-      user_id: store.user?._id,
-      name: name.value,
-      year: year.value,
-      meaningful_competitions: isThereCompetitionLimit.value
-        ? Number(meaningful_competitions.value)
-        : -1,
-    };
-    try {
-      //Submit Cup to database (check 'client\src\CupService.js' and 'server\routes\api\cups.js' to see how this works)
-      await CupService.insertCup([cup]);
-      text.value = "Cup lisätty tietokantaan!";
-      snackbar.value = true;
-      cups.value.push(cup);
-      cupsAmount.value = cups.value.length;
-      cups.value.sort((a, b) => {
-        return parseInt(b.year) - parseInt(a.year);
-      });
-      loading.value = false;
-      year.value = null;
-      name.value = null;
-      tab.value = "cups";
-    } catch (err) {
-      errors.value.push(err.message);
-    }
-  }
-  loading.value = false;
-  createCupDialog.value = false;
-  isThereCompetitionLimit.value = false;
-  meaningful_competitions.value = 1;
-}
-
-(async () => {
-  loading.value = true;
-  try {
-    const comps = await CompetitionService.list({
-      user_id: store.user?._id,
-    });
-    competitions.value = comps;
-    competitionsAmount.value = comps.length;
-    comps.forEach((competition) => {
-      competition.start_date = new Date(competition.start_date);
-      competition.end_date = new Date(competition.end_date);
-    });
-    competitions.value.sort(
-      (a, b) => new Date(b.start_date) - new Date(a.start_date),
-    );
-
-    const cupList = await CupService.list({
-      user_id: store.user?._id,
-    });
-    cups.value = cupList;
-    cupsAmount.value = cupList.length;
-    cups.value.sort((a, b) => parseInt(b.year) - parseInt(a.year));
-  } catch (err) {
-    showError(err.response?.data?.error || "errors.something-wrong");
-    console.error(err);
-  } finally {
-    loading.value = false;
-  }
-})();
 
 onMounted(() => {
+  // the dashboard is "outside" any competition or cup
   store.refreshCompetition(null);
   localStorage.removeItem("competition");
   store.refreshCup(null);
   localStorage.removeItem("cup");
-  if (store.user?.createdAt) {
-    const createdAt = new Date(store.user.createdAt);
-    created.value = `${createdAt.getDate()}.${
-      createdAt.getMonth() + 1
-    }.${createdAt.getFullYear()}`;
-  }
+  load();
 });
 </script>
+
+<style scoped>
+.dash {
+  max-width: 1240px;
+}
+.dash__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+.dash__greeting {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 260px;
+}
+.dash__greeting span::first-letter {
+  text-transform: uppercase;
+}
+.dash__greeting h1 {
+  margin: 0;
+  font-size: 30px;
+}
+.dash__search {
+  flex: 0 1 320px;
+  min-width: 220px;
+}
+.dash__empty {
+  padding: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-radius: 20px;
+}
+.dash__empty h2 {
+  margin: 4px 0;
+  font-size: 28px;
+}
+.dash__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-start;
+}
+.dash__comps {
+  flex: 2 1 560px;
+  min-width: 0;
+}
+.dash__cups {
+  flex: 1 1 300px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.dash__cups h2 {
+  margin: 0;
+  font-size: 22px;
+}
+</style>

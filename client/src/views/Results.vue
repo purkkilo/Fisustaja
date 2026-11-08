@@ -1,7 +1,6 @@
 <template>
   <!-- /results: live results of the competition being run -->
   <div>
-    <Timedate />
 
     <v-container
       :class="{
@@ -110,7 +109,6 @@
 import { nextTick, onBeforeUnmount, ref, watch } from "vue";
 import { useMainStore } from "@/store";
 import CompetitionService from "../services/CompetitionService";
-import Timedate from "../components/layout/Timedate.vue";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
 import NotificationBar from "../components/NotificationBar.vue";
 import CompetitionResults from "../components/results/CompetitionResults.vue";

@@ -29,4 +29,27 @@ async function publicScope(filter) {
   return null;
 }
 
-module.exports = { publicScope };
+/**
+ * Extra filter for logged-in users: results/fishes of their own competitions
+ * and of public ones. Admins see everything.
+ * @returns {Promise<object>} filter to merge
+ */
+async function userScope(user, filter) {
+  if (user?.is_admin) return {};
+  const competitionFilter = {
+    $or: [{ user_id: String(user._id) }, { isPublic: true }],
+  };
+  if (filter.competition_id) {
+    const id = parseObjectId(filter.competition_id);
+    if (!id) return { competition_id: { $in: [] } };
+    competitionFilter._id = id;
+  } else if (filter.cup_id) {
+    competitionFilter.cup_id = filter.cup_id;
+  }
+  const competitions = await Competition.find(competitionFilter, "_id").lean();
+  return {
+    competition_id: { $in: competitions.map((c) => String(c._id)) },
+  };
+}
+
+module.exports = { publicScope, userScope };

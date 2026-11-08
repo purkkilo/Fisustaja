@@ -1,6 +1,7 @@
 const express = require("express");
 const { pickQuery, parseObjectId, parseBoolean } = require("../../utils/query");
 const { ok, created, mutated, fail } = require("../../utils/responses");
+const { sanitizeUpdate } = require("../../utils/updates");
 const {
   isAdmin,
   scopeOwnerFilter,
@@ -65,10 +66,11 @@ router.put("/:id/update", requireAuth, async (req, res, next) => {
     const cup = await requireCupAccess(req, res, req.params.id);
     if (!cup) return;
 
-    if (req.body.user_id !== undefined) delete req.body.user_id;
-    if (req.body.$set?.user_id !== undefined) delete req.body.$set.user_id;
+    const { update, error } = sanitizeUpdate(req.body, ["user_id"]);
+    if (error) return fail(res, 400, error);
+    if (!Object.keys(update).length) return mutated(res);
 
-    const result = await Cup.updateOne({ _id: cup._id }, req.body);
+    const result = await Cup.updateOne({ _id: cup._id }, update);
     if (result.matchedCount === 0) return fail(res, 404, "Not found");
     return mutated(res);
   } catch (err) {

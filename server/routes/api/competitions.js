@@ -1,10 +1,12 @@
 const express = require("express");
 const { pickQuery, parseObjectId, parseBoolean } = require("../../utils/query");
 const { ok, created, mutated, fail } = require("../../utils/responses");
+const { sanitizeUpdate, updatedValue } = require("../../utils/updates");
 const {
   isAdmin,
   scopeOwnerFilter,
   requireCompetitionAccess,
+  checkCupLink,
   withOwner,
 } = require("../../utils/ownership");
 const router = express.Router();
@@ -48,6 +50,9 @@ router.post("/", requireAuth, async (req, res, next) => {
     if (!Array.isArray(req.body) || !req.body.length) {
       return fail(res, 400, "No competitions in request");
     }
+    for (const item of req.body) {
+      if (!(await checkCupLink(req, res, item?.cup_id))) return;
+    }
     const docs = req.body.map((item) => withOwner(req.user, item));
     if (docs.length === 1) {
       const saved = await new Competition(docs[0]).save();
@@ -65,11 +70,16 @@ router.put("/:id/update", requireAuth, async (req, res, next) => {
     const competition = await requireCompetitionAccess(req, res, req.params.id);
     if (!competition) return;
 
-    // Do not let clients reassign ownership
-    if (req.body.user_id !== undefined) delete req.body.user_id;
-    if (req.body.$set?.user_id !== undefined) delete req.body.$set.user_id;
+    const { update, error } = sanitizeUpdate(req.body, ["user_id"]);
+    if (error) return fail(res, 400, error);
+    if (!(await checkCupLink(req, res, updatedValue(req.body, "cup_id"))))
+      return;
+    if (!Object.keys(update).length) return mutated(res);
 
-    const result = await Competition.updateOne({ _id: competition._id }, req.body);
+    const result = await Competition.updateOne(
+      { _id: competition._id },
+      update,
+    );
     if (result.matchedCount === 0) return fail(res, 404, "Not found");
     return mutated(res);
   } catch (err) {
@@ -82,6 +92,7 @@ router.put("/:id/replace", requireAuth, async (req, res, next) => {
     const competition = await requireCompetitionAccess(req, res, req.params.id);
     if (!competition) return;
 
+    if (!(await checkCupLink(req, res, req.body?.cup_id))) return;
     const replacement = withOwner(req.user, { ...req.body });
     // Keep original owner unless admin is replacing (still force session user per plan)
     delete replacement._id;
@@ -108,6 +119,7 @@ router.put("/replace-many", requireAuth, async (req, res, next) => {
     for (const item of req.body) {
       const competition = await requireCompetitionAccess(req, res, item._id);
       if (!competition) return;
+      if (!(await checkCupLink(req, res, item.cup_id))) return;
       const replacement = { ...item };
       delete replacement._id;
       replacement.user_id = competition.user_id;

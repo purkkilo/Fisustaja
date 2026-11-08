@@ -30,6 +30,11 @@ export default defineConfig({
     emptyOutDir: true,
     chunkSizeWarningLimit: 1500,
   },
+  test: {
+    // Unit tests for the pure helpers (npm test); no browser needed
+    include: ["src/**/*.test.js"],
+    environment: "node",
+  },
   optimizeDeps: {
     // Vuetify 4 upgrade guide: keeps overlay stacking working in dev mode
     include: [

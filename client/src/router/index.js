@@ -51,6 +51,7 @@ const routes = [
     component: () => import("../views/Dashboard.vue"),
     meta: {
       requiresAuth: true,
+      redesigned: true,
     },
   },
   {
@@ -84,6 +85,7 @@ const routes = [
     component: () => import("../views/Weighting.vue"),
     meta: {
       requiresAuth: true,
+      competition: true,
     },
   },
   {
@@ -92,6 +94,7 @@ const routes = [
     component: () => import("../views/Overview.vue"),
     meta: {
       requiresAuth: true,
+      competition: true,
     },
   },
   {
@@ -100,6 +103,7 @@ const routes = [
     component: () => import("../views/CompSettings.vue"),
     meta: {
       requiresAuth: true,
+      competition: true,
     },
   },
   {
@@ -108,6 +112,7 @@ const routes = [
     component: () => import("../views/Results.vue"),
     meta: {
       requiresAuth: true,
+      competition: true,
     },
   },
   {
@@ -116,6 +121,7 @@ const routes = [
     component: () => import("../views/Signing.vue"),
     meta: {
       requiresAuth: true,
+      competition: true,
     },
   },
   {

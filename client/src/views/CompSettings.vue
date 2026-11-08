@@ -1,7 +1,6 @@
 <template>
   <!-- /comp-settings: view and edit the current competition's settings -->
   <div>
-    <Timedate />
 
     <v-container
       :class="{
@@ -220,7 +219,6 @@ import { useRouter } from "vue-router";
 import { confirm } from "@/plugins/alerts";
 import { useRules } from "@/composables/useRules";
 import { useCompetitionSettings } from "@/composables/useCompetitionSettings";
-import Timedate from "../components/layout/Timedate.vue";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
 import NotificationBar from "../components/NotificationBar.vue";
 import ErrorList from "../components/ErrorList.vue";

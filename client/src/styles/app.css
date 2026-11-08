@@ -1,0 +1,120 @@
+/*
+  Base look of the redesign (design canvas "Fisustaja redesign").
+  Colours come from the Vuetify theme (plugins/vuetify.js).
+*/
+:root {
+  --fs-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --fs-display: "Space Grotesk", "Inter", system-ui, sans-serif;
+}
+
+html,
+body {
+  margin: 0;
+  background: rgb(var(--v-theme-background));
+}
+
+.v-application {
+  font-family: var(--fs-font);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings and big numbers */
+.v-application h1,
+.v-application h2,
+.v-application h3,
+.v-application [class*="text-display-"],
+.v-application [class*="text-headline-"],
+.fs-display {
+  font-family: var(--fs-display);
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.fs-num {
+  font-variant-numeric: tabular-nums;
+}
+
+.fs-eyebrow {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.fs-muted {
+  color: rgb(var(--v-theme-muted));
+}
+
+/* Page content width and spacing for redesigned screens */
+.fs-page {
+  padding: 28px 40px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  box-sizing: border-box;
+  width: 100%;
+}
+@media (max-width: 700px) {
+  .fs-page {
+    padding: 20px 16px 40px;
+  }
+}
+
+/* A plain white panel */
+.fs-panel {
+  background: rgb(var(--v-theme-surface));
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 16px;
+}
+
+/* Data tables: calm header, no zebra stripes */
+.v-application .v-data-table thead th {
+  font-weight: 700 !important;
+  color: rgb(var(--v-theme-muted));
+}
+
+/* ---- Screens not redesigned yet ---------------------------------------
+   These class names come from the old gradient look. They now render as
+   plain panels so the older screens stay readable until they're redone. */
+.legacy-view {
+  text-align: center;
+}
+.legacy-view .v-window {
+  background: transparent !important;
+}
+#app .inputarea,
+#app .inputarea-dark,
+#app .container-transparent,
+#app .container-transparent-dark {
+  background: rgb(var(--v-theme-surface));
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 16px;
+}
+#app .input-fields {
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+#app .scroll_table {
+  max-height: 500px;
+  overflow: auto;
+}
+#app .fish-specs-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+}
+#app .fish-specs-table tbody tr:hover {
+  background-color: rgb(var(--v-theme-weighing-soft)) !important;
+  cursor: pointer;
+}
+#app .selected {
+  background-color: rgb(var(--v-theme-signing)) !important;
+  color: #ffffff;
+}
+.strokeme {
+  color: inherit;
+}

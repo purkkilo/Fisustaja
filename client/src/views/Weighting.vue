@@ -1,7 +1,6 @@
 <template>
   <!-- /weighting: weigh in the boats' catches -->
   <div>
-    <Timedate />
 
     <v-container
       :class="{
@@ -253,7 +252,6 @@
 import { computed, nextTick, ref } from "vue";
 import { useMainStore } from "@/store";
 import { useWeighting } from "@/composables/useWeighting";
-import Timedate from "../components/layout/Timedate.vue";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
 import NotificationBar from "../components/NotificationBar.vue";
 import BoatPicker from "../components/weighting/BoatPicker.vue";

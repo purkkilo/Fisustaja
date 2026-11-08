@@ -11,6 +11,8 @@
     "server": "nodemon --env-file=server/.env server/index.js",
     "dev": "concurrently \" cd server && nodemon --env-file=.env index.js\" \"cd client && npm run serve\"",
     "build-app": "cd client && npm run build",
+    "test": "npm run test:server && npm --prefix client test",
+    "test:server": "node --test server/test/*.test.js",
     "postinstall": "cd client && npm install && npm run build"
   },
   "dependencies": {

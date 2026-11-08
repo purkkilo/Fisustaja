@@ -2,7 +2,6 @@
   <!-- /overview -->
   <!-- html and js autoinjects to App.vue (and therefore on public/index.html) -->
   <div style="padding: 0px">
-    <Timedate />
 
     <v-container
       :class="{
@@ -171,7 +170,6 @@ import { ref } from "vue";
 import { useMainStore } from "@/store";
 import CompetitionService from "../services/CompetitionService";
 import ResultService from "../services/ResultService.js";
-import Timedate from "../components/layout/Timedate.vue";
 import ProgressBarQuery from "../components/layout/ProgressBarQuery.vue";
 import { formatDate } from "@/utils/format";
 import ErrorList from "../components/ErrorList.vue";
