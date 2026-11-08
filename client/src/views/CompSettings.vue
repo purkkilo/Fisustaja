@@ -262,7 +262,7 @@ async function saveSettings() {
 }
 
 function askDelete() {
-  confirm(t("confirm-dialog"), t("button.delete-comp"), "question")
+  confirm(t("settings-page.delete-help"), t("button.delete-comp"), "warning")
     .then(async () => {
       notify("notification.deleting");
       if (await remove()) router.push({ path: "/dashboard" });

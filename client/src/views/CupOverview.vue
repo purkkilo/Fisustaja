@@ -388,7 +388,7 @@ async function saveSignee(form) {
 }
 
 function askDeleteSignee(signee) {
-  confirm(t("confirm-dialog"), t("button.delete-signee"), "question")
+  confirm(t("confirm-dialog"), t("button.delete-signee"), "warning")
     .then(() => deleteSignee(signee))
     .catch(() => {}); // cancelled
 }

@@ -7,8 +7,9 @@ const round = (value, decimals = 0) => {
 };
 
 /**
- * @param {object} competition  with fishes [{ name, multiplier, minsize, color }]
- * @param {Array} results       signees: { returned, fishes: [{ name, weights }] }
+ * @param {object} competition  with fishes [{ id, name, multiplier, minsize, color }]
+ * @param {Array} results       signees: { returned, fishes: [{ id, weights }] }
+ *                              (legacy rows may use name instead of id)
  */
 export function competitionSummary(competition, results) {
   const list = results || [];
@@ -18,19 +19,25 @@ export function competitionSummary(competition, results) {
     (s.fishes || []).some((f) => Number(f.weights) > 0),
   ).length;
 
-  const weights = new Map();
+  // Weighing stores catches as { id, weights }; match that first, name as fallback
+  const byId = new Map();
+  const byName = new Map();
   for (const signee of list) {
     for (const fish of signee.fishes || []) {
-      weights.set(
-        fish.name,
-        (weights.get(fish.name) || 0) + (Number(fish.weights) || 0),
-      );
+      const w = Number(fish.weights) || 0;
+      if (fish.id != null) {
+        byId.set(fish.id, (byId.get(fish.id) || 0) + w);
+      } else if (fish.name) {
+        byName.set(fish.name, (byName.get(fish.name) || 0) + w);
+      }
     }
   }
-  const totalWeight = [...weights.values()].reduce((a, b) => a + b, 0);
 
   const species = (competition?.fishes || []).map((fish) => {
-    const weight = weights.get(fish.name) || 0;
+    const weight =
+      (fish.id != null ? byId.get(fish.id) : undefined) ??
+      byName.get(fish.name) ??
+      0;
     return {
       name: fish.name,
       multiplier: Number(fish.multiplier) || 1,
@@ -38,9 +45,13 @@ export function competitionSummary(competition, results) {
       color: fish.color,
       weight,
       points: round(weight * (Number(fish.multiplier) || 1)),
-      share: totalWeight ? round((weight / totalWeight) * 100, 1) : 0,
+      share: 0,
     };
   });
+  const totalWeight = species.reduce((sum, f) => sum + f.weight, 0);
+  for (const fish of species) {
+    fish.share = totalWeight ? round((fish.weight / totalWeight) * 100, 1) : 0;
+  }
   species.sort((a, b) => b.weight - a.weight);
 
   return {

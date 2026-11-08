@@ -94,7 +94,7 @@ function askRemove(index) {
   confirm(
     t("confirm-dialog"),
     `${t("delete")} ${fishes.value[index].name}`,
-    "question",
+    "warning",
   )
     .then(() => emit("remove", index))
     .catch(() => {}); // cancelled

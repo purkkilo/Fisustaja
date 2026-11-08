@@ -3,22 +3,22 @@ import { competitionSummary, formatKg } from "./overview";
 
 const competition = {
   fishes: [
-    { name: "Ahven", multiplier: 1, minsize: "0", color: "#111" },
-    { name: "Hauki", multiplier: 0.5, minsize: "40", color: "#222" },
-    { name: "Kuha", multiplier: 2, minsize: "42", color: "#333" },
+    { id: 0, name: "Ahven", multiplier: 1, minsize: "0", color: "#111" },
+    { id: 1, name: "Hauki", multiplier: 0.5, minsize: "40", color: "#222" },
+    { id: 2, name: "Kuha", multiplier: 2, minsize: "42", color: "#333" },
   ],
 };
 const results = [
   {
     returned: true,
     fishes: [
-      { name: "Ahven", weights: 1500 },
-      { name: "Hauki", weights: 3000 },
+      { id: 0, weights: 1500 },
+      { id: 1, weights: 3000 },
     ],
   },
-  { returned: true, fishes: [{ name: "Ahven", weights: 0 }] },
+  { returned: true, fishes: [{ id: 0, weights: 0 }] },
   { returned: false, fishes: [] },
-  { returned: true, fishes: [{ name: "Ahven", weights: 500 }] },
+  { returned: true, fishes: [{ id: 0, weights: 500 }] },
 ];
 
 describe("competitionSummary", () => {
@@ -33,7 +33,7 @@ describe("competitionSummary", () => {
     expect(s.withFishPct).toBe(50);
   });
 
-  it("sums the catch per species, biggest first", () => {
+  it("sums the catch per species by id, biggest first", () => {
     expect(s.totalWeight).toBe(5000);
     expect(s.species.map((f) => f.name)).toEqual(["Hauki", "Ahven", "Kuha"]);
     expect(s.species[0]).toMatchObject({
@@ -42,6 +42,20 @@ describe("competitionSummary", () => {
       share: 60,
     });
     expect(s.species[2]).toMatchObject({ weight: 0, share: 0 });
+  });
+
+  it("falls back to matching by name for legacy catch rows", () => {
+    const legacy = competitionSummary(competition, [
+      {
+        returned: true,
+        fishes: [
+          { name: "Ahven", weights: 1000 },
+          { name: "Hauki", weights: 2000 },
+        ],
+      },
+    ]);
+    expect(legacy.totalWeight).toBe(3000);
+    expect(legacy.species[0]).toMatchObject({ name: "Hauki", weight: 2000 });
   });
 
   it("handles a competition without results", () => {

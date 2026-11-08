@@ -133,9 +133,9 @@ const compSearch = ref("");
 
 async function confirmDelete(competition) {
   const ok = await confirm(
-    `${t("confirm-dialog")} (${competition.name})`,
+    `${competition.name} — ${t("settings-page.delete-help")}`,
     t("button.delete-comp"),
-    "question",
+    "warning",
   ).catch(() => false);
   if (ok) await deleteCompetition(competition);
 }

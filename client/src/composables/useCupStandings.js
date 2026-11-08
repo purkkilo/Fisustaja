@@ -78,7 +78,6 @@ export function useCupStandings({ publicOnly = false } = {}) {
       );
       biggestAmounts.value = collectAmounts(allResults.value);
       setCompetitionData();
-      notify("notification.info-up-to-date");
     } catch (err) {
       cup.value = null;
       console.error(err.response?.data?.error || err.message);

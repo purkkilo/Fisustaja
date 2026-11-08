@@ -182,7 +182,7 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
     signees.value = rawResults;
   }
 
-  async function load(competitionId, { notifyWhenDone = true } = {}) {
+  async function load(competitionId) {
     if (!competitionId) return;
     loading.value = true;
     try {
@@ -223,8 +223,6 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
       fishes_chart_data.value = charts.fishes_chart.data;
       signee_chart_title.value = charts.signee_chart.title;
       signee_chart_data.value = charts.signee_chart.data;
-
-      if (notifyWhenDone) notify("notification.info-up-to-date");
     } catch (err) {
       competition.value = null;
       signees.value = [];
