@@ -139,6 +139,12 @@ function createModel(defaults = {}) {
       if (index > -1) store.splice(index, 1);
       return { deletedCount: index > -1 ? 1 : 0 };
     }
+    static async deleteMany(filter) {
+      const before = store.length;
+      const kept = store.filter((d) => !matches(d, filter));
+      store.splice(0, store.length, ...kept);
+      return { deletedCount: before - kept.length };
+    }
     static async bulkWrite(ops) {
       for (const { replaceOne } of ops) {
         await FakeModel.replaceOne(replaceOne.filter, replaceOne.replacement);

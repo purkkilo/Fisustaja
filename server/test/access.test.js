@@ -141,6 +141,25 @@ test("only the owner (or an admin) can change or delete a competition", async ()
   assert.ok(await models.Competition.findById(id));
 });
 
+test("deleting a competition also deletes its results and fishes", async () => {
+  const id = String(mattiPrivate._id);
+  const otherId = String(mattiPublic._id);
+  models.Fish.add({ competition_id: id, name: "Hauki", weight: 1200 });
+  models.Fish.add({ competition_id: otherId, name: "Ahven", weight: 300 });
+
+  const del = await call(competitions, "DELETE", "/:id", {
+    cookies: matti,
+    params: { id },
+  });
+  assert.equal(del.statusCode, 200);
+  assert.equal(await models.Competition.findById(id), null);
+
+  const left = (model) => model.all().map((d) => d.competition_id);
+  // the other competition keeps its rows
+  assert.deepEqual(left(models.Result), [otherId]);
+  assert.deepEqual(left(models.Fish), [otherId]);
+});
+
 test("updates cannot change the owner", async () => {
   const id = String(mattiPrivate._id);
   const liisaId = String((await models.User.findOne({ name: "liisa" }))._id);

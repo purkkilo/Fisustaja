@@ -520,7 +520,8 @@
     "finished": "Finished competitions",
     "counted": "Competitions counted",
     "no-finished": "None of the cup's competitions has finished yet.",
-    "pick-public": "Pick a cup to see its standings."
+    "pick-public": "Pick a cup to see its standings.",
+    "missing-signees": "These boats are not in the cup's boat list: {boats}"
   },
   "admin-page": {
     "eyebrow": "Administration",

@@ -5,6 +5,7 @@ import ResultService from "@/services/ResultService";
 import FishService from "@/services/FishService";
 import { useMainStore } from "@/store";
 import { alert } from "@/plugins/alerts";
+import { t } from "@/i18n";
 import { calculateCupStandings, cupHeaders } from "@/utils/cupResults";
 import { sortBy } from "@/utils/format";
 import { saveCupAsPDF } from "@/pdf";
@@ -138,7 +139,9 @@ export function useCupStandings({ publicOnly = false } = {}) {
     isResults.value = result.standings.length > 0;
     headers.value = cupHeaders(competitions.value, headerLabel.value);
     if (result.missing.length) {
-      alert(`${result.missing.join(", ")}: not found in the cup's signees`);
+      alert(
+        t("cup-page.missing-signees", { boats: result.missing.join(", ") }),
+      );
     }
   }
 

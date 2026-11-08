@@ -343,15 +343,18 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
     setPdfInkSaver(inkSaver.value);
     if (pdf.value === "Tilastoja") {
       const previous = await ensureStatsChartsMounted();
-      await saveStatsAsPDF(
-        pdf.value,
-        orientation(),
-        competition.value,
-        signees.value,
-        hasGottenFishCount.value,
-      );
-      restoreChartsAfterPdf();
-      tab.value = previous;
+      try {
+        await saveStatsAsPDF(
+          pdf.value,
+          orientation(),
+          competition.value,
+          signees.value,
+          hasGottenFishCount.value,
+        );
+      } finally {
+        restoreChartsAfterPdf();
+        tab.value = previous;
+      }
       return;
     }
     const titles = {
@@ -388,26 +391,30 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
       ? await ensureStatsChartsMounted()
       : tab.value;
 
-    const r = await saveAllAsPDF(
-      previous,
-      orientation(),
-      text.value,
-      snackbar.value,
-      selected_biggest_fish.value,
-      selected_biggest_amount.value,
-      selected_print.value,
-      competition.value,
-      signees.value,
-      hasGottenFishCount.value,
-      biggest_fishes.value,
-      biggest_amounts.value,
-      normal_points.value,
-      normal_weights.value,
-      team_results.value,
-      table_fish_names.value,
-    );
-    restoreChartsAfterPdf();
-    tab.value = r.tab || previous;
+    let r = null;
+    try {
+      r = await saveAllAsPDF(
+        previous,
+        orientation(),
+        text.value,
+        snackbar.value,
+        selected_biggest_fish.value,
+        selected_biggest_amount.value,
+        selected_print.value,
+        competition.value,
+        signees.value,
+        hasGottenFishCount.value,
+        biggest_fishes.value,
+        biggest_amounts.value,
+        normal_points.value,
+        normal_weights.value,
+        team_results.value,
+        table_fish_names.value,
+      );
+    } finally {
+      restoreChartsAfterPdf();
+      tab.value = r?.tab || previous;
+    }
     text.value = r.text;
     snackbar.value = r.snackbar;
   }

@@ -76,7 +76,12 @@ export function getPdfInkSaver() {
 }
 
 export function setPdfInkSaver(value) {
-  const p = JSON.parse(localStorage.getItem("preferences") || "{}");
+  let p = {};
+  try {
+    p = JSON.parse(localStorage.getItem("preferences") || "{}") || {};
+  } catch {
+    // broken preferences: start over
+  }
   p.pdfInkSaver = !!value;
   localStorage.setItem("preferences", JSON.stringify(p));
   activeTheme = value ? { ...INK_THEME } : { ...COLOR_THEME };
@@ -235,7 +240,12 @@ function tableDefaults(headRow = []) {
         data.cell.styles.halign = align;
         // Ink-saver: underline header instead of a filled band
         if (theme.inkSaver) {
-          data.cell.styles.lineWidth = { top: 0, right: 0, bottom: 0.7, left: 0 };
+          data.cell.styles.lineWidth = {
+            top: 0,
+            right: 0,
+            bottom: 0.7,
+            left: 0,
+          };
           data.cell.styles.lineColor = theme.body;
         }
         return;
@@ -350,12 +360,13 @@ export function addAutoTable(doc, options = {}) {
     ...defaults,
     ...rest,
     theme: "plain",
-    styles: { ...styles, ...defaults.styles },
-    headStyles: { ...headStyles, ...defaults.headStyles },
-    bodyStyles: { ...bodyStyles, ...defaults.bodyStyles },
+    // the caller's styles win over the defaults
+    styles: { ...defaults.styles, ...styles },
+    headStyles: { ...defaults.headStyles, ...headStyles },
+    bodyStyles: { ...defaults.bodyStyles, ...bodyStyles },
     alternateRowStyles: {
-      ...alternateRowStyles,
       ...defaults.alternateRowStyles,
+      ...alternateRowStyles,
     },
     margin: { ...defaults.margin, ...margin },
     didParseCell(data) {
@@ -393,8 +404,17 @@ export function addFooter(doc, context = "") {
   doc.setTextColor(...theme.body);
 }
 
+/**
+ * Open the PDF in a new tab. The PDF is built after an await (fonts), so
+ * some browsers (Safari, Firefox, phones) block the tab: then download it.
+ */
 export function openPdfOnNewTab(doc, fileName) {
   const url = URL.createObjectURL(doc.output("blob"));
-  window.open(url, "_blank", "noopener,noreferrer");
+  const tab = window.open(url, "_blank");
+  if (tab) {
+    tab.opener = null;
+  } else {
+    doc.save(fileName);
+  }
   setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }

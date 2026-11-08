@@ -520,7 +520,8 @@
     "finished": "Päättyneet kilpailut",
     "counted": "Laskettavat kilpailut",
     "no-finished": "Yksikään cupin kilpailu ei ole vielä päättynyt.",
-    "pick-public": "Valitse cup nähdäksesi sen pistetilanteen."
+    "pick-public": "Valitse cup nähdäksesi sen pistetilanteen.",
+    "missing-signees": "Näitä veneitä ei löytynyt cupin veneistä: {boats}"
   },
   "admin-page": {
     "eyebrow": "Ylläpito",

@@ -9,10 +9,12 @@ import { t } from "@/i18n";
 // Import them in components: import { confirm } from "@/plugins/alerts";
 
 function isDark() {
-  return (
-    !!document.querySelector(".v-theme--dark") ||
-    !!JSON.parse(localStorage.getItem("preferences") || "{}").isDark
-  );
+  if (document.querySelector(".v-theme--dark")) return true;
+  try {
+    return !!JSON.parse(localStorage.getItem("preferences") || "{}").isDark;
+  } catch {
+    return false;
+  }
 }
 
 function isDestructive(title, type) {
@@ -23,9 +25,9 @@ function isDestructive(title, type) {
   );
 }
 
-function baseOptions(title, message, type, options = {}) {
+// `destructive` only applies to confirm(): an alert never offers "Delete"
+function baseOptions(title, message, type, options = {}, destructive = false) {
   const dark = isDark();
-  const destructive = isDestructive(title, type);
   return {
     title,
     text: message,
@@ -33,7 +35,7 @@ function baseOptions(title, message, type, options = {}) {
     buttonsStyling: false,
     reverseButtons: true,
     focusCancel: destructive,
-    confirmButtonText: destructive ? t("delete") : t("confirm"),
+    confirmButtonText: destructive ? t("delete") : "OK",
     cancelButtonText: t("cancel"),
     customClass: {
       container: "fs-swal-container",
@@ -56,8 +58,18 @@ export function alert(message, title, type, options = {}) {
 }
 
 export function confirm(message, title, type = "question", options = {}) {
+  const destructive = isDestructive(title, type);
   return Swal.fire({
-    ...baseOptions(title, message, type, options),
+    ...baseOptions(
+      title,
+      message,
+      type,
+      {
+        confirmButtonText: destructive ? t("delete") : t("confirm"),
+        ...options,
+      },
+      destructive,
+    ),
     showCancelButton: true,
   }).then((result) => {
     if (result.isConfirmed) return true;
