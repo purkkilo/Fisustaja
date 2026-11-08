@@ -31,7 +31,7 @@
 
 <script setup>
 import { ref, watch } from "vue";
-import { getPdfInkSaver, setPdfInkSaver } from "@/pdf";
+import { getPdfInkSaver, setPdfInkSaver } from "@/utils/pdfPreferences";
 
 const open = defineModel({ type: Boolean, default: false });
 const landscape = defineModel("landscape", { type: Boolean, default: false });

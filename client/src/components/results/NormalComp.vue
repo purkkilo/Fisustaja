@@ -22,6 +22,15 @@
         Number(item.total_points).toLocaleString("fi-FI")
       }}</span>
     </template>
+    <template #[`item.points_behind`]="{ item }">
+      <span v-if="item.points_behind == null" class="fs-muted">–</span>
+      <span v-else-if="item.points_behind === 0" class="fs-muted">{{
+        $t("results-page.tie")
+      }}</span>
+      <span v-else class="fs-num fs-muted"
+        >−{{ Number(item.points_behind).toLocaleString("fi-FI") }}</span
+      >
+    </template>
     <template #[`item.cup_points_total`]="{ item }">
       <v-tooltip location="bottom">
         <template #activator="{ props }">

@@ -53,6 +53,11 @@ const ResultSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  // when the boat was first weighed (catch timeline); null while on the water
+  weighed_at: {
+    type: Date,
+    default: null,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

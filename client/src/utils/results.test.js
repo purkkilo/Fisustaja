@@ -52,6 +52,15 @@ describe("calculateNormalResults", () => {
     expect(byBoat[4].cup_points_total).toBe(2);
   });
 
+  it("shows each boat's gap to the boat directly above", () => {
+    expect(normal_points.map((r) => r.points_behind)).toEqual([
+      null,
+      0,
+      400,
+      100,
+    ]);
+  });
+
   it("adds per-fish columns for the weights table", () => {
     expect(normal_weights[0][1]).toBe(500);
     expect(normal_weights[0].placement).toBe(1);

@@ -8,28 +8,36 @@
     >
       <template #actions>
         <v-autocomplete
-          v-model="selectedCup"
+          :model-value="listed ? cupId : null"
           :items="cups"
           item-title="select"
           item-value="_id"
           :label="`${$t('choose')} ${$t('cup.normal')}`"
           :loading="loadingList"
           :no-data-text="`${$t('cup.not-found')} ${$t('available')}`"
-          return-object
           hide-details
           clearable
           prepend-inner-icon="mdi-magnify"
           class="public__select"
+          @update:model-value="open"
         />
       </template>
     </PageHead>
 
+    <v-alert
+      v-if="cupId && notPublic"
+      type="info"
+      variant="tonal"
+      icon="mdi-lock-outline"
+    >
+      {{ $t("public-page.cup-not-found") }}
+    </v-alert>
     <v-skeleton-loader
-      v-if="loading && !cup"
+      v-else-if="loading && !cup"
       type="heading, table"
       class="fs-panel"
     />
-    <template v-else-if="selectedCup && cup">
+    <template v-else-if="cupId && cup">
       <PageHead
         :title="`${cup.name} ${cup.year}`"
         :subtitle="
@@ -39,10 +47,18 @@
           })
         "
         tone="results"
-      />
+      >
+        <template #actions>
+          <ShareLinkButton
+            :to="{ name: 'PublicCups', params: { id: cupId } }"
+            :title="`${cup.name} ${cup.year}`"
+          />
+        </template>
+      </PageHead>
       <PillTabs v-model="tab" :items="tabs" :label="$t('cup-page.views')" />
       <CupPoints
         v-if="tab === 'points'"
+        :key="cupId"
         :competitions="competitions"
         :all-competitions="allCompetitions"
         :headers="headers"
@@ -52,7 +68,7 @@
         :results="standings"
         :select-numbers="selectNumbers"
         @change="setHeaderLabel"
-        @refresh="() => load(selectedCup._id)"
+        @refresh="() => load(cupId)"
         @calculate="recalculate"
         @save="(options) => savePdf('Tulokset', options)"
         @sort="setShowUnfinished"
@@ -67,7 +83,7 @@
         :loading="loading"
       />
     </template>
-    <p v-else-if="!loadingList" class="fs-panel pa-8 fs-muted">
+    <p v-else-if="!loadingList && !cupId" class="fs-panel pa-8 fs-muted">
       {{ $t("cup-page.pick-public") }}
     </p>
     <NotificationBar v-model:snackbar="snackbar" :text="text" />
@@ -75,18 +91,27 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, defineAsyncComponent, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
+import { useRoute, useRouter } from "vue-router";
 import CupService from "../services/CupService";
 import { useCupStandings } from "@/composables/useCupStandings";
 import NotificationBar from "../components/NotificationBar.vue";
 import CupPoints from "../components/CupPoints.vue";
-import CupStats from "../components/CupStats.vue";
 import PillTabs from "../components/ui/PillTabs.vue";
 import PageHead from "../components/ui/PageHead.vue";
+import ShareLinkButton from "../components/ui/ShareLinkButton.vue";
+import { usePageTitle } from "@/composables/usePageTitle";
 
 defineOptions({ name: "PublicCups" });
+
+// Statistics bring chart.js with them: load them when the tab is opened
+const CupStats = defineAsyncComponent(
+  () => import("../components/CupStats.vue"),
+);
 const { t } = useI18n();
+const route = useRoute();
+const router = useRouter();
 
 const {
   loading,
@@ -111,9 +136,23 @@ const {
 } = useCupStandings({ publicOnly: true });
 
 const cups = ref([]);
-const selectedCup = ref(null);
 const loadingList = ref(false);
+const listFailed = ref(false);
 const tab = ref("points");
+
+// /public-cups/<id>: the id in the address is the shareable link
+const cupId = computed(() => route.params.id || null);
+const listed = computed(() => cups.value.find((c) => c._id === cupId.value));
+// the list holds every public cup: an id missing from it is not public
+const notPublic = computed(
+  () =>
+    !loadingList.value && !listFailed.value && !!cupId.value && !listed.value,
+);
+usePageTitle(() => (cupId.value && cup.value ? cup.value.name : ""));
+
+function open(id) {
+  router.replace({ name: "PublicCups", params: { id: id || undefined } });
+}
 
 const tabs = computed(() => [
   { value: "points", label: t("point-status"), icon: "mdi-podium" },
@@ -125,10 +164,14 @@ const tabs = computed(() => [
   },
 ]);
 
-watch(selectedCup, (c) => {
-  tab.value = "points";
-  return c ? load(c._id) : clear();
-});
+watch(
+  cupId,
+  (id) => {
+    tab.value = "points";
+    return id ? load(id) : clear();
+  },
+  { immediate: true },
+);
 
 onMounted(async () => {
   loadingList.value = true;
@@ -138,6 +181,7 @@ onMounted(async () => {
     // newest first
     cups.value = list.sort((a, b) => Number(b.year) - Number(a.year));
   } catch (err) {
+    listFailed.value = true;
     console.error(err.message);
   } finally {
     loadingList.value = false;

@@ -1,9 +1,7 @@
+// Live Chart.js instances: theme colours, resizing and PDF capture.
+// Imports chart.js, so load this module lazily (await import()).
 import { Chart } from "chart.js";
-
-export const CHART_THEME = {
-  light: { text: "#55656E", grid: "rgba(19, 52, 74, 0.08)" },
-  dark: { text: "#C9D6DE", grid: "rgba(255, 255, 255, 0.08)" },
-};
+import { CHART_THEME } from "./chartData";
 
 function eachChart(fn) {
   for (const canvas of document.querySelectorAll("canvas")) {
@@ -41,11 +39,18 @@ export function setChartsResponsive() {
 
 /**
  * Snap charts to a finished light-theme frame and return PNG data URLs.
- * Must stay synchronous: any await between draw and capture lets Vue re-animate.
+ * Pass ids, or { id, width, height } (CSS pixels) to capture at the shape the
+ * chart will have in the PDF. Must stay synchronous: any await between draw
+ * and capture lets Vue re-animate.
  */
-export function captureChartsForPDF(elementIds) {
+export function captureChartsForPDF(charts) {
   const out = {};
-  for (const id of elementIds) {
+  for (const spec of charts) {
+    const {
+      id,
+      width = 400,
+      height = 400,
+    } = typeof spec === "string" ? { id: spec } : spec;
     const chart = Chart.getChart(id);
     if (!chart) {
       out[id] = null;
@@ -53,111 +58,15 @@ export function captureChartsForPDF(elementIds) {
     }
     chart.stop();
     chart.options.animation = false;
+    // sharp in print: draw the capture at 3× the screen resolution
+    const previousRatio = chart.options.devicePixelRatio;
+    chart.options.devicePixelRatio = 3;
     setChartColors(chart, false);
-    chart.resize(400, 400);
+    chart.resize(Math.round(width), Math.round(height));
     chart.update("none");
     chart.draw();
     out[id] = chart.toBase64Image("image/png", 1);
+    chart.options.devicePixelRatio = previousRatio;
   }
   return out;
-}
-
-/** Light colours + fixed size (also used when only redrawing, not capturing). */
-export function prepareChartsForPDF() {
-  captureChartsForPDF(
-    [...document.querySelectorAll("canvas")]
-      .map((c) => c.id)
-      .filter(Boolean),
-  );
-}
-
-/** @deprecated use prepareChartsForPDF / captureChartsForPDF */
-export function resizeChartForPDF() {
-  prepareChartsForPDF();
-}
-
-/** Canvas / Chart.js instance as PNG data URL, or null when not mounted. */
-export function chartToDataURL(elementId) {
-  const chart = Chart.getChart(elementId);
-  if (chart) {
-    chart.stop();
-    chart.draw();
-    return chart.toBase64Image("image/png", 1);
-  }
-  const el = document.getElementById(elementId);
-  if (!el || typeof el.toDataURL !== "function") return null;
-  return el.toDataURL("image/png", 1.0);
-}
-
-// Parse data, define charts, draw them
-export function initChartData(
-  weights,
-  fishNames,
-  signeesWithPoints,
-  totalSignees,
-  language,
-) {
-  let temp_weights = [];
-  let colors = [];
-
-  const i18n = changeChartLanguage(language);
-
-  // Get fish weights, and color from array for fishesChart
-  weights.forEach((fish) => {
-    temp_weights.push(fish.weights);
-    colors.push(fish.color);
-  });
-
-  const fishes_chart_data = {
-    labels: fishNames,
-    datasets: [
-      {
-        label: i18n.fishes_dataset_label,
-        backgroundColor: colors,
-        data: temp_weights, // Weights
-      },
-    ],
-  };
-
-  const signee_chart_data = {
-    labels: i18n.signee_labels,
-    datasets: [
-      {
-        label: i18n.signee_dataset_label,
-        backgroundColor: ["#7fbf7f", "#ff7f7f"],
-        data: [signeesWithPoints, totalSignees - signeesWithPoints], // Data
-      },
-    ],
-  };
-
-  return {
-    fishes_chart: {
-      title: "comp-overview.fish-amount-total",
-      data: fishes_chart_data,
-    },
-    signee_chart: {
-      title: "comp-overview.gotten-fish",
-      data: signee_chart_data,
-    },
-  };
-}
-
-export function changeChartLanguage(language) {
-  let signee_labels, fishes_dataset_label, signee_dataset_label;
-
-  if (language === "en") {
-    signee_labels = ["Yes", "No"];
-    fishes_dataset_label = "Weight";
-    signee_dataset_label = "Amount";
-  } else {
-    signee_labels = ["Kyllä", "Ei"];
-    fishes_dataset_label = "Paino";
-    signee_dataset_label = "Lukumäärä";
-  }
-
-  return {
-    signee_labels,
-    fishes_dataset_label,
-    signee_dataset_label,
-  };
 }

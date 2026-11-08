@@ -1,5 +1,6 @@
 import { jsPDF } from "jspdf";
 import { applyPlugin } from "jspdf-autotable";
+import { getPdfInkSaver, setPdfInkSaver } from "../utils/pdfPreferences";
 import spaceRegularUrl from "./fonts/SpaceGrotesk-Regular.ttf?url";
 import spaceBoldUrl from "./fonts/SpaceGrotesk-Bold.ttf?url";
 
@@ -62,33 +63,10 @@ const INK_THEME = {
 let activeTheme = { ...COLOR_THEME };
 let fontsReady = null;
 
-function readPdfInkSaver() {
-  try {
-    const p = JSON.parse(localStorage.getItem("preferences") || "{}");
-    return !!p.pdfInkSaver;
-  } catch {
-    return false;
-  }
-}
-
-export function getPdfInkSaver() {
-  return readPdfInkSaver();
-}
-
-export function setPdfInkSaver(value) {
-  let p = {};
-  try {
-    p = JSON.parse(localStorage.getItem("preferences") || "{}") || {};
-  } catch {
-    // broken preferences: start over
-  }
-  p.pdfInkSaver = !!value;
-  localStorage.setItem("preferences", JSON.stringify(p));
-  activeTheme = value ? { ...INK_THEME } : { ...COLOR_THEME };
-}
+export { getPdfInkSaver, setPdfInkSaver };
 
 export function applyPdfStyleFromPreferences() {
-  activeTheme = readPdfInkSaver() ? { ...INK_THEME } : { ...COLOR_THEME };
+  activeTheme = getPdfInkSaver() ? { ...INK_THEME } : { ...COLOR_THEME };
   return activeTheme;
 }
 
@@ -331,6 +309,82 @@ export function addSectionTitle(doc, label, y) {
   doc.text(String(label || ""), PDF.marginX + 5, y);
   doc.setFont(PDF.font, "normal");
   return y + 7;
+}
+
+const TILE_FILL = {
+  signing: [227, 238, 221],
+  weighing: PDF.softBlue,
+  results: PDF.softAmber,
+  plain: PDF.white,
+};
+
+/**
+ * A row of number tiles like the statistics page: label, big value with its
+ * unit, optional progress bar and note. Ink saver draws outlines only.
+ * @param {Array<{ label, value, unit?, note?, progress?, tone? }>} tiles  label already translated
+ * @returns {number} Y under the tiles
+ */
+export function addStatTiles(doc, tiles, y) {
+  const theme = activeTheme;
+  const pageW = doc.internal.pageSize.getWidth();
+  const gap = 4;
+  const w = (pageW - PDF.marginX * 2 - gap * (tiles.length - 1)) / tiles.length;
+  const h = tiles.some((tile) => tile.note || tile.progress != null) ? 30 : 24;
+
+  tiles.forEach((tile, i) => {
+    const x = PDF.marginX + i * (w + gap);
+    const fill = TILE_FILL[tile.tone] || PDF.white;
+    if (theme.inkSaver || tile.tone === "plain") {
+      doc.setDrawColor(...theme.line);
+      doc.setLineWidth(0.3);
+      doc.roundedRect(x, y, w, h, 3, 3, "S");
+    } else {
+      doc.setFillColor(...fill);
+      doc.roundedRect(x, y, w, h, 3, 3, "F");
+    }
+
+    doc.setFont(PDF.font, "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(...theme.body);
+    doc.text(doc.splitTextToSize(String(tile.label), w - 8)[0], x + 4, y + 6.5);
+
+    doc.setFontSize(17);
+    const value = String(tile.value);
+    doc.text(value, x + 4, y + 15.5);
+    if (tile.unit) {
+      const valueW = doc.getTextWidth(value);
+      doc.setFont(PDF.font, "normal");
+      doc.setFontSize(9);
+      doc.text(String(tile.unit), x + 5.5 + valueW, y + 15.5);
+    }
+
+    let lineY = y + 20;
+    if (tile.progress != null) {
+      const barW = w - 8;
+      const share = Math.min(100, Math.max(0, tile.progress)) / 100;
+      doc.setFillColor(...(theme.inkSaver ? [225, 225, 225] : [190, 214, 228]));
+      doc.roundedRect(x + 4, lineY, barW, 1.8, 0.9, 0.9, "F");
+      if (share > 0) {
+        doc.setFillColor(...(theme.inkSaver ? PDF.black : PDF.primary));
+        doc.roundedRect(x + 4, lineY, barW * share, 1.8, 0.9, 0.9, "F");
+      }
+      lineY += 6;
+    }
+    if (tile.note) {
+      doc.setFont(PDF.font, "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(...theme.muted);
+      doc.text(
+        String(tile.note),
+        x + 4,
+        lineY + (tile.progress != null ? 0 : 4),
+      );
+    }
+  });
+
+  doc.setFont(PDF.font, "normal");
+  doc.setTextColor(...theme.body);
+  return y + h;
 }
 
 /** Soft rounded-ish frame behind a chart image (drawn as a filled rect). */

@@ -19,6 +19,13 @@
         >
       </template>
       <template v-if="cup" #actions>
+        <ShareLinkButton
+          :to="{ name: 'PublicCups', params: { id: cup._id } }"
+          :title="`${cup.name} ${cup.year}`"
+          :text="$t('share.public-link')"
+          :disabled="!cup.isPublic"
+          :disabled-hint="$t('share.cup-publish-first')"
+        />
         <v-btn
           variant="outlined"
           :prepend-icon="cup.isPublic ? 'mdi-lock-outline' : 'mdi-earth'"
@@ -254,7 +261,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, defineAsyncComponent, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { useMainStore } from "@/store";
@@ -263,15 +270,20 @@ import { useCupOverview } from "@/composables/useCupOverview";
 import NotificationBar from "../components/NotificationBar.vue";
 import PdfSettingsDialog from "../components/PdfSettingsDialog.vue";
 import CupPoints from "../components/CupPoints.vue";
-import CupStats from "../components/CupStats.vue";
 import CupCompetitionsTable from "../components/cup/CupCompetitionsTable.vue";
 import SigneeDialog from "../components/cup/SigneeDialog.vue";
 import PageHead from "../components/ui/PageHead.vue";
 import FsSection from "../components/ui/FsSection.vue";
 import PillTabs from "../components/ui/PillTabs.vue";
 import StatTile from "../components/ui/StatTile.vue";
+import ShareLinkButton from "../components/ui/ShareLinkButton.vue";
 
 defineOptions({ name: "CupOverview" });
+
+// Statistics bring chart.js with them: load them when the tab is opened
+const CupStats = defineAsyncComponent(
+  () => import("../components/CupStats.vue"),
+);
 
 const { t } = useI18n();
 const router = useRouter();

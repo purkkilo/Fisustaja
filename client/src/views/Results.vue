@@ -43,6 +43,13 @@
               : $t("button.set-complete")
           }}</v-btn
         >
+        <ShareLinkButton
+          :to="{ name: 'PublicResults', params: { id: competition._id } }"
+          :title="competition.name"
+          :text="$t('share.public-link')"
+          :disabled="!competition.isPublic"
+          :disabled-hint="$t('share.publish-first')"
+        />
         <v-btn
           variant="text"
           icon="mdi-refresh"
@@ -56,6 +63,8 @@
     <CompetitionResults
       ref="resultsView"
       :competition-id="competitionId"
+      :live="autoRefresh"
+      :live-interval-ms="AUTO_REFRESH_MS"
       @loaded="(c) => (competition = c)"
     />
     <NotificationBar v-model:snackbar="snackbar" :text="text" />
@@ -63,16 +72,17 @@
 </template>
 
 <script setup>
-import { nextTick, onBeforeUnmount, ref, watch } from "vue";
+import { nextTick, ref, watch } from "vue";
 import { useMainStore } from "@/store";
 import CompetitionService from "../services/CompetitionService";
 import NotificationBar from "../components/NotificationBar.vue";
 import CompetitionResults from "../components/results/CompetitionResults.vue";
 import PageHead from "@/components/ui/PageHead.vue";
+import ShareLinkButton from "@/components/ui/ShareLinkButton.vue";
 
 defineOptions({ name: "Results" });
 
-const AUTO_REFRESH_MS = 60000;
+const AUTO_REFRESH_MS = 30000;
 
 const store = useMainStore();
 const resultsView = ref(null);
@@ -92,17 +102,14 @@ function notify(message) {
   nextTick(() => (snackbar.value = true));
 }
 
-let timer = null;
-watch(autoRefresh, (enabled) => {
-  clearInterval(timer);
-  if (enabled) {
-    timer = setInterval(() => resultsView.value?.refresh(), AUTO_REFRESH_MS);
-    notify("notification.auto-update-enabled");
-  } else {
-    notify("notification.auto-update-disabled");
-  }
-});
-onBeforeUnmount(() => clearInterval(timer));
+// CompetitionResults does the refreshing (quietly, paused in hidden tabs)
+watch(autoRefresh, (enabled) =>
+  notify(
+    enabled
+      ? "notification.auto-update-enabled"
+      : "notification.auto-update-disabled",
+  ),
+);
 
 async function saveValues(values, rollback) {
   updating.value = true;

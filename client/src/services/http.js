@@ -1,6 +1,10 @@
 import axios from "axios";
 
 axios.defaults.withCredentials = true;
+// Service URLs are written "api/..." without a leading slash. Resolve them
+// from the site root, not from the current page: on /public-results/<id>
+// they would otherwise become /public-results/api/... (the app's HTML).
+axios.defaults.baseURL = import.meta.env?.BASE_URL || "/";
 
 let refreshPromise = null;
 
@@ -30,11 +34,9 @@ export function setupAuthInterceptor({ onUnauthorized }) {
 
       try {
         if (!refreshPromise) {
-          refreshPromise = axios
-            .post("api/users/refresh")
-            .finally(() => {
-              refreshPromise = null;
-            });
+          refreshPromise = axios.post("api/users/refresh").finally(() => {
+            refreshPromise = null;
+          });
         }
         await refreshPromise;
         return axios(original);

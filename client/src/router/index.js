@@ -30,7 +30,8 @@ const routes = [
     },
   },
   {
-    path: "/public-results",
+    // /public-results/<id> opens one competition: the link organizers share
+    path: "/public-results/:id?",
     name: "PublicResults",
     component: () => import("../views/PublicResults.vue"),
     meta: {
@@ -38,7 +39,7 @@ const routes = [
     },
   },
   {
-    path: "/public-cups",
+    path: "/public-cups/:id?",
     name: "PublicCups",
     component: () => import("../views/PublicCups.vue"),
     meta: {

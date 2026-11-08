@@ -1,15 +1,17 @@
-import { t } from "../i18n";
+import i18n, { t } from "../i18n";
 import { formatDateToLocaleDateString } from "../utils/format";
 import {
   calculateBiggestAmounts,
   calculateBiggestFishes,
 } from "../utils/results";
 import { captureChartsForPDF, setChartsResponsive } from "../utils/charts";
+import { chartRows, statsSummary } from "../utils/competitionStats";
 import {
   addTitle,
   addSectionTitle,
   addAutoTable,
   addChartFrame,
+  addStatTiles,
   PDF,
 } from "./helpers";
 
@@ -71,11 +73,7 @@ export function columnsNormalFishes(fish_names) {
 
 export function rowsNormalFishes(normal_weights, competition) {
   return normal_weights.map((b) => {
-    const row = [
-      `${b.placement}.`,
-      `(${b.boat_number})`,
-      b.captain_name,
-    ];
+    const row = [`${b.placement}.`, `(${b.boat_number})`, b.captain_name];
     competition.fishes.forEach((f) => {
       const fish = b.fishes.find((item) => item.id === f.id);
       row.push(fish ? fish.weights.toLocaleString() : "-");
@@ -109,7 +107,12 @@ export function rowsTeam(team_results) {
 
 export function columnsBiggestFishes(mode = "all") {
   if (mode === "winners") {
-    return [t("fish"), t("boat-number"), t("captain-name"), `${t("weight")} (g)`];
+    return [
+      t("fish"),
+      t("boat-number"),
+      t("captain-name"),
+      `${t("weight")} (g)`,
+    ];
   }
   return [
     t("placement"),
@@ -140,14 +143,14 @@ export function rowsBiggestFishes(results, mode = "all") {
 
 export function columnsBiggestAmounts(mode = "all") {
   if (mode === "winners") {
-    return [t("fish"), t("boat-number"), t("captain-name"), `${t("weight")} (g)`];
+    return [
+      t("fish"),
+      t("boat-number"),
+      t("captain-name"),
+      `${t("weight")} (g)`,
+    ];
   }
-  return [
-    t("fish"),
-    t("boat-number"),
-    t("captain-name"),
-    `${t("weight")} (g)`,
-  ];
+  return [t("fish"), t("boat-number"), t("captain-name"), `${t("weight")} (g)`];
 }
 
 export function rowsBiggestAmounts(results) {
@@ -182,51 +185,89 @@ export function fishSpecsRows(competition) {
   return rows;
 }
 
-export function generalStatsRows(competition, signees, hasGottenFishCount) {
-  return [
-    [`Cup ${t("multiplier")}`, `x ${competition.cup_points_multiplier}`],
-    [`${t("signees")} ${t("total")}`, `${signees.length}`],
-    [
-      t("comp-overview.gotten-fish"),
-      `${
-        Math.round((hasGottenFishCount / signees.length) * 100 * 100) / 100
-      } % (${hasGottenFishCount}/${signees.length})`,
-    ],
-  ];
-}
+/** Charts of the statistics view, in PDF order. Missing ones are skipped. */
+const STATS_CHARTS = [
+  { id: "species_chart", title: "stats-page.species" },
+  { id: "top_boats_chart", title: "stats-page.top-boats" },
+  { id: "points_spread_chart", title: "stats-page.spread" },
+  { id: "biggest_fish_chart", title: "stats-page.biggest" },
+  { id: "catch_timeline_chart", title: "stats-page.timeline", wide: true },
+];
 
 /**
- * Stats page: charts (if mounted) + fish specs + general stats.
- * @returns {boolean} whether charts were captured
+ * Stats page: number tiles, every chart that is on screen, fish specs.
+ * @returns {boolean} whether the charts were captured
  */
 export function renderStatsSection(
   doc,
-  { title, cup, time, competition, signees, hasGottenFishCount, newPage = false },
+  {
+    title,
+    cup,
+    time,
+    competition,
+    signees,
+    hasGottenFishCount,
+    newPage = false,
+  },
 ) {
   if (newPage) doc.addPage();
-  addTitle(doc, title, cup, time);
+  // the header is taller when there is a cup line: start below it
+  const contentTop = addTitle(doc, title, cup, time);
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const bottom = pageH - 18; // footer
+  const contentW = pageW - PDF.marginX * 2;
+  const gap = 8;
+  const titleH = 7;
+  const boxW = (contentW - gap) / 2;
+  const boxH = Math.min(boxW * 0.78, 78);
+  const wideH = 58;
+  // CSS pixels per mm when capturing: the charts' 12 px text becomes ~8.5 pt
+  const PX = 4;
 
-  const charts = captureChartsForPDF(["fishes_chart", "signee_chart"]);
-  const fishesImg = charts.fishes_chart;
-  const signeeImg = charts.signee_chart;
-  const landscape = doc.internal.pageSize.getWidth() > 500;
-  let chartsOk = !!(fishesImg && signeeImg);
+  const lang = i18n.global.locale.value === "fi" ? "fi-FI" : "en-GB";
+  const tiles = statsSummary(
+    competition,
+    signees,
+    hasGottenFishCount,
+    lang,
+  ).map((tile) => ({ ...tile, label: t(tile.label) }));
+  let y = addStatTiles(doc, tiles, contentTop - 4) + 10;
 
-  if (chartsOk) {
-    const size = landscape ? 95 : 88;
-    const gap = 12;
-    const pageW = doc.internal.pageSize.getWidth();
-    const totalW = size * 2 + gap;
-    const left = (pageW - totalW) / 2;
-    const top = 42;
-    addChartFrame(doc, left, top, size, size);
-    addChartFrame(doc, left + size + gap, top, size, size);
-    doc.addImage(fishesImg, "PNG", left, top, size, size);
-    doc.addImage(signeeImg, "PNG", left + size + gap, top, size, size);
+  // capture every chart at the shape it gets on the page
+  const images = captureChartsForPDF(
+    STATS_CHARTS.map((c) => ({
+      id: c.id,
+      width: (c.wide ? contentW : boxW) * PX,
+      height: (c.wide ? wideH : boxH) * PX,
+    })),
+  );
+  const present = STATS_CHARTS.filter((c) => images[c.id]);
+
+  const newPageIfNeeded = (height) => {
+    if (y + height <= bottom) return;
+    doc.addPage();
+    y = addTitle(doc, title, cup, time) - 4;
+  };
+
+  for (const row of chartRows(present)) {
+    const h = row[0].wide ? wideH : boxH;
+    newPageIfNeeded(titleH + h + 4);
+    row.forEach((chart, i) => {
+      const w = chart.wide ? contentW : boxW;
+      const x = PDF.marginX + i * (boxW + gap);
+      doc.setFont(PDF.font, "bold");
+      doc.setFontSize(9.5);
+      doc.text(doc.splitTextToSize(t(chart.title), w)[0], x, y + 3);
+      doc.setFont(PDF.font, "normal");
+      addChartFrame(doc, x + 3, y + titleH + 3, w - 6, h - 6);
+      doc.addImage(images[chart.id], "PNG", x, y + titleH, w, h);
+    });
+    y += titleH + h + 10;
   }
 
-  const specsY = chartsOk ? 148 : 48;
-  addSectionTitle(doc, t("fish-specs"), specsY);
+  newPageIfNeeded(40);
+  const specsY = addSectionTitle(doc, t("fish-specs"), y + 2);
   const specsHead = [
     t("fish"),
     t("multiplier"),
@@ -237,36 +278,18 @@ export function renderStatsSection(
   addAutoTable(doc, {
     head: [specsHead],
     body: specsBody,
-    startY: specsY + 5,
+    startY: specsY,
     didParseCell(data) {
       // Bold the totals row
-      if (
-        data.section === "body" &&
-        data.row.index === specsBody.length - 1
-      ) {
+      if (data.section === "body" && data.row.index === specsBody.length - 1) {
         data.cell.styles.fontStyle = "bold";
       }
     },
   });
 
-  addSectionTitle(
-    doc,
-    t("general-statistics"),
-    doc.lastAutoTable.finalY + 14,
-  );
-  addAutoTable(doc, {
-    head: [[t("overview-page.details"), ""]],
-    body: generalStatsRows(competition, signees, hasGottenFishCount),
-    startY: doc.lastAutoTable.finalY + 18,
-    showHead: false,
-    columnStyles: {
-      0: { cellWidth: 90, fontStyle: "bold", textColor: PDF.muted },
-      1: { halign: "right" },
-    },
-  });
-
   setChartsResponsive();
-  return chartsOk;
+  // the first two are always on screen when there is a catch
+  return !!(images.species_chart && images.top_boats_chart);
 }
 
 export function optionLabel(item) {

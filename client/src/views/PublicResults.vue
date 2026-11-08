@@ -1,5 +1,6 @@
 <template>
-  <!-- /public-results: results of any public competition -->
+  <!-- /public-results and /public-results/<id>: results of public
+       competitions. The id in the address is what organizers share. -->
   <div class="fs-page public">
     <PageHead
       :title="$t('shell.public-comps')"
@@ -8,17 +9,18 @@
     >
       <template #actions>
         <v-autocomplete
-          v-model="selected"
+          :model-value="listed ? competitionId : null"
           :items="competitions"
           item-title="select"
           item-value="_id"
           :label="$t('choose-comp')"
           :loading="loadingList"
           :no-data-text="$t('no') + ' ' + $t('comp.plural')"
-          return-object
           hide-details
+          clearable
           prepend-inner-icon="mdi-magnify"
           class="public__select"
+          @update:model-value="open"
         >
           <template #item="{ item, props }">
             <v-list-item v-bind="props">
@@ -34,47 +36,90 @@
       </template>
     </PageHead>
 
-    <PageHead
-      v-if="selected"
-      :title="selected.name"
-      :subtitle="selectedMeta"
-      tone="results"
-    />
-    <CompetitionResults
-      v-if="selected"
-      ref="resultsView"
-      :competition-id="selected._id"
-      public-only
-    />
+    <v-alert
+      v-if="competitionId && notPublic"
+      type="info"
+      variant="tonal"
+      icon="mdi-lock-outline"
+    >
+      {{ $t("public-page.not-found") }}
+    </v-alert>
+
+    <template v-else-if="competitionId">
+      <PageHead
+        v-if="shown"
+        :title="shown.name"
+        :subtitle="meta(shown)"
+        tone="results"
+      >
+        <template #actions>
+          <ShareLinkButton
+            :to="{ name: 'PublicResults', params: { id: competitionId } }"
+            :title="shown.name"
+          />
+        </template>
+      </PageHead>
+      <CompetitionResults
+        :competition-id="competitionId"
+        public-only
+        live
+        @loaded="(c) => (loaded = c)"
+      />
+    </template>
+
     <p v-else-if="!loadingList" class="fs-panel pa-8 fs-muted">
-      {{ $t("results-page.pick-public") }}
+      {{ $t("public-page.pick") }}
     </p>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import CompetitionService from "../services/CompetitionService";
 import CompetitionResults from "../components/results/CompetitionResults.vue";
 import PageHead from "@/components/ui/PageHead.vue";
+import ShareLinkButton from "@/components/ui/ShareLinkButton.vue";
+import { usePageTitle } from "@/composables/usePageTitle";
 import { formatDateToLocaleDateString } from "@/utils/format";
 
 defineOptions({ name: "PublicResults" });
+const route = useRoute();
+const router = useRouter();
 
 const competitions = ref([]);
-const selected = ref(null);
 const loadingList = ref(false);
-const resultsView = ref(null);
+const listFailed = ref(false);
+const loaded = ref(null); // the competition as CompetitionResults loaded it
 
-const selectedMeta = computed(() =>
-  [
-    selected.value?.locality,
-    selected.value && formatDateToLocaleDateString(selected.value.start_date),
-    selected.value?.cup_name,
-  ]
-    .filter(Boolean)
-    .join(" · "),
+const competitionId = computed(() => route.params.id || null);
+const listed = computed(() =>
+  competitions.value.find((c) => c._id === competitionId.value),
 );
+// the list holds every public competition: an id missing from it is not public
+const notPublic = computed(
+  () =>
+    !loadingList.value &&
+    !listFailed.value &&
+    !!competitionId.value &&
+    !listed.value,
+);
+const shown = computed(() =>
+  loaded.value?._id === competitionId.value ? loaded.value : listed.value,
+);
+usePageTitle(() => shown.value?.name);
+
+const meta = (c) =>
+  [c.locality, formatDateToLocaleDateString(c.start_date), c.cup_name]
+    .filter(Boolean)
+    .join(" · ");
+
+// choosing from the list changes the address, so it can be shared as is
+function open(id) {
+  router.replace({ name: "PublicResults", params: { id: id || undefined } });
+}
+
+watch(competitionId, () => (loaded.value = null));
 
 onMounted(async () => {
   loadingList.value = true;
@@ -93,6 +138,7 @@ onMounted(async () => {
     }
     competitions.value = list.sort((a, b) => b.start_date - a.start_date);
   } catch (error) {
+    listFailed.value = true;
     console.error(error.message);
   } finally {
     loadingList.value = false;

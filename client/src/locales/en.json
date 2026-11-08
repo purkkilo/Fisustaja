@@ -478,7 +478,11 @@
     "auto-refresh": "Refresh automatically",
     "public-on": "Public",
     "public-off": "Not public",
-    "pick-public": "Pick a competition to see its results."
+    "pick-public": "Pick a competition to see its results.",
+    "live": "Updating live",
+    "updated-at": "updated {time}",
+    "behind": "Behind",
+    "tie": "tie"
   },
   "overview-page": {
     "catch": "Catch by species",
@@ -546,5 +550,41 @@
     "title": "Page not found",
     "text": "The address is wrong or the page has been removed.",
     "home": "To the home page"
+  },
+  "share": {
+    "copy-link": "Copy link",
+    "public-link": "Public link",
+    "copied": "Link copied",
+    "failed": "Couldn't copy",
+    "publish-first": "Make the results public first so the link works for others.",
+    "cup-publish-first": "Make the cup public first so the link works for others."
+  },
+  "public-page": {
+    "pick": "Pick a competition to see its results.",
+    "not-found": "Competition not found, or its results aren't public.",
+    "cup-not-found": "Cup not found, or it isn't public."
+  },
+  "stats-page": {
+    "species": "Points by species",
+    "species-lead": "Points decide: weight times the species multiplier. Hover a bar for the weight.",
+    "top-boats": "Where the top boats got their points",
+    "top-boats-lead": "The ten best boats, their points split by species.",
+    "spread": "Points spread",
+    "spread-lead": "How many boats scored how much. Grey bar: no catch.",
+    "biggest": "Biggest fish by species",
+    "biggest-lead": "Every recorded biggest fish as a dot; each species' record is the larger dot.",
+    "timeline": "Catch over the day",
+    "timeline-lead": "Total weighed catch by time of day.",
+    "no-catch": "No catch",
+    "boats": "boats",
+    "record": "species record",
+    "catch-so-far": "Total catch",
+    "time": "Time",
+    "progress": "How the standings developed",
+    "progress-tab": "Standings over time",
+    "progress-lead": "Cup points of the top {n} boats after each competition. As a table on the Standings tab.",
+    "progress-needs-two": "Shown once the cup has at least two finished competitions.",
+    "by-competition": "Catch by competition",
+    "by-competition-lead": "Each competition's catch in kilograms, split by species."
   }
 }

@@ -53,7 +53,8 @@ export async function saveAsPDF(
   let rows = [];
   let pdf_competition_type = replaceAll(String(competition_type), " ", "");
 
-  addTitle(doc, title, competition.cup_name, time);
+  // the header is taller with a cup line: the table starts below it
+  const contentTop = addTitle(doc, title, competition.cup_name, time);
 
   if (table_id === "#normal-table") {
     pdf_competition_type = `${replaceAll(t("normal-comp"), " ", "")}${selected_normal}`;
@@ -134,7 +135,7 @@ export async function saveAsPDF(
     }
   }
 
-  const startY = addSectionTitle(doc, competition_type, 48);
+  const startY = addSectionTitle(doc, competition_type, contentTop);
   addAutoTable(doc, { head: [columns], body: rows, startY: startY + 2 });
   finish(
     doc,
@@ -385,7 +386,11 @@ export async function saveAllAsPDF(
           newPage: needPage(),
         });
       } else {
-        addSectionTitle(doc, `${t("biggest-amounts")} (${t("winners")})`, y + 16);
+        addSectionTitle(
+          doc,
+          `${t("biggest-amounts")} (${t("winners")})`,
+          y + 16,
+        );
         addAutoTable(doc, {
           head: [columnsBiggestAmounts("winners")],
           body: rowsBiggestAmounts(amounts),

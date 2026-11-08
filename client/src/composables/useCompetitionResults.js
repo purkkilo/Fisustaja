@@ -6,23 +6,15 @@ import FishService from "@/services/FishService";
 import { useMainStore } from "@/store";
 import { useTheme } from "vuetify";
 import {
-  applyChartThemeColors,
-  changeChartLanguage,
-  initChartData,
-  setChartsResponsive,
-} from "@/utils/charts";
-import {
   calculateBiggestAmounts,
   calculateBiggestFishes,
   calculateNormalResults,
 } from "@/utils/results";
-import {
-  getPdfInkSaver,
-  saveAllAsPDF,
-  saveAsPDF,
-  saveStatsAsPDF,
-  setPdfInkSaver,
-} from "@/pdf";
+import { getPdfInkSaver, setPdfInkSaver } from "@/utils/pdfPreferences";
+
+// jsPDF, its fonts and chart.js load only when a PDF is made
+const loadPdf = () => import("@/pdf");
+const loadLiveCharts = () => import("@/utils/charts");
 
 const NORMAL_HEADERS = [
   { title: "placement", key: "placement" },
@@ -31,6 +23,7 @@ const NORMAL_HEADERS = [
   { title: "temp-captain-name", key: "temp_captain_name" },
   { title: "locality", key: "locality" },
   { title: "points", key: "total_points" },
+  { title: "results-page.behind", key: "points_behind", align: "end" },
 ];
 const CUP_HEADERS = [
   ...NORMAL_HEADERS,
@@ -74,10 +67,11 @@ function assignPlacements(items, key) {
  */
 export function useCompetitionResults({ publicOnly = false } = {}) {
   const store = useMainStore();
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const theme = useTheme();
 
   const loading = ref(false);
+  const lastUpdated = ref(null); // when the results were last loaded
   const competition = ref(null);
   const signees = ref([]);
   const hasGottenFishCount = ref(0);
@@ -114,12 +108,6 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
   const biggest_amounts_results = ref([]);
   const biggest_amounts_headers = ref([]);
   const selected_biggest_amount = ref(null);
-
-  // charts
-  const fishes_chart_title = ref(null);
-  const fishes_chart_data = ref(null);
-  const signee_chart_title = ref(null);
-  const signee_chart_data = ref(null);
 
   // notifications
   const snackbar = ref(false);
@@ -182,21 +170,23 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
     signees.value = rawResults;
   }
 
-  async function load(competitionId) {
+  // quiet: an automatic refresh. No loading bars, and if it fails the
+  // results already on screen stay there.
+  async function load(competitionId, { quiet = false } = {}) {
     if (!competitionId) return;
-    loading.value = true;
+    if (!quiet) loading.value = true;
     try {
       // Logged-out visitors may only read public competitions
       const visibility = publicOnly ? { isPublic: true } : {};
       const found = await CompetitionService.getById(competitionId, visibility);
-      competition.value = found;
-      found.fishes.forEach((fish) => (fish.weights = 0));
-      resetFishLists(found.fishes);
-
       const [rawResults, fishes] = await Promise.all([
         ResultService.list({ competition_id: found._id, ...visibility }),
         FishService.list({ competition_id: found._id, ...visibility }),
       ]);
+      // everything fetched: only now replace what is on screen
+      competition.value = found;
+      found.fishes.forEach((fish) => (fish.weights = 0));
+      resetFishLists(found.fishes);
       processResults(rawResults);
       biggest_fishes.value = fishes;
 
@@ -209,28 +199,19 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
       assignPlacements(team_results.value, "points");
 
       calculateAll();
-      store.refreshCompetition(found);
+      // a public visitor's page must not change the organizer's current competition
+      if (!publicOnly) store.refreshCompetition(found);
 
-      await nextTick();
-      const charts = initChartData(
-        found.fishes,
-        table_fish_names.value,
-        hasGottenFishCount.value,
-        signees.value.length,
-        locale.value,
-      );
-      fishes_chart_title.value = charts.fishes_chart.title;
-      fishes_chart_data.value = charts.fishes_chart.data;
-      signee_chart_title.value = charts.signee_chart.title;
-      signee_chart_data.value = charts.signee_chart.data;
+      lastUpdated.value = new Date();
     } catch (err) {
+      console.error(err.response?.data?.error || err.message);
+      if (quiet) return;
       competition.value = null;
       signees.value = [];
       biggest_fishes.value = [];
       biggest_amounts.value = {};
-      console.error(err.response?.data?.error || err.message);
     } finally {
-      loading.value = false;
+      if (!quiet) loading.value = false;
     }
   }
 
@@ -312,7 +293,9 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
 
   watch(inkSaver, (value) => setPdfInkSaver(value));
 
-  function restoreChartsAfterPdf() {
+  async function restoreChartsAfterPdf() {
+    const { applyChartThemeColors, setChartsResponsive } =
+      await loadLiveCharts();
     applyChartThemeColors(theme.current.value.dark);
     setChartsResponsive();
   }
@@ -324,12 +307,13 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
       tab.value = "stats";
       await nextTick();
     }
-    // Wait until both canvases are registered with Chart.js (or time out)
-    const deadline = Date.now() + 2000;
+    // Wait until both canvases exist (the stats view and chart.js load
+    // on demand, so the first time can take a moment) or time out
+    const deadline = Date.now() + 5000;
     while (Date.now() < deadline) {
-      const fishes = document.getElementById("fishes_chart");
-      const signeesEl = document.getElementById("signee_chart");
-      if (fishes && signeesEl) break;
+      const species = document.getElementById("species_chart");
+      const topBoats = document.getElementById("top_boats_chart");
+      if (species && topBoats) break;
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
     // One more paint so Chart.js finishes its first layout
@@ -341,6 +325,7 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
 
   async function savePdf() {
     setPdfInkSaver(inkSaver.value);
+    const { saveAsPDF, saveStatsAsPDF } = await loadPdf();
     if (pdf.value === "Tilastoja") {
       const previous = await ensureStatsChartsMounted();
       try {
@@ -352,7 +337,7 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
           hasGottenFishCount.value,
         );
       } finally {
-        restoreChartsAfterPdf();
+        await restoreChartsAfterPdf();
         tab.value = previous;
       }
       return;
@@ -387,6 +372,7 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
   async function saveSelectedPdfs() {
     if (!selected_print.value.length) return;
     setPdfInkSaver(inkSaver.value);
+    const { saveAllAsPDF } = await loadPdf();
     const previous = selected_print.value.includes("stats")
       ? await ensureStatsChartsMounted()
       : tab.value;
@@ -412,37 +398,12 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
         table_fish_names.value,
       );
     } finally {
-      restoreChartsAfterPdf();
+      await restoreChartsAfterPdf();
       tab.value = r?.tab || previous;
     }
     text.value = r.text;
     snackbar.value = r.snackbar;
   }
-
-  // Chart labels follow the UI language
-  watch(locale, (lang) => {
-    if (!lang || !signee_chart_data.value || !fishes_chart_data.value) return;
-    const labels = changeChartLanguage(lang);
-    signee_chart_data.value = {
-      ...signee_chart_data.value,
-      labels: labels.signee_labels,
-      datasets: [
-        {
-          ...signee_chart_data.value.datasets[0],
-          label: labels.signee_dataset_label,
-        },
-      ],
-    };
-    fishes_chart_data.value = {
-      ...fishes_chart_data.value,
-      datasets: [
-        {
-          ...fishes_chart_data.value.datasets[0],
-          label: labels.fishes_dataset_label,
-        },
-      ],
-    };
-  });
 
   return {
     // state
@@ -470,16 +431,13 @@ export function useCompetitionResults({ publicOnly = false } = {}) {
     biggest_amounts_results,
     biggest_amounts_headers,
     selected_biggest_amount,
-    fishes_chart_title,
-    fishes_chart_data,
-    signee_chart_title,
-    signee_chart_data,
     snackbar,
     text,
     pdf,
     isLandscape,
     inkSaver,
     selected_print,
+    lastUpdated,
     // actions
     load,
     clear,

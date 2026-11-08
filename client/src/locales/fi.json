@@ -478,7 +478,11 @@
     "auto-refresh": "Päivitä automaattisesti",
     "public-on": "Julkinen",
     "public-off": "Ei julkinen",
-    "pick-public": "Valitse kilpailu nähdäksesi tulokset."
+    "pick-public": "Valitse kilpailu nähdäksesi tulokset.",
+    "live": "Päivittyy itsestään",
+    "updated-at": "päivitetty {time}",
+    "behind": "Ero edelliseen",
+    "tie": "tasan"
   },
   "overview-page": {
     "catch": "Saalis lajeittain",
@@ -546,5 +550,41 @@
     "title": "Sivua ei löytynyt",
     "text": "Osoite on väärä tai sivu on poistettu.",
     "home": "Etusivulle"
+  },
+  "share": {
+    "copy-link": "Kopioi linkki",
+    "public-link": "Julkinen linkki",
+    "copied": "Linkki kopioitu",
+    "failed": "Kopiointi ei onnistunut",
+    "publish-first": "Julkaise tulokset ensin, niin linkki toimii muillekin.",
+    "cup-publish-first": "Tee cupista julkinen ensin, niin linkki toimii muillekin."
+  },
+  "public-page": {
+    "pick": "Valitse kilpailu nähdäksesi sen tulokset.",
+    "not-found": "Kilpailua ei löytynyt, tai sen tulokset eivät ole julkisia.",
+    "cup-not-found": "Cupia ei löytynyt, tai se ei ole julkinen."
+  },
+  "stats-page": {
+    "species": "Pisteet lajeittain",
+    "species-lead": "Pisteet ratkaisevat: paino kertaa lajin kerroin. Paino näkyy viemällä hiiren palkin päälle.",
+    "top-boats": "Mistä kärkiveneiden pisteet tulivat",
+    "top-boats-lead": "Kymmenen parhaan veneen pisteet jaettuna lajeittain.",
+    "spread": "Pisteiden jakauma",
+    "spread-lead": "Montako venettä sai kuinkakin paljon pisteitä. Harmaa palkki: ei saalista.",
+    "biggest": "Suurimmat kalat lajeittain",
+    "biggest-lead": "Jokainen kirjattu suurin kala pisteenä; lajin ennätys on isompi piste.",
+    "timeline": "Saaliin kertyminen",
+    "timeline-lead": "Punnittu saalis yhteensä kellonajan mukaan.",
+    "no-catch": "Ei saalista",
+    "boats": "venettä",
+    "record": "lajin ennätys",
+    "catch-so-far": "Saalis yhteensä",
+    "time": "Kellonaika",
+    "progress": "Pistetilanteen kehitys",
+    "progress-tab": "Pistekehitys",
+    "progress-lead": "Kärjen {n} veneen cup-pisteet kunkin kilpailun jälkeen. Taulukkona Pistetilanne-välilehdellä.",
+    "progress-needs-two": "Pistekehitys näkyy, kun cupissa on vähintään kaksi päättynyttä kilpailua.",
+    "by-competition": "Saalis kilpailuittain",
+    "by-competition-lead": "Kunkin kilpailun saalis kiloina, jaettuna lajeittain."
   }
 }

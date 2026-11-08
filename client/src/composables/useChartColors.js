@@ -1,6 +1,6 @@
 import { watch } from "vue";
 import { useTheme } from "vuetify";
-import { CHART_THEME } from "@/utils/charts";
+import { CHART_THEME } from "@/utils/chartData";
 
 /**
  * Keeps a Chart.js options ref readable in the light and dark theme:
@@ -14,7 +14,7 @@ export function useChartColors(options) {
       const c = dark ? CHART_THEME.dark : CHART_THEME.light;
       // Mutate nested fields — do not replace/spread Chart.js option objects
       options.value.color = c.text;
-      const legend = (options.value.plugins ??= {}).legend ??= {};
+      const legend = ((options.value.plugins ??= {}).legend ??= {});
       const labels = (legend.labels ??= {});
       labels.color = c.text;
       for (const axis of Object.values(options.value.scales || {})) {

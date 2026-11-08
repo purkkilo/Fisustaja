@@ -234,6 +234,10 @@ export function useWeighting() {
           .filter((f) => f.weights);
     boat.returned = !reset;
     boat.fishes = fishes;
+    // the first weighing time stays when a catch is corrected later
+    boat.weighed_at = reset
+      ? null
+      : boat.weighed_at || new Date().toISOString();
     boat.total_points = pointsOf(boat);
 
     saving.value = true;

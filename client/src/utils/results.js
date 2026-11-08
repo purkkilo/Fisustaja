@@ -1,25 +1,25 @@
 import { range } from "./format";
 
 const winner_headers = [
-  { title: "fish", key: "name"},
-  { title: "boat-number", key: "boat_number"},
-  { title: "captain-name", key: "captain_name"},
-  { title: "weight", key: "weight"},
+  { title: "fish", key: "name" },
+  { title: "boat-number", key: "boat_number" },
+  { title: "captain-name", key: "captain_name" },
+  { title: "weight", key: "weight" },
 ];
 
 const all_fishes_headers = [
-  { title: "placement", key: "placement"},
-  { title: "boat-number", key: "boat_number"},
-  { title: "captain-name", key: "captain_name"},
-  { title: "fish", key: "name"},
-  { title: "weight", key: "weight"},
+  { title: "placement", key: "placement" },
+  { title: "boat-number", key: "boat_number" },
+  { title: "captain-name", key: "captain_name" },
+  { title: "fish", key: "name" },
+  { title: "weight", key: "weight" },
 ];
 
 const biggest_headers = [
-  { title: "placement", key: "placement"},
-  { title: "boat-number", key: "boat_number"},
-  { title: "captain-name", key: "captain_name"},
-  { title: "weight", key: "weight"},
+  { title: "placement", key: "placement" },
+  { title: "boat-number", key: "boat_number" },
+  { title: "captain-name", key: "captain_name" },
+  { title: "weight", key: "weight" },
 ];
 
 export const headers = {
@@ -212,6 +212,12 @@ export function calculateNormalResults(competition, signees) {
       cup_placement_points: cup_placement_points,
       cup_participation_points: cup_participation_points,
       cup_points_total: cup_points_total,
+      // gap to the boat directly above: null for the leader, 0 on a tie
+      points_behind:
+        index === 0
+          ? null
+          : Number(signees[index - 1].total_points) -
+            Number(signee.total_points),
     });
     //For showing fish weights, "Kalat" on v-select
     signee.placement = placement;

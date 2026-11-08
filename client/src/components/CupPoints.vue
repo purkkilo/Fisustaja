@@ -167,7 +167,7 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
-import { getPdfInkSaver, setPdfInkSaver } from "@/pdf";
+import { getPdfInkSaver, setPdfInkSaver } from "@/utils/pdfPreferences";
 import FsSection from "./ui/FsSection.vue";
 import PlacementBadge from "./results/PlacementBadge.vue";
 

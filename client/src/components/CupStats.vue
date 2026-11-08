@@ -8,8 +8,47 @@
       tone="results"
     />
 
+    <!-- How the standings developed -->
+    <template v-if="view === 'progress'">
+      <FsSection
+        v-if="progress.boats.length && competitions.length > 1"
+        icon="mdi-chart-line"
+        :title="$t('stats-page.progress')"
+      >
+        <p class="cstats__lead fs-muted">
+          {{
+            $t("stats-page.progress-lead", {
+              n: progress.boats.length,
+            })
+          }}
+        </p>
+        <FsChart
+          chart-id="cup_progress_chart"
+          :config="progressConfig"
+          :label="$t('stats-page.progress')"
+          :height="380"
+        />
+      </FsSection>
+      <p v-else class="fs-muted">{{ $t("stats-page.progress-needs-two") }}</p>
+    </template>
+
     <!-- Catch totals -->
-    <template v-if="view === 'fishes'">
+    <template v-else-if="view === 'fishes'">
+      <FsSection
+        v-if="byCompetition.species.length"
+        icon="mdi-chart-bar-stacked"
+        :title="$t('stats-page.by-competition')"
+      >
+        <p class="cstats__lead fs-muted">
+          {{ $t("stats-page.by-competition-lead") }}
+        </p>
+        <FsChart
+          chart-id="cup_catch_chart"
+          :config="byCompetitionConfig"
+          :label="$t('stats-page.by-competition')"
+          :height="340"
+        />
+      </FsSection>
       <div class="cstats__grid">
         <FsSection
           v-if="total_fishes_chart_data"
@@ -214,6 +253,13 @@ import BarChart from "../components/BarChart.vue";
 import FsSection from "./ui/FsSection.vue";
 import PillTabs from "./ui/PillTabs.vue";
 import StatTile from "./ui/StatTile.vue";
+import FsChart from "./charts/FsChart.vue";
+import { useChartPalette } from "@/composables/useChartPalette";
+import { catchByCompetition, standingsProgress } from "@/utils/cupStats";
+import {
+  catchByCompetitionChart,
+  standingsRaceChart,
+} from "@/utils/chartConfigs";
 
 defineOptions({ name: "CupStats" });
 const props = defineProps({
@@ -224,7 +270,7 @@ const props = defineProps({
   biggest_amounts: { type: Array, default: () => [] },
   loading: { type: Boolean, default: false },
 });
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const {
   showTables,
@@ -246,8 +292,13 @@ const {
   cup_signees_chart_data,
 } = useCupStats(props);
 
-const view = ref("fishes");
+const view = ref("progress");
 const views = computed(() => [
+  {
+    value: "progress",
+    label: t("stats-page.progress-tab"),
+    icon: "mdi-chart-line",
+  },
   { value: "fishes", label: t("fishes"), icon: "mdi-fish" },
   { value: "biggest", label: t("biggest-fishes"), icon: "mdi-trophy-outline" },
   {
@@ -256,6 +307,32 @@ const views = computed(() => [
     icon: "mdi-account-group-outline",
   },
 ]);
+
+const palette = useChartPalette();
+const env = computed(() => ({
+  palette: palette.value,
+  t,
+  lang: locale.value === "fi" ? "fi-FI" : "en-GB",
+}));
+// counted the same way as the standings: the cup's "best N" setting
+const progress = computed(() =>
+  standingsProgress(
+    props.competitions,
+    props.all_signees,
+    props.cup?.signees || [],
+    props.cup?.meaningful_competitions || props.competitions.length,
+    8,
+  ),
+);
+const byCompetition = computed(() =>
+  catchByCompetition(props.competitions, props.all_signees),
+);
+const progressConfig = computed(() =>
+  standingsRaceChart(progress.value, env.value),
+);
+const byCompetitionConfig = computed(() =>
+  catchByCompetitionChart(byCompetition.value, env.value),
+);
 
 // the composable's header titles are translation keys
 const translated = (headers) =>
@@ -278,6 +355,10 @@ const translated = (headers) =>
   .cstats__grid {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+.cstats__lead {
+  margin: 0;
+  font-size: 14px;
 }
 .cstats__tiles {
   display: grid;

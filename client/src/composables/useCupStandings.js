@@ -8,7 +8,6 @@ import { alert } from "@/plugins/alerts";
 import { t } from "@/i18n";
 import { calculateCupStandings, cupHeaders } from "@/utils/cupResults";
 import { sortBy } from "@/utils/format";
-import { saveCupAsPDF } from "@/pdf";
 
 /**
  * Loads a cup with its competitions, results and catches, and calculates the
@@ -160,6 +159,8 @@ export function useCupStandings({ publicOnly = false } = {}) {
     tableTitle,
     { isLandscape = false, showInfoInPdf = false } = {},
   ) {
+    // jsPDF and its fonts load only when a PDF is made
+    const { saveCupAsPDF } = await import("@/pdf");
     await saveCupAsPDF(
       tableTitle,
       isLandscape,

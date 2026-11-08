@@ -10,6 +10,20 @@
         tone="results"
       />
       <div class="cresults__actions">
+        <span
+          v-if="lastUpdated && (liveActive || live)"
+          class="cresults__live"
+          :class="{ 'cresults__live--on': liveActive }"
+          role="status"
+        >
+          <span aria-hidden="true" class="cresults__dot"></span>
+          <span v-if="liveActive" class="font-weight-bold">{{
+            $t("results-page.live")
+          }}</span>
+          <span class="fs-muted">{{
+            $t("results-page.updated-at", { time: updatedAt })
+          }}</span>
+        </span>
         <slot name="actions" :competition="competition" :loading="loading" />
         <v-btn
           color="results"
@@ -141,15 +155,11 @@
         <div v-else-if="tab === 'stats'" class="cresults__table">
           <Stats
             :competition="competition"
-            :normal_points="normal_points"
             :hasGottenFishCount="hasGottenFishCount"
             :signees="signees"
+            :biggest_fishes="biggest_fishes"
             :loading="loading"
             :biggest_amounts="biggest_amounts_results"
-            :fishes_chart_title="fishes_chart_title"
-            :fishes_chart_data="fishes_chart_data"
-            :signee_chart_title="signee_chart_title"
-            :signee_chart_data="signee_chart_data"
             @dialog="openPdfDialog"
           />
         </div>
@@ -262,11 +272,11 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, defineAsyncComponent, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useCompetitionResults } from "@/composables/useCompetitionResults";
+import { useLivePolling } from "@/composables/useLivePolling";
 import NotificationBar from "../NotificationBar.vue";
-import Stats from "./Stats.vue";
 import NormalComp from "./NormalComp.vue";
 import TeamComp from "./TeamComp.vue";
 import BiggestFishes from "./BiggestFishes.vue";
@@ -275,14 +285,20 @@ import ResultsPanel from "./ResultsPanel.vue";
 import ResultsPodium from "./ResultsPodium.vue";
 import PillTabs from "@/components/ui/PillTabs.vue";
 
+// The statistics view brings chart.js with it: load it when opened
+const Stats = defineAsyncComponent(() => import("./Stats.vue"));
+
 const props = defineProps({
   // _id of the competition to show; changing it loads the new competition
   competitionId: { type: String, default: null },
   // Public page: only public data is requested (works without a login)
   publicOnly: Boolean,
+  // Refresh by itself while the competition is still running
+  live: Boolean,
+  liveIntervalMs: { type: Number, default: 30000 },
 });
 const emit = defineEmits(["loaded"]);
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const {
   loading,
@@ -309,16 +325,13 @@ const {
   biggest_amounts_results,
   biggest_amounts_headers,
   selected_biggest_amount,
-  fishes_chart_title,
-  fishes_chart_data,
-  signee_chart_title,
-  signee_chart_data,
   snackbar,
   text,
   pdf,
   isLandscape,
   inkSaver,
   selected_print,
+  lastUpdated,
   load,
   clear,
   switchNormalResults,
@@ -413,10 +426,28 @@ function openPdfDialog(options) {
   pdfDialog.value = options.pdfDialog;
 }
 
-async function refresh() {
-  await load(props.competitionId);
+async function refresh({ quiet = false } = {}) {
+  await load(props.competitionId, { quiet });
   if (competition.value) emit("loaded", competition.value);
 }
+
+// Live leaderboard: refresh quietly until the competition is finished
+const liveActive = computed(
+  () => props.live && !!competition.value && !competition.value.isFinished,
+);
+useLivePolling(() => refresh({ quiet: true }), {
+  active: liveActive,
+  intervalMs: props.liveIntervalMs,
+});
+const updatedAt = computed(() =>
+  lastUpdated.value?.toLocaleTimeString(
+    locale.value === "fi" ? "fi-FI" : "en-GB",
+    {
+      hour: "2-digit",
+      minute: "2-digit",
+    },
+  ),
+);
 
 watch(
   () => props.competitionId,
@@ -438,6 +469,35 @@ defineExpose({ refresh, competition, loading });
   flex-wrap: wrap;
   align-items: center;
   gap: 12px;
+}
+.cresults__live {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+.cresults__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgba(var(--v-border-color), 0.35);
+}
+.cresults__live--on .cresults__dot {
+  background: rgb(var(--v-theme-signing));
+  animation: cresults-pulse 2s ease-out infinite;
+}
+@keyframes cresults-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(var(--v-theme-signing), 0.55);
+  }
+  100% {
+    box-shadow: 0 0 0 10px rgba(var(--v-theme-signing), 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cresults__live--on .cresults__dot {
+    animation: none;
+  }
 }
 .cresults__actions {
   margin-left: auto;
