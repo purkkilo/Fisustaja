@@ -12,7 +12,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cookieParser());
 
-// Behind a reverse proxy (Heroku, Vercel, nginx) set TRUST_PROXY=1 so req.ip
+// Behind a reverse proxy (e.g. nginx) set TRUST_PROXY=1 so req.ip
 // is the client's address; the login limiter counts attempts per IP.
 if (process.env.TRUST_PROXY) {
   const hops = Number(process.env.TRUST_PROXY);
@@ -45,24 +45,18 @@ app.use("/api/users", users);
 app.use("/api/cups", cups);
 app.use("/api/results", results);
 app.use("/api/fishes", fishes);
-app.use(
-  history({
-    verbose: true,
-  }),
-);
+app.use(history());
 
 // Static folder
 app.use(express.static(path.join(__dirname, "public")));
 
-// TODO local database
 const url = process.env.MONGODB_URI;
 const db = process.env.TESTING === "true" ? process.env.DEV_DB : process.env.DB;
 
-mongoose.set("strictQuery", false);
 mongoose
   .connect(url, { dbName: db })
   .then(() => {
-    console.log(`Database connected succesfully!`);
+    console.log(`Database connected successfully!`);
   })
   .catch((error) => {
     console.log(`Unable to connect with the database ${error}`);
@@ -83,7 +77,7 @@ process.on("unhandledRejection", (reason) => {
 
 const PORT = process.env.PORT || 5000;
 
-const server = app.listen(PORT, () =>
+app.listen(PORT, () =>
   console.log(`Server started on port http://localhost:${PORT}`),
 );
 

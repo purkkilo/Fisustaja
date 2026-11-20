@@ -2,7 +2,7 @@
 
 Vue 3.5 + Vuetify 4 + Vite. State lives in Pinia, routing in Vue Router 5, translations in vue-i18n 11.
 
-Needs Node.js 20.19+ or 22.12+.
+Needs Node.js 22.18+ or 24.11+.
 
 ## Project setup
 

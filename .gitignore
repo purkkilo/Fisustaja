@@ -1,6 +1,5 @@
 node_modules
-server/config/config.json
-.vscode/settings.json
 server/public
 server/.env
-.vercel
+.vscode/settings.json
+.DS_Store

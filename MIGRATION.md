@@ -22,30 +22,12 @@ candidates). Vuetify, Vue Router and Pinia have newer majors, listed below.
 | vue-select (registered, never used) | removed |
 | Material Icons + MDI from CDN | `@mdi/font` package |
 
-## First run
-
-The new code was written without running `npm install` (no network where it was
-made), so the first install and test run happen on your machine.
-
-```bash
-cd client
-# old Vue CLI files that Vite must not see
-git rm vue.config.js babel.config.js public/index.html package-lock.json
-rm -rf node_modules
-npm install
-npm run dev        # http://localhost:8080, /api is proxied to port 5000
-```
-
-In another terminal, from the repo root: `npm run server`.
-
-`client/public/index.html` must be gone: Vite uses `client/index.html`.
-
 ## What changed in the code
 
 ### Setup
 - `main.js` uses `createApp`. Pinia, the router, i18n, Vuetify and the alert plugin are installed there.
 - `vite.config.js` replaces `vue.config.js`. Same proxy, same output folder (`../server/public`).
-- `index.html` moved to `client/`. Env vars are `VITE_*` now (`VUE_APP_*` still load too).
+- `index.html` moved to `client/`. Env vars are `VITE_*` now.
 - `src/plugins/vuetify.js`: `createVuetify` with the Vuetify 2 colour palette,
   the old breakpoints (960/1280/1920) so the `md`/`lg` layouts stay the same, and
   underlined text fields like in Vuetify 2. Vuetify's own texts follow the vue-i18n language.
@@ -87,7 +69,7 @@ In another terminal, from the repo root: `npm run server`.
 
 ## Check these by hand
 
-There are no tests, so click through these screens:
+The unit tests cover the helpers, not the screens, so click through these:
 
 1. **Login / logout / register**, and the dark mode switch and language switch in the drawer.
 2. **Create competition**: date and time pickers, the fish species combobox (create, edit, remove chips).

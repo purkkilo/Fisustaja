@@ -2,7 +2,7 @@
 
 Application that is made for hosting fishing competitions (in Cup type setting, or standalone). Application was made for myself in a span of 6 years, and for the purpose of learning Node, MongoDB, JavaScript and Vue 2 stack. It's definitely not the most efficient or the most clever design, because I wanted to explore different things and it has been made in the span of 6 years working on and off on it. The frontend has now been migrated to Vue 3.5, Vuetify 4 and Vite (see [MIGRATION.md](MIGRATION.md)).
 
-Previously you could find the project running on render, but I decided to take it down because it would require to upgrade to Vue 3, and I'd rather do the project from scratch than upgrade the whole thing. Project dependencies are too old for it to be secure to keep up anymore. Results are taken from [savo-karjalacup](https://www.savokarjalacup.com/tulokset/).
+Previously you could find the project running on Render, but it has since been taken down. Results are taken from [savo-karjalacup](https://www.savokarjalacup.com/tulokset/).
 
 ## What it does
 
@@ -40,10 +40,10 @@ If I would start this project from 0 right now, I would probably use Go for the 
 - Improve old code, remove duplicate code and make templates for them
 - Improve loading times, first loads feel slow and clunky
 - Properly use state and it's functions
-- Use cookies. Localstorage was just easy thing to use while developing.
+- ~~Use cookies. Localstorage was just easy thing to use while developing.~~ (done: auth uses httpOnly cookies)
 - Caching?
 - Docker?
-- Tests
+- ~~Tests~~ (done: server API tests and client unit tests)
 - Features mentioned in [todos.todo](https://github.com/purkkilo/FisuJS/blob/master/todos.todo)
 
 ## Setup
@@ -59,7 +59,9 @@ If I would start this project from 0 right now, I would probably use Go for the 
 - "npm run dev" to run both concurrently in root directory, or separately with:
   - "npm run server" (in root directory)
   - "npm run dev" (in client directory, Vite dev server on http://localhost:8080)
-- Node.js 20.19+ or 22.12+ is required by Vite
+- Node.js 22.18+ or 24.11+ is required by the client build tools
+
+- For production: "npm run build-app" builds the client into server/public, then "npm start" serves it from the Express server
 
 ### Tests
 

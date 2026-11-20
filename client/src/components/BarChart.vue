@@ -104,18 +104,6 @@ const options = ref({
     legend: {
       display: true,
     },
-    datalabels: {
-      labels: {
-        value: {
-          color: "#133E71",
-          font: {
-            weight: "bold",
-            size: 16,
-            family: '"Lucida Console", Monaco, monospace',
-          },
-        },
-      },
-    },
   },
   maintainAspectRatio: false,
   responsive: true,
