@@ -86,7 +86,6 @@ const filtered = computed(() => {
 const initial = (user) => (user.name || "?").charAt(0).toUpperCase();
 const roleIcon = (user) => (user.is_admin ? "mdi-shield-crown" : "mdi-account");
 const formatDate = (value) => (value ? new Date(value).toLocaleString() : "-");
-// eslint-disable-next-line no-unused-vars
 const withoutUiState = ({ menu, ...user }) => user;
 </script>
 

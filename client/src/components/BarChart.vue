@@ -92,16 +92,12 @@ const options = ref({
           let percentage = (context.parsed.y / sum) * 100;
           percentage = Math.round((percentage + Number.EPSILON) * 100) / 100;
 
-          let lbl = "";
           if (context.dataset.label === "Amount") {
-            lbl = `${t("total-signees")}: ${context.parsed.y.toLocaleString()}`;
-          } else {
-            lbl = `${context.dataset.label}: ${(
-              context.parsed.y / 1000
-            ).toLocaleString()} kg ( ${percentage}% ${t("of-fishes")} )`;
+            return `${t("total-signees")}: ${context.parsed.y.toLocaleString()}`;
           }
-
-          return lbl;
+          return `${context.dataset.label}: ${(
+            context.parsed.y / 1000
+          ).toLocaleString()} kg ( ${percentage}% ${t("of-fishes")} )`;
         },
       },
     },

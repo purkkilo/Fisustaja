@@ -18,6 +18,8 @@ export default [
     },
     rules: {
       "vue/multi-word-component-names": "off",
+      // allow `const { dropped, ...rest } = obj` to omit keys
+      "no-unused-vars": ["error", { ignoreRestSiblings: true }],
     },
   },
 ];

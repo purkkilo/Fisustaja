@@ -9,7 +9,7 @@
     location="bottom"
     :timeout="timeout"
     rounded="lg"
-    multi-line
+    min-height="68"
   >
     <div class="fs-toast__body">
       <v-icon :icon="icon" size="20" />

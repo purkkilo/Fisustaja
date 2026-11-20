@@ -285,7 +285,7 @@ export function calculateBiggestFishes(
   selected_fish,
 ) {
   let placement = 1;
-  let header = [];
+  let header;
   let results = [];
 
   // Check v-select value, don't allow it to go null because it shows error
@@ -354,8 +354,8 @@ export function calculateBiggestAmounts(
   fish_names,
 ) {
   let fishes = biggest_amounts;
-  let results = [];
-  let header = [];
+  let results;
+  let header;
   let placement = 1;
   if (!selected_amount) {
     selected_amount = "all";
